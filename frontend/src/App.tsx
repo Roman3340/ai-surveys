@@ -1,5 +1,9 @@
 import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/Home/HomePage';
+import CreateSurveyPage from './pages/Survey/CreateSurveyPage';
+import ManualSurveyPage from './pages/Survey/ManualSurveyPage';
+import AISurveyPage from './pages/Survey/AISurveyPage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
@@ -30,10 +34,17 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-primary">
-      <HomePage />
-      <DevTools />
-    </div>
+    <Router>
+      <div className="min-h-screen bg-primary">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/survey/create" element={<CreateSurveyPage />} />
+          <Route path="/survey/create/manual" element={<ManualSurveyPage />} />
+          <Route path="/survey/create/ai" element={<AISurveyPage />} />
+        </Routes>
+        <DevTools />
+      </div>
+    </Router>
   );
 }
 

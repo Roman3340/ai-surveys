@@ -248,3 +248,25 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--tg-text-color);
 }
+
+/* Анимации для эмодзи */
+@keyframes bounce-gentle {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-8px) scale(1.05);
+  }
+  60% {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+@keyframes telegram-emoji-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}

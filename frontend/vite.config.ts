@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/ai-surveys/', // Название вашего GitHub репозитория
+  base: process.env.NODE_ENV === 'production' ? '/ai-surveys/' : '/', // Только для GitHub Pages
   server: {
     host: '0.0.0.0',
     port: 5173,

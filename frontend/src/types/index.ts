@@ -44,7 +44,8 @@ export type QuestionType =
   | 'scale' 
   | 'rating' 
   | 'date' 
-  | 'number';
+  | 'number'
+  | 'yes_no';
 
 export interface QuestionOption {
   id: string;
@@ -67,6 +68,9 @@ export interface SurveySettings {
   oneResponsePerUser: boolean;
   collectTelegramData: boolean;
   reward?: SurveyReward;
+  endDate?: string;
+  maxParticipants?: number;
+  creationType: 'manual' | 'ai';
 }
 
 export interface SurveyReward {

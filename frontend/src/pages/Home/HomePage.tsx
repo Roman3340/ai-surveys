@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Monitor, Settings, HelpCircle } from 'lucide-react';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -7,6 +8,7 @@ import { isTelegramEnvironment } from '../../utils/mockTelegram';
 import type { Survey } from '../../types';
 
 export const HomePage = () => {
+  const navigate = useNavigate();
   const { user: telegramUser, hapticFeedback, theme } = useTelegram();
   const { user, userSurveys, participatedSurveys, setUser, setTheme } = useAppStore();
   const [activeTab, setActiveTab] = useState<'created' | 'participated'>('created');
@@ -33,8 +35,7 @@ export const HomePage = () => {
 
   const handleCreateSurvey = () => {
     hapticFeedback.light();
-    // TODO: Навигация к созданию опроса
-    console.log('Создание опроса');
+    navigate('/survey/create');
   };
 
   const handleViewAnalytics = (survey: Survey) => {
