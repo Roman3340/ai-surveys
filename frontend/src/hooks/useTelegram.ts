@@ -83,43 +83,43 @@ export const useTelegram = () => {
       const tg = isTelegramEnvironment() 
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
-      tg.hapticFeedback.impactOccurred('light');
+      tg.hapticFeedback?.impactOccurred('light');
     },
     medium: () => {
       const tg = isTelegramEnvironment() 
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
-      tg.hapticFeedback.impactOccurred('medium');
+      tg.hapticFeedback?.impactOccurred('medium');
     },
     heavy: () => {
       const tg = isTelegramEnvironment() 
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
-      tg.hapticFeedback.impactOccurred('heavy');
+      tg.hapticFeedback?.impactOccurred('heavy');
     },
     success: () => {
       const tg = isTelegramEnvironment() 
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
-      tg.hapticFeedback.notificationOccurred('success');
+      tg.hapticFeedback?.notificationOccurred('success');
     },
     error: () => {
       const tg = isTelegramEnvironment() 
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
-      tg.hapticFeedback.notificationOccurred('error');
+      tg.hapticFeedback?.notificationOccurred('error');
     },
     warning: () => {
       const tg = isTelegramEnvironment() 
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
-      tg.hapticFeedback.notificationOccurred('warning');
+      tg.hapticFeedback?.notificationOccurred('warning');
     },
     selection: () => {
       const tg = isTelegramEnvironment() 
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
-      tg.hapticFeedback.selectionChanged();
+      tg.hapticFeedback?.selectionChanged();
     },
   };
 

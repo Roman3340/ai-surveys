@@ -34,18 +34,18 @@ export const HomePage = () => {
   }, [telegramUser, user, setUser]);
 
   const handleCreateSurvey = () => {
-    hapticFeedback.light();
+    hapticFeedback?.light();
     navigate('/survey/create');
   };
 
   const handleViewAnalytics = (survey: Survey) => {
-    hapticFeedback.light();
+    hapticFeedback?.light();
     // TODO: Навигация к аналитике
     console.log('Просмотр аналитики для:', survey.title);
   };
 
   const handleViewTopSurveys = () => {
-    hapticFeedback.light();
+    hapticFeedback?.light();
     // TODO: Навигация к топу опросов
     console.log('Топ опросов');
   };
@@ -317,7 +317,7 @@ export const HomePage = () => {
         }}>
           <button 
             onClick={() => {
-              hapticFeedback.light();
+              hapticFeedback?.light();
               console.log('Настройки');
             }}
             style={{
@@ -343,7 +343,7 @@ export const HomePage = () => {
           
           <button 
             onClick={() => {
-              hapticFeedback.light();
+              hapticFeedback?.light();
               console.log('Поддержка');
             }}
             style={{
