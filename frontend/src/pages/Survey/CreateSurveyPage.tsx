@@ -8,17 +8,14 @@ import { Button } from '../../components/ui/Button';
 
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showAlert, showConfirm } = useTelegram();
+  const { showConfirm } = useTelegram();
 
   const handleBack = () => {
-    showConfirm(
-      'Данные могут не сохраниться. Вы уверены, что хотите выйти?',
-      (confirmed) => {
-        if (confirmed) {
-          navigate('/');
-        }
+    showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
+      if (confirmed) {
+        navigate('/');
       }
-    );
+    });
   };
 
   const handleCreateManual = () => {
@@ -83,7 +80,7 @@ const CreateSurveyPage: React.FC = () => {
             marginBottom: '40px'
           }}
         >
-          <TelegramEmoji emoji="💡" size="large" />
+          <TelegramEmoji emoji="💡" size="lg" />
           <h2 style={{
             fontSize: '24px',
             fontWeight: '700',
@@ -117,7 +114,7 @@ const CreateSurveyPage: React.FC = () => {
           >
             <Button
               variant="outline"
-              size="large"
+              size="lg"
               onClick={handleCreateManual}
               style={{
                 width: '100%',
@@ -163,7 +160,7 @@ const CreateSurveyPage: React.FC = () => {
           >
             <Button
               variant="outline"
-              size="large"
+              size="lg"
               onClick={handleCreateAI}
               style={{
                 width: '100%',
@@ -209,7 +206,7 @@ const CreateSurveyPage: React.FC = () => {
           >
             <Button
               variant="outline"
-              size="large"
+              size="lg"
               onClick={handleCreateAI}
               style={{
                 width: '100%',

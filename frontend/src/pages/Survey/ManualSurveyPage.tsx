@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
 import { Button } from '../../components/ui/Button';
@@ -32,62 +32,28 @@ const ManualSurveyPage: React.FC = () => {
     rewardDescription: ''
   });
 
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [showQuestionForm, setShowQuestionForm] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  // Убираем неиспользуемые состояния пока что
+  // const [questions, setQuestions] = useState<Question[]>([]);
+  // const [showQuestionForm, setShowQuestionForm] = useState(false);
+  // const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   const handleBack = () => {
-    showConfirm(
-      'Данные могут не сохраниться. Вы уверены, что хотите выйти?',
-      (confirmed) => {
-        if (confirmed) {
-          navigate(-1);
-        }
+    showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
+      if (confirmed) {
+        navigate(-1);
       }
-    );
+    });
   };
 
   const handleSurveyDataChange = (field: string, value: any) => {
     setSurveyData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addQuestion = () => {
-    setEditingQuestion({
-      id: Date.now().toString(),
-      type: 'text',
-      title: '',
-      required: false,
-      options: []
-    });
-    setShowQuestionForm(true);
-  };
-
-  const saveQuestion = (question: Question) => {
-    if (editingQuestion?.id) {
-      setQuestions(prev => {
-        const existing = prev.find(q => q.id === question.id);
-        if (existing) {
-          return prev.map(q => q.id === question.id ? question : q);
-        } else {
-          return [...prev, question];
-        }
-      });
-    }
-    setShowQuestionForm(false);
-    setEditingQuestion(null);
-  };
-
-  const deleteQuestion = (id: string) => {
-    setQuestions(prev => prev.filter(q => q.id !== id));
-  };
-
-  const handleCreateSurvey = () => {
-    // Здесь будет логика создания опроса
-    console.log('Survey data:', surveyData);
-    console.log('Questions:', questions);
-    // Пока просто возвращаемся на главную
-    navigate('/');
-  };
+  // Убираем неиспользуемые функции пока что
+  // const addQuestion = () => { ... };
+  // const saveQuestion = (question: Question) => { ... };
+  // const deleteQuestion = (id: string) => { ... };
+  // const handleCreateSurvey = () => { ... };
 
   return (
     <div style={{ 
@@ -231,9 +197,9 @@ const ManualSurveyPage: React.FC = () => {
               Текст кнопки поста:
             </label>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              <Button variant="primary" size="small">Участвовать</Button>
-              <Button variant="outline" size="small">Принять участие</Button>
-              <Button variant="outline" size="small">Участвую!</Button>
+              <Button variant="primary" size="sm">Участвовать</Button>
+              <Button variant="outline" size="sm">Принять участие</Button>
+              <Button variant="outline" size="sm">Участвую!</Button>
             </div>
             <p style={{
               fontSize: '14px',

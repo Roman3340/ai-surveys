@@ -92,7 +92,8 @@ export const useAppStore = create<AppStore>()(
             showProgress: true,
             randomizeQuestions: false,
             oneResponsePerUser: true,
-            collectTelegramData: true
+            collectTelegramData: true,
+            creationType: 'manual' as const
           }
         },
         {
@@ -120,7 +121,8 @@ export const useAppStore = create<AppStore>()(
             showProgress: true,
             randomizeQuestions: false,
             oneResponsePerUser: true,
-            collectTelegramData: true
+            collectTelegramData: true,
+            creationType: 'manual' as const
           }
         }
       ],
@@ -153,11 +155,12 @@ export const useAppStore = create<AppStore>()(
           ],
           responses: [],
           settings: {
-            allowAnonymous: true,
-            showProgress: true,
-            randomizeQuestions: false,
-            oneResponsePerUser: true,
-            collectTelegramData: true,
+        allowAnonymous: true,
+        showProgress: true,
+        randomizeQuestions: false,
+        oneResponsePerUser: true,
+        collectTelegramData: true,
+        creationType: 'manual' as const,
             reward: {
               type: 'custom',
               value: 'iPhone 15 Pro Black Titanium',
@@ -196,7 +199,8 @@ export const useAppStore = create<AppStore>()(
             showProgress: true,
             randomizeQuestions: false,
             oneResponsePerUser: true,
-            collectTelegramData: true
+            collectTelegramData: true,
+            creationType: 'manual' as const
           }
         }
       ],

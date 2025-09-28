@@ -24,14 +24,11 @@ const AISurveyPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleBack = () => {
-    showConfirm(
-      'Данные могут не сохраниться. Вы уверены, что хотите выйти?',
-      (confirmed) => {
-        if (confirmed) {
-          navigate(-1);
-        }
+    showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
+      if (confirmed) {
+        navigate(-1);
       }
-    );
+    });
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -109,7 +106,7 @@ const AISurveyPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', marginBottom: '32px' }}
         >
-          <TelegramEmoji emoji="🤖" size="large" />
+          <TelegramEmoji emoji="🤖" size="lg" />
           <h2 style={{
             fontSize: '24px',
             fontWeight: '700',
@@ -330,7 +327,7 @@ const AISurveyPage: React.FC = () => {
           {/* Кнопка генерации */}
           <Button
             variant="primary"
-            size="large"
+            size="lg"
             onClick={handleGenerate}
             disabled={!formData.businessType || !formData.topic || isGenerating}
             style={{

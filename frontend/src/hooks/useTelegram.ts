@@ -140,6 +140,7 @@ export const useTelegram = () => {
     startParam,
     theme,
     themeParams,
+    isTelegram: isTelegramEnvironment(),
     showAlert,
     showConfirm,
     hapticFeedback,
