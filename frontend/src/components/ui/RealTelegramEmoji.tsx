@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { telegramEmojiExtractor, TelegramEmojiData } from '../../utils/telegramEmojiExtractor';
+import { telegramEmojiExtractor } from '../../utils/telegramEmojiExtractor';
+import type { TelegramEmojiData } from '../../utils/telegramEmojiExtractor';
 import { useTelegram } from '../../hooks/useTelegram';
 
 interface RealTelegramEmojiProps {

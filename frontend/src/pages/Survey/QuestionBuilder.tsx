@@ -510,7 +510,7 @@ const QuestionBuilder: React.FC = () => {
           <TelegramEmoji 
             emoji="🔧" 
             size="large" 
-            animate="wiggle"
+            animate={true}
             onClick={() => hapticFeedback?.light()}
           />
           <div style={{
