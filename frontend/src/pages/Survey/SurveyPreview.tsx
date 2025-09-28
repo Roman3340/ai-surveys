@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Eye, Send, Star } from 'lucide-react';
+import { Eye, Send, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import type { Question } from '../../types';
 
@@ -150,21 +150,21 @@ const SurveyPreview: React.FC = () => {
                   padding: '12px 16px',
                   borderRadius: '8px',
                   border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: answer === option ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
-                  color: answer === option ? 'var(--tg-button-text-color)' : 'var(--tg-text-color)',
+                  backgroundColor: answer === (typeof option === 'string' ? option : option.text) ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
+                  color: answer === (typeof option === 'string' ? option : option.text) ? 'var(--tg-button-text-color)' : 'var(--tg-text-color)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}
-                onClick={() => handleAnswerChange(question.id, option)}
+                onClick={() => handleAnswerChange(question.id, typeof option === 'string' ? option : option.text)}
               >
                 <input
                   type="radio"
                   name={`question-${question.id}`}
-                  checked={answer === option}
-                  onChange={() => handleAnswerChange(question.id, option)}
+                  checked={answer === (typeof option === 'string' ? option : option.text)}
+                  onChange={() => handleAnswerChange(question.id, typeof option === 'string' ? option : option.text)}
                   style={{ margin: 0 }}
                 />
-                <span>{option}</span>
+                <span>{typeof option === 'string' ? option : option.text}</span>
               </label>
             ))}
           </div>
@@ -174,7 +174,8 @@ const SurveyPreview: React.FC = () => {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {question.options?.map((option, index) => {
-              const isSelected = Array.isArray(answer) && answer.includes(option);
+              const optionText = typeof option === 'string' ? option : option.text;
+              const isSelected = Array.isArray(answer) && answer.includes(optionText);
               return (
                 <label
                   key={index}
@@ -193,8 +194,8 @@ const SurveyPreview: React.FC = () => {
                   onClick={() => {
                     const currentAnswers = Array.isArray(answer) ? answer : [];
                     const newAnswers = isSelected
-                      ? currentAnswers.filter(a => a !== option)
-                      : [...currentAnswers, option];
+                      ? currentAnswers.filter(a => a !== optionText)
+                      : [...currentAnswers, optionText];
                     handleAnswerChange(question.id, newAnswers);
                   }}
                 >
@@ -204,7 +205,7 @@ const SurveyPreview: React.FC = () => {
                     onChange={() => {}}
                     style={{ margin: 0 }}
                   />
-                  <span>{option}</span>
+                  <span>{optionText}</span>
                 </label>
               );
             })}
@@ -212,8 +213,8 @@ const SurveyPreview: React.FC = () => {
         );
 
       case 'scale':
-        const scaleMin = question.validation?.minValue || 1;
-        const scaleMax = question.validation?.maxValue || 5;
+        const scaleMin = question.validation?.min || 1;
+        const scaleMax = question.validation?.max || 5;
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -249,7 +250,7 @@ const SurveyPreview: React.FC = () => {
         );
 
       case 'rating':
-        const maxRating = question.validation?.maxValue || 5;
+        const maxRating = question.validation?.max || 5;
         return (
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             {Array.from({ length: maxRating }, (_, i) => {
@@ -326,8 +327,8 @@ const SurveyPreview: React.FC = () => {
             value={answer || ''}
             onChange={(e) => handleAnswerChange(question.id, e.target.value)}
             placeholder="Введите число..."
-            min={question.validation?.minValue}
-            max={question.validation?.maxValue}
+            min={question.validation?.min}
+            max={question.validation?.max}
             style={{
               width: '100%',
               padding: '12px 16px',
