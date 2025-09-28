@@ -1,42 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
-import TelegramEmoji from '../../components/ui/TelegramEmoji';
-import { Button } from '../../components/ui/Button';
-// import type { QuestionType } from '../../types'; // Временно не используется
-
-// Временно убираем неиспользуемый интерфейс
-// interface Question {
-//   id: string;
-//   type: QuestionType;
-//   title: string;
-//   required: boolean;
-//   options?: string[];
-// }
 
 const ManualSurveyPage: React.FC = () => {
   const navigate = useNavigate();
   const { showConfirm } = useTelegram();
 
-  // Состояние формы
   const [surveyData, setSurveyData] = useState({
-    title: '',
+    title: 'Оценка качества продукции',
     description: '',
-    endDate: '',
+    language: 'ru',
+    endDate: '17.02.2025',
+    endTime: '23:59',
     maxParticipants: '',
-    isAnonymous: false,
-    hasReward: false,
-    rewardType: 'promo_code' as 'promo_code' | 'stars' | 'custom',
+    motivation: 'promo_code',
     rewardValue: '',
     rewardDescription: ''
   });
-
-  // Убираем неиспользуемые состояния пока что
-  // const [questions, setQuestions] = useState<Question[]>([]);
-  // const [showQuestionForm, setShowQuestionForm] = useState(false);
-  // const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   const handleBack = () => {
     showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
@@ -46,21 +28,20 @@ const ManualSurveyPage: React.FC = () => {
     });
   };
 
+  const handleNext = () => {
+    navigate('/survey/create/manual/questions');
+  };
+
   const handleSurveyDataChange = (field: string, value: any) => {
     setSurveyData(prev => ({ ...prev, [field]: value }));
   };
-
-  // Убираем неиспользуемые функции пока что
-  // const addQuestion = () => { ... };
-  // const saveQuestion = (question: Question) => { ... };
-  // const deleteQuestion = (id: string) => { ... };
-  // const handleCreateSurvey = () => { ... };
 
   return (
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: 'var(--tg-bg-color)',
-      color: 'var(--tg-text-color)'
+      color: 'var(--tg-text-color)',
+      paddingBottom: '80px' // Место для фиксированной кнопки
     }}>
       {/* Шапка */}
       <div style={{
@@ -97,38 +78,60 @@ const ManualSurveyPage: React.FC = () => {
       </div>
 
       <div style={{ padding: '24px 16px' }}>
-        {/* Заголовок */}
+        {/* Заголовок с эмодзи и прогресс */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', marginBottom: '32px' }}
         >
-          <TelegramEmoji emoji="📝" size="large" />
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: '700',
-            margin: '16px 0 8px 0'
+          <div style={{
+            fontSize: '64px',
+            marginBottom: '16px',
+            animation: 'bounce-gentle 3s ease-in-out infinite'
           }}>
-            Основные настройки
-          </h2>
+            📝
+          </div>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '8px'
+          }}>
+            {/* Прогресс-бар */}
+            <div style={{
+              width: '280px',
+              height: '6px',
+              backgroundColor: 'var(--tg-section-separator-color)',
+              borderRadius: '3px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: '60%',
+                height: '100%',
+                backgroundColor: '#007AFF',
+                borderRadius: '3px'
+              }} />
+            </div>
+          </div>
         </motion.div>
 
-        {/* Основные поля */}
-        <div style={{ marginBottom: '32px' }}>
+        {/* Поля формы */}
+        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+          {/* Название */}
           <div style={{ marginBottom: '20px' }}>
             <label style={{
               display: 'block',
               fontSize: '16px',
               fontWeight: '500',
-              marginBottom: '8px'
+              marginBottom: '8px',
+              color: 'var(--tg-text-color)'
             }}>
-              Название: Опрос о предпочтениях в еде
+              Название:
             </label>
             <input
               type="text"
               value={surveyData.title}
               onChange={(e) => handleSurveyDataChange('title', e.target.value)}
-              placeholder="Опрос о предпочтениях в еде"
+              placeholder="Оценка качества продукции"
               style={{
                 width: '100%',
                 padding: '12px 16px',
@@ -136,21 +139,28 @@ const ManualSurveyPage: React.FC = () => {
                 border: '1px solid var(--tg-section-separator-color)',
                 backgroundColor: 'var(--tg-section-bg-color)',
                 color: 'var(--tg-text-color)',
-                fontSize: '16px'
+                fontSize: '16px',
+                outline: 'none'
               }}
             />
           </div>
 
+          {/* Описание */}
           <div style={{ marginBottom: '20px' }}>
             <label style={{
               display: 'block',
               fontSize: '16px',
               fontWeight: '500',
-              marginBottom: '8px'
+              marginBottom: '8px',
+              color: 'var(--tg-text-color)'
             }}>
-              Язык опроса: 🇷🇺 Русский
+              Описание:
             </label>
-            <select
+            <input
+              type="text"
+              value={surveyData.description}
+              onChange={(e) => handleSurveyDataChange('description', e.target.value)}
+              placeholder="Опционально"
               style={{
                 width: '100%',
                 padding: '12px 16px',
@@ -158,236 +168,250 @@ const ManualSurveyPage: React.FC = () => {
                 border: '1px solid var(--tg-section-separator-color)',
                 backgroundColor: 'var(--tg-section-bg-color)',
                 color: 'var(--tg-text-color)',
-                fontSize: '16px'
-              }}
-            >
-              <option value="ru">🇷🇺 Русский</option>
-              <option value="en">🇺🇸 English</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '16px',
-              fontWeight: '500',
-              marginBottom: '8px'
-            }}>
-              Выбрать пост
-            </label>
-            <Button
-              variant="outline"
-              onClick={() => {}}
-              style={{
-                width: '100%',
-                justifyContent: 'flex-start',
-                padding: '12px 16px'
-              }}
-            >
-              Выбрать пост для опроса
-            </Button>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '16px',
-              fontWeight: '500',
-              marginBottom: '8px'
-            }}>
-              Текст кнопки поста:
-            </label>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              <Button variant="primary" size="sm">Участвовать</Button>
-              <Button variant="outline" size="sm">Принять участие</Button>
-              <Button variant="outline" size="sm">Участвую!</Button>
-            </div>
-            <p style={{
-              fontSize: '14px',
-              color: 'var(--tg-hint-color)',
-              margin: 0
-            }}>
-              Укажите название, пост и текст для кнопки вашего опроса.
-            </p>
-          </div>
-
-          {/* Настройки */}
-          <div style={{
-            backgroundColor: 'var(--tg-section-bg-color)',
-            padding: '20px',
-            borderRadius: '12px',
-            marginBottom: '20px'
-          }}>
-            <h3 style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              marginBottom: '16px',
-              margin: 0
-            }}>
-              Настройки опроса
-            </h3>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
                 fontSize: '16px',
-                marginBottom: '8px'
-              }}>
-                Дата окончания (необязательно)
-              </label>
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          {/* Язык */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '16px',
+              fontWeight: '500',
+              marginBottom: '8px',
+              color: 'var(--tg-text-color)'
+            }}>
+              Язык:
+            </label>
+            <div style={{
+              position: 'relative'
+            }}>
+              <select
+                value={surveyData.language}
+                onChange={(e) => handleSurveyDataChange('language', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  outline: 'none',
+                  appearance: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="en">🇺🇸 English</option>
+              </select>
+              <ChevronDown 
+                size={20} 
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--tg-hint-color)',
+                  pointerEvents: 'none'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Дата начала */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '16px',
+              fontWeight: '500',
+              marginBottom: '8px',
+              color: 'var(--tg-text-color)'
+            }}>
+              Дата начала:
+            </label>
+            <div style={{
+              display: 'flex',
+              gap: '12px'
+            }}>
               <input
-                type="date"
+                type="text"
+                value="10.02.2025"
+                readOnly
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-hint-color)',
+                  fontSize: '16px',
+                  outline: 'none'
+                }}
+              />
+              <input
+                type="text"
+                value="11:00"
+                readOnly
+                style={{
+                  width: '80px',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-hint-color)',
+                  fontSize: '16px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Дата завершения */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '16px',
+              fontWeight: '500',
+              marginBottom: '8px',
+              color: 'var(--tg-text-color)'
+            }}>
+              Дата завершения:
+            </label>
+            <div style={{
+              display: 'flex',
+              gap: '12px'
+            }}>
+              <input
+                type="text"
                 value={surveyData.endDate}
                 onChange={(e) => handleSurveyDataChange('endDate', e.target.value)}
                 style={{
-                  width: '100%',
+                  flex: 1,
                   padding: '12px 16px',
                   borderRadius: '8px',
                   border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-bg-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
                   color: 'var(--tg-text-color)',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  outline: 'none'
+                }}
+              />
+              <input
+                type="text"
+                value={surveyData.endTime}
+                onChange={(e) => handleSurveyDataChange('endTime', e.target.value)}
+                style={{
+                  width: '80px',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  outline: 'none'
                 }}
               />
             </div>
+          </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                marginBottom: '8px'
-              }}>
-                Максимальное количество участников
-              </label>
-              <input
-                type="number"
-                value={surveyData.maxParticipants}
-                onChange={(e) => handleSurveyDataChange('maxParticipants', e.target.value)}
-                placeholder="Без ограничений"
+          {/* Мотивация */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '16px',
+              fontWeight: '500',
+              marginBottom: '8px',
+              color: 'var(--tg-text-color)'
+            }}>
+              Мотивация:
+            </label>
+            <div style={{
+              position: 'relative'
+            }}>
+              <select
+                value={surveyData.motivation}
+                onChange={(e) => handleSurveyDataChange('motivation', e.target.value)}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: '8px',
                   border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-bg-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
                   color: 'var(--tg-text-color)',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  outline: 'none',
+                  appearance: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="promo_code">Промокод на скидку</option>
+                <option value="stars">Звёзды Telegram</option>
+                <option value="gift">Подарок</option>
+                <option value="none">Без мотивации</option>
+              </select>
+              <ChevronDown 
+                size={20} 
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--tg-hint-color)',
+                  pointerEvents: 'none'
                 }}
               />
             </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '16px',
-                cursor: 'pointer'
-              }}>
-                <input
-                  type="checkbox"
-                  checked={surveyData.isAnonymous}
-                  onChange={(e) => handleSurveyDataChange('isAnonymous', e.target.checked)}
-                  style={{ marginRight: '12px' }}
-                />
-                Анонимные ответы
-              </label>
-            </div>
-
-            <div>
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '16px',
-                cursor: 'pointer'
-              }}>
-                <input
-                  type="checkbox"
-                  checked={surveyData.hasReward}
-                  onChange={(e) => handleSurveyDataChange('hasReward', e.target.checked)}
-                  style={{ marginRight: '12px' }}
-                />
-                Награда за участие
-              </label>
-            </div>
-
-            {surveyData.hasReward && (
-              <div style={{ marginTop: '16px', paddingLeft: '24px' }}>
-                <div style={{ marginBottom: '12px' }}>
-                  <select
-                    value={surveyData.rewardType}
-                    onChange={(e) => handleSurveyDataChange('rewardType', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'var(--tg-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '16px'
-                    }}
-                  >
-                    <option value="promo_code">Промокод</option>
-                    <option value="stars">Звёзды Telegram</option>
-                    <option value="custom">Другое</option>
-                  </select>
-                </div>
-                <input
-                  type="text"
-                  value={surveyData.rewardValue}
-                  onChange={(e) => handleSurveyDataChange('rewardValue', e.target.value)}
-                  placeholder="Значение награды"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    marginBottom: '12px'
-                  }}
-                />
-                <input
-                  type="text"
-                  value={surveyData.rewardDescription}
-                  onChange={(e) => handleSurveyDataChange('rewardDescription', e.target.value)}
-                  placeholder="Описание награды"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    fontSize: '16px'
-                  }}
-                />
-              </div>
-            )}
           </div>
         </div>
+      </div>
 
-        {/* Кнопки снизу */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          marginTop: '24px'
-        }}>
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            style={{ flex: 1 }}
-          >
-            Назад
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/survey/create/manual/questions')}
-            style={{ flex: 1 }}
-          >
-            Вперед
-          </Button>
-        </div>
+      {/* Фиксированные кнопки снизу */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '16px',
+        backgroundColor: 'var(--tg-bg-color)',
+        borderTop: '1px solid var(--tg-section-separator-color)',
+        display: 'flex',
+        gap: '12px'
+      }}>
+        <button
+          onClick={handleBack}
+          style={{
+            flex: 1,
+            backgroundColor: 'var(--tg-section-bg-color)',
+            color: 'var(--tg-text-color)',
+            border: '1px solid var(--tg-section-separator-color)',
+            borderRadius: '12px',
+            padding: '16px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          Назад
+        </button>
+        <button
+          onClick={handleNext}
+          style={{
+            flex: 1,
+            backgroundColor: '#007AFF',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '16px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          Вперед
+        </button>
       </div>
     </div>
   );

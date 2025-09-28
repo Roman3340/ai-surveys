@@ -1,24 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
-import TelegramEmoji from '../../components/ui/TelegramEmoji';
-import { Button } from '../../components/ui/Button';
 
 const AISurveyPage: React.FC = () => {
   const navigate = useNavigate();
   const { showConfirm } = useTelegram();
 
   const [formData, setFormData] = useState({
-    businessType: '',
-    topic: '',
+    businessSphere: '',
     targetAudience: '',
-    questionsCount: '5',
-    hasReward: false,
-    rewardType: 'promo_code' as 'promo_code' | 'stars' | 'custom',
-    rewardValue: '',
-    rewardDescription: ''
+    surveyGoal: '',
+    questionCount: '5',
+    questionTypes: [] as string[]
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -35,6 +30,15 @@ const AISurveyPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleQuestionTypeToggle = (type: string) => {
+    setFormData(prev => ({
+      ...prev,
+      questionTypes: prev.questionTypes.includes(type)
+        ? prev.questionTypes.filter(t => t !== type)
+        : [...prev.questionTypes, type]
+    }));
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     
@@ -49,21 +53,35 @@ const AISurveyPage: React.FC = () => {
     });
   };
 
-  const businessTypes = [
-    { value: 'restaurant', label: '🍕 Ресторан/Кафе', emoji: '🍕' },
-    { value: 'retail', label: '🛍️ Розничная торговля', emoji: '🛍️' },
-    { value: 'service', label: '🔧 Услуги', emoji: '🔧' },
-    { value: 'beauty', label: '💄 Красота/Здоровье', emoji: '💄' },
-    { value: 'education', label: '📚 Образование', emoji: '📚' },
-    { value: 'fitness', label: '💪 Фитнес/Спорт', emoji: '💪' },
-    { value: 'other', label: '🏢 Другое', emoji: '🏢' }
+  const businessSpheres = [
+    { value: 'cafe', label: 'Кафе' },
+    { value: 'online_shop', label: 'Онлайн-магазин' },
+    { value: 'fitness', label: 'Фитнес' },
+    { value: 'beauty', label: 'Красота' },
+    { value: 'education', label: 'Образование' },
+    { value: 'services', label: 'Услуги' },
+    { value: 'other', label: 'Другое' }
+  ];
+
+  const questionCounts = [
+    { value: '3', label: '3 вопроса' },
+    { value: '5', label: '5 вопросов (по умолчанию)' },
+    { value: '7', label: '7 вопросов' },
+    { value: '10', label: '10 вопросов' }
+  ];
+
+  const questionTypeOptions = [
+    { id: 'open', label: 'Открытые', description: 'Свободный ответ текстом' },
+    { id: 'closed', label: 'Закрытые', description: 'Выбор из вариантов' },
+    { id: 'scale', label: 'Шкала', description: 'Оценка от 1 до 5/10' }
   ];
 
   return (
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: 'var(--tg-bg-color)',
-      color: 'var(--tg-text-color)'
+      color: 'var(--tg-text-color)',
+      paddingBottom: '80px'
     }}>
       {/* Шапка */}
       <div style={{
@@ -106,72 +124,100 @@ const AISurveyPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', marginBottom: '32px' }}
         >
-          <TelegramEmoji emoji="🤖" size="large" />
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: '700',
-            margin: '16px 0 8px 0'
+          <div style={{
+            fontSize: '64px',
+            marginBottom: '16px',
+            animation: 'bounce-gentle 3s ease-in-out infinite'
           }}>
-            Создание с ИИ
-          </h2>
-          <p style={{
-            color: 'var(--tg-hint-color)',
-            fontSize: '16px',
-            margin: 0,
-            lineHeight: '1.4'
+            🤖
+          </div>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '8px'
           }}>
-            Расскажите о вашем бизнесе, и ИИ создаст идеальный опрос для вас
-          </p>
+            {/* Прогресс-бар */}
+            <div style={{
+              width: '280px',
+              height: '6px',
+              backgroundColor: 'var(--tg-section-separator-color)',
+              borderRadius: '3px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: '40%',
+                height: '100%',
+                backgroundColor: '#007AFF',
+                borderRadius: '3px'
+              }} />
+            </div>
+          </div>
         </motion.div>
 
         {/* Форма */}
         <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-          {/* Тип бизнеса */}
+          {/* Сфера бизнеса */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{
               display: 'block',
               fontSize: '16px',
               fontWeight: '500',
-              marginBottom: '12px'
+              marginBottom: '8px'
             }}>
-              Тип вашего бизнеса
+              Сфера бизнеса:
             </label>
-            <select
-              value={formData.businessType}
-              onChange={(e) => handleInputChange('businessType', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--tg-section-separator-color)',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px'
-              }}
-            >
-              <option value="">Выберите тип бизнеса</option>
-              {businessTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
+            <div style={{ position: 'relative' }}>
+              <select
+                value={formData.businessSphere}
+                onChange={(e) => handleInputChange('businessSphere', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  outline: 'none',
+                  appearance: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="">Выберите сферу</option>
+                {businessSpheres.map(sphere => (
+                  <option key={sphere.value} value={sphere.value}>
+                    {sphere.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown 
+                size={20} 
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--tg-hint-color)',
+                  pointerEvents: 'none'
+                }}
+              />
+            </div>
           </div>
 
-          {/* Тема опроса */}
+          {/* Целевая аудитория */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{
               display: 'block',
               fontSize: '16px',
               fontWeight: '500',
-              marginBottom: '12px'
+              marginBottom: '8px'
             }}>
-              О чём хотите узнать?
+              Целевая аудитория:
             </label>
             <textarea
-              value={formData.topic}
-              onChange={(e) => handleInputChange('topic', e.target.value)}
-              placeholder="Например: предпочтения клиентов в еде, оценка качества обслуживания, новые продукты..."
+              value={formData.targetAudience}
+              onChange={(e) => handleInputChange('targetAudience', e.target.value)}
+              placeholder="Кто будет отвечать (клиенты кафе, подписчики канала и т.д.)"
               rows={3}
               style={{
                 width: '100%',
@@ -181,26 +227,27 @@ const AISurveyPage: React.FC = () => {
                 backgroundColor: 'var(--tg-section-bg-color)',
                 color: 'var(--tg-text-color)',
                 fontSize: '16px',
-                resize: 'vertical'
+                resize: 'vertical',
+                outline: 'none'
               }}
             />
           </div>
 
-          {/* Целевая аудитория */}
+          {/* Цель опроса */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{
               display: 'block',
               fontSize: '16px',
               fontWeight: '500',
-              marginBottom: '12px'
+              marginBottom: '8px'
             }}>
-              Кто ваши клиенты?
+              Цель опроса:
             </label>
-            <input
-              type="text"
-              value={formData.targetAudience}
-              onChange={(e) => handleInputChange('targetAudience', e.target.value)}
-              placeholder="Например: молодые семьи, офисные работники, студенты..."
+            <textarea
+              value={formData.surveyGoal}
+              onChange={(e) => handleInputChange('surveyGoal', e.target.value)}
+              placeholder="Что нужно узнать (причины отказа, удовлетворённость сервисом)"
+              rows={3}
               style={{
                 width: '100%',
                 padding: '12px 16px',
@@ -208,7 +255,9 @@ const AISurveyPage: React.FC = () => {
                 border: '1px solid var(--tg-section-separator-color)',
                 backgroundColor: 'var(--tg-section-bg-color)',
                 color: 'var(--tg-text-color)',
-                fontSize: '16px'
+                fontSize: '16px',
+                resize: 'vertical',
+                outline: 'none'
               }}
             />
           </div>
@@ -219,182 +268,167 @@ const AISurveyPage: React.FC = () => {
               display: 'block',
               fontSize: '16px',
               fontWeight: '500',
-              marginBottom: '12px'
+              marginBottom: '8px'
             }}>
-              Количество вопросов
+              Желаемое количество вопросов:
             </label>
-            <select
-              value={formData.questionsCount}
-              onChange={(e) => handleInputChange('questionsCount', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--tg-section-separator-color)',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px'
-              }}
-            >
-              <option value="3">3 вопроса (быстро)</option>
-              <option value="5">5 вопросов (оптимально)</option>
-              <option value="8">8 вопросов (подробно)</option>
-              <option value="10">10 вопросов (максимум)</option>
-            </select>
+            <div style={{ position: 'relative' }}>
+              <select
+                value={formData.questionCount}
+                onChange={(e) => handleInputChange('questionCount', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  outline: 'none',
+                  appearance: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {questionCounts.map(count => (
+                  <option key={count.value} value={count.value}>
+                    {count.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown 
+                size={20} 
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--tg-hint-color)',
+                  pointerEvents: 'none'
+                }}
+              />
+            </div>
           </div>
 
-          {/* Награда */}
-          <div style={{
-            backgroundColor: 'var(--tg-section-bg-color)',
-            padding: '20px',
-            borderRadius: '12px',
-            marginBottom: '24px'
-          }}>
+          {/* Типы вопросов (опционально) */}
+          <div style={{ marginBottom: '24px' }}>
             <label style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: 'block',
               fontSize: '16px',
               fontWeight: '500',
-              marginBottom: '16px',
-              cursor: 'pointer'
+              marginBottom: '12px'
             }}>
-              <input
-                type="checkbox"
-                checked={formData.hasReward}
-                onChange={(e) => handleInputChange('hasReward', e.target.checked)}
-                style={{ marginRight: '12px' }}
-              />
-              <TelegramEmoji emoji="🎁" size="small" />
-              <span style={{ marginLeft: '8px' }}>Добавить награду за участие</span>
+              Типы предпочтительных вопросов (опционально):
             </label>
-
-            {formData.hasReward && (
-              <div>
-                <div style={{ marginBottom: '12px' }}>
-                  <select
-                    value={formData.rewardType}
-                    onChange={(e) => handleInputChange('rewardType', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'var(--tg-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '16px'
-                    }}
-                  >
-                    <option value="promo_code">Промокод</option>
-                    <option value="stars">Звёзды Telegram</option>
-                    <option value="custom">Другое</option>
-                  </select>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}>
+              {questionTypeOptions.map(option => (
+                <div
+                  key={option.id}
+                  onClick={() => handleQuestionTypeToggle(option.id)}
+                  style={{
+                    backgroundColor: 'var(--tg-section-bg-color)',
+                    border: `1px solid ${formData.questionTypes.includes(option.id) ? '#007AFF' : 'var(--tg-section-separator-color)'}`,
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div>
+                    <div style={{
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      marginBottom: '2px'
+                    }}>
+                      {option.label}
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      color: 'var(--tg-hint-color)'
+                    }}>
+                      {option.description}
+                    </div>
+                  </div>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    border: `2px solid ${formData.questionTypes.includes(option.id) ? '#007AFF' : 'var(--tg-section-separator-color)'}`,
+                    backgroundColor: formData.questionTypes.includes(option.id) ? '#007AFF' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {formData.questionTypes.includes(option.id) && (
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%'
+                      }} />
+                    )}
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  value={formData.rewardValue}
-                  onChange={(e) => handleInputChange('rewardValue', e.target.value)}
-                  placeholder="Значение награды (например: 10% скидка)"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    marginBottom: '12px'
-                  }}
-                />
-                <input
-                  type="text"
-                  value={formData.rewardDescription}
-                  onChange={(e) => handleInputChange('rewardDescription', e.target.value)}
-                  placeholder="Описание награды"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    fontSize: '16px'
-                  }}
-                />
-              </div>
-            )}
+              ))}
+            </div>
           </div>
-
-          {/* Кнопка генерации */}
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleGenerate}
-            disabled={!formData.businessType || !formData.topic || isGenerating}
-            style={{
-              width: '100%',
-              marginBottom: '16px'
-            }}
-          >
-            {isGenerating ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Sparkles 
-                  size={20} 
-                  style={{ 
-                    marginRight: '8px',
-                    animation: 'spin 1s linear infinite'
-                  }} 
-                />
-                ИИ создаёт опрос...
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <TelegramEmoji emoji="✨" size="small" />
-                <span style={{ marginLeft: '8px' }}>Создать с ИИ</span>
-              </div>
-            )}
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            style={{ width: '100%' }}
-          >
-            Назад
-          </Button>
         </div>
+      </div>
 
-        {/* Подсказка */}
-        <div style={{
-          textAlign: 'center',
-          marginTop: '24px',
-          padding: '16px',
-          backgroundColor: 'var(--tg-section-bg-color)',
-          borderRadius: '12px',
-          border: '1px solid var(--tg-section-separator-color)'
-        }}>
-          <TelegramEmoji emoji="💡" size="small" />
-          <p style={{
-            color: 'var(--tg-hint-color)',
-            fontSize: '14px',
-            margin: '8px 0 0 0',
-            lineHeight: '1.4'
-          }}>
-            Чем подробнее вы опишете ваш бизнес и цели, тем точнее ИИ создаст опрос
-          </p>
-        </div>
+      {/* Фиксированные кнопки снизу */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '16px',
+        backgroundColor: 'var(--tg-bg-color)',
+        borderTop: '1px solid var(--tg-section-separator-color)',
+        display: 'flex',
+        gap: '12px'
+      }}>
+        <button
+          onClick={handleBack}
+          style={{
+            flex: 1,
+            backgroundColor: 'var(--tg-section-bg-color)',
+            color: 'var(--tg-text-color)',
+            border: '1px solid var(--tg-section-separator-color)',
+            borderRadius: '12px',
+            padding: '16px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          Назад
+        </button>
+        <button
+          onClick={handleGenerate}
+          disabled={!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal || isGenerating}
+          style={{
+            flex: 1,
+            backgroundColor: (!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal) ? 'var(--tg-hint-color)' : '#007AFF',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '16px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: (!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal) ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {isGenerating ? 'Генерируем...' : 'Сгенерировать'}
+        </button>
       </div>
     </div>
   );
 };
-
-// CSS для анимации спиннера
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(style);
 
 export default AISurveyPage;

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Monitor, Settings, HelpCircle } from 'lucide-react';
+import { Settings, HelpCircle, BarChart3, Users } from 'lucide-react';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useAppStore } from '../../store/useAppStore';
-import { isTelegramEnvironment } from '../../utils/mockTelegram';
+// import { isTelegramEnvironment } from '../../utils/mockTelegram'; // Не используется
 import type { Survey } from '../../types';
 
 export const HomePage = () => {
@@ -22,7 +22,7 @@ export const HomePage = () => {
   useEffect(() => {
     if (telegramUser && !user) {
       const newUser = {
-        id: Date.now(), // Временно, пока нет бэкенда
+        id: Date.now(),
         telegramId: telegramUser.id,
         firstName: telegramUser.firstName,
         lastName: telegramUser.lastName,
@@ -40,334 +40,415 @@ export const HomePage = () => {
 
   const handleViewAnalytics = (survey: Survey) => {
     hapticFeedback?.light();
-    // TODO: Навигация к аналитике
     console.log('Просмотр аналитики для:', survey.title);
   };
 
   const handleViewTopSurveys = () => {
     hapticFeedback?.light();
-    // TODO: Навигация к топу опросов
     console.log('Топ опросов');
   };
 
   const displayedSurveys = activeTab === 'created' ? userSurveys : participatedSurveys;
-  const recentSurveys = displayedSurveys.slice(0, 3);
+
+  const tabs = [
+    { id: 'created' as const, label: 'Созданные' },
+    { id: 'participated' as const, label: 'Где участвую?' }
+  ];
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--tg-bg-color)' }}>
-      {/* Заголовок */}
-      <div style={{ 
-        backgroundColor: 'var(--tg-bg-color)', 
-        padding: '32px 16px 24px 16px'
+    <div style={{
+      backgroundColor: 'var(--tg-bg-color)',
+      color: 'var(--tg-text-color)',
+      minHeight: '100vh',
+      padding: '0'
+    }}>
+      {/* Шапка с приветствием */}
+      <div style={{
+        padding: '24px 16px 16px 16px'
       }}>
-        <h1 style={{ 
-          fontSize: '28px', 
-          fontWeight: 'bold', 
-          color: 'var(--tg-text-color)',
-          margin: '0 0 4px 0'
+        <h1 style={{
+          fontSize: '24px',
+          fontWeight: '600',
+          margin: 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
         }}>
-          👋 Привет, {user?.firstName || 'Пользователь'}!
+          👋 Привет, {user?.firstName || telegramUser?.firstName || 'Роман'}!
         </h1>
-        <p style={{ 
-          fontSize: '15px', 
-          color: 'var(--tg-hint-color)',
-          margin: '0 0 24px 0'
-        }}>
-          Создавайте опросы и получайте ценные инсайты
-        </p>
-        {/* Индикатор среды разработки */}
-        {!isTelegramEnvironment() && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            marginBottom: '16px',
-            fontSize: '12px',
-            color: '#8e8e93'
-          }}>
-            <Monitor style={{ width: '12px', height: '12px' }} />
-            Режим разработки в браузере
-            <span style={{ color: '#8b5cf6' }}>• DevTools справа внизу</span>
-          </div>
-        )}
-        
-        {/* Главная кнопка создания в шапке */}
+      </div>
+
+      {/* Главная кнопка "Новый опрос" */}
+      <div style={{ padding: '0 16px' }}>
         <button
           onClick={handleCreateSurvey}
           style={{
             width: '100%',
-            backgroundColor: 'var(--tg-button-color)',
-            color: 'var(--tg-button-text-color)',
+            backgroundColor: '#007AFF',
+            color: 'white',
             border: 'none',
             borderRadius: '12px',
-            padding: '16px',
-            fontSize: '17px',
+            padding: '16px 24px',
+            fontSize: '16px',
             fontWeight: '600',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px'
+            gap: '8px',
+            transition: 'transform 0.1s ease',
+            marginBottom: '24px'
           }}
+          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           ⚡ Новый опрос
         </button>
       </div>
 
-      {/* Основной контент */}
-      <main style={{ padding: '0 16px 16px 16px' }}>
-
-        {/* Дополнительные действия */}
-        <button
-          onClick={handleViewTopSurveys}
-          style={{
-            width: '100%',
-            backgroundColor: 'var(--tg-section-bg-color)',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '24px',
+      {/* Информационные блоки */}
+      <div style={{
+        padding: '0 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        marginBottom: '24px'
+      }}>
+        {/* Топ опросов */}
+        <div style={{
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          padding: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          cursor: 'pointer'
+        }}
+        onClick={handleViewTopSurveys}>
+          <div style={{
+            fontSize: '24px',
+            width: '40px',
+            height: '40px',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
-            textAlign: 'left',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={{ fontSize: '28px' }}>⚡</div>
+            justifyContent: 'center',
+            backgroundColor: '#FFD60A',
+            borderRadius: '10px'
+          }}>
+            ⚡
+          </div>
           <div style={{ flex: 1 }}>
-            <h3 style={{ 
-              fontSize: '17px',
+            <div style={{
+              fontSize: '16px',
               fontWeight: '600',
-              color: 'var(--tg-text-color)',
-              margin: '0 0 2px 0'
+              marginBottom: '2px'
             }}>
               Топ опросов
-            </h3>
-            <p style={{ 
-              fontSize: '13px',
-              color: 'var(--tg-hint-color)',
-              margin: 0
+            </div>
+            <div style={{
+              fontSize: '14px',
+              color: 'var(--tg-hint-color)'
             }}>
               Популярные опросы сообщества
-            </p>
+            </div>
           </div>
-        </button>
+        </div>
 
-        {/* Мои опросы */}
-        <div>
+        {/* База знаний */}
+        <div style={{
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          padding: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          cursor: 'pointer'
+        }}>
           <div style={{
+            fontSize: '24px',
+            width: '40px',
+            height: '40px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '12px',
-            paddingLeft: '4px'
+            justifyContent: 'center',
+            backgroundColor: '#34C759',
+            borderRadius: '10px'
           }}>
-            <h2 style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              color: 'var(--tg-text-color)',
-              margin: 0
-            }}>
-              📊 Опросы
-            </h2>
-            {displayedSurveys.length > 3 && (
-              <button style={{
-                color: 'var(--tg-link-color)',
-                fontSize: '15px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}>
-                Все
-              </button>
-            )}
+            📚
           </div>
-
-          {/* Вкладки */}
-          <AnimatedTabs
-            tabs={[
-              { id: 'created', label: 'Созданные' },
-              { id: 'participated', label: 'Где участвую?' }
-            ]}
-            activeTab={activeTab}
-            onTabChange={(tabId) => {
-              setActiveTab(tabId as 'created' | 'participated');
-              hapticFeedback.selection();
-            }}
-            style={{ marginBottom: '16px' }}
-          />
-
-          {recentSurveys.length === 0 ? (
+          <div style={{ flex: 1 }}>
             <div style={{
-              backgroundColor: 'var(--tg-section-bg-color)',
-              borderRadius: '12px',
-              padding: '32px 24px',
-              textAlign: 'center'
+              fontSize: '16px',
+              fontWeight: '600',
+              marginBottom: '2px'
             }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📋</div>
-              <h3 style={{
-                fontSize: '17px',
-                fontWeight: '600',
-                color: 'var(--tg-text-color)',
-                margin: '0 0 8px 0'
-              }}>
-                {activeTab === 'created' ? 'Пока нет созданных опросов' : 'Пока что нет активных опросов'}
-              </h3>
-              <p style={{
-                fontSize: '13px',
-                color: 'var(--tg-hint-color)',
-                margin: '0 0 24px 0',
-                lineHeight: '18px'
-              }}>
-                {activeTab === 'created' 
-                  ? 'Создайте свой первый опрос, чтобы начать собирать обратную связь'
-                  : 'Участвуйте в опросах других пользователей'
-                }
-              </p>
-              <button 
-                onClick={handleCreateSurvey} 
-                style={{
-                  backgroundColor: 'var(--tg-button-color)',
-                  color: 'var(--tg-button-text-color)',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '12px 24px',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <Plus style={{ width: '16px', height: '16px' }} />
-                Создать опрос
-              </button>
+              База знаний
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {recentSurveys.map((survey) => (
-                <button
+            <div style={{
+              fontSize: '14px',
+              color: 'var(--tg-hint-color)'
+            }}>
+              Как собрать качественную обратную связь
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Секция "Опросы" с табами */}
+      <div style={{ padding: '0 16px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '16px'
+        }}>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: '600',
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            📊 Опросы
+          </h2>
+          <button style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--tg-link-color)',
+            fontSize: '16px',
+            cursor: 'pointer',
+            fontWeight: '500'
+          }}>
+            Все
+          </button>
+        </div>
+
+        {/* Табы */}
+        <AnimatedTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={(tabId: string) => setActiveTab(tabId as 'created' | 'participated')}
+        />
+
+        {/* Список опросов */}
+        <div style={{ marginTop: '16px' }}>
+          {displayedSurveys.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {displayedSurveys.slice(0, 3).map((survey) => (
+                <div
                   key={survey.id}
                   onClick={() => handleViewAnalytics(survey)}
                   style={{
                     backgroundColor: 'var(--tg-section-bg-color)',
-                    border: 'none',
                     borderRadius: '12px',
                     padding: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    textAlign: 'left',
                     cursor: 'pointer',
-                    width: '100%'
+                    transition: 'transform 0.1s ease'
                   }}
+                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                    <div style={{ fontSize: '24px' }}>📊</div>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{
-                        fontSize: '15px',
-                        fontWeight: '600',
-                        color: 'var(--tg-text-color)',
-                        margin: '0 0 4px 0'
-                      }}>
-                        {survey.title}
-                      </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{
-                          backgroundColor: survey.isPublished ? '#e8f5e8' : '#fff8e1',
-                          color: survey.isPublished ? '#2e7d32' : '#f57c00',
-                          fontSize: '11px',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          fontWeight: '500'
-                        }}>
-                          {survey.isPublished ? 'Завершен' : 'Черновик'}
-                        </span>
-                        <span style={{
-                          fontSize: '11px',
-                          color: 'var(--tg-hint-color)'
-                        }}>
-                          {survey.responses?.length || 0} ответов
-                        </span>
-                      </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '8px'
+                  }}>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      margin: 0,
+                      flex: 1,
+                      lineHeight: '1.3'
+                    }}>
+                      {survey.title}
+                    </h3>
+                    <div style={{
+                      fontSize: '14px',
+                      color: 'var(--tg-hint-color)',
+                      marginLeft: '12px',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {formatDate(survey.createdAt)}
                     </div>
                   </div>
-                  <span style={{
-                    color: 'var(--tg-link-color)',
-                    fontSize: '13px',
-                    fontWeight: '400'
+                  
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px',
+                    marginTop: '8px'
                   }}>
-                    Подробнее
-                  </span>
-                </button>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '14px',
+                      color: 'var(--tg-hint-color)'
+                    }}>
+                      <Users size={14} />
+                      {survey.responses?.length || 0}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '14px',
+                      color: 'var(--tg-hint-color)'
+                    }}>
+                      <BarChart3 size={14} />
+                      {survey.questions.length} вопр.
+                    </div>
+                    {survey.isPublished ? (
+                      <div style={{
+                        backgroundColor: '#34C759',
+                        color: 'white',
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontWeight: '500'
+                      }}>
+                        Активен
+                      </div>
+                    ) : (
+                      <div style={{
+                        backgroundColor: 'var(--tg-hint-color)',
+                        color: 'white',
+                        fontSize: '12px',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontWeight: '500'
+                      }}>
+                        Черновик
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
+            </div>
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              color: 'var(--tg-hint-color)'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                {activeTab === 'created' ? '📝' : '📋'}
+              </div>
+              <p style={{
+                fontSize: '16px',
+                margin: '0 0 20px 0',
+                lineHeight: '1.4'
+              }}>
+                {activeTab === 'created' 
+                  ? 'Создайте свой первый опрос'
+                  : 'Пока нет опросов для участия'
+                }
+              </p>
+              {activeTab === 'created' && (
+                <button 
+                  onClick={handleCreateSurvey} 
+                  style={{
+                    backgroundColor: 'var(--tg-button-color)',
+                    color: 'var(--tg-button-text-color)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '12px 24px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  📊 Создать опрос
+                </button>
+              )}
             </div>
           )}
         </div>
+      </div>
 
-        {/* Нижняя панель */}
+      {/* Подробнее */}
+      {displayedSurveys.length > 3 && (
         <div style={{
-          display: 'flex',
-          gap: '8px',
-          marginTop: '32px',
-          paddingBottom: '16px'
+          padding: '16px',
+          textAlign: 'center'
         }}>
-          <button 
-            onClick={() => {
-              hapticFeedback?.light();
-              console.log('Настройки');
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'var(--tg-section-bg-color)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: '600',
-              color: 'var(--tg-text-color)'
-            }}
-          >
-            <Settings style={{ width: '20px', height: '20px' }} />
-            Настройки
-          </button>
-          
-          <button 
-            onClick={() => {
-              hapticFeedback?.light();
-              console.log('Поддержка');
-            }}
-            style={{
-              flex: 1,
-              backgroundColor: 'var(--tg-section-bg-color)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: '600',
-              color: 'var(--tg-text-color)'
-            }}
-          >
-            <HelpCircle style={{ width: '20px', height: '20px' }} />
-            Поддержка
+          <button style={{
+            backgroundColor: 'var(--tg-section-bg-color)',
+            color: 'var(--tg-text-color)',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '12px 24px',
+            fontSize: '16px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            width: '100%'
+          }}>
+            Подробнее
           </button>
         </div>
-      </main>
+      )}
+
+      {/* Нижняя панель с кнопками */}
+      <div style={{
+        padding: '16px',
+        marginTop: '20px',
+        borderTop: '1px solid var(--tg-section-separator-color)',
+        display: 'flex',
+        gap: '12px'
+      }}>
+        <button style={{
+          flex: 1,
+          backgroundColor: 'var(--tg-section-bg-color)',
+          color: 'var(--tg-text-color)',
+          border: 'none',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          fontSize: '16px',
+          fontWeight: '500',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
+        }}>
+          <Settings size={18} />
+          Настройки
+        </button>
+        <button style={{
+          flex: 1,
+          backgroundColor: 'var(--tg-section-bg-color)',
+          color: 'var(--tg-text-color)',
+          border: 'none',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          fontSize: '16px',
+          fontWeight: '500',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
+        }}>
+          <HelpCircle size={18} />
+          Поддержка
+        </button>
+      </div>
     </div>
   );
 };

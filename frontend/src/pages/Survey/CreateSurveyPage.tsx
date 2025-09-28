@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
-import TelegramEmoji from '../../components/ui/TelegramEmoji';
-import { Button } from '../../components/ui/Button';
+import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
@@ -64,13 +63,13 @@ const CreateSurveyPage: React.FC = () => {
           fontWeight: '600',
           margin: 0
         }}>
-          Создать опрос
+          Как создадим опрос?
         </h1>
       </div>
 
       {/* Основной контент */}
       <div style={{ padding: '24px 16px' }}>
-        {/* Заголовок с анимированным эмодзи */}
+        {/* Заголовок с эмодзи */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -80,22 +79,32 @@ const CreateSurveyPage: React.FC = () => {
             marginBottom: '40px'
           }}
         >
-          <TelegramEmoji emoji="💡" size="large" />
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: '700',
-            margin: '16px 0 8px 0'
+          <RealTelegramEmoji 
+            emoji="💡" 
+            size="large" 
+            onClick={() => console.log('💡 clicked!')}
+          />
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '24px'
           }}>
-            Тип опроса
-          </h2>
-          <p style={{
-            color: 'var(--tg-hint-color)',
-            fontSize: '16px',
-            margin: 0,
-            lineHeight: '1.4'
-          }}>
-            Выберите способ создания опроса. Обратите внимание что разные типы предусматривают различный функционал.
-          </p>
+            {/* Прогресс-бар */}
+            <div style={{
+              width: '280px',
+              height: '6px',
+              backgroundColor: 'var(--tg-section-separator-color)',
+              borderRadius: '3px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: '20%',
+                height: '100%',
+                backgroundColor: '#007AFF',
+                borderRadius: '3px'
+              }} />
+            </div>
+          </div>
         </motion.div>
 
         {/* Варианты создания */}
@@ -106,142 +115,150 @@ const CreateSurveyPage: React.FC = () => {
           maxWidth: '400px',
           margin: '0 auto'
         }}>
-          {/* Стандартный (ручной) */}
+          {/* Вручную */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <Button
-              variant="outline"
-              size="lg"
+            <div
               onClick={handleCreateManual}
               style={{
-                width: '100%',
-                padding: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                textAlign: 'left',
-                height: 'auto',
                 backgroundColor: 'var(--tg-section-bg-color)',
-                border: '1px solid var(--tg-section-separator-color)',
-                borderRadius: '12px'
+                borderRadius: '12px',
+                padding: '20px',
+                cursor: 'pointer',
+                transition: 'transform 0.1s ease',
+                border: '2px solid #007AFF' // Активный вариант
               }}
+              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <div style={{ marginRight: '16px' }}>
-                <TelegramEmoji emoji="📝" size="medium" />
-              </div>
-              <div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '16px'
+              }}>
                 <div style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  marginBottom: '4px',
-                  color: 'var(--tg-text-color)'
+                  fontSize: '24px',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#FFD60A',
+                  borderRadius: '10px',
+                  marginTop: '2px'
                 }}>
-                  Стандартный
+                  👨‍💻
                 </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: 'var(--tg-hint-color)',
-                  lineHeight: '1.3'
-                }}>
-                  Пользователям необходимо подписаться на каналы для участия
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    marginBottom: '4px',
+                    color: 'var(--tg-text-color)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    Вручную
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      border: '2px solid #007AFF',
+                      backgroundColor: '#007AFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%'
+                      }} />
+                    </div>
+                  </div>
+                  <div style={{
+                    fontSize: '14px',
+                    color: 'var(--tg-hint-color)',
+                    lineHeight: '1.3'
+                  }}>
+                    Самостоятельно придумаю концепцию опроса и все вопросы
+                  </div>
                 </div>
               </div>
-            </Button>
+            </div>
           </motion.div>
 
-          {/* За бусты */}
+          {/* При помощи ИИ */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Button
-              variant="outline"
-              size="lg"
+            <div
               onClick={handleCreateAI}
               style={{
-                width: '100%',
-                padding: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                textAlign: 'left',
-                height: 'auto',
                 backgroundColor: 'var(--tg-section-bg-color)',
+                borderRadius: '12px',
+                padding: '20px',
+                cursor: 'pointer',
+                transition: 'transform 0.1s ease',
                 border: '1px solid var(--tg-section-separator-color)',
-                borderRadius: '12px'
+                opacity: 0.6
               }}
             >
-              <div style={{ marginRight: '16px' }}>
-                <TelegramEmoji emoji="⚡" size="medium" />
-              </div>
-              <div>
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  marginBottom: '4px',
-                  color: 'var(--tg-text-color)'
-                }}>
-                  За бусты
-                </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: 'var(--tg-hint-color)',
-                  lineHeight: '1.3'
-                }}>
-                  Пользователям необходимо отдать буст для участия
-                </div>
-              </div>
-            </Button>
-          </motion.div>
-
-          {/* За приглашения */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={handleCreateAI}
-              style={{
-                width: '100%',
-                padding: '20px',
+              <div style={{
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                textAlign: 'left',
-                height: 'auto',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                border: '1px solid var(--tg-section-separator-color)',
-                borderRadius: '12px'
-              }}
-            >
-              <div style={{ marginRight: '16px' }}>
-                <TelegramEmoji emoji="👥" size="medium" />
-              </div>
-              <div>
+                alignItems: 'flex-start',
+                gap: '16px'
+              }}>
                 <div style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  marginBottom: '4px',
-                  color: 'var(--tg-text-color)'
+                  fontSize: '24px',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#8E8E93',
+                  borderRadius: '10px',
+                  marginTop: '2px'
                 }}>
-                  За приглашения
+                  🤖
                 </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: 'var(--tg-hint-color)',
-                  lineHeight: '1.3'
-                }}>
-                  Пользователям необходимо пригласить друзей
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    marginBottom: '4px',
+                    color: 'var(--tg-hint-color)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    При помощи искусственного интеллекта
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      border: '2px solid var(--tg-section-separator-color)',
+                      backgroundColor: 'transparent'
+                    }} />
+                  </div>
+                  <div style={{
+                    fontSize: '14px',
+                    color: 'var(--tg-hint-color)',
+                    lineHeight: '1.3'
+                  }}>
+                    Выберу ЦА из списка и опишу кратко желания - остальное сделает нейросеть
+                  </div>
                 </div>
               </div>
-            </Button>
+            </div>
           </motion.div>
         </div>
 
@@ -268,9 +285,40 @@ const CreateSurveyPage: React.FC = () => {
             Выберите тип опроса. Обратите внимание что разные типы предусматривают различный функционал.
           </p>
         </motion.div>
+
+        {/* Кнопка "Вперед" */}
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '16px',
+          backgroundColor: 'var(--tg-bg-color)',
+          borderTop: '1px solid var(--tg-section-separator-color)'
+        }}>
+          <button
+            onClick={handleCreateManual} // Пока только ручное создание активно
+            style={{
+              width: '100%',
+              backgroundColor: '#007AFF',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '16px 24px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            Вперед
+          </button>
+        </div>
       </div>
     </div>
   );
 };
+
+// Временная переменная для демонстрации - пока только ручное создание активно
+// const activeOption = 'manual';
 
 export default CreateSurveyPage;
