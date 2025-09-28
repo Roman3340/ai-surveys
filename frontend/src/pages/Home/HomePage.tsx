@@ -147,6 +147,7 @@ export const HomePage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
+            marginTop: '15px',
             transition: 'transform 0.1s ease',
             marginBottom: '24px'
           }}

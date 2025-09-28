@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, Trash2, Image, GripVertical, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Image, GripVertical, ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
 import type { QuestionType } from '../../types';
@@ -25,7 +25,7 @@ interface Question {
 
 const QuestionBuilder: React.FC = () => {
   const navigate = useNavigate();
-  const { showConfirm, hapticFeedback } = useTelegram();
+  const { hapticFeedback, backButton } = useTelegram();
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
@@ -43,20 +43,6 @@ const QuestionBuilder: React.FC = () => {
     { value: 'number', label: 'Число', icon: '🔢' }
   ];
 
-  const handleBack = () => {
-    if (questions.length > 0) {
-      showConfirm('Все вопросы будут удалены. Вы уверены?').then((confirmed: boolean) => {
-        if (confirmed) {
-          navigate('/survey/create/manual', { replace: true });
-        }
-      }).catch(() => {
-        // Если showConfirm не работает, просто переходим
-        navigate('/survey/create/manual', { replace: true });
-      });
-    } else {
-      navigate('/survey/create/manual', { replace: true });
-    }
-  };
 
   const addQuestion = () => {
     hapticFeedback?.light();
@@ -157,6 +143,33 @@ const QuestionBuilder: React.FC = () => {
     setTimeout(() => setIsKeyboardActive(false), 300);
   };
 
+  // Настройка нативной кнопки назад Telegram
+  useEffect(() => {
+    const handleBackClick = () => {
+      if (questions.length > 0) {
+        try {
+          const confirmed = window.confirm('Все вопросы будут удалены. Вы уверены?');
+          if (confirmed) {
+            navigate('/survey/create/manual', { replace: true });
+          }
+        } catch (error) {
+          console.error('Error with confirm dialog:', error);
+          navigate('/survey/create/manual', { replace: true });
+        }
+      } else {
+        navigate('/survey/create/manual', { replace: true });
+      }
+    };
+
+    backButton.show();
+    backButton.onClick(handleBackClick);
+
+    return () => {
+      backButton.hide();
+      backButton.offClick(handleBackClick);
+    };
+  }, [backButton, navigate, questions.length]);
+
   const handleImageUpload = (questionId: string) => {
     // Создаем скрытый input для выбора файла
     const input = document.createElement('input');
@@ -218,28 +231,29 @@ const QuestionBuilder: React.FC = () => {
             }}
           />
           <div style={{ flex: 1 }}>
-            <input
-              type="text"
-              value={question.title}
-              onChange={(e) => updateQuestion(question.id, { title: e.target.value })}
-              onFocus={() => {
-                setEditingQuestion(question.id);
-                handleInputFocus();
-              }}
-              onBlur={handleInputBlur}
-              placeholder="Вопрос"
-              style={{
-                width: '100%',
-                fontSize: '16px',
-                fontWeight: '500',
-                padding: '12px 0',
-                border: 'none',
-                borderBottom: '2px solid var(--tg-section-separator-color)',
-                backgroundColor: 'transparent',
-                color: 'var(--tg-text-color)',
-                outline: 'none'
-              }}
-            />
+             <input
+               type="text"
+               value={question.title}
+               onChange={(e) => updateQuestion(question.id, { title: e.target.value })}
+               onFocus={() => {
+                 setEditingQuestion(question.id);
+                 handleInputFocus();
+               }}
+               onBlur={handleInputBlur}
+               placeholder="Вопрос"
+               enterKeyHint="done"
+               style={{
+                 width: '100%',
+                 fontSize: '16px',
+                 fontWeight: '500',
+                 padding: '12px 0',
+                 border: 'none',
+                 borderBottom: '2px solid var(--tg-section-separator-color)',
+                 backgroundColor: 'transparent',
+                 color: 'var(--tg-text-color)',
+                 outline: 'none'
+               }}
+             />
             
             {/* Описание вопроса */}
             <input
@@ -249,6 +263,7 @@ const QuestionBuilder: React.FC = () => {
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               placeholder="Описание (необязательно)"
+              enterKeyHint="done"
               style={{
                 width: '100%',
                 fontSize: '14px',
@@ -411,24 +426,25 @@ const QuestionBuilder: React.FC = () => {
                     border: '2px solid var(--tg-section-separator-color)',
                     backgroundColor: 'var(--tg-section-bg-color)'
                   }} />
-                  <input
-                    type="text"
-                    value={option}
-                    onChange={(e) => updateOption(question.id, index, e.target.value)}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    placeholder={`Вариант ${index + 1}`}
-                    style={{
-                      flex: 1,
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'var(--tg-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '14px',
-                      outline: 'none'
-                    }}
-                  />
+                   <input
+                     type="text"
+                     value={option}
+                     onChange={(e) => updateOption(question.id, index, e.target.value)}
+                     onFocus={handleInputFocus}
+                     onBlur={handleInputBlur}
+                     placeholder={`Вариант ${index + 1}`}
+                     enterKeyHint="done"
+                     style={{
+                       flex: 1,
+                       padding: '8px 12px',
+                       borderRadius: '6px',
+                       border: '1px solid var(--tg-section-separator-color)',
+                       backgroundColor: 'var(--tg-bg-color)',
+                       color: 'var(--tg-text-color)',
+                       fontSize: '14px',
+                       outline: 'none'
+                     }}
+                   />
                   {question.options && question.options.length > 1 && (
                     <button
                       onClick={() => removeOption(question.id, index)}
@@ -600,39 +616,26 @@ const QuestionBuilder: React.FC = () => {
       }}
       className={isKeyboardActive ? 'keyboard-active' : ''}
     >
-      {/* Шапка */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '16px',
-        borderBottom: '1px solid var(--tg-section-separator-color)',
-        backgroundColor: 'var(--tg-bg-color)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10
-      }}>
-        <button
-          onClick={handleBack}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--tg-button-color)',
-            padding: '8px',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <h1 style={{
-          marginLeft: '12px',
-          fontSize: '20px',
-          fontWeight: '600',
-          margin: 0
-        }}>
-          Создание вопросов
-        </h1>
-      </div>
+       {/* Шапка */}
+       <div style={{
+         display: 'flex',
+         alignItems: 'center',
+         justifyContent: 'center',
+         padding: '16px',
+         borderBottom: '1px solid var(--tg-section-separator-color)',
+         backgroundColor: 'var(--tg-bg-color)',
+         position: 'sticky',
+         top: 0,
+         zIndex: 10
+       }}>
+         <h1 style={{
+           fontSize: '20px',
+           fontWeight: '600',
+           margin: 0
+         }}>
+           Создание вопросов
+         </h1>
+       </div>
 
       <div style={{ padding: '24px 16px' }} className="form-container">
         {/* Заголовок с прогрессом */}
@@ -732,87 +735,39 @@ const QuestionBuilder: React.FC = () => {
         )}
       </div>
 
-      {/* Кнопка закрытия клавиатуры */}
-      {isKeyboardActive && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          right: '16px',
-          zIndex: 1000,
-          paddingTop: '60px'
-        }}>
-          <button
-            onClick={() => {
-              (document.activeElement as HTMLElement)?.blur();
-              setIsKeyboardActive(false);
-            }}
-            style={{
-              backgroundColor: 'var(--tg-button-color)',
-              color: 'var(--tg-button-text-color)',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-            }}
-          >
-            Готово
-          </button>
-        </div>
-      )}
 
-      {/* Фиксированные кнопки снизу */}
-      {questions.length > 0 && (
-        <div 
-          className="fixed-buttons"
-          style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: '16px',
-            backgroundColor: 'var(--tg-bg-color)',
-            borderTop: '1px solid var(--tg-section-separator-color)',
-            display: 'flex',
-            gap: '12px'
-          }}
-        >
-          <button
-            onClick={handleBack}
-            style={{
-              flex: 1,
-              backgroundColor: 'var(--tg-section-bg-color)',
-              color: 'var(--tg-text-color)',
-              border: '1px solid var(--tg-section-separator-color)',
-              borderRadius: '12px',
-              padding: '16px 24px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            Назад
-          </button>
-          <button
-            onClick={handlePreview}
-            style={{
-              flex: 1,
-              backgroundColor: '#007AFF',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '16px 24px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: 'pointer'
-            }}
-          >
-            Предпросмотр
-          </button>
-        </div>
-      )}
+       {/* Фиксированная кнопка снизу */}
+       {questions.length > 0 && (
+         <div 
+           className="fixed-buttons"
+           style={{
+             position: 'fixed',
+             bottom: 0,
+             left: 0,
+             right: 0,
+             padding: '16px',
+             backgroundColor: 'var(--tg-bg-color)',
+             borderTop: '1px solid var(--tg-section-separator-color)'
+           }}
+         >
+           <button
+             onClick={handlePreview}
+             style={{
+               width: '100%',
+               backgroundColor: '#007AFF',
+               color: 'white',
+               border: 'none',
+               borderRadius: '12px',
+               padding: '16px 24px',
+               fontSize: '16px',
+               fontWeight: '600',
+               cursor: 'pointer'
+             }}
+           >
+             Предпросмотр
+           </button>
+         </div>
+       )}
     </div>
   );
 };

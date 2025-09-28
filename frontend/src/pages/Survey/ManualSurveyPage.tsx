@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { DateTimePicker } from '../../components/ui/DateTimePicker';
 import { useTelegram } from '../../hooks/useTelegram';
 
 const ManualSurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showConfirm, backButton } = useTelegram();
+  const { backButton } = useTelegram();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const [surveyData, setSurveyData] = useState({
@@ -24,16 +24,6 @@ const ManualSurveyPage: React.FC = () => {
     rewardDescription: ''
   });
 
-  const handleBack = () => {
-    showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
-      if (confirmed) {
-        navigate('/survey/create', { replace: true });
-      }
-    }).catch(() => {
-      // Если showConfirm не работает, просто переходим
-      navigate('/survey/create', { replace: true });
-    });
-  };
 
   const handleNext = () => {
     // Сохраняем данные опроса в localStorage для использования в следующих шагах
@@ -96,70 +86,27 @@ const ManualSurveyPage: React.FC = () => {
     }}
     className={isKeyboardActive ? 'keyboard-active' : ''}
     >
-      {/* Шапка */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '16px',
-        borderBottom: '1px solid var(--tg-section-separator-color)',
-        backgroundColor: 'var(--tg-bg-color)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10
-      }}>
-        <button
-          onClick={handleBack}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--tg-button-color)',
-            padding: '8px',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <h1 style={{
-          marginLeft: '12px',
-          fontSize: '20px',
-          fontWeight: '600',
-          margin: 0
-        }}>
-          Основные настройки
-        </h1>
-      </div>
+       {/* Шапка */}
+       <div style={{
+         display: 'flex',
+         alignItems: 'center',
+         justifyContent: 'center',
+         padding: '16px',
+         borderBottom: '1px solid var(--tg-section-separator-color)',
+         backgroundColor: 'var(--tg-bg-color)',
+         position: 'sticky',
+         top: 0,
+         zIndex: 10
+       }}>
+         <h1 style={{
+           fontSize: '20px',
+           fontWeight: '600',
+           margin: 0
+         }}>
+           Основные настройки
+         </h1>
+       </div>
 
-      {/* Кнопка закрытия клавиатуры */}
-      {isKeyboardActive && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          right: '16px',
-          zIndex: 1000,
-          paddingTop: '60px'
-        }}>
-          <button
-            onClick={() => {
-              (document.activeElement as HTMLElement)?.blur();
-              setIsKeyboardActive(false);
-            }}
-            style={{
-              backgroundColor: 'var(--tg-button-color)',
-              color: 'var(--tg-button-text-color)',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-            }}
-          >
-            Готово
-          </button>
-        </div>
-      )}
 
       <div style={{ padding: '24px 16px' }} className="form-container">
         {/* Заголовок с эмодзи и прогресс */}
@@ -211,24 +158,25 @@ const ManualSurveyPage: React.FC = () => {
             }}>
               Название:
             </label>
-            <input
-              type="text"
-              value={surveyData.title}
-              onChange={(e) => handleSurveyDataChange('title', e.target.value)}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              placeholder="Оценка качества продукции"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--tg-section-separator-color)',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                outline: 'none'
-              }}
-            />
+             <input
+               type="text"
+               value={surveyData.title}
+               onChange={(e) => handleSurveyDataChange('title', e.target.value)}
+               onFocus={handleInputFocus}
+               onBlur={handleInputBlur}
+               placeholder="Оценка качества продукции"
+               enterKeyHint="done"
+               style={{
+                 width: '100%',
+                 padding: '12px 16px',
+                 borderRadius: '8px',
+                 border: '1px solid var(--tg-section-separator-color)',
+                 backgroundColor: 'var(--tg-section-bg-color)',
+                 color: 'var(--tg-text-color)',
+                 fontSize: '16px',
+                 outline: 'none'
+               }}
+             />
           </div>
 
           {/* Описание */}
@@ -242,24 +190,25 @@ const ManualSurveyPage: React.FC = () => {
             }}>
               Описание:
             </label>
-            <input
-              type="text"
-              value={surveyData.description}
-              onChange={(e) => handleSurveyDataChange('description', e.target.value)}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              placeholder="Опционально"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--tg-section-separator-color)',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                outline: 'none'
-              }}
-            />
+             <input
+               type="text"
+               value={surveyData.description}
+               onChange={(e) => handleSurveyDataChange('description', e.target.value)}
+               onFocus={handleInputFocus}
+               onBlur={handleInputBlur}
+               placeholder="Опционально"
+               enterKeyHint="done"
+               style={{
+                 width: '100%',
+                 padding: '12px 16px',
+                 borderRadius: '8px',
+                 border: '1px solid var(--tg-section-separator-color)',
+                 backgroundColor: 'var(--tg-section-bg-color)',
+                 color: 'var(--tg-text-color)',
+                 fontSize: '16px',
+                 outline: 'none'
+               }}
+             />
           </div>
 
           {/* Язык */}
@@ -385,54 +334,36 @@ const ManualSurveyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Фиксированные кнопки снизу */}
-      <div 
-        className="fixed-buttons"
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '16px',
-          backgroundColor: 'var(--tg-bg-color)',
-          borderTop: '1px solid var(--tg-section-separator-color)',
-          display: 'flex',
-          gap: '12px'
-        }}
-      >
-        <button
-          onClick={handleBack}
-          style={{
-            flex: 1,
-            backgroundColor: 'var(--tg-section-bg-color)',
-            color: 'var(--tg-text-color)',
-            border: '1px solid var(--tg-section-separator-color)',
-            borderRadius: '12px',
-            padding: '16px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer'
-          }}
-        >
-          Назад
-        </button>
-        <button
-          onClick={handleNext}
-          style={{
-            flex: 1,
-            backgroundColor: '#007AFF',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '16px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer'
-          }}
-        >
-          Вперед
-        </button>
-      </div>
+       {/* Фиксированная кнопка снизу */}
+       <div
+         className="fixed-buttons"
+         style={{
+           position: 'fixed',
+           bottom: 0,
+           left: 0,
+           right: 0,
+           padding: '16px',
+           backgroundColor: 'var(--tg-bg-color)',
+           borderTop: '1px solid var(--tg-section-separator-color)'
+         }}
+       >
+         <button
+           onClick={handleNext}
+           style={{
+             width: '100%',
+             backgroundColor: '#007AFF',
+             color: 'white',
+             border: 'none',
+             borderRadius: '12px',
+             padding: '16px 24px',
+             fontSize: '16px',
+             fontWeight: '600',
+             cursor: 'pointer'
+           }}
+         >
+           Вперед
+         </button>
+       </div>
     </div>
   );
 };

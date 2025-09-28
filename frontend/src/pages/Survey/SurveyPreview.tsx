@@ -305,37 +305,45 @@ const SurveyPreview: React.FC = () => {
           </div>
         );
 
-      case 'yes_no':
-        return (
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {['Да', 'Нет'].map((option) => {
-              const isSelected = answer === option;
-              const isYes = option === 'Да';
-              const selectedColor = isYes ? '#34C759' : '#FF3B30';
-              
-              return (
-                <button
-                  key={option}
-                  onClick={() => handleAnswerChange(question.id, option)}
-                  style={{
-                    flex: 1,
-                    padding: '12px 24px',
-                    borderRadius: '8px',
-                    border: isSelected ? `2px solid ${selectedColor}` : '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: isSelected ? selectedColor : 'var(--tg-section-bg-color)',
-                    color: isSelected ? 'white' : 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-        );
+       case 'yes_no':
+         return (
+           <div style={{ display: 'flex', gap: '12px' }}>
+             {[
+               { text: 'Да', sticker: '✅' },
+               { text: 'Нет', sticker: '❌' }
+             ].map((option) => {
+               const isSelected = answer === option.text;
+               const isYes = option.text === 'Да';
+               const selectedColor = isYes ? '#34C759' : '#FF3B30';
+               
+               return (
+                 <button
+                   key={option.text}
+                   onClick={() => handleAnswerChange(question.id, option.text)}
+                   style={{
+                     flex: 1,
+                     padding: '12px 24px',
+                     borderRadius: '8px',
+                     border: isSelected ? `2px solid ${selectedColor}` : '1px solid var(--tg-section-separator-color)',
+                     backgroundColor: isSelected ? selectedColor : 'var(--tg-section-bg-color)',
+                     color: isSelected ? 'white' : 'var(--tg-text-color)',
+                     fontSize: '16px',
+                     fontWeight: '500',
+                     cursor: 'pointer',
+                     transition: 'all 0.2s ease',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     gap: '8px'
+                   }}
+                 >
+                   <span style={{ fontSize: '18px' }}>{option.sticker}</span>
+                   {option.text}
+                 </button>
+               );
+             })}
+           </div>
+         );
 
       case 'date':
         return (

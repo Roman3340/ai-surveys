@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 
 const AISurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showConfirm, backButton } = useTelegram();
+  const { backButton } = useTelegram();
 
   const [formData, setFormData] = useState({
     businessSphere: '',
@@ -19,16 +19,6 @@ const AISurveyPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
-  const handleBack = () => {
-    showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
-      if (confirmed) {
-        navigate('/survey/create', { replace: true });
-      }
-    }).catch(() => {
-      // Если showConfirm не работает, просто переходим
-      navigate('/survey/create', { replace: true });
-    });
-  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -128,70 +118,27 @@ const AISurveyPage: React.FC = () => {
       color: 'var(--tg-text-color)',
       paddingBottom: '80px'
     }}>
-      {/* Шапка */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '16px',
-        borderBottom: '1px solid var(--tg-section-separator-color)',
-        backgroundColor: 'var(--tg-bg-color)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10
-      }}>
-        <button
-          onClick={handleBack}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--tg-button-color)',
-            padding: '8px',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <h1 style={{
-          marginLeft: '12px',
-          fontSize: '20px',
-          fontWeight: '600',
-          margin: 0
-        }}>
-          Создание с ИИ
-        </h1>
-      </div>
+       {/* Шапка */}
+       <div style={{
+         display: 'flex',
+         alignItems: 'center',
+         justifyContent: 'center',
+         padding: '16px',
+         borderBottom: '1px solid var(--tg-section-separator-color)',
+         backgroundColor: 'var(--tg-bg-color)',
+         position: 'sticky',
+         top: 0,
+         zIndex: 10
+       }}>
+         <h1 style={{
+           fontSize: '20px',
+           fontWeight: '600',
+           margin: 0
+         }}>
+           Создание с ИИ
+         </h1>
+       </div>
 
-      {/* Кнопка закрытия клавиатуры */}
-      {isKeyboardActive && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          right: '16px',
-          zIndex: 1000,
-          paddingTop: '60px'
-        }}>
-          <button
-            onClick={() => {
-              (document.activeElement as HTMLElement)?.blur();
-              setIsKeyboardActive(false);
-            }}
-            style={{
-              backgroundColor: 'var(--tg-button-color)',
-              color: 'var(--tg-button-text-color)',
-              border: 'none',
-              borderRadius: '20px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-            }}
-          >
-            Готово
-          </button>
-        </div>
-      )}
 
       <div style={{ padding: '24px 16px' }} className="form-container">
         {/* Заголовок */}
@@ -290,25 +237,26 @@ const AISurveyPage: React.FC = () => {
             }}>
               Целевая аудитория:
             </label>
-            <textarea
-              value={formData.targetAudience}
-              onChange={(e) => handleInputChange('targetAudience', e.target.value)}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              placeholder="Кто будет отвечать (клиенты кафе, подписчики канала и т.д.)"
-              rows={3}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--tg-section-separator-color)',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                resize: 'vertical',
-                outline: 'none'
-              }}
-            />
+             <textarea
+               value={formData.targetAudience}
+               onChange={(e) => handleInputChange('targetAudience', e.target.value)}
+               onFocus={handleInputFocus}
+               onBlur={handleInputBlur}
+               placeholder="Кто будет отвечать (клиенты кафе, подписчики канала и т.д.)"
+               enterKeyHint="done"
+               rows={3}
+               style={{
+                 width: '100%',
+                 padding: '12px 16px',
+                 borderRadius: '8px',
+                 border: '1px solid var(--tg-section-separator-color)',
+                 backgroundColor: 'var(--tg-section-bg-color)',
+                 color: 'var(--tg-text-color)',
+                 fontSize: '16px',
+                 resize: 'vertical',
+                 outline: 'none'
+               }}
+             />
           </div>
 
           {/* Цель опроса */}
@@ -321,25 +269,26 @@ const AISurveyPage: React.FC = () => {
             }}>
               Цель опроса:
             </label>
-            <textarea
-              value={formData.surveyGoal}
-              onChange={(e) => handleInputChange('surveyGoal', e.target.value)}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              placeholder="Что нужно узнать (причины отказа, удовлетворённость сервисом)"
-              rows={3}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--tg-section-separator-color)',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                resize: 'vertical',
-                outline: 'none'
-              }}
-            />
+             <textarea
+               value={formData.surveyGoal}
+               onChange={(e) => handleInputChange('surveyGoal', e.target.value)}
+               onFocus={handleInputFocus}
+               onBlur={handleInputBlur}
+               placeholder="Что нужно узнать (причины отказа, удовлетворённость сервисом)"
+               enterKeyHint="done"
+               rows={3}
+               style={{
+                 width: '100%',
+                 padding: '12px 16px',
+                 borderRadius: '8px',
+                 border: '1px solid var(--tg-section-separator-color)',
+                 backgroundColor: 'var(--tg-section-bg-color)',
+                 color: 'var(--tg-text-color)',
+                 fontSize: '16px',
+                 resize: 'vertical',
+                 outline: 'none'
+               }}
+             />
           </div>
 
           {/* Количество вопросов */}
@@ -461,52 +410,40 @@ const AISurveyPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Фиксированные кнопки снизу */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: '16px',
-        backgroundColor: 'var(--tg-bg-color)',
-        borderTop: '1px solid var(--tg-section-separator-color)',
-        display: 'flex',
-        gap: '12px'
-      }}>
-        <button
-          onClick={handleBack}
-          style={{
-            flex: 1,
-            backgroundColor: 'var(--tg-section-bg-color)',
-            color: 'var(--tg-text-color)',
-            border: '1px solid var(--tg-section-separator-color)',
-            borderRadius: '12px',
-            padding: '16px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer'
-          }}
-        >
-          Назад
-        </button>
-        <button
-          onClick={handleGenerate}
-          disabled={!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal || isGenerating}
-          style={{
-            flex: 1,
-            backgroundColor: (!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal) ? 'var(--tg-hint-color)' : '#007AFF',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '16px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: (!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal) ? 'not-allowed' : 'pointer'
-          }}
-        >
-          {isGenerating ? 'Генерируем...' : 'Сгенерировать'}
-        </button>
-      </div>
+       {/* Фиксированная кнопка снизу */}
+       <div 
+         className="fixed-buttons"
+         style={{
+           position: 'fixed',
+           bottom: 0,
+           left: 0,
+           right: 0,
+           padding: '16px',
+           backgroundColor: 'var(--tg-bg-color)',
+           borderTop: '1px solid var(--tg-section-separator-color)',
+           transform: isKeyboardActive ? 'translateY(100%)' : 'translateY(0)',
+           opacity: isKeyboardActive ? 0 : 1,
+           transition: 'transform 0.3s ease, opacity 0.3s ease'
+         }}
+       >
+         <button
+           onClick={handleGenerate}
+           disabled={!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal || isGenerating}
+           style={{
+             width: '100%',
+             backgroundColor: (!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal) ? 'var(--tg-hint-color)' : '#007AFF',
+             color: 'white',
+             border: 'none',
+             borderRadius: '12px',
+             padding: '16px 24px',
+             fontSize: '16px',
+             fontWeight: '600',
+             cursor: (!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal) ? 'not-allowed' : 'pointer'
+           }}
+         >
+           {isGenerating ? 'Генерируем...' : 'Сгенерировать'}
+         </button>
+       </div>
     </div>
   );
 };
