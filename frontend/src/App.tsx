@@ -34,7 +34,7 @@ function App() {
   }
 
   return (
-    <Router basename={process.env.NODE_ENV === 'production' ? '/ai-surveys' : ''}>
+    <Router basename={import.meta.env.PROD ? '/ai-surveys' : ''}>
       <div className="min-h-screen bg-primary">
         <Routes>
           <Route path="/" element={<HomePage />} />
