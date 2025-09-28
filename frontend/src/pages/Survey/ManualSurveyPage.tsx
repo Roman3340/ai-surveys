@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
 import { Button } from '../../components/ui/Button';
-import type { QuestionType } from '../../types';
+// import type { QuestionType } from '../../types'; // Временно не используется
 
 // Временно убираем неиспользуемый интерфейс
 // interface Question {
