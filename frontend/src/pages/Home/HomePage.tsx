@@ -147,7 +147,7 @@ export const HomePage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            marginTop: '15px',
+            marginTop: '30px',
             transition: 'transform 0.1s ease',
             marginBottom: '24px'
           }}
@@ -184,9 +184,7 @@ export const HomePage = () => {
             height: '40px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#FFD60A',
-            borderRadius: '10px'
+            justifyContent: 'center'
           }}>
             ⚡
           </div>
@@ -223,9 +221,7 @@ export const HomePage = () => {
             height: '40px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#34C759',
-            borderRadius: '10px'
+            justifyContent: 'center'
           }}>
             📚
           </div>

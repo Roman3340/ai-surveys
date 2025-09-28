@@ -6,7 +6,7 @@ import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showConfirm, backButton } = useTelegram();
+  const { backButton } = useTelegram();
   const [selectedOption, setSelectedOption] = useState<'manual' | 'ai' | null>(null);
 
   // handleBack вынесен в useEffect для BackButton
@@ -14,14 +14,17 @@ const CreateSurveyPage: React.FC = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     const handleBackClick = () => {
-      showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
+      try {
+        // Используем нативный confirm вместо showConfirm
+        const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
         if (confirmed) {
           navigate('/', { replace: true });
         }
-      }).catch(() => {
-        // Если showConfirm не работает, просто переходим
+      } catch (error) {
+        // Если что-то пошло не так, просто переходим
+        console.error('Error with confirm dialog:', error);
         navigate('/', { replace: true });
-      });
+      }
     };
 
     backButton.show();
@@ -31,7 +34,7 @@ const CreateSurveyPage: React.FC = () => {
       backButton.hide();
       backButton.offClick(handleBackClick);
     };
-  }, [backButton, navigate, showConfirm]);
+  }, [backButton, navigate]);
 
   const handleCreateManual = () => {
     setSelectedOption('manual');
