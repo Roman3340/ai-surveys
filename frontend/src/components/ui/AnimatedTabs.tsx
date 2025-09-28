@@ -60,7 +60,7 @@ export const AnimatedTabs = ({ tabs, activeTab, onTabChange, className = '', sty
       {tabs.map((tab, index) => (
         <button
           key={tab.id}
-          ref={el => tabRefs.current[index] = el}
+          ref={el => { tabRefs.current[index] = el; }}
           onClick={() => onTabChange(tab.id)}
           style={{
             flex: 1,
