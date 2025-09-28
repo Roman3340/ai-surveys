@@ -117,7 +117,7 @@ const AISurveyPage: React.FC = () => {
         </h1>
       </div>
 
-      <div style={{ padding: '24px 16px' }}>
+      <div style={{ padding: '24px 16px' }} className="form-container">
         {/* Заголовок */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -140,7 +140,7 @@ const AISurveyPage: React.FC = () => {
             <div style={{
               width: '280px',
               height: '6px',
-              backgroundColor: 'var(--tg-section-separator-color)',
+              backgroundColor: 'rgba(0, 122, 255, 0.2)',
               borderRadius: '3px',
               overflow: 'hidden'
             }}>

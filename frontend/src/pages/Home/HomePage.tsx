@@ -87,8 +87,51 @@ export const HomePage = () => {
         </h1>
       </div>
 
-      {/* Главная кнопка "Новый опрос" */}
+      {/* Кнопки действий */}
       <div style={{ padding: '0 16px' }}>
+        {/* Кнопка "Повысить статус" */}
+        <div style={{
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          padding: '12px 16px',
+          marginBottom: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer'
+        }}
+        onClick={() => {
+          hapticFeedback?.light();
+          console.log('Повысить статус');
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              fontSize: '20px',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              💎
+            </div>
+            <span style={{ fontSize: '16px', fontWeight: '500' }}>
+              Повысить статус
+            </span>
+          </div>
+          <div style={{
+            fontSize: '12px',
+            backgroundColor: '#007AFF',
+            color: 'white',
+            padding: '4px 8px',
+            borderRadius: '6px',
+            fontWeight: '500'
+          }}>
+            Новое
+          </div>
+        </div>
+
+        {/* Главная кнопка "Новый опрос" */}
         <button
           onClick={handleCreateSurvey}
           style={{

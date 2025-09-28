@@ -142,6 +142,32 @@ body {
 .p-lg { padding: var(--spacing-lg); }
 .p-xl { padding: var(--spacing-xl); }
 
+/* Исправление проблемы с клавиатурой */
+input, textarea {
+  scroll-margin-bottom: 150px;
+}
+
+/* Автоматическая прокрутка при фокусе на поле ввода */
+input:focus, textarea:focus {
+  scroll-margin-bottom: 200px;
+}
+
+/* Добавляем отступ снизу для контейнеров с формами */
+.form-container {
+  padding-bottom: 200px;
+}
+
+/* Для мобильных устройств - дополнительная защита от клавиатуры */
+@media (max-width: 768px) {
+  .form-container {
+    padding-bottom: 300px;
+  }
+  
+  input:focus, textarea:focus {
+    scroll-margin-bottom: 250px;
+  }
+}
+
 .px-xs { padding-left: var(--spacing-xs); padding-right: var(--spacing-xs); }
 .px-sm { padding-left: var(--spacing-sm); padding-right: var(--spacing-sm); }
 .px-md { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
@@ -292,13 +318,33 @@ body {
 
 /* Специфичные анимации для эмодзи */
 @keyframes lightbulb-glow {
-  0%, 100% {
+  0% { 
+    filter: brightness(0.6) saturate(0.4) contrast(0.8);
     transform: scale(1);
-    filter: brightness(1) drop-shadow(0 0 0 rgba(255, 215, 10, 0));
   }
-  50% {
+  8% { 
+    filter: brightness(1.8) saturate(1.5) contrast(1.3) drop-shadow(0 0 15px rgba(255, 255, 0, 0.9));
+    transform: scale(1.12);
+  }
+  16% { 
+    filter: brightness(2.2) saturate(1.8) contrast(1.5) drop-shadow(0 0 20px rgba(255, 255, 0, 1));
+    transform: scale(1.18);
+  }
+  24% { 
+    filter: brightness(1.9) saturate(1.6) contrast(1.4) drop-shadow(0 0 18px rgba(255, 255, 0, 0.95));
+    transform: scale(1.15);
+  }
+  32% { 
+    filter: brightness(1.4) saturate(1.2) contrast(1.1) drop-shadow(0 0 12px rgba(255, 255, 0, 0.7));
     transform: scale(1.08);
-    filter: brightness(1.2) drop-shadow(0 0 8px rgba(255, 215, 10, 0.6));
+  }
+  50% { 
+    filter: brightness(0.8) saturate(0.6) contrast(0.9);
+    transform: scale(1.02);
+  }
+  100% { 
+    filter: brightness(0.6) saturate(0.4) contrast(0.8);
+    transform: scale(1);
   }
 }
 

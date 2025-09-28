@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { DateTimePicker } from '../../components/ui/DateTimePicker';
 import { useTelegram } from '../../hooks/useTelegram';
 
 const ManualSurveyPage: React.FC = () => {
@@ -12,8 +13,10 @@ const ManualSurveyPage: React.FC = () => {
     title: 'Оценка качества продукции',
     description: '',
     language: 'ru',
-    endDate: '17.02.2025',
-    endTime: '23:59',
+    startDate: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
     maxParticipants: '',
     motivation: 'promo_code',
     rewardValue: '',
@@ -77,7 +80,7 @@ const ManualSurveyPage: React.FC = () => {
         </h1>
       </div>
 
-      <div style={{ padding: '24px 16px' }}>
+      <div style={{ padding: '24px 16px' }} className="form-container">
         {/* Заголовок с эмодзи и прогресс */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -100,7 +103,7 @@ const ManualSurveyPage: React.FC = () => {
             <div style={{
               width: '280px',
               height: '6px',
-              backgroundColor: 'var(--tg-section-separator-color)',
+              backgroundColor: 'rgba(0, 122, 255, 0.2)',
               borderRadius: '3px',
               overflow: 'hidden'
             }}>
@@ -222,100 +225,29 @@ const ManualSurveyPage: React.FC = () => {
           </div>
 
           {/* Дата начала */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '16px',
-              fontWeight: '500',
-              marginBottom: '8px',
-              color: 'var(--tg-text-color)'
-            }}>
-              Дата начала:
-            </label>
-            <div style={{
-              display: 'flex',
-              gap: '12px'
-            }}>
-              <input
-                type="text"
-                value="10.02.2025"
-                readOnly
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  color: 'var(--tg-hint-color)',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
-              />
-              <input
-                type="text"
-                value="11:00"
-                readOnly
-                style={{
-                  width: '80px',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  color: 'var(--tg-hint-color)',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-          </div>
+          <DateTimePicker
+            label="Дата начала"
+            value={surveyData.startDate}
+            timeValue={surveyData.startTime}
+            onChange={(date, time) => {
+              handleSurveyDataChange('startDate', date);
+              if (time) handleSurveyDataChange('startTime', time);
+            }}
+            defaultText="Сразу"
+            disabled={true}
+          />
 
           {/* Дата завершения */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '16px',
-              fontWeight: '500',
-              marginBottom: '8px',
-              color: 'var(--tg-text-color)'
-            }}>
-              Дата завершения:
-            </label>
-            <div style={{
-              display: 'flex',
-              gap: '12px'
-            }}>
-              <input
-                type="text"
-                value={surveyData.endDate}
-                onChange={(e) => handleSurveyDataChange('endDate', e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  color: 'var(--tg-text-color)',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
-              />
-              <input
-                type="text"
-                value={surveyData.endTime}
-                onChange={(e) => handleSurveyDataChange('endTime', e.target.value)}
-                style={{
-                  width: '80px',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  color: 'var(--tg-text-color)',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-          </div>
+          <DateTimePicker
+            label="Дата завершения"
+            value={surveyData.endDate}
+            timeValue={surveyData.endTime}
+            onChange={(date, time) => {
+              handleSurveyDataChange('endDate', date);
+              if (time) handleSurveyDataChange('endTime', time);
+            }}
+            placeholder="Не указана"
+          />
 
           {/* Мотивация */}
           <div style={{ marginBottom: '20px' }}>

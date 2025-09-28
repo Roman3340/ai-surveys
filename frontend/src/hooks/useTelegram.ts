@@ -30,6 +30,12 @@ interface TelegramWebApp {
     notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
     selectionChanged: () => void;
   };
+  BackButton: {
+    show: () => void;
+    hide: () => void;
+    onClick: (callback: () => void) => void;
+    offClick: (callback: () => void) => void;
+  };
 }
 
 export const useTelegram = () => {
@@ -134,6 +140,29 @@ export const useTelegram = () => {
     tg.close();
   };
 
+  const backButton = {
+    show: () => {
+      if (tg.BackButton) {
+        tg.BackButton.show();
+      }
+    },
+    hide: () => {
+      if (tg.BackButton) {
+        tg.BackButton.hide();
+      }
+    },
+    onClick: (callback: () => void) => {
+      if (tg.BackButton) {
+        tg.BackButton.onClick(callback);
+      }
+    },
+    offClick: (callback: () => void) => {
+      if (tg.BackButton) {
+        tg.BackButton.offClick(callback);
+      }
+    },
+  };
+
   return {
     isReady,
     user,
@@ -144,6 +173,7 @@ export const useTelegram = () => {
     showAlert,
     showConfirm,
     hapticFeedback,
+    backButton,
     close,
   };
 };

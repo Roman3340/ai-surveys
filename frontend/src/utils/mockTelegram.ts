@@ -44,6 +44,26 @@ export const MOCK_TELEGRAM_DATA = {
     selectionChanged: () => 
       console.log('Haptic selection changed (mock)'),
   },
+  BackButton: {
+    show: () => console.log('BackButton show (mock)'),
+    hide: () => console.log('BackButton hide (mock)'),
+    onClick: (callback: () => void) => {
+      console.log('BackButton onClick (mock)');
+      // В реальной разработке можно добавить слушатель на клавишу Escape
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          callback();
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+    },
+    offClick: (callback: () => void) => {
+      console.log('BackButton offClick (mock)');
+      // Удаляем слушатель
+      document.removeEventListener('keydown', () => callback());
+    },
+  },
 };
 
 // Проверка, запущено ли приложение в Telegram

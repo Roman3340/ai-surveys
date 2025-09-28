@@ -1,13 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showConfirm } = useTelegram();
+  const { showConfirm, backButton } = useTelegram();
 
   const handleBack = () => {
     showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
@@ -16,6 +15,17 @@ const CreateSurveyPage: React.FC = () => {
       }
     });
   };
+
+  // Настройка нативной кнопки назад Telegram
+  useEffect(() => {
+    backButton.show();
+    backButton.onClick(handleBack);
+    
+    return () => {
+      backButton.hide();
+      backButton.offClick(handleBack);
+    };
+  }, [backButton, navigate]);
 
   const handleCreateManual = () => {
     navigate('/survey/create/manual');
@@ -31,10 +41,11 @@ const CreateSurveyPage: React.FC = () => {
       backgroundColor: 'var(--tg-bg-color)',
       color: 'var(--tg-text-color)'
     }}>
-      {/* Шапка с кнопкой назад */}
+      {/* Шапка */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         padding: '16px',
         borderBottom: '1px solid var(--tg-section-separator-color)',
         backgroundColor: 'var(--tg-bg-color)',
@@ -42,26 +53,11 @@ const CreateSurveyPage: React.FC = () => {
         top: 0,
         zIndex: 10
       }}>
-        <button
-          onClick={handleBack}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--tg-button-color)',
-            padding: '8px',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            cursor: 'pointer'
-          }}
-        >
-          <ArrowLeft size={24} />
-        </button>
         <h1 style={{
-          marginLeft: '12px',
           fontSize: '20px',
           fontWeight: '600',
-          margin: 0
+          margin: 0,
+          textAlign: 'center'
         }}>
           Как создадим опрос?
         </h1>
@@ -93,7 +89,7 @@ const CreateSurveyPage: React.FC = () => {
             <div style={{
               width: '280px',
               height: '6px',
-              backgroundColor: 'var(--tg-section-separator-color)',
+              backgroundColor: 'rgba(0, 122, 255, 0.2)',
               borderRadius: '3px',
               overflow: 'hidden'
             }}>
