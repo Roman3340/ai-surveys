@@ -49,19 +49,26 @@ export const MOCK_TELEGRAM_DATA = {
     hide: () => console.log('BackButton hide (mock)'),
     onClick: (callback: () => void) => {
       console.log('BackButton onClick (mock)');
+      // Сохраняем callback для возможности удаления
+      (window as any).__mockBackButtonCallback = callback;
       // В реальной разработке можно добавить слушатель на клавишу Escape
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           callback();
-          document.removeEventListener('keydown', handleEscape);
         }
       };
       document.addEventListener('keydown', handleEscape);
+      (window as any).__mockBackButtonEscapeHandler = handleEscape;
     },
-    offClick: (callback: () => void) => {
+    offClick: (_callback: () => void) => {
       console.log('BackButton offClick (mock)');
       // Удаляем слушатель
-      document.removeEventListener('keydown', () => callback());
+      const handler = (window as any).__mockBackButtonEscapeHandler;
+      if (handler) {
+        document.removeEventListener('keydown', handler);
+        delete (window as any).__mockBackButtonEscapeHandler;
+      }
+      delete (window as any).__mockBackButtonCallback;
     },
   },
 };

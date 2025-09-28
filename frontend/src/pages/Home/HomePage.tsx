@@ -89,45 +89,43 @@ export const HomePage = () => {
 
       {/* Кнопки действий */}
       <div style={{ padding: '0 16px' }}>
-        {/* Кнопка "Повысить статус" */}
+        {/* Приветствие и кнопка статуса */}
         <div style={{
-          backgroundColor: 'var(--tg-section-bg-color)',
-          borderRadius: '12px',
-          padding: '12px 16px',
-          marginBottom: '12px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          cursor: 'pointer'
-        }}
-        onClick={() => {
-          hapticFeedback?.light();
-          console.log('Повысить статус');
+          marginBottom: '12px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              fontSize: '20px',
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              💎
-            </div>
-            <span style={{ fontSize: '16px', fontWeight: '500' }}>
-              Повысить статус
-            </span>
+          <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+            Создавайте опросы и получайте ценные инсайты
           </div>
+          
+          {/* Маленькая кнопка "Повысить статус" */}
           <div style={{
-            fontSize: '12px',
-            backgroundColor: '#007AFF',
-            color: 'white',
-            padding: '4px 8px',
-            borderRadius: '6px',
-            fontWeight: '500'
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '8px',
+            padding: '6px 10px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            border: '1px solid var(--tg-section-separator-color)'
+          }}
+          onClick={() => {
+            hapticFeedback?.light();
+            console.log('Повысить статус');
           }}>
-            Новое
+            <span style={{ fontSize: '14px' }}>💎</span>
+            <div style={{
+              fontSize: '10px',
+              backgroundColor: '#007AFF',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontWeight: '500'
+            }}>
+              NEW
+            </div>
           </div>
         </div>
 

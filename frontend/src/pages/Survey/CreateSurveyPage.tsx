@@ -8,24 +8,29 @@ const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
   const { showConfirm, backButton } = useTelegram();
 
-  const handleBack = () => {
-    showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
-      if (confirmed) {
-        navigate('/');
-      }
-    });
-  };
+  // handleBack вынесен в useEffect для BackButton
 
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
+    const handleBackClick = () => {
+      showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
+        if (confirmed) {
+          navigate('/', { replace: true });
+        }
+      }).catch(() => {
+        // Если showConfirm не работает, просто переходим
+        navigate('/', { replace: true });
+      });
+    };
+
     backButton.show();
-    backButton.onClick(handleBack);
+    backButton.onClick(handleBackClick);
     
     return () => {
       backButton.hide();
-      backButton.offClick(handleBack);
+      backButton.offClick(handleBackClick);
     };
-  }, [backButton, navigate]);
+  }, [backButton, navigate, showConfirm]);
 
   const handleCreateManual = () => {
     navigate('/survey/create/manual');

@@ -157,6 +157,17 @@ input:focus, textarea:focus {
   padding-bottom: 200px;
 }
 
+/* Скрываем фиксированные кнопки при фокусе на поле ввода */
+.fixed-buttons {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.keyboard-active .fixed-buttons {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Для мобильных устройств - дополнительная защита от клавиатуры */
 @media (max-width: 768px) {
   .form-container {

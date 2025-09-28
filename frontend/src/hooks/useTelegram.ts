@@ -35,6 +35,7 @@ interface TelegramWebApp {
     hide: () => void;
     onClick: (callback: () => void) => void;
     offClick: (callback: () => void) => void;
+    isVisible?: boolean;
   };
 }
 
@@ -142,23 +143,50 @@ export const useTelegram = () => {
 
   const backButton = {
     show: () => {
-      if (tg.BackButton) {
-        tg.BackButton.show();
+      try {
+        if (tg.BackButton) {
+          tg.BackButton.show();
+          console.log('BackButton shown');
+        }
+      } catch (error) {
+        console.error('Error showing BackButton:', error);
       }
     },
     hide: () => {
-      if (tg.BackButton) {
-        tg.BackButton.hide();
+      try {
+        if (tg.BackButton) {
+          tg.BackButton.hide();
+          console.log('BackButton hidden');
+        }
+      } catch (error) {
+        console.error('Error hiding BackButton:', error);
       }
     },
     onClick: (callback: () => void) => {
-      if (tg.BackButton) {
-        tg.BackButton.onClick(callback);
+      try {
+        if (tg.BackButton) {
+          // Очищаем предыдущие обработчики
+          if ((tg.BackButton as any).__currentCallback) {
+            tg.BackButton.offClick((tg.BackButton as any).__currentCallback);
+          }
+          // Сохраняем текущий callback
+          (tg.BackButton as any).__currentCallback = callback;
+          tg.BackButton.onClick(callback);
+          console.log('BackButton onClick set');
+        }
+      } catch (error) {
+        console.error('Error setting BackButton onClick:', error);
       }
     },
     offClick: (callback: () => void) => {
-      if (tg.BackButton) {
-        tg.BackButton.offClick(callback);
+      try {
+        if (tg.BackButton) {
+          tg.BackButton.offClick(callback);
+          (tg.BackButton as any).__currentCallback = null;
+          console.log('BackButton onClick removed');
+        }
+      } catch (error) {
+        console.error('Error removing BackButton onClick:', error);
       }
     },
   };

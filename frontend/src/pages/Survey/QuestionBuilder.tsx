@@ -103,6 +103,35 @@ const QuestionBuilder: React.FC = () => {
     }
   };
 
+  const handlePreview = () => {
+    if (questions.length === 0) {
+      alert('Добавьте хотя бы один вопрос для предпросмотра');
+      return;
+    }
+
+    // Проверяем, что все вопросы имеют заголовки
+    const emptyQuestions = questions.filter(q => !q.title.trim());
+    if (emptyQuestions.length > 0) {
+      alert('Заполните заголовки всех вопросов');
+      return;
+    }
+
+    // Получаем данные опроса из localStorage (сохраненные на предыдущих шагах)
+    const surveySettings = JSON.parse(localStorage.getItem('surveySettings') || '{}');
+    
+    const surveyData = {
+      title: surveySettings.title || 'Новый опрос',
+      description: surveySettings.description || '',
+      questions: questions,
+      settings: surveySettings
+    };
+
+    hapticFeedback?.light();
+    navigate('/survey/create/manual/preview', { 
+      state: { surveyData }
+    });
+  };
+
   const renderQuestionEditor = (question: Question) => {
     const isEditing = editingQuestion === question.id;
     const questionTypeInfo = questionTypes.find(t => t.value === question.type);
@@ -628,7 +657,7 @@ const QuestionBuilder: React.FC = () => {
             Назад
           </button>
           <button
-            onClick={() => navigate('/survey/preview')}
+            onClick={handlePreview}
             style={{
               flex: 1,
               backgroundColor: '#007AFF',

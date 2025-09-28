@@ -5,6 +5,7 @@ import CreateSurveyPage from './pages/Survey/CreateSurveyPage';
 import ManualSurveyPage from './pages/Survey/ManualSurveyPage';
 import AISurveyPage from './pages/Survey/AISurveyPage';
 import QuestionBuilder from './pages/Survey/QuestionBuilder';
+import SurveyPreview from './pages/Survey/SurveyPreview';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
@@ -42,6 +43,7 @@ function App() {
           <Route path="/survey/create" element={<CreateSurveyPage />} />
           <Route path="/survey/create/manual" element={<ManualSurveyPage />} />
           <Route path="/survey/create/manual/questions" element={<QuestionBuilder />} />
+          <Route path="/survey/create/manual/preview" element={<SurveyPreview />} />
           <Route path="/survey/create/ai" element={<AISurveyPage />} />
         </Routes>
         <DevTools />

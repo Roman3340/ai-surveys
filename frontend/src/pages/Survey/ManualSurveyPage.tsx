@@ -8,6 +8,7 @@ import { useTelegram } from '../../hooks/useTelegram';
 const ManualSurveyPage: React.FC = () => {
   const navigate = useNavigate();
   const { showConfirm } = useTelegram();
+  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const [surveyData, setSurveyData] = useState({
     title: 'Оценка качества продукции',
@@ -26,12 +27,17 @@ const ManualSurveyPage: React.FC = () => {
   const handleBack = () => {
     showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
       if (confirmed) {
-        navigate(-1);
+        navigate('/survey/create', { replace: true });
       }
+    }).catch(() => {
+      // Если showConfirm не работает, просто переходим
+      navigate('/survey/create', { replace: true });
     });
   };
 
   const handleNext = () => {
+    // Сохраняем данные опроса в localStorage для использования в следующих шагах
+    localStorage.setItem('surveySettings', JSON.stringify(surveyData));
     navigate('/survey/create/manual/questions');
   };
 
@@ -39,13 +45,25 @@ const ManualSurveyPage: React.FC = () => {
     setSurveyData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleInputFocus = () => {
+    setIsKeyboardActive(true);
+  };
+
+  const handleInputBlur = () => {
+    // Задержка чтобы клавиатура успела скрыться
+    setTimeout(() => setIsKeyboardActive(false), 300);
+  };
+
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      backgroundColor: 'var(--tg-bg-color)',
-      color: 'var(--tg-text-color)',
+    <div 
+      style={{ 
+        minHeight: '100vh', 
+        backgroundColor: 'var(--tg-bg-color)',
+        color: 'var(--tg-text-color)',
       paddingBottom: '80px' // Место для фиксированной кнопки
-    }}>
+    }}
+    className={isKeyboardActive ? 'keyboard-active' : ''}
+    >
       {/* Шапка */}
       <div style={{
         display: 'flex',
@@ -134,6 +152,8 @@ const ManualSurveyPage: React.FC = () => {
               type="text"
               value={surveyData.title}
               onChange={(e) => handleSurveyDataChange('title', e.target.value)}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
               placeholder="Оценка качества продукции"
               style={{
                 width: '100%',
@@ -163,6 +183,8 @@ const ManualSurveyPage: React.FC = () => {
               type="text"
               value={surveyData.description}
               onChange={(e) => handleSurveyDataChange('description', e.target.value)}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
               placeholder="Опционально"
               style={{
                 width: '100%',
@@ -233,8 +255,8 @@ const ManualSurveyPage: React.FC = () => {
               handleSurveyDataChange('startDate', date);
               if (time) handleSurveyDataChange('startTime', time);
             }}
-            defaultText="Сразу"
-            disabled={true}
+            placeholder="Сразу"
+            disabled={false}
           />
 
           {/* Дата завершения */}
@@ -301,17 +323,20 @@ const ManualSurveyPage: React.FC = () => {
       </div>
 
       {/* Фиксированные кнопки снизу */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: '16px',
-        backgroundColor: 'var(--tg-bg-color)',
-        borderTop: '1px solid var(--tg-section-separator-color)',
-        display: 'flex',
-        gap: '12px'
-      }}>
+      <div 
+        className="fixed-buttons"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '16px',
+          backgroundColor: 'var(--tg-bg-color)',
+          borderTop: '1px solid var(--tg-section-separator-color)',
+          display: 'flex',
+          gap: '12px'
+        }}
+      >
         <button
           onClick={handleBack}
           style={{
