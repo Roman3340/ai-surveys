@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from 'react';
+import { HomePage } from './pages/Home/HomePage';
+import { useTelegram } from './hooks/useTelegram';
+import { useAppStore } from './store/useAppStore';
+import { DevTools } from './components/DevTools';
+import './styles/globals.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { isReady, theme } = useTelegram();
+  const { setTheme } = useAppStore();
+
+  // Синхронизация темы с Telegram
+  useEffect(() => {
+    if (isReady) {
+      setTheme(theme);
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  }, [isReady, theme, setTheme]);
+
+  // Показываем загрузку пока Telegram WebApp не готов
+  if (!isReady) {
+    return (
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-md"></div>
+          <p className="text-secondary">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen bg-primary">
+      <HomePage />
+      <DevTools />
+    </div>
+  );
 }
 
-export default App
+export default App;
