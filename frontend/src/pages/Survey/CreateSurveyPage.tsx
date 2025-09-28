@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -7,6 +7,7 @@ import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
   const { showConfirm, backButton } = useTelegram();
+  const [selectedOption, setSelectedOption] = useState<'manual' | 'ai' | null>(null);
 
   // handleBack вынесен в useEffect для BackButton
 
@@ -33,11 +34,19 @@ const CreateSurveyPage: React.FC = () => {
   }, [backButton, navigate, showConfirm]);
 
   const handleCreateManual = () => {
-    navigate('/survey/create/manual');
+    setSelectedOption('manual');
   };
 
   const handleCreateAI = () => {
-    navigate('/survey/create/ai');
+    setSelectedOption('ai');
+  };
+
+  const handleNext = () => {
+    if (selectedOption === 'manual') {
+      navigate('/survey/create/manual');
+    } else if (selectedOption === 'ai') {
+      navigate('/survey/create/ai');
+    }
   };
 
   return (
@@ -130,7 +139,7 @@ const CreateSurveyPage: React.FC = () => {
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'transform 0.1s ease',
-                border: '2px solid #007AFF' // Активный вариант
+                border: selectedOption === 'manual' ? '2px solid #007AFF' : '2px solid transparent'
               }}
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -169,18 +178,20 @@ const CreateSurveyPage: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: '2px solid #007AFF',
-                      backgroundColor: '#007AFF',
+                      border: `2px solid ${selectedOption === 'manual' ? '#007AFF' : 'var(--tg-section-separator-color)'}`,
+                      backgroundColor: selectedOption === 'manual' ? '#007AFF' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <div style={{
-                        width: '8px',
-                        height: '8px',
-                        backgroundColor: 'white',
-                        borderRadius: '50%'
-                      }} />
+                      {selectedOption === 'manual' && (
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          backgroundColor: 'white',
+                          borderRadius: '50%'
+                        }} />
+                      )}
                     </div>
                   </div>
                   <div style={{
@@ -209,9 +220,11 @@ const CreateSurveyPage: React.FC = () => {
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'transform 0.1s ease',
-                border: '1px solid var(--tg-section-separator-color)',
-                opacity: 0.6
+                border: selectedOption === 'ai' ? '2px solid #007AFF' : '2px solid transparent'
               }}
+              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
               <div style={{
                 display: 'flex',
@@ -225,7 +238,7 @@ const CreateSurveyPage: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: '#8E8E93',
+                  backgroundColor: '#34C759',
                   borderRadius: '10px',
                   marginTop: '2px'
                 }}>
@@ -236,7 +249,7 @@ const CreateSurveyPage: React.FC = () => {
                     fontSize: '18px',
                     fontWeight: '600',
                     marginBottom: '4px',
-                    color: 'var(--tg-hint-color)',
+                    color: 'var(--tg-text-color)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between'
@@ -246,9 +259,21 @@ const CreateSurveyPage: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: '2px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'transparent'
-                    }} />
+                      border: `2px solid ${selectedOption === 'ai' ? '#007AFF' : 'var(--tg-section-separator-color)'}`,
+                      backgroundColor: selectedOption === 'ai' ? '#007AFF' : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      {selectedOption === 'ai' && (
+                        <div style={{
+                          width: '8px',
+                          height: '8px',
+                          backgroundColor: 'white',
+                          borderRadius: '50%'
+                        }} />
+                      )}
+                    </div>
                   </div>
                   <div style={{
                     fontSize: '14px',
@@ -298,17 +323,19 @@ const CreateSurveyPage: React.FC = () => {
           borderTop: '1px solid var(--tg-section-separator-color)'
         }}>
           <button
-            onClick={handleCreateManual} // Пока только ручное создание активно
+            onClick={handleNext}
+            disabled={!selectedOption}
             style={{
               width: '100%',
-              backgroundColor: '#007AFF',
-              color: 'white',
+              backgroundColor: selectedOption ? '#007AFF' : 'var(--tg-section-separator-color)',
+              color: selectedOption ? 'white' : 'var(--tg-hint-color)',
               border: 'none',
               borderRadius: '12px',
               padding: '16px 24px',
               fontSize: '16px',
               fontWeight: '600',
-              cursor: 'pointer'
+              cursor: selectedOption ? 'pointer' : 'not-allowed',
+              opacity: selectedOption ? 1 : 0.6
             }}
           >
             Вперед

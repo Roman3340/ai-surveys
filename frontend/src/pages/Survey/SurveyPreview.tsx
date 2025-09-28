@@ -499,6 +499,21 @@ const SurveyPreview: React.FC = () => {
                     {currentQuestion.description}
                   </p>
                 )}
+                {currentQuestion.imageUrl && (
+                  <div style={{ margin: '0 0 16px 0' }}>
+                    <img 
+                      src={currentQuestion.imageUrl} 
+                      alt="Изображение к вопросу"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '300px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
             

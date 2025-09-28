@@ -11,7 +11,7 @@ const ManualSurveyPage: React.FC = () => {
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const [surveyData, setSurveyData] = useState({
-    title: 'Оценка качества продукции',
+    title: '',
     description: '',
     language: 'ru',
     startDate: '',

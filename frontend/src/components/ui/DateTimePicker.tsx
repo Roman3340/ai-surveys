@@ -128,8 +128,8 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
           )}
         </div>
 
-        {/* Поле времени */}
-        {showTime && (
+        {/* Поле времени - показываем только если есть дата */}
+        {showTime && value && (
           <div style={{ width: '100px', position: 'relative' }}>
             <button
               onClick={() => !disabled && setIsTimeOpen(!isTimeOpen)}

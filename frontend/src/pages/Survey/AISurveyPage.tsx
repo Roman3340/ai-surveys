@@ -21,8 +21,11 @@ const AISurveyPage: React.FC = () => {
   const handleBack = () => {
     showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
       if (confirmed) {
-        navigate(-1);
+        navigate('/survey/create', { replace: true });
       }
+    }).catch(() => {
+      // Если showConfirm не работает, просто переходим
+      navigate('/survey/create', { replace: true });
     });
   };
 

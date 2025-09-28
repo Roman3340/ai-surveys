@@ -28,6 +28,7 @@ const QuestionBuilder: React.FC = () => {
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
+  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const questionTypes = [
     { value: 'text', label: 'Короткий ответ', icon: '📝' },
@@ -45,11 +46,14 @@ const QuestionBuilder: React.FC = () => {
     if (questions.length > 0) {
       showConfirm('Все вопросы будут удалены. Вы уверены?').then((confirmed: boolean) => {
         if (confirmed) {
-          navigate(-1);
+          navigate('/survey/create/manual', { replace: true });
         }
+      }).catch(() => {
+        // Если showConfirm не работает, просто переходим
+        navigate('/survey/create/manual', { replace: true });
       });
     } else {
-      navigate(-1);
+      navigate('/survey/create/manual', { replace: true });
     }
   };
 
@@ -132,6 +136,40 @@ const QuestionBuilder: React.FC = () => {
     });
   };
 
+  const handleInputFocus = () => {
+    setIsKeyboardActive(true);
+  };
+
+  const handleInputBlur = () => {
+    // Задержка чтобы клавиатура успела скрыться
+    setTimeout(() => setIsKeyboardActive(false), 300);
+  };
+
+  const handleImageUpload = (questionId: string) => {
+    // Создаем скрытый input для выбора файла
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // В реальном приложении здесь будет загрузка на сервер
+        // Пока просто показываем имя файла
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imageUrl = e.target?.result as string;
+          updateQuestion(questionId, { 
+            imageUrl: imageUrl,
+            imageName: file.name 
+          });
+          hapticFeedback?.success();
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
   const renderQuestionEditor = (question: Question) => {
     const isEditing = editingQuestion === question.id;
     const questionTypeInfo = questionTypes.find(t => t.value === question.type);
@@ -171,7 +209,11 @@ const QuestionBuilder: React.FC = () => {
               type="text"
               value={question.title}
               onChange={(e) => updateQuestion(question.id, { title: e.target.value })}
-              onFocus={() => setEditingQuestion(question.id)}
+              onFocus={() => {
+                setEditingQuestion(question.id);
+                handleInputFocus();
+              }}
+              onBlur={handleInputBlur}
               placeholder="Вопрос"
               style={{
                 width: '100%',
@@ -191,6 +233,8 @@ const QuestionBuilder: React.FC = () => {
               type="text"
               value={question.description || ''}
               onChange={(e) => updateQuestion(question.id, { description: e.target.value })}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
               placeholder="Описание (необязательно)"
               style={{
                 width: '100%',
@@ -269,6 +313,7 @@ const QuestionBuilder: React.FC = () => {
 
           {/* Кнопка загрузки изображения */}
           <button
+            onClick={() => handleImageUpload(question.id)}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -276,15 +321,46 @@ const QuestionBuilder: React.FC = () => {
               padding: '12px 16px',
               borderRadius: '8px',
               border: '1px solid var(--tg-section-separator-color)',
-              backgroundColor: 'transparent',
-              color: 'var(--tg-hint-color)',
+              backgroundColor: question.imageUrl ? 'var(--tg-button-color)' : 'transparent',
+              color: question.imageUrl ? 'var(--tg-button-text-color)' : 'var(--tg-hint-color)',
               fontSize: '14px',
               cursor: 'pointer'
             }}
           >
             <Image size={16} />
-            Картинка
+            {question.imageUrl ? question.imageName || 'Изображение загружено' : 'Картинка'}
           </button>
+
+          {/* Предпросмотр загруженного изображения */}
+          {question.imageUrl && (
+            <div style={{ marginTop: '12px' }}>
+              <img 
+                src={question.imageUrl} 
+                alt="Загруженное изображение"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '200px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)'
+                }}
+              />
+              <button
+                onClick={() => updateQuestion(question.id, { imageUrl: undefined, imageName: undefined })}
+                style={{
+                  marginTop: '8px',
+                  padding: '4px 8px',
+                  fontSize: '12px',
+                  color: 'var(--tg-destructive-text-color)',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--tg-destructive-text-color)',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Удалить изображение
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Варианты ответов для множественного выбора */}
@@ -489,12 +565,15 @@ const QuestionBuilder: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      backgroundColor: 'var(--tg-bg-color)',
-      color: 'var(--tg-text-color)',
-      paddingBottom: '80px'
-    }}>
+    <div 
+      style={{ 
+        minHeight: '100vh', 
+        backgroundColor: 'var(--tg-bg-color)',
+        color: 'var(--tg-text-color)',
+        paddingBottom: '80px'
+      }}
+      className={isKeyboardActive ? 'keyboard-active' : ''}
+    >
       {/* Шапка */}
       <div style={{
         display: 'flex',
@@ -629,17 +708,20 @@ const QuestionBuilder: React.FC = () => {
 
       {/* Фиксированные кнопки снизу */}
       {questions.length > 0 && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '16px',
-          backgroundColor: 'var(--tg-bg-color)',
-          borderTop: '1px solid var(--tg-section-separator-color)',
-          display: 'flex',
-          gap: '12px'
-        }}>
+        <div 
+          className="fixed-buttons"
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '16px',
+            backgroundColor: 'var(--tg-bg-color)',
+            borderTop: '1px solid var(--tg-section-separator-color)',
+            display: 'flex',
+            gap: '12px'
+          }}
+        >
           <button
             onClick={handleBack}
             style={{

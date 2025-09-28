@@ -116,6 +116,7 @@ export const HomePage = () => {
             console.log('Повысить статус');
           }}>
             <span style={{ fontSize: '14px' }}>💎</span>
+            <span style={{ fontSize: '12px', fontWeight: '500' }}>Повысить статус</span>
             <div style={{
               fontSize: '10px',
               backgroundColor: '#007AFF',
