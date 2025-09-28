@@ -288,9 +288,9 @@ const QuestionBuilder: React.FC = () => {
           <div style={{ position: 'relative', minWidth: '200px' }}>
             <select
               value={question.type}
-              onChange={(e) => updateQuestion(question.id, { 
+              onChange={(e) => updateQuestion(question.id, {
                 type: e.target.value as QuestionType,
-                options: ['single_choice', 'multiple_choice'].includes(e.target.value) ? ['Вариант 1'] : []
+                options: ['single_choice', 'multiple_choice'].includes(e.target.value) ? [''] : []
               })}
               style={{
                 width: '100%',
@@ -348,7 +348,7 @@ const QuestionBuilder: React.FC = () => {
 
           {/* Предпросмотр загруженного изображения */}
           {question.imageUrl && (
-            <div style={{ marginTop: '12px' }}>
+            <div style={{ marginTop: '12px', position: 'relative', display: 'inline-block' }}>
               <img 
                 src={question.imageUrl} 
                 alt="Загруженное изображение"
@@ -357,23 +357,31 @@ const QuestionBuilder: React.FC = () => {
                   maxHeight: '200px',
                   borderRadius: '8px',
                   border: '1px solid var(--tg-section-separator-color)',
-                  objectFit: 'contain'
+                  objectFit: 'contain',
+                  display: 'block'
                 }}
               />
               <button
                 onClick={() => updateQuestion(question.id, { imageUrl: undefined, imageName: undefined })}
                 style={{
-                  marginTop: '8px',
-                  padding: '4px 8px',
-                  fontSize: '12px',
-                  color: 'var(--tg-destructive-text-color)',
-                  backgroundColor: 'transparent',
-                  border: '1px solid var(--tg-destructive-text-color)',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  backgroundColor: '#FF3B30',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                 }}
               >
-                Удалить изображение
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6"/>
+                </svg>
               </button>
             </div>
           )}
@@ -407,6 +415,8 @@ const QuestionBuilder: React.FC = () => {
                     type="text"
                     value={option}
                     onChange={(e) => updateOption(question.id, index, e.target.value)}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                     placeholder={`Вариант ${index + 1}`}
                     style={{
                       flex: 1,
@@ -721,6 +731,37 @@ const QuestionBuilder: React.FC = () => {
           </motion.div>
         )}
       </div>
+
+      {/* Кнопка закрытия клавиатуры */}
+      {isKeyboardActive && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          right: '16px',
+          zIndex: 1000,
+          paddingTop: '60px'
+        }}>
+          <button
+            onClick={() => {
+              (document.activeElement as HTMLElement)?.blur();
+              setIsKeyboardActive(false);
+            }}
+            style={{
+              backgroundColor: 'var(--tg-button-color)',
+              color: 'var(--tg-button-text-color)',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            }}
+          >
+            Готово
+          </button>
+        </div>
+      )}
 
       {/* Фиксированные кнопки снизу */}
       {questions.length > 0 && (

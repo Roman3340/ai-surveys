@@ -17,6 +17,7 @@ const AISurveyPage: React.FC = () => {
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const handleBack = () => {
     showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
@@ -34,6 +35,7 @@ const AISurveyPage: React.FC = () => {
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setIsKeyboardActive(true);
     // Прокручиваем к полю ввода
     setTimeout(() => {
       e.target.scrollIntoView({ 
@@ -41,6 +43,11 @@ const AISurveyPage: React.FC = () => {
         block: 'center' 
       });
     }, 300);
+  };
+
+  const handleInputBlur = () => {
+    // Задержка чтобы клавиатура успела скрыться
+    setTimeout(() => setIsKeyboardActive(false), 300);
   };
 
   const handleQuestionTypeToggle = (type: string) => {
@@ -69,14 +76,17 @@ const AISurveyPage: React.FC = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     const handleBackClick = () => {
-      showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
+      try {
+        // Используем нативный confirm вместо showConfirm
+        const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
         if (confirmed) {
           navigate('/survey/create', { replace: true });
         }
-      }).catch(() => {
-        // Если showConfirm не работает, просто переходим
+      } catch (error) {
+        // Если что-то пошло не так, просто переходим
+        console.error('Error with confirm dialog:', error);
         navigate('/survey/create', { replace: true });
-      });
+      }
     };
 
     backButton.show();
@@ -86,7 +96,7 @@ const AISurveyPage: React.FC = () => {
       backButton.hide();
       backButton.offClick(handleBackClick);
     };
-  }, [backButton, navigate, showConfirm]);
+  }, [backButton, navigate]);
 
   const businessSpheres = [
     { value: 'cafe', label: 'Кафе' },
@@ -151,6 +161,37 @@ const AISurveyPage: React.FC = () => {
           Создание с ИИ
         </h1>
       </div>
+
+      {/* Кнопка закрытия клавиатуры */}
+      {isKeyboardActive && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          right: '16px',
+          zIndex: 1000,
+          paddingTop: '60px'
+        }}>
+          <button
+            onClick={() => {
+              (document.activeElement as HTMLElement)?.blur();
+              setIsKeyboardActive(false);
+            }}
+            style={{
+              backgroundColor: 'var(--tg-button-color)',
+              color: 'var(--tg-button-text-color)',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            }}
+          >
+            Готово
+          </button>
+        </div>
+      )}
 
       <div style={{ padding: '24px 16px' }} className="form-container">
         {/* Заголовок */}
@@ -253,6 +294,7 @@ const AISurveyPage: React.FC = () => {
               value={formData.targetAudience}
               onChange={(e) => handleInputChange('targetAudience', e.target.value)}
               onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
               placeholder="Кто будет отвечать (клиенты кафе, подписчики канала и т.д.)"
               rows={3}
               style={{
@@ -283,6 +325,7 @@ const AISurveyPage: React.FC = () => {
               value={formData.surveyGoal}
               onChange={(e) => handleInputChange('surveyGoal', e.target.value)}
               onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
               placeholder="Что нужно узнать (причины отказа, удовлетворённость сервисом)"
               rows={3}
               style={{

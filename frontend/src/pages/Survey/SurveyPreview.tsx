@@ -308,26 +308,32 @@ const SurveyPreview: React.FC = () => {
       case 'yes_no':
         return (
           <div style={{ display: 'flex', gap: '12px' }}>
-            {['Да', 'Нет'].map((option) => (
-              <button
-                key={option}
-                onClick={() => handleAnswerChange(question.id, option)}
-                style={{
-                  flex: 1,
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: answer === option ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
-                  color: answer === option ? 'var(--tg-button-text-color)' : 'var(--tg-text-color)',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {option}
-              </button>
-            ))}
+            {['Да', 'Нет'].map((option) => {
+              const isSelected = answer === option;
+              const isYes = option === 'Да';
+              const selectedColor = isYes ? '#34C759' : '#FF3B30';
+              
+              return (
+                <button
+                  key={option}
+                  onClick={() => handleAnswerChange(question.id, option)}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    border: isSelected ? `2px solid ${selectedColor}` : '1px solid var(--tg-section-separator-color)',
+                    backgroundColor: isSelected ? selectedColor : 'var(--tg-section-bg-color)',
+                    color: isSelected ? 'white' : 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {option}
+                </button>
+              );
+            })}
           </div>
         );
 
@@ -341,11 +347,12 @@ const SurveyPreview: React.FC = () => {
               width: '100%',
               padding: '12px 16px',
               borderRadius: '8px',
-              border: '1px solid var(--tg-section-separator-color)',
-              backgroundColor: 'var(--tg-section-bg-color)',
+              border: '2px solid var(--tg-button-color)',
+              backgroundColor: 'var(--tg-bg-color)',
               color: 'var(--tg-text-color)',
               fontSize: '16px',
-              outline: 'none'
+              outline: 'none',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}
           />
         );
@@ -354,6 +361,8 @@ const SurveyPreview: React.FC = () => {
         return (
           <input
             type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={answer || ''}
             onChange={(e) => handleAnswerChange(question.id, e.target.value)}
             placeholder="Введите число..."

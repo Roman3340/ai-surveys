@@ -64,14 +64,17 @@ const ManualSurveyPage: React.FC = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     const handleBackClick = () => {
-      showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
+      try {
+        // Используем нативный confirm вместо showConfirm
+        const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
         if (confirmed) {
           navigate('/survey/create', { replace: true });
         }
-      }).catch(() => {
-        // Если showConfirm не работает, просто переходим
+      } catch (error) {
+        // Если что-то пошло не так, просто переходим
+        console.error('Error with confirm dialog:', error);
         navigate('/survey/create', { replace: true });
-      });
+      }
     };
 
     backButton.show();
@@ -81,7 +84,7 @@ const ManualSurveyPage: React.FC = () => {
       backButton.hide();
       backButton.offClick(handleBackClick);
     };
-  }, [backButton, navigate, showConfirm]);
+  }, [backButton, navigate]);
 
   return (
     <div 
@@ -126,6 +129,37 @@ const ManualSurveyPage: React.FC = () => {
           Основные настройки
         </h1>
       </div>
+
+      {/* Кнопка закрытия клавиатуры */}
+      {isKeyboardActive && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          right: '16px',
+          zIndex: 1000,
+          paddingTop: '60px'
+        }}>
+          <button
+            onClick={() => {
+              (document.activeElement as HTMLElement)?.blur();
+              setIsKeyboardActive(false);
+            }}
+            style={{
+              backgroundColor: 'var(--tg-button-color)',
+              color: 'var(--tg-button-text-color)',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            }}
+          >
+            Готово
+          </button>
+        </div>
+      )}
 
       <div style={{ padding: '24px 16px' }} className="form-container">
         {/* Заголовок с эмодзи и прогресс */}
