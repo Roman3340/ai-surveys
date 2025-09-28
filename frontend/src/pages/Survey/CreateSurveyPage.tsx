@@ -80,7 +80,7 @@ const CreateSurveyPage: React.FC = () => {
             marginBottom: '40px'
           }}
         >
-          <TelegramEmoji emoji="💡" size="lg" />
+          <TelegramEmoji emoji="💡" size="large" />
           <h2 style={{
             fontSize: '24px',
             fontWeight: '700',

@@ -7,13 +7,14 @@ import TelegramEmoji from '../../components/ui/TelegramEmoji';
 import { Button } from '../../components/ui/Button';
 import type { QuestionType } from '../../types';
 
-interface Question {
-  id: string;
-  type: QuestionType;
-  title: string;
-  required: boolean;
-  options?: string[];
-}
+// Временно убираем неиспользуемый интерфейс
+// interface Question {
+//   id: string;
+//   type: QuestionType;
+//   title: string;
+//   required: boolean;
+//   options?: string[];
+// }
 
 const ManualSurveyPage: React.FC = () => {
   const navigate = useNavigate();

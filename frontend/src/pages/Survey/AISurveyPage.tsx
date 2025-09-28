@@ -106,7 +106,7 @@ const AISurveyPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', marginBottom: '32px' }}
         >
-          <TelegramEmoji emoji="🤖" size="lg" />
+          <TelegramEmoji emoji="🤖" size="large" />
           <h2 style={{
             fontSize: '24px',
             fontWeight: '700',
