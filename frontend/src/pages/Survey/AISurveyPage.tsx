@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
@@ -6,7 +6,7 @@ import { useTelegram } from '../../hooks/useTelegram';
 
 const AISurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showConfirm } = useTelegram();
+  const { showConfirm, backButton } = useTelegram();
 
   const [formData, setFormData] = useState({
     businessSphere: '',
@@ -33,6 +33,16 @@ const AISurveyPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    // Прокручиваем к полю ввода
+    setTimeout(() => {
+      e.target.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }, 300);
+  };
+
   const handleQuestionTypeToggle = (type: string) => {
     setFormData(prev => ({
       ...prev,
@@ -55,6 +65,28 @@ const AISurveyPage: React.FC = () => {
       state: { formData } 
     });
   };
+
+  // Настройка нативной кнопки назад Telegram
+  useEffect(() => {
+    const handleBackClick = () => {
+      showConfirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?').then((confirmed: boolean) => {
+        if (confirmed) {
+          navigate('/survey/create', { replace: true });
+        }
+      }).catch(() => {
+        // Если showConfirm не работает, просто переходим
+        navigate('/survey/create', { replace: true });
+      });
+    };
+
+    backButton.show();
+    backButton.onClick(handleBackClick);
+
+    return () => {
+      backButton.hide();
+      backButton.offClick(handleBackClick);
+    };
+  }, [backButton, navigate, showConfirm]);
 
   const businessSpheres = [
     { value: 'cafe', label: 'Кафе' },
@@ -220,6 +252,7 @@ const AISurveyPage: React.FC = () => {
             <textarea
               value={formData.targetAudience}
               onChange={(e) => handleInputChange('targetAudience', e.target.value)}
+              onFocus={handleInputFocus}
               placeholder="Кто будет отвечать (клиенты кафе, подписчики канала и т.д.)"
               rows={3}
               style={{
@@ -249,6 +282,7 @@ const AISurveyPage: React.FC = () => {
             <textarea
               value={formData.surveyGoal}
               onChange={(e) => handleInputChange('surveyGoal', e.target.value)}
+              onFocus={handleInputFocus}
               placeholder="Что нужно узнать (причины отказа, удовлетворённость сервисом)"
               rows={3}
               style={{

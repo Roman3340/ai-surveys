@@ -97,7 +97,7 @@ export const HomePage = () => {
           marginBottom: '12px'
         }}>
           <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-            Создавайте опросы и получайте ценные инсайты
+            Создавай опросы и получай ценные инсайты
           </div>
           
           {/* Маленькая кнопка "Повысить статус" */}
@@ -448,7 +448,7 @@ export const HomePage = () => {
 
       {/* Нижняя панель с кнопками */}
       <div style={{
-        padding: '16px',
+        padding: '20px 16px 40px 16px',
         marginTop: '20px',
         borderTop: '1px solid var(--tg-section-separator-color)',
         display: 'flex',
@@ -460,8 +460,8 @@ export const HomePage = () => {
           color: 'var(--tg-text-color)',
           border: 'none',
           borderRadius: '12px',
-          padding: '12px 16px',
-          fontSize: '16px',
+          padding: '16px 20px',
+          fontSize: '17px',
           fontWeight: '500',
           cursor: 'pointer',
           display: 'flex',
@@ -469,7 +469,7 @@ export const HomePage = () => {
           justifyContent: 'center',
           gap: '8px'
         }}>
-          <Settings size={18} />
+          <Settings size={20} />
           Настройки
         </button>
         <button style={{
@@ -478,8 +478,8 @@ export const HomePage = () => {
           color: 'var(--tg-text-color)',
           border: 'none',
           borderRadius: '12px',
-          padding: '12px 16px',
-          fontSize: '16px',
+          padding: '16px 20px',
+          fontSize: '17px',
           fontWeight: '500',
           cursor: 'pointer',
           display: 'flex',
@@ -487,7 +487,7 @@ export const HomePage = () => {
           justifyContent: 'center',
           gap: '8px'
         }}>
-          <HelpCircle size={18} />
+          <HelpCircle size={20} />
           Поддержка
         </button>
       </div>

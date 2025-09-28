@@ -72,8 +72,23 @@ const SurveyPreview: React.FC = () => {
   };
 
   const handleNextQuestion = () => {
+    if (!surveyData) return;
+    
+    const currentQuestion = surveyData.questions[currentQuestionIndex];
+    const answer = answers[currentQuestion.id];
+    
+    // Проверяем обязательные вопросы
+    if (currentQuestion.required) {
+      if (!answer || 
+          (typeof answer === 'string' && answer.trim() === '') ||
+          (Array.isArray(answer) && answer.length === 0)) {
+        alert('Этот вопрос обязателен для ответа');
+        return;
+      }
+    }
+    
     hapticFeedback?.light();
-    if (surveyData && currentQuestionIndex < surveyData.questions.length - 1) {
+    if (currentQuestionIndex < surveyData.questions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     }
   };
@@ -86,6 +101,21 @@ const SurveyPreview: React.FC = () => {
   };
 
   const handlePublishSurvey = () => {
+    if (!surveyData) return;
+    
+    const currentQuestion = surveyData.questions[currentQuestionIndex];
+    const answer = answers[currentQuestion.id];
+    
+    // Проверяем последний вопрос, если он обязательный
+    if (currentQuestion.required) {
+      if (!answer || 
+          (typeof answer === 'string' && answer.trim() === '') ||
+          (Array.isArray(answer) && answer.length === 0)) {
+        alert('Этот вопрос обязателен для ответа');
+        return;
+      }
+    }
+    
     hapticFeedback?.success();
     // Здесь будет логика публикации опроса
     alert('Опрос опубликован! (В реальном приложении здесь будет API вызов)');

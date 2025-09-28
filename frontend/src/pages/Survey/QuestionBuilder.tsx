@@ -69,6 +69,17 @@ const QuestionBuilder: React.FC = () => {
     };
     setQuestions(prev => [...prev, newQuestion]);
     setEditingQuestion(newQuestion.id);
+    
+    // Прокручиваем к новому вопросу
+    setTimeout(() => {
+      const questionElement = document.getElementById(`question-${newQuestion.id}`);
+      if (questionElement) {
+        questionElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 100);
   };
 
   const updateQuestion = (id: string, updates: Partial<Question>) => {
@@ -178,6 +189,7 @@ const QuestionBuilder: React.FC = () => {
     return (
       <motion.div
         key={question.id}
+        id={`question-${question.id}`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
@@ -311,8 +323,10 @@ const QuestionBuilder: React.FC = () => {
               }}
             />
           </div>
+        </div>
 
-          {/* Кнопка загрузки изображения */}
+        {/* Кнопка загрузки изображения */}
+        <div style={{ marginBottom: '16px' }}>
           <button
             onClick={() => handleImageUpload(question.id)}
             style={{
@@ -342,7 +356,8 @@ const QuestionBuilder: React.FC = () => {
                   maxWidth: '100%',
                   maxHeight: '200px',
                   borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)'
+                  border: '1px solid var(--tg-section-separator-color)',
+                  objectFit: 'contain'
                 }}
               />
               <button
