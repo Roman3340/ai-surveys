@@ -14,6 +14,7 @@ interface Question {
   required: boolean;
   options?: string[];
   imageUrl?: string;
+  imageName?: string;
   validation?: {
     min?: number;
     max?: number;
