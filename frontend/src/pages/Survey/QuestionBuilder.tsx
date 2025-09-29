@@ -33,6 +33,8 @@ const QuestionBuilder: React.FC = () => {
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
   const [draggedQuestionId, setDraggedQuestionId] = useState<string | null>(null);
   const [dragOverQuestionId, setDragOverQuestionId] = useState<string | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const questionTypes = [
     { value: 'text', label: 'Короткий ответ', icon: '📝' },
@@ -164,6 +166,74 @@ const QuestionBuilder: React.FC = () => {
     setDragOverQuestionId(null);
   };
 
+  // Touch события для мобильных устройств
+  const handleTouchStart = (e: React.TouchEvent, questionId: string) => {
+    if (questions.length <= 1) return;
+    
+    const touch = e.touches[0];
+    setTouchStartY(touch.clientY);
+    setDraggedQuestionId(questionId);
+    setIsDragging(false);
+    hapticFeedback?.light();
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!draggedQuestionId || !touchStartY) return;
+    
+    const touch = e.touches[0];
+    const deltaY = Math.abs(touch.clientY - touchStartY);
+    
+    // Если переместили палец на 10px, начинаем drag
+    if (deltaY > 10 && !isDragging) {
+      setIsDragging(true);
+      hapticFeedback?.medium();
+    }
+    
+    if (isDragging) {
+      e.preventDefault(); // Предотвращаем скролл
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!draggedQuestionId || !isDragging) {
+      setDraggedQuestionId(null);
+      setTouchStartY(null);
+      setIsDragging(false);
+      return;
+    }
+
+    const touch = e.changedTouches[0];
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    if (elementBelow) {
+      const questionElement = elementBelow.closest('[data-question-id]');
+      if (questionElement) {
+        const targetQuestionId = questionElement.getAttribute('data-question-id');
+        if (targetQuestionId && targetQuestionId !== draggedQuestionId) {
+          // Выполняем перемещение
+          const draggedIndex = questions.findIndex(q => q.id === draggedQuestionId);
+          const targetIndex = questions.findIndex(q => q.id === targetQuestionId);
+
+          if (draggedIndex !== -1 && targetIndex !== -1) {
+            const newQuestions = [...questions];
+            const draggedQuestion = newQuestions[draggedIndex];
+            
+            newQuestions.splice(draggedIndex, 1);
+            newQuestions.splice(targetIndex, 0, draggedQuestion);
+
+            setQuestions(newQuestions);
+            hapticFeedback?.medium();
+          }
+        }
+      }
+    }
+
+    setDraggedQuestionId(null);
+    setDragOverQuestionId(null);
+    setTouchStartY(null);
+    setIsDragging(false);
+  };
+
   const handlePreview = () => {
     if (questions.length === 0) {
       alert('Добавьте хотя бы один вопрос для предпросмотра');
@@ -274,12 +344,16 @@ const QuestionBuilder: React.FC = () => {
         exit={{ opacity: 0, y: -20 }}
       >
         <div
+          data-question-id={question.id}
           draggable={questions.length > 1}
           onDragStart={(e) => handleDragStart(e, question.id)}
           onDragOver={(e) => handleDragOver(e, question.id)}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, question.id)}
           onDragEnd={handleDragEnd}
+          onTouchStart={(e) => handleTouchStart(e, question.id)}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
             backgroundColor: 'var(--tg-section-bg-color)',
             borderRadius: '12px',
@@ -293,7 +367,10 @@ const QuestionBuilder: React.FC = () => {
             position: 'relative',
             opacity: isDragging ? 0.5 : 1,
             cursor: questions.length > 1 ? 'move' : 'default',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            userSelect: 'none', // Предотвращаем выделение текста при touch
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none' // Отключаем контекстное меню на iOS
           }}
         >
         {/* Заголовок вопроса */}
