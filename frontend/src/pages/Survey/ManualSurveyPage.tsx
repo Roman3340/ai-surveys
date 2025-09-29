@@ -18,17 +18,16 @@ const ManualSurveyPage: React.FC = () => {
     startTime: '',
     endDate: '',
     endTime: '',
-    maxParticipants: '',
-    motivation: 'none',
-    rewardValue: '',
-    rewardDescription: ''
+    maxParticipants: ''
   });
 
 
   const handleNext = () => {
     // Сохраняем данные опроса в localStorage для использования в следующих шагах
     localStorage.setItem('surveySettings', JSON.stringify(surveyData));
-    navigate('/survey/create/manual/questions');
+    navigate('/survey/create/manual/motivation', {
+      state: surveyData
+    });
   };
 
   const handleSurveyDataChange = (field: string, value: any) => {
@@ -208,7 +207,7 @@ const ManualSurveyPage: React.FC = () => {
                onFocus={handleInputFocus}
                onBlur={handleInputBlur}
                onKeyDown={handleKeyDown}
-               placeholder="Краткое описание опроса (опционально)"
+               placeholder="Опционально"
                enterKeyHint="done"
                rows={4}
                style={{
@@ -298,90 +297,6 @@ const ManualSurveyPage: React.FC = () => {
             placeholder="Не указана"
           />
 
-          {/* Мотивация */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '16px',
-              fontWeight: '500',
-              marginBottom: '8px',
-              color: 'var(--tg-text-color)'
-            }}>
-              Мотивация:
-            </label>
-            <div style={{
-              position: 'relative'
-            }}>
-              <select
-                value={surveyData.motivation}
-                onChange={(e) => handleSurveyDataChange('motivation', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  color: 'var(--tg-text-color)',
-                  fontSize: '16px',
-                  outline: 'none',
-                  appearance: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="promo_code">Промокод на скидку</option>
-                <option value="stars">Звёзды Telegram</option>
-                <option value="gift">Подарок</option>
-                <option value="none">Без мотивации</option>
-              </select>
-              <ChevronDown 
-                size={20} 
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'var(--tg-hint-color)',
-                  pointerEvents: 'none'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Поле награды - показывается только для звёзд и подарков */}
-          {(surveyData.motivation === 'stars' || surveyData.motivation === 'gift') && (
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                fontWeight: '500',
-                marginBottom: '8px',
-                color: 'var(--tg-text-color)'
-              }}>
-                {surveyData.motivation === 'stars' ? 'Количество звёзд:' : 'Описание подарка:'}
-              </label>
-              <input
-                type={surveyData.motivation === 'stars' ? 'number' : 'text'}
-                value={surveyData.rewardValue}
-                onChange={(e) => handleSurveyDataChange('rewardValue', e.target.value)}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-                onKeyDown={handleKeyDown}
-                placeholder={surveyData.motivation === 'stars' ? '50' : 'Бесплатная доставка'}
-                enterKeyHint="done"
-                inputMode={surveyData.motivation === 'stars' ? 'numeric' : 'text'}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  color: 'var(--tg-text-color)',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-          )}
         </div>
       </div>
 

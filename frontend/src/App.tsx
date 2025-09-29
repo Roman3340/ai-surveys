@@ -1,11 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/Home/HomePage';
 import CreateSurveyPage from './pages/Survey/CreateSurveyPage';
 import ManualSurveyPage from './pages/Survey/ManualSurveyPage';
 import AISurveyPage from './pages/Survey/AISurveyPage';
+import AIBusinessPage from './pages/Survey/AIBusinessPage';
+import AIPersonalPage from './pages/Survey/AIPersonalPage';
 import QuestionBuilder from './pages/Survey/QuestionBuilder';
 import SurveyPreview from './pages/Survey/SurveyPreview';
+import MotivationPage from './pages/Survey/MotivationPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import ThemeSettingsPage from './pages/Settings/ThemeSettingsPage';
 import LanguageSettingsPage from './pages/Settings/LanguageSettingsPage';
@@ -17,6 +20,7 @@ import './styles/globals.css';
 function App() {
   const { isReady, theme: telegramTheme } = useTelegram();
   const { theme: appTheme, setTheme } = useAppStore();
+  const isInitialized = useRef(false);
 
   // Синхронизация темы
   useEffect(() => {
@@ -36,8 +40,9 @@ function App() {
 
   // Инициализация темы при первом запуске
   useEffect(() => {
-    if (isReady && !appTheme) {
-      setTheme('system'); // По умолчанию системная тема
+    if (isReady && !isInitialized.current && !appTheme) {
+      setTheme('system');
+      isInitialized.current = true;
     }
   }, [isReady, appTheme, setTheme]);
 
@@ -60,9 +65,13 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/survey/create" element={<CreateSurveyPage />} />
           <Route path="/survey/create/manual" element={<ManualSurveyPage />} />
+          <Route path="/survey/create/manual/motivation" element={<MotivationPage />} />
           <Route path="/survey/create/manual/questions" element={<QuestionBuilder />} />
           <Route path="/survey/create/manual/preview" element={<SurveyPreview />} />
           <Route path="/survey/create/ai" element={<AISurveyPage />} />
+          <Route path="/survey/create/ai/business" element={<AIBusinessPage />} />
+          <Route path="/survey/create/ai/personal" element={<AIPersonalPage />} />
+          <Route path="/survey/create/ai/motivation" element={<MotivationPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/theme" element={<ThemeSettingsPage />} />
           <Route path="/settings/language" element={<LanguageSettingsPage />} />

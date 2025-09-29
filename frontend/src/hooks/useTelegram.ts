@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import WebApp from '@twa-dev/sdk';
 import type { TelegramUserData } from '../types';
 import { getTelegramWebApp, isTelegramEnvironment } from '../utils/mockTelegram';
@@ -43,6 +43,7 @@ export const useTelegram = () => {
   const [isReady, setIsReady] = useState(false);
   const [user, setUser] = useState<TelegramUserData | null>(null);
   const [startParam, setStartParam] = useState<string | null>(null);
+  const backButtonInitialized = useRef(false);
 
   useEffect(() => {
     // Используем реальный Telegram WebApp или мок для разработки
@@ -165,8 +166,14 @@ export const useTelegram = () => {
     onClick: (callback: () => void) => {
       try {
         if (tg.BackButton) {
-          // Всегда очищаем предыдущие обработчики перед установкой новых
+          // Проверяем, установлен ли уже обработчик
           const currentCallback = (tg.BackButton as any).__currentCallback;
+          if (currentCallback && backButtonInitialized.current) {
+            console.log('BackButton onClick already initialized, skipping');
+            return;
+          }
+          
+          // Очищаем предыдущие обработчики если есть
           if (currentCallback) {
             tg.BackButton.offClick(currentCallback);
           }
@@ -174,6 +181,7 @@ export const useTelegram = () => {
           // Сохраняем новый callback
           (tg.BackButton as any).__currentCallback = callback;
           tg.BackButton.onClick(callback);
+          backButtonInitialized.current = true;
           console.log('BackButton onClick set');
         }
       } catch (error) {
@@ -185,6 +193,7 @@ export const useTelegram = () => {
         if (tg.BackButton) {
           tg.BackButton.offClick(callback);
           (tg.BackButton as any).__currentCallback = null;
+          backButtonInitialized.current = false;
           console.log('BackButton onClick removed');
         }
       } catch (error) {
