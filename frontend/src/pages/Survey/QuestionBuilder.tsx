@@ -34,9 +34,11 @@ const QuestionBuilder: React.FC = () => {
   const [draggedQuestionId, setDraggedQuestionId] = useState<string | null>(null);
   const [dragOverQuestionId, setDragOverQuestionId] = useState<string | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dragElement, setDragElement] = useState<HTMLElement | null>(null);
+  const [dragStartTime, setDragStartTime] = useState<number | null>(null);
 
   const questionTypes = [
     { value: 'text', label: 'Короткий ответ', icon: '📝' },
@@ -176,13 +178,19 @@ const QuestionBuilder: React.FC = () => {
     const element = e.currentTarget as HTMLElement;
     const rect = element.getBoundingClientRect();
     
-    // Предотвращаем стандартное поведение браузера
-    e.preventDefault();
+    // Проверяем, что касание не на интерактивном элементе
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'BUTTON' || 
+        target.closest('input') || target.closest('select') || target.closest('button')) {
+      return; // Не активируем drag для интерактивных элементов
+    }
     
     setTouchStartY(touch.clientY);
+    setTouchStartX(touch.clientX);
     setDraggedQuestionId(questionId);
     setIsDragging(false);
     setDragElement(element);
+    setDragStartTime(Date.now());
     setDragOffset({
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
@@ -192,13 +200,19 @@ const QuestionBuilder: React.FC = () => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!draggedQuestionId || !touchStartY || !dragElement) return;
+    if (!draggedQuestionId || !touchStartY || !dragElement || !dragStartTime) return;
     
     const touch = e.touches[0];
     const deltaY = Math.abs(touch.clientY - touchStartY);
+    const deltaX = Math.abs(touch.clientX - (touchStartX || touch.clientX));
+    const timeElapsed = Date.now() - dragStartTime;
     
-    // Если переместили палец на 10px, начинаем drag
-    if (deltaY > 10 && !isDragging) {
+    // Более строгие условия для активации drag:
+    // 1. Прошло минимум 200ms с начала касания
+    // 2. Перемещение по Y больше чем по X (вертикальное перетаскивание)
+    // 3. Перемещение больше 30px
+    // 4. Время касания больше 200ms (исключаем быстрые касания)
+    if (deltaY > 30 && deltaY > deltaX && timeElapsed > 200 && !isDragging) {
       setIsDragging(true);
       hapticFeedback?.medium();
       
@@ -321,6 +335,8 @@ const QuestionBuilder: React.FC = () => {
     setDraggedQuestionId(null);
     setDragOverQuestionId(null);
     setTouchStartY(null);
+    setTouchStartX(null);
+    setDragStartTime(null);
     setIsDragging(false);
     setDragOffset({ x: 0, y: 0 });
     setDragElement(null);
@@ -492,14 +508,34 @@ const QuestionBuilder: React.FC = () => {
           gap: '12px',
           marginBottom: '16px'
         }}>
-          <GripVertical
-            size={20}
+          <div
             style={{
-              color: 'var(--tg-hint-color)',
-              marginTop: '12px',
-              cursor: 'grab'
+              padding: '8px',
+              borderRadius: '6px',
+              cursor: questions.length > 1 ? 'grab' : 'default',
+              backgroundColor: questions.length > 1 ? 'rgba(244, 109, 0, 0.1)' : 'transparent',
+              transition: 'background-color 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: '8px'
             }}
-          />
+            onTouchStart={(e) => {
+              // Для иконки grip активируем drag сразу
+              if (questions.length > 1) {
+                e.stopPropagation();
+                handleTouchStart(e, question.id);
+              }
+            }}
+          >
+            <GripVertical
+              size={20}
+              style={{
+                color: questions.length > 1 ? '#F46D00' : 'var(--tg-hint-color)',
+                opacity: questions.length > 1 ? 1 : 0.5
+              }}
+            />
+          </div>
           <div style={{ flex: 1 }}>
              <input
                type="text"
@@ -959,6 +995,21 @@ const QuestionBuilder: React.FC = () => {
         </motion.div>
 
         {/* Список вопросов */}
+        {questions.length > 1 && (
+          <div style={{
+            backgroundColor: 'rgba(244, 109, 0, 0.1)',
+            border: '1px solid rgba(244, 109, 0, 0.3)',
+            borderRadius: '8px',
+            padding: '12px',
+            marginBottom: '16px',
+            fontSize: '14px',
+            color: 'var(--tg-hint-color)',
+            textAlign: 'center'
+          }}>
+            💡 Касайтесь иконки <GripVertical size={16} style={{ display: 'inline', verticalAlign: 'middle' }} /> для перетаскивания вопросов
+          </div>
+        )}
+        
         <AnimatePresence>
           {questions.map(question => renderQuestionEditor(question))}
         </AnimatePresence>
