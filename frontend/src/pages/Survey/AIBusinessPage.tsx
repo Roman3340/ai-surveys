@@ -10,7 +10,6 @@ interface AIBusinessPageProps {}
 
 const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   const navigate = useNavigate();
-  const { hapticFeedback } = useTelegram();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const [formData, setFormData] = useState({

@@ -9,7 +9,6 @@ interface AIPersonalPageProps {}
 
 const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
   const navigate = useNavigate();
-  const { hapticFeedback } = useTelegram();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const [formData, setFormData] = useState({

@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -7,7 +6,6 @@ import { useStableBackButton } from '../../hooks/useStableBackButton';
 interface LanguageSettingsPageProps {}
 
 const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = () => {
-  const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
   const [selectedLanguage, setSelectedLanguage] = useState('ru');
 
