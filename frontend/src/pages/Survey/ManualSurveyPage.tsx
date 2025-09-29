@@ -109,11 +109,13 @@ const ManualSurveyPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', marginBottom: '32px' }}
         >
-          <RealTelegramEmoji 
-            emoji="📝" 
-            size="large" 
-            onClick={() => console.log('📝 clicked!')}
-          />
+          <div style={{ marginBottom: '10px' }}>
+            <RealTelegramEmoji 
+              emoji="📝" 
+              size="large" 
+              onClick={() => console.log('📝 clicked!')}
+            />
+          </div>
           <div style={{
             display: 'flex',
             justifyContent: 'center',

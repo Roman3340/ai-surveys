@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Image, GripVertical, ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
-import TelegramEmoji from '../../components/ui/TelegramEmoji';
+import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 import type { QuestionType } from '../../types';
 
 interface Question {
@@ -31,6 +31,8 @@ const QuestionBuilder: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
+  const [draggedQuestionId, setDraggedQuestionId] = useState<string | null>(null);
+  const [dragOverQuestionId, setDragOverQuestionId] = useState<string | null>(null);
 
   const questionTypes = [
     { value: 'text', label: 'Короткий ответ', icon: '📝' },
@@ -106,6 +108,62 @@ const QuestionBuilder: React.FC = () => {
     }
   };
 
+  // Drag & Drop функции
+  const handleDragStart = (e: React.DragEvent, questionId: string) => {
+    setDraggedQuestionId(questionId);
+    e.dataTransfer.effectAllowed = 'move';
+    hapticFeedback?.light();
+  };
+
+  const handleDragOver = (e: React.DragEvent, questionId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverQuestionId(questionId);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverQuestionId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetQuestionId: string) => {
+    e.preventDefault();
+    
+    if (!draggedQuestionId || draggedQuestionId === targetQuestionId) {
+      setDraggedQuestionId(null);
+      setDragOverQuestionId(null);
+      return;
+    }
+
+    const draggedIndex = questions.findIndex(q => q.id === draggedQuestionId);
+    const targetIndex = questions.findIndex(q => q.id === targetQuestionId);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedQuestionId(null);
+      setDragOverQuestionId(null);
+      return;
+    }
+
+    const newQuestions = [...questions];
+    const draggedQuestion = newQuestions[draggedIndex];
+    
+    // Удаляем перетаскиваемый элемент
+    newQuestions.splice(draggedIndex, 1);
+    
+    // Вставляем его в новую позицию
+    const newTargetIndex = draggedIndex < targetIndex ? targetIndex : targetIndex;
+    newQuestions.splice(newTargetIndex, 0, draggedQuestion);
+
+    setQuestions(newQuestions);
+    setDraggedQuestionId(null);
+    setDragOverQuestionId(null);
+    hapticFeedback?.medium();
+  };
+
+  const handleDragEnd = () => {
+    setDraggedQuestionId(null);
+    setDragOverQuestionId(null);
+  };
+
   const handlePreview = () => {
     if (questions.length === 0) {
       alert('Добавьте хотя бы один вопрос для предпросмотра');
@@ -159,14 +217,14 @@ const QuestionBuilder: React.FC = () => {
         try {
           const confirmed = window.confirm('Все вопросы будут удалены. Вы уверены?');
           if (confirmed) {
-            navigate('/survey/create/manual', { replace: true });
+            navigate('/survey/create/manual/motivation', { replace: true });
           }
         } catch (error) {
           console.error('Error with confirm dialog:', error);
-          navigate('/survey/create/manual', { replace: true });
+          navigate('/survey/create/manual/motivation', { replace: true });
         }
       } else {
-        navigate('/survey/create/manual', { replace: true });
+        navigate('/survey/create/manual/motivation', { replace: true });
       }
     }
   });
@@ -204,6 +262,8 @@ const QuestionBuilder: React.FC = () => {
   const renderQuestionEditor = (question: Question) => {
     const isEditing = editingQuestion === question.id;
     const questionTypeInfo = questionTypes.find(t => t.value === question.type);
+    const isDragging = draggedQuestionId === question.id;
+    const isDragOver = dragOverQuestionId === question.id;
 
     return (
       <motion.div
@@ -212,15 +272,30 @@ const QuestionBuilder: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        style={{
-          backgroundColor: 'var(--tg-section-bg-color)',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '16px',
-          border: isEditing ? '2px solid #F46D00' : '1px solid var(--tg-section-separator-color)',
-          position: 'relative'
-        }}
       >
+        <div
+          draggable={questions.length > 1}
+          onDragStart={(e) => handleDragStart(e, question.id)}
+          onDragOver={(e) => handleDragOver(e, question.id)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, question.id)}
+          onDragEnd={handleDragEnd}
+          style={{
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '16px',
+            border: isEditing 
+              ? '2px solid #F46D00' 
+              : isDragOver 
+              ? '2px dashed #F46D00' 
+              : '1px solid var(--tg-section-separator-color)',
+            position: 'relative',
+            opacity: isDragging ? 0.5 : 1,
+            cursor: questions.length > 1 ? 'move' : 'default',
+            transition: 'all 0.2s ease'
+          }}
+        >
         {/* Заголовок вопроса */}
         <div style={{
           display: 'flex',
@@ -611,6 +686,7 @@ const QuestionBuilder: React.FC = () => {
             {questionTypeInfo?.icon} {questionTypeInfo?.label}
           </div>
         </div>
+        </div>
       </motion.div>
     );
   };
@@ -653,10 +729,9 @@ const QuestionBuilder: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', marginBottom: '32px' }}
         >
-          <TelegramEmoji 
+          <RealTelegramEmoji 
             emoji="🔧" 
             size="large" 
-            animate={true}
             onClick={() => hapticFeedback?.light()}
           />
           <div style={{

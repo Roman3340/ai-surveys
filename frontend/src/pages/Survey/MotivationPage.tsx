@@ -78,7 +78,16 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   useStableBackButton({
     onBack: () => {
       if (isFromAI) {
-        navigate('/survey/create/ai', { replace: true });
+        // Для ИИ возвращаемся на предыдущий шаг (business или personal)
+        const previousData = location.state || {};
+        if (previousData.userType === 'business') {
+          navigate('/survey/create/ai/business', { replace: true });
+        } else if (previousData.userType === 'personal') {
+          navigate('/survey/create/ai/personal', { replace: true });
+        } else {
+          // Fallback на выбор типа
+          navigate('/survey/create/ai', { replace: true });
+        }
       } else {
         navigate('/survey/create/manual', { replace: true });
       }
