@@ -68,6 +68,11 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
     navigate('/survey/create/ai', { replace: true });
   }, [navigate]);
 
+  // Прокрутка к верху при загрузке страницы
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {
@@ -100,60 +105,62 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
       }}
       className={isKeyboardActive ? 'keyboard-active' : ''}
     >
-      {/* Заголовок */}
-      <div style={{
-        padding: '24px 16px 16px 16px',
-        textAlign: 'center'
-      }}>
-        <h1 style={{
-          fontSize: '24px',
-          fontWeight: '600',
-          margin: '0 0 16px 0',
-          color: 'var(--tg-text-color)'
-        }}>
-          Личный опрос
-        </h1>
-        <TelegramEmoji emoji="🙋‍♂️" size="large" />
-      </div>
-
-      {/* Прогресс-бар */}
-      <div style={{
-        padding: '16px',
-        borderBottom: '1px solid var(--tg-section-separator-color)'
-      }}>
-        <div style={{
-          width: '100%',
-          height: '4px',
-          backgroundColor: 'rgba(244, 109, 0, 0.2)',
-          borderRadius: '2px',
-          overflow: 'hidden'
-        }}>
-          <motion.div
-            initial={{ width: '0%' }}
-            animate={{ width: '50%' }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            style={{
-              height: '100%',
-              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-              borderRadius: '2px'
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Описание */}
-      <div style={{
-        padding: '16px',
-        textAlign: 'center'
-      }}>
-        <p style={{
-          fontSize: '16px',
-          color: 'var(--tg-hint-color)',
-          margin: '0',
-          lineHeight: '1.4'
-        }}>
-          Расскажите о том, что хотите узнать у друзей, знакомых или подписчиков
-        </p>
+      {/* Основной контент */}
+      <div style={{ padding: '24px 16px' }}>
+        {/* Заголовок с эмодзи */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          style={{
+            textAlign: 'center',
+            marginBottom: '40px'
+          }}
+        >
+          <h1 style={{
+            fontSize: '24px',
+            fontWeight: '600',
+            margin: '0 0 16px 0',
+            color: 'var(--tg-text-color)'
+          }}>
+            Личный опрос
+          </h1>
+          <TelegramEmoji emoji="🙋‍♂️" size="large" />
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '16px',
+            marginBottom: '24px'
+          }}>
+            {/* Прогресс-бар */}
+            <div style={{
+              width: '280px',
+              height: '6px',
+              backgroundColor: 'rgba(244, 109, 0, 0.2)',
+              borderRadius: '3px',
+              overflow: 'hidden'
+            }}>
+              <motion.div
+                initial={{ width: '0%' }}
+                animate={{ width: '50%' }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                style={{
+                  height: '100%',
+                  background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+                  borderRadius: '3px'
+                }}
+              />
+            </div>
+          </div>
+          <p style={{
+            fontSize: '16px',
+            color: 'var(--tg-hint-color)',
+            margin: '0',
+            lineHeight: '1.4'
+          }}>
+            Расскажите о том, что хотите узнать у друзей, знакомых или подписчиков
+          </p>
+        </motion.div>
       </div>
 
       {/* Контент */}

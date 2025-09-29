@@ -34,6 +34,11 @@ const SurveyPreview: React.FC = () => {
   const [answers, setAnswers] = useState<PreviewAnswers>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
+  // Прокрутка к верху при загрузке страницы
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   useEffect(() => {
     // Получаем данные опроса из state или localStorage
     const data = location.state?.surveyData || 

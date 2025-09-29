@@ -73,6 +73,11 @@ const ManualSurveyPage: React.FC = () => {
     }
   }, [navigate]);
 
+  // Прокрутка к верху при загрузке страницы
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {
