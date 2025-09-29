@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
@@ -51,30 +51,41 @@ const ManualSurveyPage: React.FC = () => {
     setTimeout(() => setIsKeyboardActive(false), 300);
   };
 
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    const handleBackClick = () => {
-      try {
-        // Используем нативный confirm вместо showConfirm
-        const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
-        if (confirmed) {
-          navigate('/survey/create', { replace: true });
-        }
-      } catch (error) {
-        // Если что-то пошло не так, просто переходим
-        console.error('Error with confirm dialog:', error);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      (e.target as HTMLElement).blur();
+      setIsKeyboardActive(false);
+    }
+  };
+
+  // Стабильная функция для кнопки назад
+  const handleBackClick = useCallback(() => {
+    try {
+      // Используем нативный confirm вместо showConfirm
+      const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
+      if (confirmed) {
         navigate('/survey/create', { replace: true });
       }
-    };
+    } catch (error) {
+      // Если что-то пошло не так, просто переходим
+      console.error('Error with confirm dialog:', error);
+      navigate('/survey/create', { replace: true });
+    }
+  }, [navigate]);
 
-    backButton.show();
-    backButton.onClick(handleBackClick);
+  // Настройка нативной кнопки назад Telegram
+  useEffect(() => {
+    if (backButton) {
+      backButton.show();
+      backButton.onClick(handleBackClick);
 
-    return () => {
-      backButton.hide();
-      backButton.offClick(handleBackClick);
-    };
-  }, [backButton, navigate]);
+      return () => {
+        backButton.hide();
+        backButton.offClick(handleBackClick);
+      };
+    }
+  }, [backButton, handleBackClick]);
 
   return (
     <div 
@@ -164,6 +175,7 @@ const ManualSurveyPage: React.FC = () => {
                onChange={(e) => handleSurveyDataChange('title', e.target.value)}
                onFocus={handleInputFocus}
                onBlur={handleInputBlur}
+               onKeyDown={handleKeyDown}
                placeholder="Оценка качества продукции"
                enterKeyHint="done"
                style={{
@@ -196,6 +208,7 @@ const ManualSurveyPage: React.FC = () => {
                onChange={(e) => handleSurveyDataChange('description', e.target.value)}
                onFocus={handleInputFocus}
                onBlur={handleInputBlur}
+               onKeyDown={handleKeyDown}
                placeholder="Опционально"
                enterKeyHint="done"
                style={{
@@ -331,6 +344,84 @@ const ManualSurveyPage: React.FC = () => {
               />
             </div>
           </div>
+
+          {/* Поля награды - показываются только если выбрана мотивация */}
+          {surveyData.motivation !== 'none' && (
+            <>
+              {/* Описание награды */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  marginBottom: '8px',
+                  color: 'var(--tg-text-color)'
+                }}>
+                  Описание награды:
+                </label>
+                <input
+                  type="text"
+                  value={surveyData.rewardDescription}
+                  onChange={(e) => handleSurveyDataChange('rewardDescription', e.target.value)}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleKeyDown}
+                  placeholder={surveyData.motivation === 'promo_code' ? 'Скидка 20% на следующий заказ' : 
+                             surveyData.motivation === 'stars' ? 'Telegram Stars' : 
+                             'Описание подарка'}
+                  enterKeyHint="done"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--tg-section-separator-color)',
+                    backgroundColor: 'var(--tg-section-bg-color)',
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              {/* Значение награды */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  marginBottom: '8px',
+                  color: 'var(--tg-text-color)'
+                }}>
+                  {surveyData.motivation === 'promo_code' ? 'Промокод:' : 
+                   surveyData.motivation === 'stars' ? 'Количество звёзд:' : 
+                   'Значение:'}
+                </label>
+                <input
+                  type={surveyData.motivation === 'stars' ? 'number' : 'text'}
+                  value={surveyData.rewardValue}
+                  onChange={(e) => handleSurveyDataChange('rewardValue', e.target.value)}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+                  onKeyDown={handleKeyDown}
+                  placeholder={surveyData.motivation === 'promo_code' ? 'DISCOUNT20' : 
+                             surveyData.motivation === 'stars' ? '50' : 
+                             'Значение подарка'}
+                  enterKeyHint="done"
+                  inputMode={surveyData.motivation === 'stars' ? 'numeric' : 'text'}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--tg-section-separator-color)',
+                    backgroundColor: 'var(--tg-section-bg-color)',
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 

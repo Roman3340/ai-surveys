@@ -143,6 +143,14 @@ const QuestionBuilder: React.FC = () => {
     setTimeout(() => setIsKeyboardActive(false), 300);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      (e.target as HTMLElement).blur();
+      setIsKeyboardActive(false);
+    }
+  };
+
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     const handleBackClick = () => {
@@ -240,6 +248,7 @@ const QuestionBuilder: React.FC = () => {
                  handleInputFocus();
                }}
                onBlur={handleInputBlur}
+               onKeyDown={handleKeyDown}
                placeholder="Вопрос"
                enterKeyHint="done"
                style={{
@@ -262,6 +271,7 @@ const QuestionBuilder: React.FC = () => {
               onChange={(e) => updateQuestion(question.id, { description: e.target.value })}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
+              onKeyDown={handleKeyDown}
               placeholder="Описание (необязательно)"
               enterKeyHint="done"
               style={{
@@ -432,6 +442,7 @@ const QuestionBuilder: React.FC = () => {
                      onChange={(e) => updateOption(question.id, index, e.target.value)}
                      onFocus={handleInputFocus}
                      onBlur={handleInputBlur}
+                     onKeyDown={handleKeyDown}
                      placeholder={`Вариант ${index + 1}`}
                      enterKeyHint="done"
                      style={{

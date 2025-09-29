@@ -6,6 +6,9 @@ import ManualSurveyPage from './pages/Survey/ManualSurveyPage';
 import AISurveyPage from './pages/Survey/AISurveyPage';
 import QuestionBuilder from './pages/Survey/QuestionBuilder';
 import SurveyPreview from './pages/Survey/SurveyPreview';
+import SettingsPage from './pages/Settings/SettingsPage';
+import ThemeSettingsPage from './pages/Settings/ThemeSettingsPage';
+import LanguageSettingsPage from './pages/Settings/LanguageSettingsPage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
@@ -45,6 +48,9 @@ function App() {
           <Route path="/survey/create/manual/questions" element={<QuestionBuilder />} />
           <Route path="/survey/create/manual/preview" element={<SurveyPreview />} />
           <Route path="/survey/create/ai" element={<AISurveyPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/theme" element={<ThemeSettingsPage />} />
+          <Route path="/settings/language" element={<LanguageSettingsPage />} />
         </Routes>
         <DevTools />
       </div>

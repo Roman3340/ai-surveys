@@ -40,6 +40,14 @@ const AISurveyPage: React.FC = () => {
     setTimeout(() => setIsKeyboardActive(false), 300);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      (e.target as HTMLElement).blur();
+      setIsKeyboardActive(false);
+    }
+  };
+
   const handleQuestionTypeToggle = (type: string) => {
     setFormData(prev => ({
       ...prev,
@@ -242,6 +250,7 @@ const AISurveyPage: React.FC = () => {
                onChange={(e) => handleInputChange('targetAudience', e.target.value)}
                onFocus={handleInputFocus}
                onBlur={handleInputBlur}
+               onKeyDown={handleKeyDown}
                placeholder="Кто будет отвечать (клиенты кафе, подписчики канала и т.д.)"
                enterKeyHint="done"
                rows={3}
@@ -274,6 +283,7 @@ const AISurveyPage: React.FC = () => {
                onChange={(e) => handleInputChange('surveyGoal', e.target.value)}
                onFocus={handleInputFocus}
                onBlur={handleInputBlur}
+               onKeyDown={handleKeyDown}
                placeholder="Что нужно узнать (причины отказа, удовлетворённость сервисом)"
                enterKeyHint="done"
                rows={3}

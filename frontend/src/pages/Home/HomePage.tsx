@@ -38,6 +38,11 @@ export const HomePage = () => {
     navigate('/survey/create');
   };
 
+  const handleSettings = () => {
+    hapticFeedback?.light();
+    navigate('/settings');
+  };
+
   const handleViewAnalytics = (survey: Survey) => {
     hapticFeedback?.light();
     console.log('Просмотр аналитики для:', survey.title);
@@ -451,7 +456,9 @@ export const HomePage = () => {
         display: 'flex',
         gap: '12px'
       }}>
-        <button style={{
+        <button 
+          onClick={handleSettings}
+          style={{
           flex: 1,
           backgroundColor: 'var(--tg-section-bg-color)',
           color: 'var(--tg-text-color)',
