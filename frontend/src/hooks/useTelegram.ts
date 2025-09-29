@@ -15,8 +15,8 @@ const createBackButtonManager = () => {
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
         
-      // Если уже установлен этот callback, не переустанавливаем
-      if (currentCallbackId === callbackId && currentCallback === callback) {
+      // Если уже установлен этот callback для этой страницы, не переустанавливаем
+      if (currentCallbackId === callbackId) {
         return;
       }
       
@@ -67,6 +67,11 @@ const createBackButtonManager = () => {
         isShown = false;
         console.log('BackButton hidden');
       }
+    },
+    
+    // Проверяем, нужно ли обновлять callback для данной страницы
+    shouldUpdateCallback: (callbackId: string) => {
+      return currentCallbackId !== callbackId;
     }
   };
 };

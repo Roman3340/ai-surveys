@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { DateTimePicker } from '../../components/ui/DateTimePicker';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 
 const ManualSurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { backButton } = useTelegram();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const [surveyData, setSurveyData] = useState({
@@ -59,39 +58,17 @@ const ManualSurveyPage: React.FC = () => {
     }
   };
 
-  // Стабильная функция для кнопки назад
-  const handleBackClick = useCallback(() => {
-    try {
-      // Используем нативный confirm вместо showConfirm
-      const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
-      if (confirmed) {
-        navigate('/survey/create', { replace: true });
-      }
-    } catch (error) {
-      // Если что-то пошло не так, просто переходим
-      console.error('Error with confirm dialog:', error);
-      navigate('/survey/create', { replace: true });
-    }
-  }, [navigate]);
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    showConfirm: true,
+    confirmMessage: 'Данные могут не сохраниться. Вы уверены, что хотите выйти?',
+    targetRoute: '/survey/create'
+  });
 
   // Прокрутка к верху при загрузке страницы
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    if (backButton) {
-      const pageId = '/survey/create/manual';
-      backButton.show();
-      backButton.onClick(handleBackClick, pageId);
-
-      return () => {
-        backButton.hide();
-        backButton.offClick(pageId);
-      };
-    }
-  }, [backButton, handleBackClick]);
 
   return (
     <div 

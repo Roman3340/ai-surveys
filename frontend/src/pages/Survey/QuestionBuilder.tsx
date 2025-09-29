@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Image, GripVertical, ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
 import type { QuestionType } from '../../types';
 
@@ -25,7 +26,7 @@ interface Question {
 
 const QuestionBuilder: React.FC = () => {
   const navigate = useNavigate();
-  const { hapticFeedback, backButton } = useTelegram();
+  const { hapticFeedback } = useTelegram();
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
@@ -151,41 +152,29 @@ const QuestionBuilder: React.FC = () => {
     }
   };
 
-  // Стабильная функция для кнопки назад
-  const handleBackClick = useCallback(() => {
-    if (questions.length > 0) {
-      try {
-        const confirmed = window.confirm('Все вопросы будут удалены. Вы уверены?');
-        if (confirmed) {
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    onBack: () => {
+      if (questions.length > 0) {
+        try {
+          const confirmed = window.confirm('Все вопросы будут удалены. Вы уверены?');
+          if (confirmed) {
+            navigate('/survey/create/manual', { replace: true });
+          }
+        } catch (error) {
+          console.error('Error with confirm dialog:', error);
           navigate('/survey/create/manual', { replace: true });
         }
-      } catch (error) {
-        console.error('Error with confirm dialog:', error);
+      } else {
         navigate('/survey/create/manual', { replace: true });
       }
-    } else {
-      navigate('/survey/create/manual', { replace: true });
     }
-  }, [navigate, questions.length]);
+  });
 
   // Прокрутка к верху при загрузке страницы
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    if (backButton) {
-      const pageId = '/survey/create/manual/questions';
-      backButton.show();
-      backButton.onClick(handleBackClick, pageId);
-
-      return () => {
-        backButton.hide();
-        backButton.offClick(pageId);
-      };
-    }
-  }, [backButton, handleBackClick]);
 
   const handleImageUpload = (questionId: string) => {
     // Создаем скрытый input для выбора файла

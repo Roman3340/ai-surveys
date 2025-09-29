@@ -3,31 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { Check, Sun, Moon, Monitor } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 
 interface ThemeSettingsPageProps {}
 
 const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useAppStore();
-  const { backButton, hapticFeedback } = useTelegram();
+  const { hapticFeedback } = useTelegram();
 
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    if (backButton) {
-      const handleBackClick = () => {
-        navigate('/settings', { replace: true });
-      };
-
-      const pageId = '/settings/theme';
-      backButton.show();
-      backButton.onClick(handleBackClick, pageId);
-
-      return () => {
-        backButton.offClick(pageId);
-        backButton.hide();
-      };
-    }
-  }, [backButton, navigate]);
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    targetRoute: '/settings'
+  });
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     hapticFeedback?.light();

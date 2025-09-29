@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 interface MotivationPageProps {}
@@ -17,7 +18,7 @@ interface MotivationData {
 const MotivationPage: React.FC<MotivationPageProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { backButton } = useTelegram();
+  const { hapticFeedback } = useTelegram();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   // Получаем данные из предыдущего шага
@@ -75,33 +76,21 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     }
   };
 
-  // Стабильная функция для кнопки назад
-  const handleBackClick = useCallback(() => {
-    if (isFromAI) {
-      navigate('/survey/create/ai', { replace: true });
-    } else {
-      navigate('/survey/create/manual', { replace: true });
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    onBack: () => {
+      if (isFromAI) {
+        navigate('/survey/create/ai', { replace: true });
+      } else {
+        navigate('/survey/create/manual', { replace: true });
+      }
     }
-  }, [navigate, isFromAI]);
+  });
 
   // Прокрутка к верху при загрузке страницы
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    if (backButton) {
-      const pageId = isFromAI ? '/survey/create/ai/motivation' : '/survey/create/manual/motivation';
-      backButton.show();
-      backButton.onClick(handleBackClick, pageId);
-
-      return () => {
-        backButton.hide();
-        backButton.offClick(pageId);
-      };
-    }
-  }, [backButton, handleBackClick, isFromAI]);
 
   return (
     <div 

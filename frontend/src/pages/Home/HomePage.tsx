@@ -9,14 +9,9 @@ import type { Survey } from '../../types';
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const { user: telegramUser, hapticFeedback, theme } = useTelegram();
-  const { user, userSurveys, participatedSurveys, setUser, setTheme } = useAppStore();
+  const { user: telegramUser, hapticFeedback } = useTelegram();
+  const { user, userSurveys, participatedSurveys, setUser } = useAppStore();
   const [activeTab, setActiveTab] = useState<'created' | 'participated'>('created');
-
-  // Синхронизация темы с Telegram
-  useEffect(() => {
-    setTheme(theme);
-  }, [theme, setTheme]);
 
   // Создание пользователя из Telegram данных
   useEffect(() => {
