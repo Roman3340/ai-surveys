@@ -8,6 +8,7 @@ const createBackButtonManager = () => {
   let currentCallbackId: string | null = null;
   let isShown = false;
   let currentCallback: (() => void) | null = null;
+  let isInitialized = false;
   
   return {
     setCallback: (callback: () => void, callbackId: string) => {
@@ -16,7 +17,7 @@ const createBackButtonManager = () => {
         : getTelegramWebApp();
         
       // Если уже установлен этот callback для этой страницы, не переустанавливаем
-      if (currentCallbackId === callbackId) {
+      if (currentCallbackId === callbackId && isInitialized) {
         return;
       }
       
@@ -29,6 +30,7 @@ const createBackButtonManager = () => {
       currentCallback = callback;
       tg.BackButton.onClick(callback);
       currentCallbackId = callbackId;
+      isInitialized = true;
       console.log('BackButton callback set for:', callbackId);
     },
     
@@ -41,6 +43,7 @@ const createBackButtonManager = () => {
         tg.BackButton.offClick(currentCallback);
         currentCallback = null;
         currentCallbackId = null;
+        isInitialized = false;
         console.log('BackButton callback cleared for:', callbackId);
       }
     },
@@ -71,7 +74,7 @@ const createBackButtonManager = () => {
     
     // Проверяем, нужно ли обновлять callback для данной страницы
     shouldUpdateCallback: (callbackId: string) => {
-      return currentCallbackId !== callbackId;
+      return currentCallbackId !== callbackId || !isInitialized;
     }
   };
 };
