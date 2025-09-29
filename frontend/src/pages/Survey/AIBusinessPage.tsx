@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 interface AIBusinessPageProps {}
 
 const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   const navigate = useNavigate();
-  const { backButton } = useTelegram();
+  const { hapticFeedback } = useTelegram();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -64,29 +65,15 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
     }));
   };
 
-  // Стабильная функция для кнопки назад
-  const handleBackClick = useCallback(() => {
-    navigate('/survey/create/ai', { replace: true });
-  }, [navigate]);
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    targetRoute: '/survey/create/ai'
+  });
 
   // Прокрутка к верху при загрузке страницы
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    if (backButton) {
-      const pageId = '/survey/create/ai/business';
-      backButton.show();
-      backButton.onClick(handleBackClick, pageId);
-
-      return () => {
-        backButton.hide();
-        backButton.offClick(pageId);
-      };
-    }
-  }, [backButton, handleBackClick]);
 
   const businessSpheres = [
     { value: 'cafe', label: 'Кафе' },

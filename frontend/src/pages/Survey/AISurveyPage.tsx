@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 interface AISurveyPageProps {}
 
 const AISurveyPage: React.FC<AISurveyPageProps> = () => {
   const navigate = useNavigate();
-  const { backButton, hapticFeedback } = useTelegram();
+  const { hapticFeedback } = useTelegram();
   const [selectedType, setSelectedType] = useState<'business' | 'personal' | null>(null);
 
   const handleNext = () => {
@@ -27,29 +28,15 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
     setSelectedType(type);
   };
 
-  // Стабильная функция для кнопки назад
-  const handleBackClick = useCallback(() => {
-    navigate('/survey/create', { replace: true });
-  }, [navigate]);
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    targetRoute: '/survey/create'
+  });
 
   // Прокрутка к верху при загрузке страницы
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    if (backButton) {
-      const pageId = '/survey/create/ai';
-      backButton.show();
-      backButton.onClick(handleBackClick, pageId);
-
-      return () => {
-        backButton.hide();
-        backButton.offClick(pageId);
-      };
-    }
-  }, [backButton, handleBackClick]);
 
   return (
     <div style={{ 

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Send, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 import type { Question } from '../../types';
 
 interface SurveyData {
@@ -28,7 +29,7 @@ interface PreviewAnswers {
 const SurveyPreview: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hapticFeedback, backButton } = useTelegram();
+  const { hapticFeedback } = useTelegram();
   
   const [surveyData, setSurveyData] = useState<SurveyData | null>(null);
   const [answers, setAnswers] = useState<PreviewAnswers>({});
@@ -54,20 +55,10 @@ const SurveyPreview: React.FC = () => {
     }
   }, [location.state, navigate]);
 
-  // Настройка нативной кнопки назад
-  useEffect(() => {
-    if (backButton) {
-      backButton.show();
-      backButton.onClick(() => {
-        navigate('/survey/create/manual/questions', { replace: true });
-      }, '/survey/create/manual/preview');
-
-      return () => {
-        backButton.hide();
-        backButton.offClick('/survey/create/manual/preview');
-      };
-    }
-  }, [backButton, navigate]);
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    targetRoute: '/survey/create/manual/questions'
+  });
 
   const handleAnswerChange = (questionId: string, value: any) => {
     setAnswers(prev => ({

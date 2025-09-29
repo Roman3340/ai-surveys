@@ -1,41 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { backButton } = useTelegram();
   const [selectedOption, setSelectedOption] = useState<'manual' | 'ai' | null>(null);
 
-  // handleBack вынесен в useEffect для BackButton
-
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    const handleBackClick = () => {
-      try {
-        // Используем нативный confirm вместо showConfirm
-        const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
-        if (confirmed) {
-          navigate('/', { replace: true });
-        }
-      } catch (error) {
-        // Если что-то пошло не так, просто переходим
-        console.error('Error with confirm dialog:', error);
-        navigate('/', { replace: true });
-      }
-    };
-
-    const pageId = '/survey/create';
-    backButton.show();
-    backButton.onClick(handleBackClick, pageId);
-    
-    return () => {
-      backButton.hide();
-      backButton.offClick(pageId);
-    };
-  }, [backButton, navigate]);
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    showConfirm: true,
+    confirmMessage: 'Данные могут не сохраниться. Вы уверены, что хотите выйти?',
+    targetRoute: '/'
+  });
 
   const handleCreateManual = () => {
     setSelectedOption('manual');

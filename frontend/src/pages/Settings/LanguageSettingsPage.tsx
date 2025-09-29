@@ -2,31 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 
 interface LanguageSettingsPageProps {}
 
 const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = () => {
   const navigate = useNavigate();
-  const { backButton, hapticFeedback } = useTelegram();
+  const { hapticFeedback } = useTelegram();
   const [selectedLanguage, setSelectedLanguage] = useState('ru');
 
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    if (backButton) {
-      const handleBackClick = () => {
-        navigate('/settings', { replace: true });
-      };
-
-      const pageId = '/settings/language';
-      backButton.show();
-      backButton.onClick(handleBackClick, pageId);
-
-      return () => {
-        backButton.offClick(pageId);
-        backButton.hide();
-      };
-    }
-  }, [backButton, navigate]);
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    targetRoute: '/settings'
+  });
 
   const handleLanguageChange = (langCode: string) => {
     hapticFeedback?.light();
