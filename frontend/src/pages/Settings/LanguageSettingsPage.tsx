@@ -28,7 +28,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = () => {
   }, [backButton, navigate]);
 
   const handleLanguageChange = (langCode: string) => {
-    hapticFeedback?.impactOccurred('light');
+    hapticFeedback?.light();
     setSelectedLanguage(langCode);
     // Здесь можно добавить логику для сохранения языка в store
   };

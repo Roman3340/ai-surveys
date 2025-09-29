@@ -8,7 +8,7 @@ interface SettingsPageProps {}
 
 const SettingsPage: React.FC<SettingsPageProps> = () => {
   const navigate = useNavigate();
-  const { theme, setTheme } = useAppStore();
+  const { theme } = useAppStore();
   const { backButton, hapticFeedback } = useTelegram();
 
   // Настройка нативной кнопки назад Telegram
@@ -29,17 +29,17 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
   }, [backButton, navigate]);
 
   const handleThemeSelect = () => {
-    hapticFeedback?.impactOccurred('light');
+    hapticFeedback?.light();
     navigate('/settings/theme');
   };
 
   const handleLanguageSelect = () => {
-    hapticFeedback?.impactOccurred('light');
+    hapticFeedback?.light();
     navigate('/settings/language');
   };
 
   const handleClearCache = () => {
-    hapticFeedback?.impactOccurred('medium');
+    hapticFeedback?.medium();
     if (window.confirm('Очистить кэш приложения? Все локальные данные будут удалены.')) {
       localStorage.clear();
       window.location.reload();

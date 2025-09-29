@@ -126,7 +126,7 @@ export interface AIInsight {
   confidence: number;
 }
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'system';
 
 export interface AppState {
   user: User | null;

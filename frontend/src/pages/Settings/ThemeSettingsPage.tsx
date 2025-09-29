@@ -29,7 +29,7 @@ const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = () => {
   }, [backButton, navigate]);
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
-    hapticFeedback?.impactOccurred('light');
+    hapticFeedback?.light();
     setTheme(newTheme);
   };
 
