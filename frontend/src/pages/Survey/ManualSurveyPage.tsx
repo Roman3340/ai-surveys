@@ -19,7 +19,7 @@ const ManualSurveyPage: React.FC = () => {
     endDate: '',
     endTime: '',
     maxParticipants: '',
-    motivation: 'promo_code',
+    motivation: 'none',
     rewardValue: '',
     rewardDescription: ''
   });
@@ -202,15 +202,15 @@ const ManualSurveyPage: React.FC = () => {
             }}>
               Описание:
             </label>
-             <input
-               type="text"
+             <textarea
                value={surveyData.description}
                onChange={(e) => handleSurveyDataChange('description', e.target.value)}
                onFocus={handleInputFocus}
                onBlur={handleInputBlur}
                onKeyDown={handleKeyDown}
-               placeholder="Опционально"
+               placeholder="Краткое описание опроса (опционально)"
                enterKeyHint="done"
+               rows={4}
                style={{
                  width: '100%',
                  padding: '12px 16px',
@@ -219,7 +219,9 @@ const ManualSurveyPage: React.FC = () => {
                  backgroundColor: 'var(--tg-section-bg-color)',
                  color: 'var(--tg-text-color)',
                  fontSize: '16px',
-                 outline: 'none'
+                 outline: 'none',
+                 resize: 'vertical',
+                 fontFamily: 'inherit'
                }}
              />
           </div>
@@ -345,82 +347,40 @@ const ManualSurveyPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Поля награды - показываются только если выбрана мотивация */}
-          {surveyData.motivation !== 'none' && (
-            <>
-              {/* Описание награды */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
+          {/* Поле награды - показывается только для звёзд и подарков */}
+          {(surveyData.motivation === 'stars' || surveyData.motivation === 'gift') && (
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '16px',
+                fontWeight: '500',
+                marginBottom: '8px',
+                color: 'var(--tg-text-color)'
+              }}>
+                {surveyData.motivation === 'stars' ? 'Количество звёзд:' : 'Описание подарка:'}
+              </label>
+              <input
+                type={surveyData.motivation === 'stars' ? 'number' : 'text'}
+                value={surveyData.rewardValue}
+                onChange={(e) => handleSurveyDataChange('rewardValue', e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                onKeyDown={handleKeyDown}
+                placeholder={surveyData.motivation === 'stars' ? '50' : 'Бесплатная доставка'}
+                enterKeyHint="done"
+                inputMode={surveyData.motivation === 'stars' ? 'numeric' : 'text'}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
                   fontSize: '16px',
-                  fontWeight: '500',
-                  marginBottom: '8px',
-                  color: 'var(--tg-text-color)'
-                }}>
-                  Описание награды:
-                </label>
-                <input
-                  type="text"
-                  value={surveyData.rewardDescription}
-                  onChange={(e) => handleSurveyDataChange('rewardDescription', e.target.value)}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                  onKeyDown={handleKeyDown}
-                  placeholder={surveyData.motivation === 'promo_code' ? 'Скидка 20% на следующий заказ' : 
-                             surveyData.motivation === 'stars' ? 'Telegram Stars' : 
-                             'Описание подарка'}
-                  enterKeyHint="done"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-section-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-
-              {/* Значение награды */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  marginBottom: '8px',
-                  color: 'var(--tg-text-color)'
-                }}>
-                  {surveyData.motivation === 'promo_code' ? 'Промокод:' : 
-                   surveyData.motivation === 'stars' ? 'Количество звёзд:' : 
-                   'Значение:'}
-                </label>
-                <input
-                  type={surveyData.motivation === 'stars' ? 'number' : 'text'}
-                  value={surveyData.rewardValue}
-                  onChange={(e) => handleSurveyDataChange('rewardValue', e.target.value)}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                  onKeyDown={handleKeyDown}
-                  placeholder={surveyData.motivation === 'promo_code' ? 'DISCOUNT20' : 
-                             surveyData.motivation === 'stars' ? '50' : 
-                             'Значение подарка'}
-                  enterKeyHint="done"
-                  inputMode={surveyData.motivation === 'stars' ? 'numeric' : 'text'}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-section-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-            </>
+                  outline: 'none'
+                }}
+              />
+            </div>
           )}
         </div>
       </div>

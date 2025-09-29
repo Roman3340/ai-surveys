@@ -15,16 +15,31 @@ import { DevTools } from './components/DevTools';
 import './styles/globals.css';
 
 function App() {
-  const { isReady, theme } = useTelegram();
-  const { setTheme } = useAppStore();
+  const { isReady, theme: telegramTheme } = useTelegram();
+  const { theme: appTheme, setTheme } = useAppStore();
 
-  // Синхронизация темы с Telegram
+  // Синхронизация темы
   useEffect(() => {
     if (isReady) {
-      setTheme(theme);
-      document.documentElement.setAttribute('data-theme', theme);
+      // Определяем финальную тему
+      let finalTheme = appTheme;
+      
+      if (appTheme === 'system') {
+        finalTheme = telegramTheme; // Используем тему из Telegram для системной
+      }
+      
+      // Устанавливаем тему в DOM
+      document.documentElement.setAttribute('data-theme', finalTheme);
+      console.log('Theme applied:', finalTheme);
     }
-  }, [isReady, theme, setTheme]);
+  }, [isReady, telegramTheme, appTheme]);
+
+  // Инициализация темы при первом запуске
+  useEffect(() => {
+    if (isReady && !appTheme) {
+      setTheme('system'); // По умолчанию системная тема
+    }
+  }, [isReady, appTheme, setTheme]);
 
   // Показываем загрузку пока Telegram WebApp не готов
   if (!isReady) {

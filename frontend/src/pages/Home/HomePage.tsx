@@ -41,6 +41,10 @@ export const HomePage = () => {
   const handleSettings = () => {
     hapticFeedback?.light();
     navigate('/settings');
+    // Прокручиваем к верху при переходе
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const handleViewAnalytics = (survey: Survey) => {

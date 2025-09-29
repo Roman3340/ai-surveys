@@ -41,7 +41,7 @@ export const useAppStore = create<AppStore>()(
     (set) => ({
       // Начальное состояние
       user: null,
-      theme: 'light',
+      theme: 'system',
       userSurveys: [
         // Моковые созданные опросы
         {

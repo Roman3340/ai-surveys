@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
@@ -71,30 +71,33 @@ const AISurveyPage: React.FC = () => {
     });
   };
 
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    const handleBackClick = () => {
-      try {
-        // Используем нативный confirm вместо showConfirm
-        const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
-        if (confirmed) {
-          navigate('/survey/create', { replace: true });
-        }
-      } catch (error) {
-        // Если что-то пошло не так, просто переходим
-        console.error('Error with confirm dialog:', error);
+  // Стабильная функция для кнопки назад
+  const handleBackClick = useCallback(() => {
+    try {
+      // Используем нативный confirm вместо showConfirm
+      const confirmed = window.confirm('Данные могут не сохраниться. Вы уверены, что хотите выйти?');
+      if (confirmed) {
         navigate('/survey/create', { replace: true });
       }
-    };
+    } catch (error) {
+      // Если что-то пошло не так, просто переходим
+      console.error('Error with confirm dialog:', error);
+      navigate('/survey/create', { replace: true });
+    }
+  }, [navigate]);
 
-    backButton.show();
-    backButton.onClick(handleBackClick);
+  // Настройка нативной кнопки назад Telegram
+  useEffect(() => {
+    if (backButton) {
+      backButton.show();
+      backButton.onClick(handleBackClick);
 
-    return () => {
-      backButton.hide();
-      backButton.offClick(handleBackClick);
-    };
-  }, [backButton, navigate]);
+      return () => {
+        backButton.hide();
+        backButton.offClick(handleBackClick);
+      };
+    }
+  }, [backButton, handleBackClick]);
 
   const businessSpheres = [
     { value: 'cafe', label: 'Кафе' },

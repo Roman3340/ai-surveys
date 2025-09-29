@@ -11,6 +11,11 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
   const { theme } = useAppStore();
   const { backButton, hapticFeedback } = useTelegram();
 
+  // Прокрутка к верху при загрузке страницы
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {

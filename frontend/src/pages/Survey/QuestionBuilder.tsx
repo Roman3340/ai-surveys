@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Image, GripVertical, ChevronDown } from 'lucide-react';
@@ -151,32 +151,35 @@ const QuestionBuilder: React.FC = () => {
     }
   };
 
-  // Настройка нативной кнопки назад Telegram
-  useEffect(() => {
-    const handleBackClick = () => {
-      if (questions.length > 0) {
-        try {
-          const confirmed = window.confirm('Все вопросы будут удалены. Вы уверены?');
-          if (confirmed) {
-            navigate('/survey/create/manual', { replace: true });
-          }
-        } catch (error) {
-          console.error('Error with confirm dialog:', error);
+  // Стабильная функция для кнопки назад
+  const handleBackClick = useCallback(() => {
+    if (questions.length > 0) {
+      try {
+        const confirmed = window.confirm('Все вопросы будут удалены. Вы уверены?');
+        if (confirmed) {
           navigate('/survey/create/manual', { replace: true });
         }
-      } else {
+      } catch (error) {
+        console.error('Error with confirm dialog:', error);
         navigate('/survey/create/manual', { replace: true });
       }
-    };
+    } else {
+      navigate('/survey/create/manual', { replace: true });
+    }
+  }, [navigate, questions.length]);
 
-    backButton.show();
-    backButton.onClick(handleBackClick);
+  // Настройка нативной кнопки назад Telegram
+  useEffect(() => {
+    if (backButton) {
+      backButton.show();
+      backButton.onClick(handleBackClick);
 
-    return () => {
-      backButton.hide();
-      backButton.offClick(handleBackClick);
-    };
-  }, [backButton, navigate, questions.length]);
+      return () => {
+        backButton.hide();
+        backButton.offClick(handleBackClick);
+      };
+    }
+  }, [backButton, handleBackClick]);
 
   const handleImageUpload = (questionId: string) => {
     // Создаем скрытый input для выбора файла

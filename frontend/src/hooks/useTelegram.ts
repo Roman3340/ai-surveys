@@ -165,18 +165,13 @@ export const useTelegram = () => {
     onClick: (callback: () => void) => {
       try {
         if (tg.BackButton) {
-          // Проверяем, не установлен ли уже тот же самый callback
+          // Всегда очищаем предыдущие обработчики перед установкой новых
           const currentCallback = (tg.BackButton as any).__currentCallback;
-          if (currentCallback === callback) {
-            console.log('BackButton onClick already set with same callback, skipping');
-            return;
-          }
-          
-          // Очищаем предыдущие обработчики
           if (currentCallback) {
             tg.BackButton.offClick(currentCallback);
           }
-          // Сохраняем текущий callback
+          
+          // Сохраняем новый callback
           (tg.BackButton as any).__currentCallback = callback;
           tg.BackButton.onClick(callback);
           console.log('BackButton onClick set');
