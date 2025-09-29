@@ -754,7 +754,7 @@ const QuestionBuilder: React.FC = () => {
              onClick={handlePreview}
              style={{
                width: '100%',
-               backgroundColor: '#007AFF',
+               background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
                color: 'white',
                border: 'none',
                borderRadius: '12px',
