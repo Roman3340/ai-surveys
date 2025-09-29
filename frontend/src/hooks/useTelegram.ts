@@ -7,6 +7,7 @@ import { getTelegramWebApp, isTelegramEnvironment } from '../utils/mockTelegram'
 const createBackButtonManager = () => {
   let currentCallbackId: string | null = null;
   let isShown = false;
+  let currentCallback: (() => void) | null = null;
   
   return {
     setCallback: (callback: () => void, callbackId: string) => {
@@ -14,17 +15,18 @@ const createBackButtonManager = () => {
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
         
-      if (currentCallbackId === callbackId) {
-        return; // Уже установлен этот callback
+      // Если уже установлен этот callback, не переустанавливаем
+      if (currentCallbackId === callbackId && currentCallback === callback) {
+        return;
       }
       
       // Очищаем предыдущий callback
-      if (currentCallbackId && (tg.BackButton as any).__currentCallback) {
-        tg.BackButton.offClick((tg.BackButton as any).__currentCallback);
+      if (currentCallback) {
+        tg.BackButton.offClick(currentCallback);
       }
       
       // Устанавливаем новый callback
-      (tg.BackButton as any).__currentCallback = callback;
+      currentCallback = callback;
       tg.BackButton.onClick(callback);
       currentCallbackId = callbackId;
       console.log('BackButton callback set for:', callbackId);
@@ -35,11 +37,9 @@ const createBackButtonManager = () => {
         ? (WebApp as unknown as TelegramWebApp)
         : getTelegramWebApp();
         
-      if (currentCallbackId === callbackId) {
-        if ((tg.BackButton as any).__currentCallback) {
-          tg.BackButton.offClick((tg.BackButton as any).__currentCallback);
-        }
-        (tg.BackButton as any).__currentCallback = null;
+      if (currentCallbackId === callbackId && currentCallback) {
+        tg.BackButton.offClick(currentCallback);
+        currentCallback = null;
         currentCallbackId = null;
         console.log('BackButton callback cleared for:', callbackId);
       }

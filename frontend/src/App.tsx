@@ -43,6 +43,20 @@ function App() {
     }
   }, [isReady, telegramTheme, appTheme]);
 
+  // Дополнительный эффект для принудительного применения темы при изменении appTheme
+  useEffect(() => {
+    if (isInitialized.current) {
+      let finalTheme = appTheme;
+      
+      if (appTheme === 'system') {
+        finalTheme = telegramTheme;
+      }
+      
+      document.documentElement.setAttribute('data-theme', finalTheme);
+      console.log('Theme force applied:', finalTheme, 'from app theme:', appTheme);
+    }
+  }, [appTheme, telegramTheme]);
+
   // Показываем загрузку пока Telegram WebApp не готов
   if (!isReady) {
     return (
