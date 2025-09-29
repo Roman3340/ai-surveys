@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
-import TelegramEmoji from '../../components/ui/TelegramEmoji';
+import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 interface AIBusinessPageProps {}
 
@@ -77,12 +77,13 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {
+      const pageId = '/survey/create/ai/business';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
         backButton.hide();
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
       };
     }
   }, [backButton, handleBackClick]);
@@ -138,7 +139,11 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
           }}>
             Настройки для бизнеса
           </h1>
-          <TelegramEmoji emoji="💼" size="large" />
+          <RealTelegramEmoji 
+            emoji="💼" 
+            size="large" 
+            onClick={() => console.log('💼 clicked!')}
+          />
           <div style={{
             display: 'flex',
             justifyContent: 'center',

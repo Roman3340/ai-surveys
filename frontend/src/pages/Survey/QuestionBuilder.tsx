@@ -176,12 +176,13 @@ const QuestionBuilder: React.FC = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {
+      const pageId = '/survey/create/manual/questions';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
         backButton.hide();
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
       };
     }
   }, [backButton, handleBackClick]);
@@ -683,12 +684,16 @@ const QuestionBuilder: React.FC = () => {
               borderRadius: '3px',
               overflow: 'hidden'
             }}>
-              <div style={{
-                width: '80%',
-                height: '100%',
-                background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-                borderRadius: '3px'
-              }} />
+              <motion.div
+                initial={{ width: '0%' }}
+                animate={{ width: '80%' }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                style={{
+                  height: '100%',
+                  background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+                  borderRadius: '3px'
+                }}
+              />
             </div>
           </div>
           <p style={{

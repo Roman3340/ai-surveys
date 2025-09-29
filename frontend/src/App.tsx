@@ -19,7 +19,7 @@ import './styles/globals.css';
 
 function App() {
   const { isReady, theme: telegramTheme } = useTelegram();
-  const { theme: appTheme, setTheme } = useAppStore();
+  const { theme: appTheme } = useAppStore();
   const isInitialized = useRef(false);
 
   // Синхронизация темы
@@ -34,17 +34,14 @@ function App() {
       
       // Устанавливаем тему в DOM
       document.documentElement.setAttribute('data-theme', finalTheme);
-      console.log('Theme applied:', finalTheme);
+      console.log('Theme applied:', finalTheme, 'from app theme:', appTheme);
+      
+      // Отмечаем что инициализация завершена
+      if (!isInitialized.current) {
+        isInitialized.current = true;
+      }
     }
   }, [isReady, telegramTheme, appTheme]);
-
-  // Инициализация темы при первом запуске
-  useEffect(() => {
-    if (isReady && !isInitialized.current && !appTheme) {
-      setTheme('system');
-      isInitialized.current = true;
-    }
-  }, [isReady, appTheme, setTheme]);
 
   // Показываем загрузку пока Telegram WebApp не готов
   if (!isReady) {

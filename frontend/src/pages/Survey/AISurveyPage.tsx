@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
-import TelegramEmoji from '../../components/ui/TelegramEmoji';
+import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 interface AISurveyPageProps {}
 
@@ -40,12 +40,13 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {
+      const pageId = '/survey/create/ai';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
         backButton.hide();
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
       };
     }
   }, [backButton, handleBackClick]);
@@ -77,7 +78,11 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
           }}>
             Для кого создаём опрос?
           </h1>
-          <TelegramEmoji emoji="🤖" size="large" />
+          <RealTelegramEmoji 
+            emoji="🤖" 
+            size="large" 
+            onClick={() => console.log('🤖 clicked!')}
+          />
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -94,7 +99,7 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
             }}>
               <motion.div
                 initial={{ width: '0%' }}
-                animate={{ width: '25%' }}
+                animate={{ width: '30%' }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 style={{
                   height: '100%',
@@ -133,18 +138,6 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
             overflow: 'hidden'
           }}
         >
-          {selectedType === 'business' && (
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-              opacity: 0.1,
-              pointerEvents: 'none'
-            }} />
-          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
               width: '48px',
@@ -209,18 +202,6 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
             overflow: 'hidden'
           }}
         >
-          {selectedType === 'personal' && (
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-              opacity: 0.1,
-              pointerEvents: 'none'
-            }} />
-          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
               width: '48px',

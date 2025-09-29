@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
-import TelegramEmoji from '../../components/ui/TelegramEmoji';
+import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 interface AIPersonalPageProps {}
 
@@ -76,12 +76,13 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {
+      const pageId = '/survey/create/ai/personal';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
         backButton.hide();
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
       };
     }
   }, [backButton, handleBackClick]);
@@ -125,7 +126,11 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
           }}>
             Личный опрос
           </h1>
-          <TelegramEmoji emoji="🙋‍♂️" size="large" />
+          <RealTelegramEmoji 
+            emoji="🙋‍♂️" 
+            size="large" 
+            onClick={() => console.log('🙋‍♂️ clicked!')}
+          />
           <div style={{
             display: 'flex',
             justifyContent: 'center',

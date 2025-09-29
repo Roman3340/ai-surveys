@@ -1,7 +1,77 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import WebApp from '@twa-dev/sdk';
 import type { TelegramUserData } from '../types';
 import { getTelegramWebApp, isTelegramEnvironment } from '../utils/mockTelegram';
+
+// Глобальный менеджер для управления BackButton (вне компонента для предотвращения пересоздания)
+const createBackButtonManager = () => {
+  let currentCallbackId: string | null = null;
+  let isShown = false;
+  
+  return {
+    setCallback: (callback: () => void, callbackId: string) => {
+      const tg = isTelegramEnvironment() 
+        ? (WebApp as unknown as TelegramWebApp)
+        : getTelegramWebApp();
+        
+      if (currentCallbackId === callbackId) {
+        return; // Уже установлен этот callback
+      }
+      
+      // Очищаем предыдущий callback
+      if (currentCallbackId && (tg.BackButton as any).__currentCallback) {
+        tg.BackButton.offClick((tg.BackButton as any).__currentCallback);
+      }
+      
+      // Устанавливаем новый callback
+      (tg.BackButton as any).__currentCallback = callback;
+      tg.BackButton.onClick(callback);
+      currentCallbackId = callbackId;
+      console.log('BackButton callback set for:', callbackId);
+    },
+    
+    clearCallback: (callbackId: string) => {
+      const tg = isTelegramEnvironment() 
+        ? (WebApp as unknown as TelegramWebApp)
+        : getTelegramWebApp();
+        
+      if (currentCallbackId === callbackId) {
+        if ((tg.BackButton as any).__currentCallback) {
+          tg.BackButton.offClick((tg.BackButton as any).__currentCallback);
+        }
+        (tg.BackButton as any).__currentCallback = null;
+        currentCallbackId = null;
+        console.log('BackButton callback cleared for:', callbackId);
+      }
+    },
+    
+    show: () => {
+      const tg = isTelegramEnvironment() 
+        ? (WebApp as unknown as TelegramWebApp)
+        : getTelegramWebApp();
+        
+      if (!isShown) {
+        tg.BackButton.show();
+        isShown = true;
+        console.log('BackButton shown');
+      }
+    },
+    
+    hide: () => {
+      const tg = isTelegramEnvironment() 
+        ? (WebApp as unknown as TelegramWebApp)
+        : getTelegramWebApp();
+        
+      if (isShown) {
+        tg.BackButton.hide();
+        isShown = false;
+        console.log('BackButton hidden');
+      }
+    }
+  };
+};
+
+const globalBackButtonManager = createBackButtonManager();
 
 interface TelegramWebApp {
   initData: string;
@@ -43,7 +113,6 @@ export const useTelegram = () => {
   const [isReady, setIsReady] = useState(false);
   const [user, setUser] = useState<TelegramUserData | null>(null);
   const [startParam, setStartParam] = useState<string | null>(null);
-  const backButtonInitialized = useRef(false);
 
   useEffect(() => {
     // Используем реальный Telegram WebApp или мок для разработки
@@ -146,8 +215,7 @@ export const useTelegram = () => {
     show: () => {
       try {
         if (tg.BackButton) {
-          tg.BackButton.show();
-          console.log('BackButton shown');
+          globalBackButtonManager.show();
         }
       } catch (error) {
         console.error('Error showing BackButton:', error);
@@ -156,45 +224,29 @@ export const useTelegram = () => {
     hide: () => {
       try {
         if (tg.BackButton) {
-          tg.BackButton.hide();
-          console.log('BackButton hidden');
+          globalBackButtonManager.hide();
         }
       } catch (error) {
         console.error('Error hiding BackButton:', error);
       }
     },
-    onClick: (callback: () => void) => {
+    onClick: (callback: () => void, callbackId?: string) => {
       try {
         if (tg.BackButton) {
-          // Проверяем, установлен ли уже обработчик
-          const currentCallback = (tg.BackButton as any).__currentCallback;
-          if (currentCallback && backButtonInitialized.current) {
-            console.log('BackButton onClick already initialized, skipping');
-            return;
-          }
-          
-          // Очищаем предыдущие обработчики если есть
-          if (currentCallback) {
-            tg.BackButton.offClick(currentCallback);
-          }
-          
-          // Сохраняем новый callback
-          (tg.BackButton as any).__currentCallback = callback;
-          tg.BackButton.onClick(callback);
-          backButtonInitialized.current = true;
-          console.log('BackButton onClick set');
+          // Используем URL как уникальный ID если не передан
+          const id = callbackId || window.location.pathname;
+          globalBackButtonManager.setCallback(callback, id);
         }
       } catch (error) {
         console.error('Error setting BackButton onClick:', error);
       }
     },
-    offClick: (callback: () => void) => {
+    offClick: (callbackId?: string) => {
       try {
         if (tg.BackButton) {
-          tg.BackButton.offClick(callback);
-          (tg.BackButton as any).__currentCallback = null;
-          backButtonInitialized.current = false;
-          console.log('BackButton onClick removed');
+          // Используем URL как уникальный ID если не передан
+          const id = callbackId || window.location.pathname;
+          globalBackButtonManager.clearCallback(id);
         }
       } catch (error) {
         console.error('Error removing BackButton onClick:', error);

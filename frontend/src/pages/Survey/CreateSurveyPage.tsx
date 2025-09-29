@@ -27,12 +27,13 @@ const CreateSurveyPage: React.FC = () => {
       }
     };
 
+    const pageId = '/survey/create';
     backButton.show();
-    backButton.onClick(handleBackClick);
+    backButton.onClick(handleBackClick, pageId);
     
     return () => {
       backButton.hide();
-      backButton.offClick(handleBackClick);
+      backButton.offClick(pageId);
     };
   }, [backButton, navigate]);
 

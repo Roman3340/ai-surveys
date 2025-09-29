@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { DateTimePicker } from '../../components/ui/DateTimePicker';
+import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 import { useTelegram } from '../../hooks/useTelegram';
 
 const ManualSurveyPage: React.FC = () => {
@@ -81,12 +82,13 @@ const ManualSurveyPage: React.FC = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {
+      const pageId = '/survey/create/manual';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
         backButton.hide();
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
       };
     }
   }, [backButton, handleBackClick]);
@@ -130,13 +132,11 @@ const ManualSurveyPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', marginBottom: '32px' }}
         >
-          <div style={{
-            fontSize: '64px',
-            marginBottom: '16px',
-            animation: 'bounce-gentle 3s ease-in-out infinite'
-          }}>
-            📝
-          </div>
+          <RealTelegramEmoji 
+            emoji="📝" 
+            size="large" 
+            onClick={() => console.log('📝 clicked!')}
+          />
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -150,12 +150,16 @@ const ManualSurveyPage: React.FC = () => {
               borderRadius: '3px',
               overflow: 'hidden'
             }}>
-              <div style={{
-                width: '60%',
-                height: '100%',
-                background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-                borderRadius: '3px'
-              }} />
+              <motion.div
+                initial={{ width: '0%' }}
+                animate={{ width: '40%' }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                style={{
+                  height: '100%',
+                  background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+                  borderRadius: '3px'
+                }}
+              />
             </div>
           </div>
         </motion.div>

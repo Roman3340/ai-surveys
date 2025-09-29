@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
-import TelegramEmoji from '../../components/ui/TelegramEmoji';
+import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 
 interface MotivationPageProps {}
 
@@ -92,15 +92,16 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   // Настройка нативной кнопки назад Telegram
   useEffect(() => {
     if (backButton) {
+      const pageId = isFromAI ? '/survey/create/ai/motivation' : '/survey/create/manual/motivation';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
         backButton.hide();
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
       };
     }
-  }, [backButton, handleBackClick]);
+  }, [backButton, handleBackClick, isFromAI]);
 
   return (
     <div 
@@ -132,7 +133,11 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
           }}>
             Мотивация
           </h1>
-          <TelegramEmoji emoji="🏆" size="large" />
+          <RealTelegramEmoji 
+            emoji="🏆" 
+            size="large" 
+            onClick={() => console.log('🏆 clicked!')}
+          />
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -149,7 +154,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
             }}>
               <motion.div
                 initial={{ width: '0%' }}
-                animate={{ width: isFromAI ? '75%' : '67%' }}
+                animate={{ width: isFromAI ? '70%' : '60%' }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 style={{
                   height: '100%',
