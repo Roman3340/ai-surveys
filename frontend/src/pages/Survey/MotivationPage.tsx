@@ -7,6 +7,13 @@ import TelegramEmoji from '../../components/ui/TelegramEmoji';
 
 interface MotivationPageProps {}
 
+interface MotivationData {
+  motivation: string;
+  rewardDescription: string;
+  rewardValue: string;
+  [key: string]: any; // Для дополнительных полей из previousData
+}
+
 const MotivationPage: React.FC<MotivationPageProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,7 +24,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   const previousData = location.state || {};
   const isFromAI = location.pathname.includes('/ai/');
 
-  const [motivationData, setMotivationData] = useState({
+  const [motivationData, setMotivationData] = useState<MotivationData>({
     motivation: 'none',
     rewardDescription: '',
     rewardValue: '',
@@ -43,7 +50,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   };
 
   const handleMotivationChange = (field: string, value: any) => {
-    setMotivationData(prev => ({ ...prev, [field]: value }));
+    setMotivationData((prev: MotivationData) => ({ ...prev, [field]: value }));
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
