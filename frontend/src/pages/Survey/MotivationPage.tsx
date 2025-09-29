@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
@@ -18,7 +18,6 @@ interface MotivationData {
 const MotivationPage: React.FC<MotivationPageProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hapticFeedback } = useTelegram();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   // Получаем данные из предыдущего шага

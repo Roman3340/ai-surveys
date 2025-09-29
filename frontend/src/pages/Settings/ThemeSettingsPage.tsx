@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { Check, Sun, Moon, Monitor } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -8,7 +7,6 @@ import { useStableBackButton } from '../../hooks/useStableBackButton';
 interface ThemeSettingsPageProps {}
 
 const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = () => {
-  const navigate = useNavigate();
   const { theme, setTheme } = useAppStore();
   const { hapticFeedback } = useTelegram();
 
