@@ -106,14 +106,14 @@ const CreateSurveyPage: React.FC = () => {
             <div style={{
               width: '280px',
               height: '6px',
-              backgroundColor: 'rgba(0, 122, 255, 0.2)',
+              backgroundColor: 'rgba(244, 109, 0, 0.2)',
               borderRadius: '3px',
               overflow: 'hidden'
             }}>
               <div style={{
                 width: '20%',
                 height: '100%',
-                backgroundColor: '#007AFF',
+                background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
                 borderRadius: '3px'
               }} />
             </div>
@@ -142,7 +142,7 @@ const CreateSurveyPage: React.FC = () => {
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'transform 0.1s ease',
-                border: selectedOption === 'manual' ? '2px solid #007AFF' : '2px solid transparent'
+                border: selectedOption === 'manual' ? '2px solid #F46D00' : '2px solid transparent'
               }}
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -181,8 +181,8 @@ const CreateSurveyPage: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: `2px solid ${selectedOption === 'manual' ? '#007AFF' : 'var(--tg-section-separator-color)'}`,
-                      backgroundColor: selectedOption === 'manual' ? '#007AFF' : 'transparent',
+                      border: `2px solid ${selectedOption === 'manual' ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
+                      background: selectedOption === 'manual' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -223,7 +223,7 @@ const CreateSurveyPage: React.FC = () => {
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'transform 0.1s ease',
-                border: selectedOption === 'ai' ? '2px solid #007AFF' : '2px solid transparent'
+                border: selectedOption === 'ai' ? '2px solid #F46D00' : '2px solid transparent'
               }}
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -262,8 +262,8 @@ const CreateSurveyPage: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: `2px solid ${selectedOption === 'ai' ? '#007AFF' : 'var(--tg-section-separator-color)'}`,
-                      backgroundColor: selectedOption === 'ai' ? '#007AFF' : 'transparent',
+                      border: `2px solid ${selectedOption === 'ai' ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
+                      background: selectedOption === 'ai' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -330,7 +330,7 @@ const CreateSurveyPage: React.FC = () => {
             disabled={!selectedOption}
             style={{
               width: '100%',
-              backgroundColor: selectedOption ? '#007AFF' : 'var(--tg-section-separator-color)',
+              background: selectedOption ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-section-separator-color)',
               color: selectedOption ? 'white' : 'var(--tg-hint-color)',
               border: 'none',
               borderRadius: '12px',

@@ -163,14 +163,14 @@ const AISurveyPage: React.FC = () => {
             <div style={{
               width: '280px',
               height: '6px',
-              backgroundColor: 'rgba(0, 122, 255, 0.2)',
+              backgroundColor: 'rgba(244, 109, 0, 0.2)',
               borderRadius: '3px',
               overflow: 'hidden'
             }}>
               <div style={{
                 width: '40%',
                 height: '100%',
-                backgroundColor: '#007AFF',
+                background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
                 borderRadius: '3px'
               }} />
             </div>
@@ -359,7 +359,7 @@ const AISurveyPage: React.FC = () => {
                   onClick={() => handleQuestionTypeToggle(option.id)}
                   style={{
                     backgroundColor: 'var(--tg-section-bg-color)',
-                    border: `1px solid ${formData.questionTypes.includes(option.id) ? '#007AFF' : 'var(--tg-section-separator-color)'}`,
+                    border: `1px solid ${formData.questionTypes.includes(option.id) ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
                     borderRadius: '8px',
                     padding: '12px 16px',
                     cursor: 'pointer',
@@ -388,8 +388,8 @@ const AISurveyPage: React.FC = () => {
                     width: '20px',
                     height: '20px',
                     borderRadius: '50%',
-                    border: `2px solid ${formData.questionTypes.includes(option.id) ? '#007AFF' : 'var(--tg-section-separator-color)'}`,
-                    backgroundColor: formData.questionTypes.includes(option.id) ? '#007AFF' : 'transparent',
+                    border: `2px solid ${formData.questionTypes.includes(option.id) ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
+                    background: formData.questionTypes.includes(option.id) ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
@@ -431,7 +431,7 @@ const AISurveyPage: React.FC = () => {
            disabled={!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal || isGenerating}
            style={{
              width: '100%',
-             backgroundColor: (!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal) ? 'var(--tg-hint-color)' : '#007AFF',
+             background: (!formData.businessSphere || !formData.targetAudience || !formData.surveyGoal) ? 'var(--tg-hint-color)' : 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
              color: 'white',
              border: 'none',
              borderRadius: '12px',

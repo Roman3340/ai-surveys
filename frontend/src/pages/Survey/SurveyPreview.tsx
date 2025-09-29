@@ -447,14 +447,14 @@ const SurveyPreview: React.FC = () => {
         <div style={{
           width: '100%',
           height: '4px',
-          backgroundColor: 'rgba(0, 122, 255, 0.2)',
+          backgroundColor: 'rgba(244, 109, 0, 0.2)',
           borderRadius: '2px',
           overflow: 'hidden'
         }}>
           <div style={{
             width: `${progress}%`,
             height: '100%',
-            backgroundColor: '#007AFF',
+            background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
             borderRadius: '2px',
             transition: 'width 0.3s ease'
           }} />
@@ -605,7 +605,7 @@ const SurveyPreview: React.FC = () => {
             onClick={handleNextQuestion}
             style={{
               flex: 1,
-              backgroundColor: '#007AFF',
+              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '12px',

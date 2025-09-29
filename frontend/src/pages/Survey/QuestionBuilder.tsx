@@ -211,7 +211,7 @@ const QuestionBuilder: React.FC = () => {
           borderRadius: '12px',
           padding: '20px',
           marginBottom: '16px',
-          border: isEditing ? '2px solid #007AFF' : '1px solid var(--tg-section-separator-color)',
+          border: isEditing ? '2px solid #F46D00' : '1px solid var(--tg-section-separator-color)',
           position: 'relative'
         }}
       >
@@ -660,14 +660,14 @@ const QuestionBuilder: React.FC = () => {
             <div style={{
               width: '280px',
               height: '6px',
-              backgroundColor: 'rgba(0, 122, 255, 0.2)',
+              backgroundColor: 'rgba(244, 109, 0, 0.2)',
               borderRadius: '3px',
               overflow: 'hidden'
             }}>
               <div style={{
                 width: '80%',
                 height: '100%',
-                backgroundColor: '#007AFF',
+                background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
                 borderRadius: '3px'
               }} />
             </div>

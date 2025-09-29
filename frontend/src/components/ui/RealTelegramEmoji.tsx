@@ -241,7 +241,7 @@ const RealTelegramEmoji: React.FC<RealTelegramEmojiProps> = ({
             width: '8px',
             height: '8px',
             borderRadius: '50%',
-            backgroundColor: '#007AFF',
+            background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
             animation: 'pulse 1s ease-in-out infinite'
           }}
         />
