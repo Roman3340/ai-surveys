@@ -18,11 +18,12 @@ const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = () => {
         navigate('/settings', { replace: true });
       };
 
+      const pageId = '/settings/theme';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
         backButton.hide();
       };
     }
@@ -128,7 +129,7 @@ const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = () => {
                   </div>
                 </div>
                 {isSelected && (
-                  <Check size={20} color="white" />
+                  <Check size={18} color="white" />
                 )}
               </button>
             );

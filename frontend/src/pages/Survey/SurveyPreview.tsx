@@ -56,17 +56,17 @@ const SurveyPreview: React.FC = () => {
 
   // Настройка нативной кнопки назад
   useEffect(() => {
-    const handleBackClick = () => {
-      navigate('/survey/create/manual/questions');
-    };
+    if (backButton) {
+      backButton.show();
+      backButton.onClick(() => {
+        navigate('/survey/create/manual/questions', { replace: true });
+      }, '/survey/create/manual/preview');
 
-    backButton.show();
-    backButton.onClick(handleBackClick);
-    
-    return () => {
-      backButton.hide();
-      backButton.offClick(handleBackClick);
-    };
+      return () => {
+        backButton.hide();
+        backButton.offClick('/survey/create/manual/preview');
+      };
+    }
   }, [backButton, navigate]);
 
   const handleAnswerChange = (questionId: string, value: any) => {

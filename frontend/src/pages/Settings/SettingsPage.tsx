@@ -23,11 +23,12 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
         navigate('/', { replace: true });
       };
 
+      const pageId = '/settings';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
         backButton.hide();
       };
     }
@@ -117,22 +118,13 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              {theme === 'dark' ? 
-                <Moon size={18} color="white" /> : 
-                <Sun size={18} color="white" />
-              }
+              {theme === 'dark' ? <Moon size={18} color="white" /> : <Sun size={18} color="white" />}
             </div>
             <div style={{ flex: 1, textAlign: 'left' }}>
               <div style={{ fontWeight: '500' }}>Тема</div>
-              <div style={{ 
-                fontSize: '14px', 
-                color: 'var(--tg-hint-color)',
-                marginTop: '2px'
-              }}>
-                {getCurrentThemeName()}
-              </div>
+              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>{getCurrentThemeName()}</div>
             </div>
-            <ChevronRight size={20} color="var(--tg-hint-color)" />
+            <ChevronRight size={18} color="var(--tg-hint-color)" />
           </button>
         </div>
 
@@ -171,24 +163,17 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             </div>
             <div style={{ flex: 1, textAlign: 'left' }}>
               <div style={{ fontWeight: '500' }}>Язык</div>
-              <div style={{ 
-                fontSize: '14px', 
-                color: 'var(--tg-hint-color)',
-                marginTop: '2px'
-              }}>
-                RU Русский
-              </div>
+              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>Выбор языка интерфейса</div>
             </div>
-            <ChevronRight size={20} color="var(--tg-hint-color)" />
+            <ChevronRight size={18} color="var(--tg-hint-color)" />
           </button>
         </div>
 
-        {/* Очистить кэш */}
+        {/* Очистка кэша */}
         <div style={{
           backgroundColor: 'var(--tg-section-bg-color)',
           borderRadius: '12px',
-          overflow: 'hidden',
-          marginBottom: '16px'
+          overflow: 'hidden'
         }}>
           <button
             onClick={handleClearCache}
@@ -209,7 +194,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              backgroundColor: '#ff4444',
+              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -218,14 +203,9 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             </div>
             <div style={{ flex: 1, textAlign: 'left' }}>
               <div style={{ fontWeight: '500' }}>Очистить кэш</div>
-              <div style={{ 
-                fontSize: '14px', 
-                color: 'var(--tg-hint-color)',
-                marginTop: '2px'
-              }}>
-                Удалить все локальные данные
-              </div>
+              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>Удалить локальные данные</div>
             </div>
+            <ChevronRight size={18} color="var(--tg-hint-color)" />
           </button>
         </div>
       </div>

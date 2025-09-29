@@ -17,11 +17,12 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = () => {
         navigate('/settings', { replace: true });
       };
 
+      const pageId = '/settings/language';
       backButton.show();
-      backButton.onClick(handleBackClick);
+      backButton.onClick(handleBackClick, pageId);
 
       return () => {
-        backButton.offClick(handleBackClick);
+        backButton.offClick(pageId);
         backButton.hide();
       };
     }
