@@ -176,6 +176,9 @@ const QuestionBuilder: React.FC = () => {
     const element = e.currentTarget as HTMLElement;
     const rect = element.getBoundingClientRect();
     
+    // Предотвращаем стандартное поведение браузера
+    e.preventDefault();
+    
     setTouchStartY(touch.clientY);
     setDraggedQuestionId(questionId);
     setIsDragging(false);
@@ -194,19 +197,27 @@ const QuestionBuilder: React.FC = () => {
     const touch = e.touches[0];
     const deltaY = Math.abs(touch.clientY - touchStartY);
     
-    // Если переместили палец на 5px, начинаем drag
-    if (deltaY > 5 && !isDragging) {
+    // Если переместили палец на 10px, начинаем drag
+    if (deltaY > 10 && !isDragging) {
       setIsDragging(true);
       hapticFeedback?.medium();
       
-      // Блокируем скролл страницы
+      // Блокируем скролл страницы более агрессивно
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      document.body.style.top = '0';
+      document.body.style.left = '0';
+      
+      // Предотвращаем все touch события на документе
+      document.addEventListener('touchmove', preventDefaultTouch, { passive: false });
+      document.addEventListener('touchend', preventDefaultTouch, { passive: false });
     }
     
     if (isDragging) {
       e.preventDefault();
+      e.stopPropagation();
       
       // Обновляем позицию элемента
       const newX = touch.clientX - dragOffset.x;
@@ -216,13 +227,13 @@ const QuestionBuilder: React.FC = () => {
       dragElement.style.left = `${newX}px`;
       dragElement.style.top = `${newY}px`;
       dragElement.style.zIndex = '1000';
-      dragElement.style.transform = 'rotate(2deg)';
-      dragElement.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+      dragElement.style.transform = 'scale(0.9)';
       dragElement.style.opacity = '0.8';
+      dragElement.style.pointerEvents = 'none';
       
-      // Определяем элемент под пальцем
+      // Определяем элемент под пальцем (исключаем сам перетаскиваемый элемент)
       const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-      if (elementBelow) {
+      if (elementBelow && !elementBelow.closest(`[data-question-id="${draggedQuestionId}"]`)) {
         const questionElement = elementBelow.closest('[data-question-id]');
         if (questionElement) {
           const targetQuestionId = questionElement.getAttribute('data-question-id');
@@ -234,6 +245,8 @@ const QuestionBuilder: React.FC = () => {
         } else {
           setDragOverQuestionId(null);
         }
+      } else {
+        setDragOverQuestionId(null);
       }
     }
   };
@@ -248,6 +261,13 @@ const QuestionBuilder: React.FC = () => {
     document.body.style.overflow = '';
     document.body.style.position = '';
     document.body.style.width = '';
+    document.body.style.height = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    
+    // Убираем обработчики событий
+    document.removeEventListener('touchmove', preventDefaultTouch);
+    document.removeEventListener('touchend', preventDefaultTouch);
     
     if (isDragging) {
       const touch = e.changedTouches[0];
@@ -280,6 +300,12 @@ const QuestionBuilder: React.FC = () => {
     resetDragState();
   };
 
+  // Функция для предотвращения стандартного поведения touch событий
+  const preventDefaultTouch = (e: TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const resetDragState = () => {
     if (dragElement) {
       // Восстанавливаем стили элемента
@@ -288,8 +314,8 @@ const QuestionBuilder: React.FC = () => {
       dragElement.style.top = '';
       dragElement.style.zIndex = '';
       dragElement.style.transform = '';
-      dragElement.style.boxShadow = '';
       dragElement.style.opacity = '';
+      dragElement.style.pointerEvents = '';
     }
     
     setDraggedQuestionId(null);
@@ -370,6 +396,23 @@ const QuestionBuilder: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Очистка при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      // Восстанавливаем стили документа
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      
+      // Убираем обработчики событий
+      document.removeEventListener('touchmove', preventDefaultTouch);
+      document.removeEventListener('touchend', preventDefaultTouch);
+    };
+  }, []);
+
   const handleImageUpload = (questionId: string) => {
     // Создаем скрытый input для выбора файла
     const input = document.createElement('input');
@@ -437,7 +480,9 @@ const QuestionBuilder: React.FC = () => {
             userSelect: 'none',
             WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none',
-            touchAction: 'none' // Отключаем все touch-жесты браузера
+            touchAction: 'none', // Отключаем все touch-жесты браузера
+            transform: isDragOver ? 'scale(1.02)' : 'scale(1)',
+            boxShadow: isDragOver ? '0 4px 12px rgba(244, 109, 0, 0.3)' : 'none'
           }}
         >
         {/* Заголовок вопроса */}
