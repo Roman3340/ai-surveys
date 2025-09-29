@@ -52,6 +52,22 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
       color: 'var(--tg-text-color)',
       paddingBottom: '100px'
     }}>
+      {/* Заголовок */}
+      <div style={{
+        padding: '24px 16px 16px 16px',
+        textAlign: 'center'
+      }}>
+        <h1 style={{
+          fontSize: '24px',
+          fontWeight: '600',
+          margin: '0 0 16px 0',
+          color: 'var(--tg-text-color)'
+        }}>
+          Для кого создаём опрос?
+        </h1>
+        <TelegramEmoji emoji="🤖" size="large" />
+      </div>
+
       {/* Прогресс-бар */}
       <div style={{
         padding: '16px',
@@ -77,24 +93,15 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
         </div>
       </div>
 
-      {/* Заголовок */}
+      {/* Описание */}
       <div style={{
-        padding: '24px 16px',
+        padding: '16px',
         textAlign: 'center'
       }}>
-        <TelegramEmoji emoji="🤖" size="large" />
-        <h1 style={{
-          fontSize: '24px',
-          fontWeight: '600',
-          margin: '16px 0 8px 0',
-          color: 'var(--tg-text-color)'
-        }}>
-          Для кого создаём опрос?
-        </h1>
         <p style={{
           fontSize: '16px',
           color: 'var(--tg-hint-color)',
-          margin: '0 0 32px 0',
+          margin: '0',
           lineHeight: '1.4'
         }}>
           Выберите подходящий вариант, чтобы мы могли задать правильные вопросы для создания опроса
@@ -135,8 +142,6 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
             <div style={{
               width: '48px',
               height: '48px',
-              borderRadius: '12px',
-              background: selectedType === 'business' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-hint-color)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -149,7 +154,7 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
                 fontSize: '18px',
                 fontWeight: '600',
                 margin: '0 0 4px 0',
-                color: selectedType === 'business' ? '#F46D00' : 'var(--tg-text-color)'
+                color: 'var(--tg-text-color)'
               }}>
                 Для бизнеса
               </h3>
@@ -213,8 +218,6 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
             <div style={{
               width: '48px',
               height: '48px',
-              borderRadius: '12px',
-              background: selectedType === 'personal' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-hint-color)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -227,7 +230,7 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
                 fontSize: '18px',
                 fontWeight: '600',
                 margin: '0 0 4px 0',
-                color: selectedType === 'personal' ? '#F46D00' : 'var(--tg-text-color)'
+                color: 'var(--tg-text-color)'
               }}>
                 Для личных целей
               </h3>

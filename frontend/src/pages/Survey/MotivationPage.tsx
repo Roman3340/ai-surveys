@@ -107,6 +107,22 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       }}
       className={isKeyboardActive ? 'keyboard-active' : ''}
     >
+      {/* Заголовок */}
+      <div style={{
+        padding: '24px 16px 16px 16px',
+        textAlign: 'center'
+      }}>
+        <h1 style={{
+          fontSize: '24px',
+          fontWeight: '600',
+          margin: '0 0 16px 0',
+          color: 'var(--tg-text-color)'
+        }}>
+          Мотивация
+        </h1>
+        <TelegramEmoji emoji="🏆" size="large" />
+      </div>
+
       {/* Прогресс-бар */}
       <div style={{
         padding: '16px',
@@ -132,24 +148,15 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
         </div>
       </div>
 
-      {/* Заголовок */}
+      {/* Описание */}
       <div style={{
-        padding: '24px 16px 16px 16px',
+        padding: '16px',
         textAlign: 'center'
       }}>
-        <TelegramEmoji emoji="🏆" size="large" />
-        <h1 style={{
-          fontSize: '24px',
-          fontWeight: '600',
-          margin: '16px 0 8px 0',
-          color: 'var(--tg-text-color)'
-        }}>
-          Мотивация
-        </h1>
         <p style={{
           fontSize: '16px',
           color: 'var(--tg-hint-color)',
-          margin: '0 0 24px 0',
+          margin: '0',
           lineHeight: '1.4'
         }}>
           Добавьте мотивацию, чтобы повысить отклик на ваш опрос. Респонденты будут знать о награде заранее и охотнее примут участие.

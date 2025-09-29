@@ -21,6 +21,7 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   });
   
   const [showQuestionTypes, setShowQuestionTypes] = useState(false);
+  const [customQuestionCount, setCustomQuestionCount] = useState('');
 
   const handleNext = () => {
     navigate('/survey/create/ai/motivation', { 
@@ -112,6 +113,22 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
       }}
       className={isKeyboardActive ? 'keyboard-active' : ''}
     >
+      {/* Заголовок */}
+      <div style={{
+        padding: '24px 16px 16px 16px',
+        textAlign: 'center'
+      }}>
+        <h1 style={{
+          fontSize: '24px',
+          fontWeight: '600',
+          margin: '0 0 16px 0',
+          color: 'var(--tg-text-color)'
+        }}>
+          Настройки для бизнеса
+        </h1>
+        <TelegramEmoji emoji="💼" size="large" />
+      </div>
+
       {/* Прогресс-бар */}
       <div style={{
         padding: '16px',
@@ -137,24 +154,15 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
         </div>
       </div>
 
-      {/* Заголовок */}
+      {/* Описание */}
       <div style={{
-        padding: '24px 16px 16px 16px',
+        padding: '16px',
         textAlign: 'center'
       }}>
-        <TelegramEmoji emoji="💼" size="large" />
-        <h1 style={{
-          fontSize: '24px',
-          fontWeight: '600',
-          margin: '16px 0 8px 0',
-          color: 'var(--tg-text-color)'
-        }}>
-          Настройки для бизнеса
-        </h1>
         <p style={{
           fontSize: '16px',
           color: 'var(--tg-hint-color)',
-          margin: '0 0 24px 0',
+          margin: '0',
           lineHeight: '1.4'
         }}>
           Расскажите о вашем бизнесе, чтобы мы создали подходящий опрос
@@ -186,7 +194,7 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
+                  border: '2px solid var(--tg-section-separator-color)',
                   backgroundColor: 'var(--tg-section-bg-color)',
                   color: 'var(--tg-text-color)',
                   fontSize: '16px',
@@ -239,7 +247,7 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
                  width: '100%',
                  padding: '12px 16px',
                  borderRadius: '8px',
-                 border: '1px solid var(--tg-section-separator-color)',
+                 border: '2px solid var(--tg-section-separator-color)',
                  backgroundColor: 'var(--tg-section-bg-color)',
                  color: 'var(--tg-text-color)',
                  fontSize: '16px',
@@ -272,7 +280,7 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
                  width: '100%',
                  padding: '12px 16px',
                  borderRadius: '8px',
-                 border: '1px solid var(--tg-section-separator-color)',
+                 border: '2px solid var(--tg-section-separator-color)',
                  backgroundColor: 'var(--tg-section-bg-color)',
                  color: 'var(--tg-text-color)',
                  fontSize: '16px',
@@ -295,18 +303,22 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
             <div style={{
               display: 'flex',
               gap: '8px',
-              flexWrap: 'wrap'
+              flexWrap: 'wrap',
+              alignItems: 'center'
             }}>
               {[3, 5, 7, 10].map(count => (
                 <button
                   key={count}
-                  onClick={() => handleInputChange('questionCount', count)}
+                  onClick={() => {
+                    handleInputChange('questionCount', count);
+                    setCustomQuestionCount('');
+                  }}
                   style={{
                     padding: '8px 16px',
                     borderRadius: '8px',
-                    border: `1px solid ${formData.questionCount === count ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
-                    backgroundColor: formData.questionCount === count ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
-                    color: formData.questionCount === count ? 'white' : 'var(--tg-text-color)',
+                    border: `2px solid ${formData.questionCount === count && !customQuestionCount ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
+                    backgroundColor: 'transparent',
+                    color: 'var(--tg-text-color)',
                     fontSize: '14px',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
@@ -315,6 +327,36 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
                   {count}
                 </button>
               ))}
+              <input
+                type="number"
+                value={customQuestionCount}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= 25)) {
+                    setCustomQuestionCount(value);
+                    if (value !== '') {
+                      handleInputChange('questionCount', parseInt(value));
+                    }
+                  }
+                }}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                onKeyDown={handleKeyDown}
+                placeholder="Своё"
+                min="1"
+                max="25"
+                style={{
+                  width: '60px',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: `2px solid ${customQuestionCount ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  textAlign: 'center'
+                }}
+              />
             </div>
           </div>
 
