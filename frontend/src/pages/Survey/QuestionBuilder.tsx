@@ -38,7 +38,7 @@ const QuestionBuilder: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dragElement, setDragElement] = useState<HTMLElement | null>(null);
-  const [dragStartTime, setDragStartTime] = useState<number | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const questionTypes = [
     { value: 'text', label: 'Короткий ответ', icon: '📝' },
@@ -190,45 +190,51 @@ const QuestionBuilder: React.FC = () => {
     setDraggedQuestionId(questionId);
     setIsDragging(false);
     setDragElement(element);
-    setDragStartTime(Date.now());
     setDragOffset({
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
     });
     
+    // Запускаем таймер для длительного нажатия (1 секунда)
+    const timer = setTimeout(() => {
+      if (draggedQuestionId === questionId && !isDragging) {
+        setIsDragging(true);
+        hapticFeedback?.medium();
+        
+        // Блокируем скролл страницы
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.height = '100%';
+        document.body.style.top = '0';
+        document.body.style.left = '0';
+        
+        // Предотвращаем все touch события на документе
+        document.addEventListener('touchmove', preventDefaultTouch, { passive: false });
+        document.addEventListener('touchend', preventDefaultTouch, { passive: false });
+      }
+    }, 1000);
+    
+    setLongPressTimer(timer);
     hapticFeedback?.light();
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!draggedQuestionId || !touchStartY || !dragElement || !dragStartTime) return;
+    if (!draggedQuestionId || !touchStartY || !dragElement) return;
     
     const touch = e.touches[0];
     const deltaY = Math.abs(touch.clientY - touchStartY);
     const deltaX = Math.abs(touch.clientX - (touchStartX || touch.clientX));
-    const timeElapsed = Date.now() - dragStartTime;
     
-    // Более строгие условия для активации drag:
-    // 1. Прошло минимум 200ms с начала касания
-    // 2. Перемещение по Y больше чем по X (вертикальное перетаскивание)
-    // 3. Перемещение больше 30px
-    // 4. Время касания больше 200ms (исключаем быстрые касания)
-    if (deltaY > 30 && deltaY > deltaX && timeElapsed > 200 && !isDragging) {
-      setIsDragging(true);
-      hapticFeedback?.medium();
-      
-      // Блокируем скролл страницы более агрессивно
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      document.body.style.top = '0';
-      document.body.style.left = '0';
-      
-      // Предотвращаем все touch события на документе
-      document.addEventListener('touchmove', preventDefaultTouch, { passive: false });
-      document.addEventListener('touchend', preventDefaultTouch, { passive: false });
+    // Если перемещение больше 10px, отменяем таймер длительного нажатия
+    if (deltaY > 10 || deltaX > 10) {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        setLongPressTimer(null);
+      }
     }
     
+    // Drag активируется только если уже установлен флаг isDragging (через таймер)
     if (isDragging) {
       e.preventDefault();
       e.stopPropagation();
@@ -266,6 +272,12 @@ const QuestionBuilder: React.FC = () => {
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    // Отменяем таймер длительного нажатия
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    
     if (!draggedQuestionId || !dragElement) {
       resetDragState();
       return;
@@ -332,11 +344,16 @@ const QuestionBuilder: React.FC = () => {
       dragElement.style.pointerEvents = '';
     }
     
+    // Отменяем таймер если он есть
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    
     setDraggedQuestionId(null);
     setDragOverQuestionId(null);
     setTouchStartY(null);
     setTouchStartX(null);
-    setDragStartTime(null);
     setIsDragging(false);
     setDragOffset({ x: 0, y: 0 });
     setDragElement(null);
@@ -426,8 +443,13 @@ const QuestionBuilder: React.FC = () => {
       // Убираем обработчики событий
       document.removeEventListener('touchmove', preventDefaultTouch);
       document.removeEventListener('touchend', preventDefaultTouch);
+      
+      // Отменяем таймер если он есть
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+      }
     };
-  }, []);
+  }, [longPressTimer]);
 
   const handleImageUpload = (questionId: string) => {
     // Создаем скрытый input для выбора файла
@@ -1006,7 +1028,7 @@ const QuestionBuilder: React.FC = () => {
             color: 'var(--tg-hint-color)',
             textAlign: 'center'
           }}>
-            💡 Касайтесь иконки <GripVertical size={16} style={{ display: 'inline', verticalAlign: 'middle' }} /> для перетаскивания вопросов
+            💡 Удерживайте карточку вопроса 1 секунду для перетаскивания или касайтесь иконки <GripVertical size={16} style={{ display: 'inline', verticalAlign: 'middle' }} />
           </div>
         )}
         
