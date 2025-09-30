@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Image, GripVertical, ChevronDown } from 'lucide-react';
@@ -33,43 +33,55 @@ const QuestionBuilder: React.FC = () => {
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
   const [draggedQuestionId, setDraggedQuestionId] = useState<string | null>(null);
   const [dragOverQuestionId, setDragOverQuestionId] = useState<string | null>(null);
-  const [touchStartY, setTouchStartY] = useState<number | null>(null);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [dragElement, setDragElement] = useState<HTMLElement | null>(null);
-  // Глобальные обработчики для touch-событий во время перетаскивания
-  const [touchHandlersAttached, setTouchHandlersAttached] = useState(false);
+
+  // refs для стабильной работы глобальных обработчиков (избегаем проблем со "застывшими" значениями из замыканий)
+  const isDraggingRef = useRef(false);
+  const dragElementRef = useRef<HTMLElement | null>(null);
+  const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchHandlersAttachedRef = useRef(false);
+  const questionsRef = useRef<Question[]>(questions);
+
+  useEffect(() => {
+    questionsRef.current = questions;
+  }, [questions]);
 
   const onGlobalTouchMove = (e: TouchEvent) => {
-    if (!draggedQuestionId || !touchStartY || !dragElement) return;
+    const currentDragElement = dragElementRef.current;
+    const startY = touchStartYRef.current;
+    const startX = touchStartXRef.current;
+    const offset = dragOffsetRef.current;
+    const currentDraggedId = draggedQuestionId;
+
+    if (!currentDraggedId || startY == null || !currentDragElement) return;
 
     const touch = e.touches[0];
-    const deltaY = Math.abs(touch.clientY - touchStartY);
-    const deltaX = Math.abs(touch.clientX - (touchStartX || touch.clientX));
+    const deltaY = Math.abs(touch.clientY - startY);
+    const deltaX = Math.abs(touch.clientX - (startX ?? touch.clientX));
 
-    // Если уже перетаскиваем — блокируем скролл и двигаем элемент
-    if (isDragging) {
+    // Во время перетаскивания блокируем скролл и двигаем элемент
+    if (isDraggingRef.current) {
       e.preventDefault();
       e.stopPropagation();
 
-      const newX = touch.clientX - dragOffset.x;
-      const newY = touch.clientY - dragOffset.y;
+      const newX = touch.clientX - offset.x;
+      const newY = touch.clientY - offset.y;
 
-      dragElement.style.position = 'fixed';
-      dragElement.style.left = `${newX}px`;
-      dragElement.style.top = `${newY}px`;
-      dragElement.style.zIndex = '1000';
-      dragElement.style.transform = 'scale(0.9)';
-      dragElement.style.opacity = '0.8';
-      dragElement.style.pointerEvents = 'none';
+      currentDragElement.style.position = 'fixed';
+      currentDragElement.style.left = `${newX}px`;
+      currentDragElement.style.top = `${newY}px`;
+      currentDragElement.style.zIndex = '1000';
+      currentDragElement.style.transform = 'scale(0.9)';
+      currentDragElement.style.opacity = '0.8';
+      currentDragElement.style.pointerEvents = 'none';
 
       const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-      if (elementBelow && !elementBelow.closest(`[data-question-id="${draggedQuestionId}"]`)) {
+      if (elementBelow && !elementBelow.closest(`[data-question-id="${currentDraggedId}"]`)) {
         const questionElement = elementBelow.closest('[data-question-id]');
         if (questionElement) {
           const targetQuestionId = questionElement.getAttribute('data-question-id');
-          if (targetQuestionId && targetQuestionId !== draggedQuestionId) {
+          if (targetQuestionId && targetQuestionId !== currentDraggedId) {
             setDragOverQuestionId(targetQuestionId);
           } else {
             setDragOverQuestionId(null);
@@ -83,19 +95,21 @@ const QuestionBuilder: React.FC = () => {
       return;
     }
 
-    // Если ещё не перетаскиваем и палец смещён — не активируем перетаскивание (разрешаем скролл)
+    // Если ещё не перетаскиваем и палец смещён — разрешаем скролл (ничего не делаем)
     if (deltaY > 10 || deltaX > 10) {
       return;
     }
   };
 
   const onGlobalTouchEnd = (e: TouchEvent) => {
-    if (!draggedQuestionId || !dragElement) {
+    const currentDraggedId = draggedQuestionId;
+    const currentDragElement = dragElementRef.current;
+    if (!currentDraggedId || !currentDragElement) {
       resetDragState();
       return;
     }
 
-    if (isDragging) {
+    if (isDraggingRef.current) {
       const touch = e.changedTouches[0];
       const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
 
@@ -103,12 +117,13 @@ const QuestionBuilder: React.FC = () => {
         const questionElement = elementBelow.closest('[data-question-id]');
         if (questionElement) {
           const targetQuestionId = questionElement.getAttribute('data-question-id');
-          if (targetQuestionId && targetQuestionId !== draggedQuestionId) {
-            const draggedIndex = questions.findIndex(q => q.id === draggedQuestionId);
-            const targetIndex = questions.findIndex(q => q.id === targetQuestionId);
+          if (targetQuestionId && targetQuestionId !== currentDraggedId) {
+            const currentQuestions = questionsRef.current;
+            const draggedIndex = currentQuestions.findIndex(q => q.id === currentDraggedId);
+            const targetIndex = currentQuestions.findIndex(q => q.id === targetQuestionId);
 
             if (draggedIndex !== -1 && targetIndex !== -1) {
-              const newQuestions = [...questions];
+              const newQuestions = [...currentQuestions];
               const draggedQuestion = newQuestions[draggedIndex];
               newQuestions.splice(draggedIndex, 1);
               newQuestions.splice(targetIndex, 0, draggedQuestion);
@@ -266,15 +281,15 @@ const QuestionBuilder: React.FC = () => {
 
     const rect = element.getBoundingClientRect();
 
-    setTouchStartY(touch.clientY);
-    setTouchStartX(touch.clientX);
+    touchStartYRef.current = touch.clientY;
+    touchStartXRef.current = touch.clientX;
     setDraggedQuestionId(questionId);
-    setIsDragging(true);
-    setDragElement(element);
-    setDragOffset({
+    isDraggingRef.current = true;
+    dragElementRef.current = element;
+    dragOffsetRef.current = {
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
-    });
+    };
 
     // Фиксируем карточку в текущей позиции, чтобы она следовала за пальцем
     element.style.width = `${rect.width}px`;
@@ -293,10 +308,11 @@ const QuestionBuilder: React.FC = () => {
     (document.documentElement as HTMLElement).style.touchAction = 'none';
 
     // Подключаем глобальные обработчики перемещения/завершения
-    if (!touchHandlersAttached) {
+    if (!touchHandlersAttachedRef.current) {
       document.addEventListener('touchmove', onGlobalTouchMove as any, { passive: false });
       document.addEventListener('touchend', onGlobalTouchEnd as any, { passive: false });
-      setTouchHandlersAttached(true);
+      document.addEventListener('touchcancel', onGlobalTouchEnd as any, { passive: false });
+      touchHandlersAttachedRef.current = true;
     }
 
     // Блокируем скролл во время реального перетаскивания — делаем мягче, через CSS изменений не вносим
@@ -310,18 +326,19 @@ const QuestionBuilder: React.FC = () => {
   // Удаляем вспомогательный preventDefaultTouch — не нужен с глобальными обработчиками
 
   const resetDragState = () => {
-    if (dragElement) {
+    const el = dragElementRef.current;
+    if (el) {
       // Восстанавливаем стили элемента
-      dragElement.style.position = '';
-      dragElement.style.left = '';
-      dragElement.style.top = '';
-      dragElement.style.zIndex = '';
-      dragElement.style.transform = '';
-      dragElement.style.opacity = '';
-      dragElement.style.pointerEvents = '';
-      dragElement.style.width = '';
-      dragElement.style.height = '';
-      dragElement.style.willChange = '';
+      el.style.position = '';
+      el.style.left = '';
+      el.style.top = '';
+      el.style.zIndex = '';
+      el.style.transform = '';
+      el.style.opacity = '';
+      el.style.pointerEvents = '';
+      el.style.width = '';
+      el.style.height = '';
+      el.style.willChange = '';
     }
     
     // Возвращаем скролл страницы
@@ -329,19 +346,20 @@ const QuestionBuilder: React.FC = () => {
     (document.documentElement as HTMLElement).style.touchAction = '';
 
     // Отвязываем глобальные touch-обработчики
-    if (touchHandlersAttached) {
+    if (touchHandlersAttachedRef.current) {
       document.removeEventListener('touchmove', onGlobalTouchMove as any);
       document.removeEventListener('touchend', onGlobalTouchEnd as any);
-      setTouchHandlersAttached(false);
+      document.removeEventListener('touchcancel', onGlobalTouchEnd as any);
+      touchHandlersAttachedRef.current = false;
     }
     
     setDraggedQuestionId(null);
     setDragOverQuestionId(null);
-    setTouchStartY(null);
-    setTouchStartX(null);
-    setIsDragging(false);
-    setDragOffset({ x: 0, y: 0 });
-    setDragElement(null);
+    touchStartYRef.current = null;
+    touchStartXRef.current = null;
+    isDraggingRef.current = false;
+    dragOffsetRef.current = { x: 0, y: 0 };
+    dragElementRef.current = null;
   };
 
   const handlePreview = () => {
@@ -420,6 +438,7 @@ const QuestionBuilder: React.FC = () => {
       // Очистка глобальных обработчиков при размонтировании
       document.removeEventListener('touchmove', onGlobalTouchMove as any);
       document.removeEventListener('touchend', onGlobalTouchEnd as any);
+      document.removeEventListener('touchcancel', onGlobalTouchEnd as any);
     };
   }, []);
 
