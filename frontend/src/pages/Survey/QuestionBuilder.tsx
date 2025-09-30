@@ -258,6 +258,9 @@ const QuestionBuilder: React.FC = () => {
     if (questions.length <= 1) return;
 
     const touch = e.touches[0];
+    // Блокируем нативный скролл, чтобы перетаскивание стартовало корректно
+    e.preventDefault();
+
     const element = (e.currentTarget as HTMLElement).closest('[data-question-id]') as HTMLElement | null;
     if (!element) return;
 
@@ -272,6 +275,21 @@ const QuestionBuilder: React.FC = () => {
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
     });
+
+    // Фиксируем карточку в текущей позиции, чтобы она следовала за пальцем
+    element.style.width = `${rect.width}px`;
+    element.style.height = `${rect.height}px`;
+    element.style.position = 'fixed';
+    element.style.left = `${rect.left}px`;
+    element.style.top = `${rect.top}px`;
+    element.style.zIndex = '1000';
+    element.style.transform = 'scale(0.9)';
+    element.style.opacity = '0.8';
+    element.style.pointerEvents = 'none';
+    element.style.willChange = 'transform, left, top';
+
+    // Временно блокируем скролл страницы во время перетаскивания
+    document.body.style.overflow = 'hidden';
 
     // Подключаем глобальные обработчики перемещения/завершения
     if (!touchHandlersAttached) {
@@ -300,8 +318,14 @@ const QuestionBuilder: React.FC = () => {
       dragElement.style.transform = '';
       dragElement.style.opacity = '';
       dragElement.style.pointerEvents = '';
+      dragElement.style.width = '';
+      dragElement.style.height = '';
+      dragElement.style.willChange = '';
     }
     
+    // Возвращаем скролл страницы
+    document.body.style.overflow = '';
+
     // Отвязываем глобальные touch-обработчики
     if (touchHandlersAttached) {
       document.removeEventListener('touchmove', onGlobalTouchMove as any);
