@@ -38,7 +38,90 @@ const QuestionBuilder: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dragElement, setDragElement] = useState<HTMLElement | null>(null);
-  const [longPressTimer, setLongPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  // Глобальные обработчики для touch-событий во время перетаскивания
+  const [touchHandlersAttached, setTouchHandlersAttached] = useState(false);
+
+  const onGlobalTouchMove = (e: TouchEvent) => {
+    if (!draggedQuestionId || !touchStartY || !dragElement) return;
+
+    const touch = e.touches[0];
+    const deltaY = Math.abs(touch.clientY - touchStartY);
+    const deltaX = Math.abs(touch.clientX - (touchStartX || touch.clientX));
+
+    // Если уже перетаскиваем — блокируем скролл и двигаем элемент
+    if (isDragging) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const newX = touch.clientX - dragOffset.x;
+      const newY = touch.clientY - dragOffset.y;
+
+      dragElement.style.position = 'fixed';
+      dragElement.style.left = `${newX}px`;
+      dragElement.style.top = `${newY}px`;
+      dragElement.style.zIndex = '1000';
+      dragElement.style.transform = 'scale(0.9)';
+      dragElement.style.opacity = '0.8';
+      dragElement.style.pointerEvents = 'none';
+
+      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (elementBelow && !elementBelow.closest(`[data-question-id="${draggedQuestionId}"]`)) {
+        const questionElement = elementBelow.closest('[data-question-id]');
+        if (questionElement) {
+          const targetQuestionId = questionElement.getAttribute('data-question-id');
+          if (targetQuestionId && targetQuestionId !== draggedQuestionId) {
+            setDragOverQuestionId(targetQuestionId);
+          } else {
+            setDragOverQuestionId(null);
+          }
+        } else {
+          setDragOverQuestionId(null);
+        }
+      } else {
+        setDragOverQuestionId(null);
+      }
+      return;
+    }
+
+    // Если ещё не перетаскиваем и палец смещён — не активируем перетаскивание (разрешаем скролл)
+    if (deltaY > 10 || deltaX > 10) {
+      return;
+    }
+  };
+
+  const onGlobalTouchEnd = (e: TouchEvent) => {
+    if (!draggedQuestionId || !dragElement) {
+      resetDragState();
+      return;
+    }
+
+    if (isDragging) {
+      const touch = e.changedTouches[0];
+      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+
+      if (elementBelow) {
+        const questionElement = elementBelow.closest('[data-question-id]');
+        if (questionElement) {
+          const targetQuestionId = questionElement.getAttribute('data-question-id');
+          if (targetQuestionId && targetQuestionId !== draggedQuestionId) {
+            const draggedIndex = questions.findIndex(q => q.id === draggedQuestionId);
+            const targetIndex = questions.findIndex(q => q.id === targetQuestionId);
+
+            if (draggedIndex !== -1 && targetIndex !== -1) {
+              const newQuestions = [...questions];
+              const draggedQuestion = newQuestions[draggedIndex];
+              newQuestions.splice(draggedIndex, 1);
+              newQuestions.splice(targetIndex, 0, draggedQuestion);
+              setQuestions(newQuestions);
+              hapticFeedback?.medium();
+            }
+          }
+        }
+      }
+    }
+
+    resetDragState();
+  };
 
   const questionTypes = [
     { value: 'text', label: 'Короткий ответ', icon: '📝' },
@@ -173,164 +256,39 @@ const QuestionBuilder: React.FC = () => {
   // Touch события для мобильных устройств
   const handleTouchStart = (e: React.TouchEvent, questionId: string) => {
     if (questions.length <= 1) return;
-    
+
     const touch = e.touches[0];
-    const element = e.currentTarget as HTMLElement;
+    const element = (e.currentTarget as HTMLElement).closest('[data-question-id]') as HTMLElement | null;
+    if (!element) return;
+
     const rect = element.getBoundingClientRect();
-    
-    // Проверяем, что касание не на интерактивном элементе
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'BUTTON' || 
-        target.closest('input') || target.closest('select') || target.closest('button')) {
-      return; // Не активируем drag для интерактивных элементов
-    }
-    
+
     setTouchStartY(touch.clientY);
     setTouchStartX(touch.clientX);
     setDraggedQuestionId(questionId);
-    setIsDragging(false);
+    setIsDragging(true);
     setDragElement(element);
     setDragOffset({
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
     });
-    
-    // Запускаем таймер для длительного нажатия (1 секунда)
-    const timer = setTimeout(() => {
-      if (draggedQuestionId === questionId && !isDragging) {
-        setIsDragging(true);
-        hapticFeedback?.medium();
-        
-        // Блокируем скролл страницы
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-        document.body.style.height = '100%';
-        document.body.style.top = '0';
-        document.body.style.left = '0';
-        
-        // Предотвращаем все touch события на документе
-        document.addEventListener('touchmove', preventDefaultTouch, { passive: false });
-        document.addEventListener('touchend', preventDefaultTouch, { passive: false });
-      }
-    }, 1000);
-    
-    setLongPressTimer(timer);
-    hapticFeedback?.light();
+
+    // Подключаем глобальные обработчики перемещения/завершения
+    if (!touchHandlersAttached) {
+      document.addEventListener('touchmove', onGlobalTouchMove as any, { passive: false });
+      document.addEventListener('touchend', onGlobalTouchEnd as any, { passive: false });
+      setTouchHandlersAttached(true);
+    }
+
+    // Блокируем скролл во время реального перетаскивания — делаем мягче, через CSS изменений не вносим
+    hapticFeedback?.medium();
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!draggedQuestionId || !touchStartY || !dragElement) return;
-    
-    const touch = e.touches[0];
-    const deltaY = Math.abs(touch.clientY - touchStartY);
-    const deltaX = Math.abs(touch.clientX - (touchStartX || touch.clientX));
-    
-    // Если перемещение больше 10px, отменяем таймер длительного нажатия
-    if (deltaY > 10 || deltaX > 10) {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        setLongPressTimer(null);
-      }
-    }
-    
-    // Drag активируется только если уже установлен флаг isDragging (через таймер)
-    if (isDragging) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Обновляем позицию элемента
-      const newX = touch.clientX - dragOffset.x;
-      const newY = touch.clientY - dragOffset.y;
-      
-      dragElement.style.position = 'fixed';
-      dragElement.style.left = `${newX}px`;
-      dragElement.style.top = `${newY}px`;
-      dragElement.style.zIndex = '1000';
-      dragElement.style.transform = 'scale(0.9)';
-      dragElement.style.opacity = '0.8';
-      dragElement.style.pointerEvents = 'none';
-      
-      // Определяем элемент под пальцем (исключаем сам перетаскиваемый элемент)
-      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-      if (elementBelow && !elementBelow.closest(`[data-question-id="${draggedQuestionId}"]`)) {
-        const questionElement = elementBelow.closest('[data-question-id]');
-        if (questionElement) {
-          const targetQuestionId = questionElement.getAttribute('data-question-id');
-          if (targetQuestionId && targetQuestionId !== draggedQuestionId) {
-            setDragOverQuestionId(targetQuestionId);
-          } else {
-            setDragOverQuestionId(null);
-          }
-        } else {
-          setDragOverQuestionId(null);
-        }
-      } else {
-        setDragOverQuestionId(null);
-      }
-    }
-  };
+  // Локальный обработчик не используется — оставляем для совместимости, но не объявляем во избежание предупреждений
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    // Отменяем таймер длительного нажатия
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-    
-    if (!draggedQuestionId || !dragElement) {
-      resetDragState();
-      return;
-    }
+  // Аналогично handleTouchEnd — логика вынесена в глобальный onGlobalTouchEnd
 
-    // Восстанавливаем скролл страницы
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.width = '';
-    document.body.style.height = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    
-    // Убираем обработчики событий
-    document.removeEventListener('touchmove', preventDefaultTouch);
-    document.removeEventListener('touchend', preventDefaultTouch);
-    
-    if (isDragging) {
-      const touch = e.changedTouches[0];
-      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-      
-      if (elementBelow) {
-        const questionElement = elementBelow.closest('[data-question-id]');
-        if (questionElement) {
-          const targetQuestionId = questionElement.getAttribute('data-question-id');
-          if (targetQuestionId && targetQuestionId !== draggedQuestionId) {
-            // Выполняем перемещение
-            const draggedIndex = questions.findIndex(q => q.id === draggedQuestionId);
-            const targetIndex = questions.findIndex(q => q.id === targetQuestionId);
-
-            if (draggedIndex !== -1 && targetIndex !== -1) {
-              const newQuestions = [...questions];
-              const draggedQuestion = newQuestions[draggedIndex];
-              
-              newQuestions.splice(draggedIndex, 1);
-              newQuestions.splice(targetIndex, 0, draggedQuestion);
-
-              setQuestions(newQuestions);
-              hapticFeedback?.medium();
-            }
-          }
-        }
-      }
-    }
-
-    resetDragState();
-  };
-
-  // Функция для предотвращения стандартного поведения touch событий
-  const preventDefaultTouch = (e: TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+  // Удаляем вспомогательный preventDefaultTouch — не нужен с глобальными обработчиками
 
   const resetDragState = () => {
     if (dragElement) {
@@ -344,10 +302,11 @@ const QuestionBuilder: React.FC = () => {
       dragElement.style.pointerEvents = '';
     }
     
-    // Отменяем таймер если он есть
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
+    // Отвязываем глобальные touch-обработчики
+    if (touchHandlersAttached) {
+      document.removeEventListener('touchmove', onGlobalTouchMove as any);
+      document.removeEventListener('touchend', onGlobalTouchEnd as any);
+      setTouchHandlersAttached(false);
     }
     
     setDraggedQuestionId(null);
@@ -432,24 +391,11 @@ const QuestionBuilder: React.FC = () => {
   // Очистка при размонтировании компонента
   useEffect(() => {
     return () => {
-      // Восстанавливаем стили документа
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      
-      // Убираем обработчики событий
-      document.removeEventListener('touchmove', preventDefaultTouch);
-      document.removeEventListener('touchend', preventDefaultTouch);
-      
-      // Отменяем таймер если он есть
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-      }
+      // Очистка глобальных обработчиков при размонтировании
+      document.removeEventListener('touchmove', onGlobalTouchMove as any);
+      document.removeEventListener('touchend', onGlobalTouchEnd as any);
     };
-  }, [longPressTimer]);
+  }, []);
 
   const handleImageUpload = (questionId: string) => {
     // Создаем скрытый input для выбора файла
@@ -492,15 +438,11 @@ const QuestionBuilder: React.FC = () => {
       >
         <div
           data-question-id={question.id}
-          draggable={questions.length > 1}
-          onDragStart={(e) => handleDragStart(e, question.id)}
+          draggable={false}
           onDragOver={(e) => handleDragOver(e, question.id)}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, question.id)}
           onDragEnd={handleDragEnd}
-          onTouchStart={(e) => handleTouchStart(e, question.id)}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
           style={{
             backgroundColor: 'var(--tg-section-bg-color)',
             borderRadius: '12px',
@@ -518,7 +460,7 @@ const QuestionBuilder: React.FC = () => {
             userSelect: 'none',
             WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none',
-            touchAction: 'none', // Отключаем все touch-жесты браузера
+            // touchAction не трогаем, чтобы сохранить естественный скролл страницы
             transform: isDragOver ? 'scale(1.02)' : 'scale(1)',
             boxShadow: isDragOver ? '0 4px 12px rgba(244, 109, 0, 0.3)' : 'none'
           }}
@@ -542,8 +484,14 @@ const QuestionBuilder: React.FC = () => {
               justifyContent: 'center',
               marginTop: '8px'
             }}
+            draggable={questions.length > 1}
+            onDragStart={(e) => {
+              if (questions.length > 1) {
+                e.stopPropagation();
+                handleDragStart(e as unknown as React.DragEvent, question.id);
+              }
+            }}
             onTouchStart={(e) => {
-              // Для иконки grip активируем drag сразу
               if (questions.length > 1) {
                 e.stopPropagation();
                 handleTouchStart(e, question.id);
@@ -624,7 +572,7 @@ const QuestionBuilder: React.FC = () => {
         </div>
 
         {/* Тип вопроса */}
-        <div style={{
+          <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
@@ -1028,7 +976,11 @@ const QuestionBuilder: React.FC = () => {
             color: 'var(--tg-hint-color)',
             textAlign: 'center'
           }}>
-            💡 Удерживайте карточку вопроса 1 секунду для перетаскивания или касайтесь иконки <GripVertical size={16} style={{ display: 'inline', verticalAlign: 'middle' }} />
+            💡 Перетаскивание работает только через кнопку-иконку 
+            <span style={{ verticalAlign: 'middle', display: 'inline-flex', padding: '0 4px' }}>
+              <GripVertical size={16} />
+            </span>
+            в левом верхнем углу карточки. Зажмите её и переносите вопрос вверх/вниз.
           </div>
         )}
         
