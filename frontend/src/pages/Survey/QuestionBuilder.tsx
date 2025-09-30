@@ -61,7 +61,7 @@ const QuestionBuilder: React.FC = () => {
     const deltaY = Math.abs(touch.clientY - startY);
     const deltaX = Math.abs(touch.clientX - (startX ?? touch.clientX));
 
-    // Во время перетаскивания блокируем скролл и двигаем элемент
+    // Если уже перетаскиваем — всегда блокируем скролл и двигаем элемент
     if (isDraggingRef.current) {
       e.preventDefault();
       e.stopPropagation();
@@ -96,9 +96,22 @@ const QuestionBuilder: React.FC = () => {
       return;
     }
 
-    // Если ещё не перетаскиваем и палец смещён — разрешаем скролл (ничего не делаем)
+    // Если ещё не перетаскиваем, но палец смещён — активируем перетаскивание
     if (deltaY > 10 || deltaX > 10) {
-      return;
+      isDraggingRef.current = true;
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const newX = touch.clientX - offset.x;
+      const newY = touch.clientY - offset.y;
+
+      currentDragElement.style.position = 'fixed';
+      currentDragElement.style.left = `${newX}px`;
+      currentDragElement.style.top = `${newY}px`;
+      currentDragElement.style.zIndex = '1000';
+      currentDragElement.style.transform = 'scale(0.9)';
+      currentDragElement.style.opacity = '0.8';
+      currentDragElement.style.pointerEvents = 'none';
     }
   };
 
