@@ -290,6 +290,7 @@ const QuestionBuilder: React.FC = () => {
 
     // Временно блокируем скролл страницы во время перетаскивания
     document.body.style.overflow = 'hidden';
+    (document.documentElement as HTMLElement).style.touchAction = 'none';
 
     // Подключаем глобальные обработчики перемещения/завершения
     if (!touchHandlersAttached) {
@@ -325,6 +326,7 @@ const QuestionBuilder: React.FC = () => {
     
     // Возвращаем скролл страницы
     document.body.style.overflow = '';
+    (document.documentElement as HTMLElement).style.touchAction = '';
 
     // Отвязываем глобальные touch-обработчики
     if (touchHandlersAttached) {
@@ -1000,11 +1002,11 @@ const QuestionBuilder: React.FC = () => {
             color: 'var(--tg-hint-color)',
             textAlign: 'center'
           }}>
-            💡 Перетаскивание работает только через кнопку-иконку 
+            💡 Чтобы изменить порядок вопросов, зажмите иконку 
             <span style={{ verticalAlign: 'middle', display: 'inline-flex', padding: '0 4px' }}>
               <GripVertical size={16} />
             </span>
-            в левом верхнем углу карточки. Зажмите её и переносите вопрос вверх/вниз.
+            и перенесите вопрос вверх или вниз.
           </div>
         )}
         
