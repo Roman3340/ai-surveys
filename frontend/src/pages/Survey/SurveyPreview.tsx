@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Send, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
-import { getDraft, saveQuestions, saveSettings, saveMotivation } from '../../utils/surveyDraft';
+import { getDraft, saveQuestions, saveSettings } from '../../utils/surveyDraft';
 import type { Question } from '../../types';
 
 interface SurveyData {
