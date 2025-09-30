@@ -401,21 +401,26 @@ const QuestionBuilder: React.FC = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
+    input.multiple = false;
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        // В реальном приложении здесь будет загрузка на сервер
-        // Пока просто показываем имя файла
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const imageUrl = e.target?.result as string;
-          updateQuestion(questionId, { 
-            imageUrl: imageUrl,
-            imageName: file.name 
-          });
-          hapticFeedback?.success();
-        };
-        reader.readAsDataURL(file);
+      if (!file) return;
+
+      // Используем Object URL — надёжнее и быстрее на мобильных
+      try {
+        const objectUrl = URL.createObjectURL(file);
+        const previous = questions.find(q => q.id === questionId);
+        if (previous?.imageUrl && previous.imageUrl.startsWith('blob:')) {
+          try { URL.revokeObjectURL(previous.imageUrl); } catch {}
+        }
+        updateQuestion(questionId, {
+          imageUrl: objectUrl,
+          imageName: file.name
+        });
+        hapticFeedback?.success();
+      } catch (err) {
+        console.error('Failed to load image', err);
+        alert('Не удалось загрузить изображение. Попробуйте другой файл.');
       }
     };
     input.click();
@@ -423,7 +428,7 @@ const QuestionBuilder: React.FC = () => {
 
   const renderQuestionEditor = (question: Question) => {
     const isEditing = editingQuestion === question.id;
-    const questionTypeInfo = questionTypes.find(t => t.value === question.type);
+    // const questionTypeInfo = questionTypes.find(t => t.value === question.type); // временно не используется
     const isDragging = draggedQuestionId === question.id;
     const isDragOver = dragOverQuestionId === question.id;
 
@@ -474,8 +479,9 @@ const QuestionBuilder: React.FC = () => {
           <div
             style={{
               display: 'flex',
-              gap: '6px',
-              marginTop: '8px'
+              flexDirection: 'column',
+              gap: '4px',
+              marginTop: '4px'
             }}
           >
             {(() => {
@@ -488,38 +494,42 @@ const QuestionBuilder: React.FC = () => {
                     <button
                       onClick={() => moveQuestion(index, index - 1)}
                       style={{
-                        padding: '8px',
-                        borderRadius: '6px',
+                        padding: '6px',
+                        borderRadius: '8px',
                         backgroundColor: 'rgba(244, 109, 0, 0.1)',
                         border: '1px solid rgba(244, 109, 0, 0.3)',
                         color: '#F46D00',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        width: '32px',
+                        height: '28px'
                       }}
                       aria-label="Переместить вверх"
                     >
-                      <ArrowUp size={18} />
+                      <ArrowUp size={14} />
                     </button>
                   )}
                   {!isLast && (
                     <button
                       onClick={() => moveQuestion(index, index + 1)}
                       style={{
-                        padding: '8px',
-                        borderRadius: '6px',
+                        padding: '6px',
+                        borderRadius: '8px',
                         backgroundColor: 'rgba(244, 109, 0, 0.1)',
                         border: '1px solid rgba(244, 109, 0, 0.3)',
                         color: '#F46D00',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        width: '32px',
+                        height: '28px'
                       }}
                       aria-label="Переместить вниз"
                     >
-                      <ArrowDown size={18} />
+                      <ArrowDown size={14} />
                     </button>
                   )}
                 </>
@@ -675,7 +685,12 @@ const QuestionBuilder: React.FC = () => {
                 }}
               />
               <button
-                onClick={() => updateQuestion(question.id, { imageUrl: undefined, imageName: undefined })}
+                onClick={() => {
+                  if (question.imageUrl && question.imageUrl.startsWith('blob:')) {
+                    try { URL.revokeObjectURL(question.imageUrl); } catch {}
+                  }
+                  updateQuestion(question.id, { imageUrl: undefined, imageName: undefined });
+                }}
                 style={{
                   position: 'absolute',
                   top: '8px',
@@ -891,15 +906,7 @@ const QuestionBuilder: React.FC = () => {
             Обязательный вопрос
           </label>
           
-          <div style={{
-            fontSize: '12px',
-            color: 'var(--tg-hint-color)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            {questionTypeInfo?.icon} {questionTypeInfo?.label}
-          </div>
+          {/* Убрано дублирование типа вопроса */}
         </div>
         </div>
       </motion.div>
