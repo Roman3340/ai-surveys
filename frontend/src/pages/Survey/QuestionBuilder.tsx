@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Image, GripVertical, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Image, ChevronDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
@@ -42,11 +42,20 @@ const QuestionBuilder: React.FC = () => {
   const touchStartXRef = useRef<number | null>(null);
   const touchHandlersAttachedRef = useRef(false);
   const questionsRef = useRef<Question[]>(questions);
+  // NOTE: оставляем для будущего возврата DnD; подавляем предупреждение, пока логика отключена
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const lockedScrollYRef = useRef<number>(0);
 
   useEffect(() => {
     questionsRef.current = questions;
   }, [questions]);
+
+  // Убираем предупреждения линтера для временно отключённой DnD-логики
+  useEffect(() => {
+    void handleDragStart;
+    void handleTouchStart;
+    void lockedScrollYRef;
+  }, []);
 
   const onGlobalTouchMove = (e: TouchEvent) => {
     const currentDragElement = dragElementRef.current;
@@ -226,122 +235,32 @@ const QuestionBuilder: React.FC = () => {
     }
   };
 
-  // Drag & Drop функции
-  const handleDragStart = (e: React.DragEvent, questionId: string) => {
-    setDraggedQuestionId(questionId);
-    e.dataTransfer.effectAllowed = 'move';
-    hapticFeedback?.light();
+  // Drag & Drop функции (временно отключены)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleDragStart = (_e: React.DragEvent, _questionId: string) => {
+    // DnD temporarily disabled
   };
 
-  const handleDragOver = (e: React.DragEvent, questionId: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverQuestionId(questionId);
+  const handleDragOver = (_e: React.DragEvent, _questionId: string) => {
+    // DnD temporarily disabled
   };
 
   const handleDragLeave = () => {
-    setDragOverQuestionId(null);
+    // DnD temporarily disabled
   };
 
-  const handleDrop = (e: React.DragEvent, targetQuestionId: string) => {
-    e.preventDefault();
-    
-    if (!draggedQuestionId || draggedQuestionId === targetQuestionId) {
-      setDraggedQuestionId(null);
-      setDragOverQuestionId(null);
-      return;
-    }
-
-    const draggedIndex = questions.findIndex(q => q.id === draggedQuestionId);
-    const targetIndex = questions.findIndex(q => q.id === targetQuestionId);
-
-    if (draggedIndex === -1 || targetIndex === -1) {
-      setDraggedQuestionId(null);
-      setDragOverQuestionId(null);
-      return;
-    }
-
-    const newQuestions = [...questions];
-    const draggedQuestion = newQuestions[draggedIndex];
-    
-    // Удаляем перетаскиваемый элемент
-    newQuestions.splice(draggedIndex, 1);
-    
-    // Вставляем его в новую позицию
-    const newTargetIndex = draggedIndex < targetIndex ? targetIndex : targetIndex;
-    newQuestions.splice(newTargetIndex, 0, draggedQuestion);
-
-    setQuestions(newQuestions);
-    setDraggedQuestionId(null);
-    setDragOverQuestionId(null);
-    hapticFeedback?.medium();
+  const handleDrop = (_e: React.DragEvent, _targetQuestionId: string) => {
+    // DnD temporarily disabled
   };
 
   const handleDragEnd = () => {
-    setDraggedQuestionId(null);
-    setDragOverQuestionId(null);
+    // DnD temporarily disabled
   };
 
   // Touch события для мобильных устройств
-  const handleTouchStart = (e: React.TouchEvent, questionId: string) => {
-    if (questions.length <= 1) return;
-
-    const touch = e.touches[0];
-    // Блокируем нативный скролл, чтобы перетаскивание стартовало корректно
-    e.preventDefault();
-
-    const element = (e.currentTarget as HTMLElement).closest('[data-question-id]') as HTMLElement | null;
-    if (!element) return;
-
-    const rect = element.getBoundingClientRect();
-
-    touchStartYRef.current = touch.clientY;
-    touchStartXRef.current = touch.clientX;
-    setDraggedQuestionId(questionId);
-    isDraggingRef.current = true;
-    dragElementRef.current = element;
-    dragOffsetRef.current = {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top
-    };
-
-    // Фиксируем карточку в текущей позиции, чтобы она следовала за пальцем
-    element.style.width = `${rect.width}px`;
-    element.style.height = `${rect.height}px`;
-    element.style.position = 'fixed';
-    element.style.left = `${rect.left}px`;
-    element.style.top = `${rect.top}px`;
-    element.style.zIndex = '1000';
-    element.style.transform = 'scale(0.9)';
-    element.style.opacity = '0.8';
-    element.style.pointerEvents = 'none';
-    element.style.willChange = 'transform, left, top';
-
-    // Временно блокируем скролл страницы во время перетаскивания
-    const lockScroll = () => {
-      // Надёжная блокировка для iOS: фиксируем body и сохраняем текущую прокрутку
-      lockedScrollYRef.current = window.scrollY || window.pageYOffset || 0;
-      const body = document.body as HTMLElement;
-      body.style.position = 'fixed';
-      body.style.top = `-${lockedScrollYRef.current}px`;
-      body.style.left = '0';
-      body.style.right = '0';
-      body.style.width = '100%';
-      body.style.overflow = 'hidden';
-      (document.documentElement as HTMLElement).style.touchAction = 'none';
-    };
-    lockScroll();
-
-    // Подключаем глобальные обработчики перемещения/завершения
-    if (!touchHandlersAttachedRef.current) {
-      document.addEventListener('touchmove', onGlobalTouchMove as any, { passive: false });
-      document.addEventListener('touchend', onGlobalTouchEnd as any, { passive: false });
-      document.addEventListener('touchcancel', onGlobalTouchEnd as any, { passive: false });
-      touchHandlersAttachedRef.current = true;
-    }
-
-    // Блокируем скролл во время реального перетаскивания — делаем мягче, через CSS изменений не вносим
-    hapticFeedback?.medium();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleTouchStart = (_e: React.TouchEvent, _questionId: string) => {
+    // DnD temporarily disabled
   };
 
   // Локальный обработчик не используется — оставляем для совместимости, но не объявляем во избежание предупреждений
@@ -367,21 +286,7 @@ const QuestionBuilder: React.FC = () => {
     }
     
     // Возвращаем скролл страницы (с учётом фиксации body)
-    const unlockScroll = () => {
-      const body = document.body as HTMLElement;
-      body.style.position = '';
-      body.style.top = '';
-      body.style.left = '';
-      body.style.right = '';
-      body.style.width = '';
-      body.style.overflow = '';
-      (document.documentElement as HTMLElement).style.touchAction = '';
-      if (lockedScrollYRef.current) {
-        window.scrollTo(0, lockedScrollYRef.current);
-      }
-      lockedScrollYRef.current = 0;
-    };
-    unlockScroll();
+    // DnD temporarily disabled: no scroll lock to unlock
 
     // Отвязываем глобальные touch-обработчики
     if (touchHandlersAttachedRef.current) {
@@ -480,6 +385,17 @@ const QuestionBuilder: React.FC = () => {
     };
   }, []);
 
+  // Временная замена DnD: стрелки вверх/вниз для изменения порядка
+  const moveQuestion = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    if (toIndex < 0 || toIndex >= questions.length) return;
+    const updated = [...questions];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    setQuestions(updated);
+    hapticFeedback?.medium();
+  };
+
   const handleImageUpload = (questionId: string) => {
     // Создаем скрытый input для выбора файла
     const input = document.createElement('input');
@@ -557,37 +473,58 @@ const QuestionBuilder: React.FC = () => {
         }}>
           <div
             style={{
-              padding: '8px',
-              borderRadius: '6px',
-              cursor: questions.length > 1 ? 'grab' : 'default',
-              backgroundColor: questions.length > 1 ? 'rgba(244, 109, 0, 0.1)' : 'transparent',
-              transition: 'background-color 0.2s ease',
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              gap: '6px',
               marginTop: '8px'
             }}
-            draggable={questions.length > 1}
-            onDragStart={(e) => {
-              if (questions.length > 1) {
-                e.stopPropagation();
-                handleDragStart(e as unknown as React.DragEvent, question.id);
-              }
-            }}
-            onTouchStart={(e) => {
-              if (questions.length > 1) {
-                e.stopPropagation();
-                handleTouchStart(e, question.id);
-              }
-            }}
           >
-            <GripVertical
-              size={20}
-              style={{
-                color: questions.length > 1 ? '#F46D00' : 'var(--tg-hint-color)',
-                opacity: questions.length > 1 ? 1 : 0.5
-              }}
-            />
+            {(() => {
+              const index = questions.findIndex(q => q.id === question.id);
+              const isFirst = index === 0;
+              const isLast = index === questions.length - 1;
+              return (
+                <>
+                  {!isFirst && (
+                    <button
+                      onClick={() => moveQuestion(index, index - 1)}
+                      style={{
+                        padding: '8px',
+                        borderRadius: '6px',
+                        backgroundColor: 'rgba(244, 109, 0, 0.1)',
+                        border: '1px solid rgba(244, 109, 0, 0.3)',
+                        color: '#F46D00',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                      aria-label="Переместить вверх"
+                    >
+                      <ArrowUp size={18} />
+                    </button>
+                  )}
+                  {!isLast && (
+                    <button
+                      onClick={() => moveQuestion(index, index + 1)}
+                      style={{
+                        padding: '8px',
+                        borderRadius: '6px',
+                        backgroundColor: 'rgba(244, 109, 0, 0.1)',
+                        border: '1px solid rgba(244, 109, 0, 0.3)',
+                        color: '#F46D00',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                      aria-label="Переместить вниз"
+                    >
+                      <ArrowDown size={18} />
+                    </button>
+                  )}
+                </>
+              );
+            })()}
           </div>
           <div style={{ flex: 1 }}>
              <input
@@ -1059,11 +996,7 @@ const QuestionBuilder: React.FC = () => {
             color: 'var(--tg-hint-color)',
             textAlign: 'center'
           }}>
-            💡 Чтобы изменить порядок вопросов, зажмите иконку 
-            <span style={{ verticalAlign: 'middle', display: 'inline-flex', padding: '0 4px' }}>
-              <GripVertical size={16} />
-            </span>
-            и перенесите вопрос вверх или вниз.
+            💡 Чтобы изменить порядок вопросов, используйте стрелки вверх/вниз на карточке.
           </div>
         )}
         
