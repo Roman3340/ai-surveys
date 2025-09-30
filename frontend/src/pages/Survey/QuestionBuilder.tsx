@@ -6,6 +6,7 @@ import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 import type { QuestionType } from '../../types';
+import { getDraft, saveQuestions } from '../../utils/surveyDraft';
 
 interface Question {
   id: string;
@@ -28,7 +29,10 @@ const QuestionBuilder: React.FC = () => {
   const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
 
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Question[]>(() => {
+    const draft = getDraft();
+    return (draft?.questions as Question[] | undefined) || [];
+  });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
   const [draggedQuestionId, setDraggedQuestionId] = useState<string | null>(null);
@@ -319,7 +323,8 @@ const QuestionBuilder: React.FC = () => {
     }
 
     // Получаем данные опроса из localStorage (сохраненные на предыдущих шагах)
-    const surveySettings = JSON.parse(localStorage.getItem('surveySettings') || '{}');
+    const draft = getDraft();
+    const surveySettings = draft?.settings || JSON.parse(localStorage.getItem('surveySettings') || '{}');
     
     const surveyData = {
       title: surveySettings.title || 'Новый опрос',
@@ -374,6 +379,11 @@ const QuestionBuilder: React.FC = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  // Сохраняем вопросы в черновик при каждом изменении
+  useEffect(() => {
+    saveQuestions(questions as any);
+  }, [questions]);
 
   // Очистка при размонтировании компонента
   useEffect(() => {

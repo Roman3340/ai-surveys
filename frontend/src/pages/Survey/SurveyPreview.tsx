@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Send, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
+import { getDraft, saveQuestions, saveSettings, saveMotivation } from '../../utils/surveyDraft';
 import type { Question } from '../../types';
 
 interface SurveyData {
@@ -41,17 +42,25 @@ const SurveyPreview: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Получаем данные опроса из state или localStorage
-    const data = location.state?.surveyData || 
-                 JSON.parse(localStorage.getItem('surveyPreviewData') || 'null');
-    
+    // Получаем данные опроса из state или из черновика
+    const data = location.state?.surveyData;
     if (data) {
       setSurveyData(data);
-      // Сохраняем в localStorage на случай обновления страницы
-      localStorage.setItem('surveyPreviewData', JSON.stringify(data));
+      // Обновим черновик, чтобы ничего не потерять
+      saveQuestions(data.questions as any);
+      saveSettings(data.settings as any);
     } else {
-      // Если данных нет, возвращаемся назад
-      navigate('/survey/create/manual/questions');
+      const draft = getDraft();
+      if (draft?.questions && draft.settings) {
+        setSurveyData({
+          title: draft.settings.title || 'Новый опрос',
+          description: draft.settings.description || '',
+          questions: draft.questions as any,
+          settings: draft.settings as any
+        } as any);
+      } else {
+        navigate('/survey/create/manual/questions');
+      }
     }
   }, [location.state, navigate]);
 
@@ -115,6 +124,13 @@ const SurveyPreview: React.FC = () => {
     hapticFeedback?.success();
     // Здесь будет логика публикации опроса
     alert('Опрос опубликован! (В реальном приложении здесь будет API вызов)');
+    // После публикации — очищаем черновик
+    try {
+      localStorage.removeItem('surveyPreviewData');
+      // Чистим общий черновик анкеты
+      const key = 'surveyDraft';
+      localStorage.removeItem(key);
+    } catch {}
     navigate('/');
   };
 

@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
+import { getDraft, hasDraft, clearDraft, saveMode } from '../../utils/surveyDraft';
 
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState<'manual' | 'ai' | null>(null);
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
@@ -15,11 +17,24 @@ const CreateSurveyPage: React.FC = () => {
     targetRoute: '/'
   });
 
+  // При входе на экран выбора: если есть черновик — предлагаем восстановить, иначе очищаем (гарантия нового опроса)
+  useEffect(() => {
+    if (hasDraft()) {
+      setShowRestorePrompt(true);
+    } else {
+      clearDraft();
+    }
+  }, []);
+
   const handleCreateManual = () => {
+    clearDraft();
+    saveMode('manual');
     setSelectedOption('manual');
   };
 
   const handleCreateAI = () => {
+    clearDraft();
+    saveMode('ai');
     setSelectedOption('ai');
   };
 
@@ -29,6 +44,36 @@ const CreateSurveyPage: React.FC = () => {
     } else if (selectedOption === 'ai') {
       navigate('/survey/create/ai');
     }
+  };
+
+  // Восстановление черновика
+  const handleRestoreDraft = () => {
+    const draft = getDraft();
+    setShowRestorePrompt(false);
+    if (!draft) return;
+    // Переходим сразу на релевантный шаг (минует этот экран)
+    if (draft.mode === 'manual') {
+      if (draft.questions && draft.questions.length > 0) {
+        navigate('/survey/create/manual/questions', { replace: true });
+      } else if (draft.motivation) {
+        navigate('/survey/create/manual/motivation', { replace: true, state: draft.settings || {} });
+      } else if (draft.settings) {
+        navigate('/survey/create/manual', { replace: true, state: draft.settings });
+      } else {
+        navigate('/survey/create/manual', { replace: true });
+      }
+    } else if (draft.mode === 'ai') {
+      // Для AI сейчас ведём на старт AI
+      navigate('/survey/create/ai', { replace: true });
+    } else {
+      // Если mode не задан, считаем manual как дефолт
+      navigate('/survey/create/manual', { replace: true });
+    }
+  };
+
+  const handleDeclineRestore = () => {
+    clearDraft();
+    setShowRestorePrompt(false);
   };
 
   return (
@@ -98,6 +143,58 @@ const CreateSurveyPage: React.FC = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Блок восстановления черновика */}
+        {showRestorePrompt && (
+          <div style={{
+            backgroundColor: 'var(--tg-section-bg-color)',
+            border: '1px solid var(--tg-section-separator-color)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px'
+          }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
+              Найден незавершённый опрос
+            </div>
+            <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', marginBottom: '12px' }}>
+              Восстановить черновик и продолжить редактирование?
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={handleRestoreDraft}
+                style={{
+                  flex: 1,
+                  background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Да, восстановите
+              </button>
+              <button
+                onClick={handleDeclineRestore}
+                style={{
+                  flex: 1,
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Нет, спасибо
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Варианты создания */}
         <div style={{
