@@ -42,6 +42,7 @@ const QuestionBuilder: React.FC = () => {
   const touchStartXRef = useRef<number | null>(null);
   const touchHandlersAttachedRef = useRef(false);
   const questionsRef = useRef<Question[]>(questions);
+  const lockedScrollYRef = useRef<number>(0);
 
   useEffect(() => {
     questionsRef.current = questions;
@@ -304,8 +305,19 @@ const QuestionBuilder: React.FC = () => {
     element.style.willChange = 'transform, left, top';
 
     // Временно блокируем скролл страницы во время перетаскивания
-    document.body.style.overflow = 'hidden';
-    (document.documentElement as HTMLElement).style.touchAction = 'none';
+    const lockScroll = () => {
+      // Надёжная блокировка для iOS: фиксируем body и сохраняем текущую прокрутку
+      lockedScrollYRef.current = window.scrollY || window.pageYOffset || 0;
+      const body = document.body as HTMLElement;
+      body.style.position = 'fixed';
+      body.style.top = `-${lockedScrollYRef.current}px`;
+      body.style.left = '0';
+      body.style.right = '0';
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      (document.documentElement as HTMLElement).style.touchAction = 'none';
+    };
+    lockScroll();
 
     // Подключаем глобальные обработчики перемещения/завершения
     if (!touchHandlersAttachedRef.current) {
@@ -341,9 +353,22 @@ const QuestionBuilder: React.FC = () => {
       el.style.willChange = '';
     }
     
-    // Возвращаем скролл страницы
-    document.body.style.overflow = '';
-    (document.documentElement as HTMLElement).style.touchAction = '';
+    // Возвращаем скролл страницы (с учётом фиксации body)
+    const unlockScroll = () => {
+      const body = document.body as HTMLElement;
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
+      body.style.overflow = '';
+      (document.documentElement as HTMLElement).style.touchAction = '';
+      if (lockedScrollYRef.current) {
+        window.scrollTo(0, lockedScrollYRef.current);
+      }
+      lockedScrollYRef.current = 0;
+    };
+    unlockScroll();
 
     // Отвязываем глобальные touch-обработчики
     if (touchHandlersAttachedRef.current) {
