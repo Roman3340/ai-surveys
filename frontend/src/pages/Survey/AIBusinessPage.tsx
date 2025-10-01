@@ -24,7 +24,15 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   });
   
   const [showQuestionTypes, setShowQuestionTypes] = useState(false);
-  const [customQuestionCount, setCustomQuestionCount] = useState('');
+  const [customQuestionCount, setCustomQuestionCount] = useState(() => {
+    const draft = getDraft();
+    // Если questionCount не является стандартным значением (5, 10, 15, 20), то это кастомное значение
+    const standardCounts = [5, 7, 10, 15];
+    if (draft?.settings?.questionCount && !standardCounts.includes(draft.settings.questionCount)) {
+      return draft.settings.questionCount.toString();
+    }
+    return '';
+  });
 
   const handleNext = () => {
     // Сохраняем данные в черновик
@@ -309,7 +317,7 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
               flexWrap: 'wrap',
               alignItems: 'center'
             }}>
-              {[3, 5, 7, 10].map(count => (
+              {[5, 7, 10, 15].map(count => (
                 <button
                   key={count}
                   onClick={() => {
