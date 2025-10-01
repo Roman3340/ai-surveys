@@ -15,6 +15,7 @@ import LanguageSettingsPage from './pages/Settings/LanguageSettingsPage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
+import WebApp from '@twa-dev/sdk';
 import './styles/globals.css';
 
 function App() {
@@ -22,7 +23,7 @@ function App() {
   const { theme: appTheme } = useAppStore();
   const isInitialized = useRef(false);
 
-  // Синхронизация темы
+  // Синхронизация темы и отслеживание открытия приложения
   useEffect(() => {
     if (isReady) {
       // Определяем финальную тему
@@ -35,6 +36,26 @@ function App() {
       // Устанавливаем тему в DOM
       document.documentElement.setAttribute('data-theme', finalTheme);
       console.log('Theme applied:', finalTheme, 'from app theme:', appTheme);
+      
+      // Отслеживаем открытие приложения
+      try {
+        // Отправляем данные при открытии через @twa-dev/sdk
+        const data = {
+          action: 'app_opened',
+          timestamp: new Date().toISOString(),
+          url: window.location.href
+        };
+        
+        // Используем WebApp из @twa-dev/sdk
+        if (WebApp && WebApp.sendData) {
+          WebApp.sendData(JSON.stringify(data));
+          console.log('App opened data sent to bot via @twa-dev/sdk:', data);
+        } else {
+          console.log('WebApp.sendData not available');
+        }
+      } catch (error) {
+        console.error('Error sending app opened data to bot:', error);
+      }
       
       // Отмечаем что инициализация завершена
       if (!isInitialized.current) {
