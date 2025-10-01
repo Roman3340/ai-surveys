@@ -12,8 +12,6 @@ const CreateSurveyPage: React.FC = () => {
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
-    showConfirm: true,
-    confirmMessage: 'Данные могут не сохраниться. Вы уверены, что хотите выйти?',
     targetRoute: '/'
   });
 
@@ -172,6 +170,22 @@ const CreateSurveyPage: React.FC = () => {
             <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
               Найден незавершённый опрос
             </div>
+            {(() => {
+              const draft = getDraft();
+              let title = '';
+              if (draft?.mode === 'manual' && draft?.settings?.title) {
+                title = draft.settings.title;
+              } else if (draft?.mode === 'ai' && draft?.settings?.userType === 'business' && draft?.settings?.businessSphere) {
+                title = draft.settings.businessSphere;
+              } else if (draft?.mode === 'ai' && draft?.settings?.userType === 'personal' && draft?.settings?.topic) {
+                title = draft.settings.topic;
+              }
+              return title ? (
+                <div style={{ fontSize: '14px', color: 'var(--tg-text-color)', marginBottom: '8px', fontWeight: 500 }}>
+                  "{title}"
+                </div>
+              ) : null;
+            })()}
             <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', marginBottom: '12px' }}>
               Восстановить черновик и продолжить редактирование?
             </div>

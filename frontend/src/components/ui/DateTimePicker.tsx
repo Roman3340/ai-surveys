@@ -42,7 +42,9 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
-    onChange(newDate, timeValue);
+    // Если время не было установлено вручную, не устанавливаем его автоматически
+    const timeToSet = timeValue || undefined;
+    onChange(newDate, timeToSet);
   };
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +53,6 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
   };
 
   const currentDate = new Date().toISOString().split('T')[0];
-  const currentTime = new Date().toTimeString().slice(0, 5);
 
   return (
     <div style={{ marginBottom: '20px' }}>
@@ -150,7 +151,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 textAlign: 'left'
               }}
             >
-              <span>{formatTime(timeValue || currentTime)}</span>
+              <span>{formatTime(timeValue || '00:00')}</span>
               <Clock size={16} />
             </button>
             
@@ -169,7 +170,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
               }}>
                 <input
                   type="time"
-                  value={timeValue || currentTime}
+                  value={timeValue || '00:00'}
                   onChange={handleTimeChange}
                   onBlur={() => setTimeout(() => setIsTimeOpen(false), 200)}
                   style={{

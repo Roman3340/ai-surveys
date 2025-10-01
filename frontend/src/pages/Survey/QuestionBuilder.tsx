@@ -31,7 +31,14 @@ const QuestionBuilder: React.FC = () => {
 
   const [questions, setQuestions] = useState<Question[]>(() => {
     const draft = getDraft();
-    return (draft?.questions as Question[] | undefined) || [];
+    if (!draft?.questions) return [];
+    
+    // Восстанавливаем вопросы, но убираем изображения (они не сохраняются корректно)
+    return (draft.questions as Question[]).map(q => ({
+      ...q,
+      imageUrl: undefined,
+      imageName: undefined
+    }));
   });
   const [editingQuestion, setEditingQuestion] = useState<string | null>(null);
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
