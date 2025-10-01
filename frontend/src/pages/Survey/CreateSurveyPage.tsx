@@ -176,13 +176,25 @@ const CreateSurveyPage: React.FC = () => {
               if (draft?.mode === 'manual' && draft?.settings?.title) {
                 title = draft.settings.title;
               } else if (draft?.mode === 'ai' && draft?.settings?.userType === 'business' && draft?.settings?.businessSphere) {
-                title = draft.settings.businessSphere;
+                // Преобразуем значение сферы в русское название
+                const sphereMap: { [key: string]: string } = {
+                  'cafe': 'Кафе',
+                  'online_shop': 'Онлайн-магазин',
+                  'fitness': 'Фитнес',
+                  'beauty': 'Красота и здоровье',
+                  'education': 'Образование',
+                  'services': 'Услуги',
+                  'retail': 'Розничная торговля',
+                  'tech': 'IT и технологии',
+                  'other': 'Другое'
+                };
+                title = sphereMap[draft.settings.businessSphere] || draft.settings.businessSphere;
               } else if (draft?.mode === 'ai' && draft?.settings?.userType === 'personal' && draft?.settings?.topic) {
                 title = draft.settings.topic;
               }
               return title ? (
                 <div style={{ fontSize: '14px', color: 'var(--tg-text-color)', marginBottom: '8px', fontWeight: 500 }}>
-                  "{title}"
+                  «{title}»
                 </div>
               ) : null;
             })()}
