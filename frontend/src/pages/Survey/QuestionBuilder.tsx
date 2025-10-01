@@ -359,19 +359,8 @@ const QuestionBuilder: React.FC = () => {
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
     onBack: () => {
-      if (questions.length > 0) {
-        try {
-          const confirmed = window.confirm('Все вопросы будут удалены. Вы уверены?');
-          if (confirmed) {
-            navigate('/survey/create/manual/motivation', { replace: true });
-          }
-        } catch (error) {
-          console.error('Error with confirm dialog:', error);
-          navigate('/survey/create/manual/motivation', { replace: true });
-        }
-      } else {
-        navigate('/survey/create/manual/motivation', { replace: true });
-      }
+      // Вопросы уже сохраняются автоматически, просто возвращаемся
+      navigate('/survey/create/manual/motivation', { replace: true });
     }
   });
 

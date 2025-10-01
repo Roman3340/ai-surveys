@@ -4,18 +4,25 @@ import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
+import { getDraft, saveSettings } from '../../utils/surveyDraft';
 
 interface AISurveyPageProps {}
 
 const AISurveyPage: React.FC<AISurveyPageProps> = () => {
   const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
-  const [selectedType, setSelectedType] = useState<'business' | 'personal' | null>(null);
+  const [selectedType, setSelectedType] = useState<'business' | 'personal' | null>(() => {
+    const draft = getDraft();
+    return draft?.settings?.userType || null;
+  });
 
   const handleNext = () => {
     if (!selectedType) return;
     
     hapticFeedback?.light();
+    // Сохраняем выбранный тип в черновик
+    saveSettings({ userType: selectedType });
+    
     if (selectedType === 'business') {
       navigate('/survey/create/ai/business');
     } else {

@@ -63,8 +63,24 @@ const CreateSurveyPage: React.FC = () => {
         navigate('/survey/create/manual', { replace: true });
       }
     } else if (draft.mode === 'ai') {
-      // Для AI сейчас ведём на старт AI
-      navigate('/survey/create/ai', { replace: true });
+      // Для AI восстанавливаем на нужном шаге
+      if (draft.questions && draft.questions.length > 0) {
+        // Если есть вопросы, переходим к предпросмотру
+        navigate('/survey/create/ai/preview', { replace: true });
+      } else if (draft.motivation) {
+        // Если есть мотивация, переходим к генерации
+        navigate('/survey/create/ai/generate', { replace: true, state: draft.motivation });
+      } else if (draft.settings?.userType) {
+        // Если есть тип пользователя, переходим на соответствующую страницу
+        if (draft.settings.userType === 'business') {
+          navigate('/survey/create/ai/business', { replace: true });
+        } else {
+          navigate('/survey/create/ai/personal', { replace: true });
+        }
+      } else {
+        // Иначе на выбор типа
+        navigate('/survey/create/ai', { replace: true });
+      }
     } else {
       // Если mode не задан, считаем manual как дефолт
       navigate('/survey/create/manual', { replace: true });
@@ -196,14 +212,15 @@ const CreateSurveyPage: React.FC = () => {
           </div>
         )}
 
-        {/* Варианты создания */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          maxWidth: '400px',
-          margin: '0 auto'
-        }}>
+        {/* Варианты создания - показываем только если нет черновика или пользователь отказался от восстановления */}
+        {!showRestorePrompt && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            maxWidth: '400px',
+            margin: '0 auto'
+          }}>
           {/* Вручную */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -366,60 +383,40 @@ const CreateSurveyPage: React.FC = () => {
             </div>
           </motion.div>
         </div>
+        )}
 
-        {/* Подсказка снизу */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          style={{
-            textAlign: 'center',
-            marginTop: '32px',
+
+        {/* Кнопка "Вперед" - показываем только если нет черновика */}
+        {!showRestorePrompt && (
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
             padding: '16px',
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '12px',
-            border: '1px solid var(--tg-section-separator-color)'
-          }}
-        >
-          <p style={{
-            color: 'var(--tg-hint-color)',
-            fontSize: '14px',
-            margin: 0,
-            lineHeight: '1.4'
+            backgroundColor: 'var(--tg-bg-color)',
+            borderTop: '1px solid var(--tg-section-separator-color)'
           }}>
-            Выберите тип опроса. Обратите внимание что разные типы предусматривают различный функционал.
-          </p>
-        </motion.div>
-
-        {/* Кнопка "Вперед" */}
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '16px',
-          backgroundColor: 'var(--tg-bg-color)',
-          borderTop: '1px solid var(--tg-section-separator-color)'
-        }}>
-          <button
-            onClick={handleNext}
-            disabled={!selectedOption}
-            style={{
-              width: '100%',
-              background: selectedOption ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-section-separator-color)',
-              color: selectedOption ? 'white' : 'var(--tg-hint-color)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '16px 24px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: selectedOption ? 'pointer' : 'not-allowed',
-              opacity: selectedOption ? 1 : 0.6
-            }}
-          >
-            Вперед
-          </button>
-        </div>
+            <button
+              onClick={handleNext}
+              disabled={!selectedOption}
+              style={{
+                width: '100%',
+                background: selectedOption ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-section-separator-color)',
+                color: selectedOption ? 'white' : 'var(--tg-hint-color)',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '16px 24px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: selectedOption ? 'pointer' : 'not-allowed',
+                opacity: selectedOption ? 1 : 0.6
+              }}
+            >
+              Вперед
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

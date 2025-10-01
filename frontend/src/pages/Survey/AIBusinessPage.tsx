@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
+import { getDraft, saveSettings } from '../../utils/surveyDraft';
 
 interface AIBusinessPageProps {}
 
@@ -11,18 +12,23 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   const navigate = useNavigate();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
-  const [formData, setFormData] = useState({
-    businessSphere: '',
-    targetAudience: '',
-    surveyGoal: '',
-    questionCount: 5,
-    questionTypes: [] as string[]
+  const [formData, setFormData] = useState(() => {
+    const draft = getDraft();
+    return {
+      businessSphere: draft?.settings?.businessSphere || '',
+      targetAudience: draft?.settings?.targetAudience || '',
+      surveyGoal: draft?.settings?.surveyGoal || '',
+      questionCount: draft?.settings?.questionCount || 5,
+      questionTypes: draft?.settings?.questionTypes || [] as string[]
+    };
   });
   
   const [showQuestionTypes, setShowQuestionTypes] = useState(false);
   const [customQuestionCount, setCustomQuestionCount] = useState('');
 
   const handleNext = () => {
+    // Сохраняем данные в черновик
+    saveSettings({ ...formData, userType: 'business' });
     navigate('/survey/create/ai/motivation', { 
       state: { ...formData, userType: 'business' }
     });

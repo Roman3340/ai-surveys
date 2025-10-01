@@ -5,25 +5,31 @@ import { ChevronDown } from 'lucide-react';
 import { DateTimePicker } from '../../components/ui/DateTimePicker';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
+import { getDraft, saveSettings } from '../../utils/surveyDraft';
 
 const ManualSurveyPage: React.FC = () => {
   const navigate = useNavigate();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
-  const [surveyData, setSurveyData] = useState({
-    title: '',
-    description: '',
-    language: 'ru',
-    startDate: '',
-    startTime: '',
-    endDate: '',
-    endTime: '',
-    maxParticipants: ''
+  const [surveyData, setSurveyData] = useState(() => {
+    const draft = getDraft();
+    return {
+      title: draft?.settings?.title || '',
+      description: draft?.settings?.description || '',
+      language: draft?.settings?.language || 'ru',
+      startDate: draft?.settings?.startDate || '',
+      startTime: draft?.settings?.startTime || '',
+      endDate: draft?.settings?.endDate || '',
+      endTime: draft?.settings?.endTime || '',
+      maxParticipants: draft?.settings?.maxParticipants || ''
+    };
   });
 
 
   const handleNext = () => {
-    // Сохраняем данные опроса в localStorage для использования в следующих шагах
+    // Сохраняем данные опроса в черновик
+    saveSettings(surveyData);
+    // Также сохраняем в localStorage для совместимости
     localStorage.setItem('surveySettings', JSON.stringify(surveyData));
     navigate('/survey/create/manual/motivation', {
       state: surveyData
@@ -60,9 +66,11 @@ const ManualSurveyPage: React.FC = () => {
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
-    showConfirm: true,
-    confirmMessage: 'Данные могут не сохраниться. Вы уверены, что хотите выйти?',
-    targetRoute: '/survey/create'
+    onBack: () => {
+      // Сохраняем текущие данные перед возвратом
+      saveSettings(surveyData);
+      navigate('/survey/create', { replace: true });
+    }
   });
 
   // Прокрутка к верху при загрузке страницы
