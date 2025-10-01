@@ -54,6 +54,7 @@ export function saveDraft(partial: Partial<SurveyDraft>) {
 
 export function clearDraft() {
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem('surveySettings');
 }
 
 export function hasDraft(): boolean {
