@@ -63,7 +63,7 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
     setFormData(prev => ({
       ...prev,
       questionTypes: prev.questionTypes.includes(type)
-        ? prev.questionTypes.filter(t => t !== type)
+        ? prev.questionTypes.filter((t: string) => t !== type)
         : [...prev.questionTypes, type]
     }));
   };
