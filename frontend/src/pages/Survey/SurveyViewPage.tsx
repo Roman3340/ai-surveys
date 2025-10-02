@@ -6,7 +6,6 @@ import {
   Share2, 
   Copy, 
   QrCode, 
-  Users, 
   Calendar, 
   Clock,
   Eye,
@@ -201,7 +200,7 @@ export const SurveyViewPage: React.FC = () => {
             textAlign: 'center'
           }}>
             <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--tg-button-color)' }}>
-              {survey.responses.length}
+              {survey.responses?.length || 0}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--tg-hint-color)', marginTop: '4px' }}>
               Ответов
