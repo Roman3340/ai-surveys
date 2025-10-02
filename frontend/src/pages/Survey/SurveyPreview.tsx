@@ -5,7 +5,7 @@ import { Eye, Send, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveQuestions, saveSettings } from '../../utils/surveyDraft';
-import { surveysAPI, CreateSurveyRequest } from '../../api/surveys';
+import { surveysAPI, type CreateSurveyRequest } from '../../api/surveys';
 import { useAppStore } from '../../store/useAppStore';
 import type { Question } from '../../types';
 
