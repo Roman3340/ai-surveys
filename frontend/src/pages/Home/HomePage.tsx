@@ -87,9 +87,9 @@ export const HomePage = () => {
     }, 100);
   };
 
-  const handleViewAnalytics = (survey: Survey) => {
+  const handleViewSurvey = (survey: Survey) => {
     hapticFeedback?.light();
-    console.log('Просмотр аналитики для:', survey.title);
+    navigate(`/survey/${survey.id}/view`);
   };
 
   const handleViewTopSurveys = () => {
@@ -353,7 +353,7 @@ export const HomePage = () => {
               {displayedSurveys.slice(0, 3).map((survey) => (
                 <div
                   key={survey.id}
-                  onClick={() => handleViewAnalytics(survey)}
+                  onClick={() => handleViewSurvey(survey)}
                   style={{
                     backgroundColor: 'var(--tg-section-bg-color)',
                     borderRadius: '12px',

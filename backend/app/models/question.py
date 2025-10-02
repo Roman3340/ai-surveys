@@ -21,12 +21,12 @@ class Question(Base):
     options = Column(JSON)  # Список вариантов ответов
     
     # Настройки для шкалы
-    scale_min = Column(Integer, default=1)
-    scale_max = Column(Integer, default=5)
-    scale_labels = Column(JSON)  # Подписи для шкалы
+    scale_min = Column(Integer, nullable=True)  # Только для типа "scale"
+    scale_max = Column(Integer, nullable=True)  # Только для типа "scale"
+    scale_labels = Column(JSON, nullable=True)  # Подписи для шкалы
     
     # Настройки для рейтинга
-    rating_max = Column(Integer, default=5)
+    rating_max = Column(Integer, nullable=True)  # Только для типа "rating"
     
     # Изображение
     image_url = Column(String(500))

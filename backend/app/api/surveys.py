@@ -40,12 +40,23 @@ async def create_complete_survey(
 ):
     """Создать полный опрос с вопросами"""
     try:
+        # Находим пользователя по telegram_id
+        from app.models.user import User
+        telegram_id = survey_data["creatorId"]
+        user = db.query(User).filter(User.telegram_id == telegram_id).first()
+        
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User with telegram_id {telegram_id} not found")
+        
+        print(f"👤 Found user: {user.id} (telegram_id: {user.telegram_id})")
+        
         # Создаем опрос
         survey_dict = {
             "title": survey_data["title"],
-            "user_id": survey_data["creatorId"],
+            "user_id": user.id,  # Используем внутренний ID пользователя
             "description": survey_data.get("description", ""),
             "creation_type": survey_data.get("creationType", "manual"),
+            "question_count": len(survey_data.get("questions", [])),  # Реальное количество вопросов
             "is_published": True,
             "is_active": True
         }
@@ -53,16 +64,32 @@ async def create_complete_survey(
         # Добавляем дополнительные поля если есть
         if "settings" in survey_data:
             settings = survey_data["settings"]
-            if "startDate" in settings and "startTime" in settings:
+            if "startDate" in settings and "startTime" in settings and settings["startDate"] and settings["startTime"]:
                 start_datetime = f"{settings['startDate']} {settings['startTime']}"
-                survey_dict["start_date"] = datetime.fromisoformat(start_datetime.replace('Z', '+00:00'))
+                try:
+                    survey_dict["start_date"] = datetime.fromisoformat(start_datetime.replace('Z', '+00:00'))
+                except ValueError:
+                    print(f"⚠️ Invalid start_date format: {start_datetime}")
             
-            if "endDate" in settings and "endTime" in settings:
+            if "endDate" in settings and "endTime" in settings and settings["endDate"] and settings["endTime"]:
                 end_datetime = f"{settings['endDate']} {settings['endTime']}"
-                survey_dict["end_date"] = datetime.fromisoformat(end_datetime.replace('Z', '+00:00'))
+                try:
+                    survey_dict["end_date"] = datetime.fromisoformat(end_datetime.replace('Z', '+00:00'))
+                except ValueError:
+                    print(f"⚠️ Invalid end_date format: {end_datetime}")
             
-            if "maxParticipants" in settings:
-                survey_dict["max_participants"] = int(settings["maxParticipants"]) if settings["maxParticipants"] else None
+            if "maxParticipants" in settings and settings["maxParticipants"]:
+                try:
+                    survey_dict["max_participants"] = int(settings["maxParticipants"])
+                except ValueError:
+                    print(f"⚠️ Invalid maxParticipants: {settings['maxParticipants']}")
+            
+            # Сохраняем мотивацию
+            if "motivation" in settings and settings["motivation"]:
+                survey_dict["motivation"] = settings["motivation"]
+                print(f"💎 Motivation saved: {settings['motivation']}")
+            else:
+                print(f"⚠️ No motivation found in settings: {settings}")
         
         db_survey = Survey(**survey_dict)
         db.add(db_survey)
@@ -74,16 +101,29 @@ async def create_complete_survey(
         created_questions = []
         
         for i, question_data in enumerate(questions_data):
+            question_type = question_data["type"]
+            
             question_dict = {
                 "survey_id": db_survey.id,
-                "type": question_data["type"],
-                "title": question_data["title"],
-                "description": question_data.get("description", ""),
-                "required": question_data.get("required", True),
+                "type": question_type,
+                "text": question_data["title"],  # Используем 'text' вместо 'title'
+                "is_required": question_data.get("required", True),  # Используем 'is_required' вместо 'required'
                 "order": i + 1,
                 "options": question_data.get("options", []),
-                "validation": question_data.get("validation", {})
+                # Поля по умолчанию NULL
+                "scale_min": None,
+                "scale_max": None,
+                "rating_max": None
             }
+            
+            # Настройки для типа "Шкала"
+            if question_type == "scale":
+                question_dict["scale_min"] = question_data.get("scale_min", 1)
+                question_dict["scale_max"] = question_data.get("scale_max", 5)
+            
+            # Настройки для типа "Оценка звездами" (rating)
+            elif question_type == "rating":
+                question_dict["rating_max"] = question_data.get("rating_max", 5)
             
             db_question = Question(**question_dict)
             db.add(db_question)
@@ -95,9 +135,32 @@ async def create_complete_survey(
         for question in created_questions:
             db.refresh(question)
         
+        print(f"✅ Survey created successfully with ID: {db_survey.id}")
         return {
-            "survey": db_survey,
-            "questions": created_questions,
+            "survey": {
+                "id": db_survey.id,
+                "title": db_survey.title,
+                "description": db_survey.description,
+                "user_id": db_survey.user_id,
+                "creation_type": db_survey.creation_type,
+                "is_published": db_survey.is_published,
+                "is_active": db_survey.is_active,
+                "created_at": db_survey.created_at.isoformat() if db_survey.created_at else None,
+                "updated_at": db_survey.updated_at.isoformat() if db_survey.updated_at else None
+            },
+            "questions": [
+                {
+                    "id": q.id,
+                    "survey_id": q.survey_id,
+                    "type": q.type,
+                    "text": q.text,
+                    "is_required": q.is_required,
+                    "order": q.order,
+                    "options": q.options,
+                    "created_at": q.created_at.isoformat() if q.created_at else None
+                }
+                for q in created_questions
+            ],
             "message": "Survey created successfully"
         }
         
@@ -105,10 +168,26 @@ async def create_complete_survey(
         db.rollback()
         raise HTTPException(status_code=400, detail=f"Error creating survey: {str(e)}")
 
-@router.get("/user/{user_id}", response_model=List[SurveySchema])
-async def get_user_surveys(user_id: int, db: Session = Depends(get_db)):
-    """Получить опросы пользователя"""
-    surveys = db.query(Survey).filter(Survey.user_id == user_id).order_by(Survey.created_at.desc()).all()
+@router.get("/user/{telegram_id}", response_model=List[SurveySchema])
+async def get_user_surveys(telegram_id: int, db: Session = Depends(get_db)):
+    """Получить опросы пользователя по telegram_id"""
+    from app.models.user import User
+    
+    print(f"🔍 Loading surveys for telegram_id: {telegram_id}")
+    
+    # Находим пользователя по telegram_id
+    user = db.query(User).filter(User.telegram_id == telegram_id).first()
+    
+    if not user:
+        print(f"❌ User with telegram_id {telegram_id} not found")
+        raise HTTPException(status_code=404, detail=f"User with telegram_id {telegram_id} not found")
+    
+    print(f"👤 Found user: {user.id} (telegram_id: {user.telegram_id})")
+    
+    # Получаем опросы пользователя по внутреннему ID
+    surveys = db.query(Survey).filter(Survey.user_id == user.id).order_by(Survey.created_at.desc()).all()
+    print(f"📊 Found {len(surveys)} surveys for user {user.id}")
+    
     return surveys
 
 @router.put("/{survey_id}", response_model=SurveySchema)

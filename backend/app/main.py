@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.api import surveys, questions, users
 from app.core.config import settings
 
@@ -12,9 +13,9 @@ app = FastAPI(
 # Настройка CORS для фронтенда
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # Vite dev server
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],  # Разрешаем все источники для разработки
+    allow_credentials=False,  # Отключаем credentials для простоты
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -30,3 +31,15 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+# Обработчик для OPTIONS запросов
+@app.options("/{path:path}")
+async def options_handler(path: str, request: Request):
+    return JSONResponse(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )

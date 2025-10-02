@@ -9,6 +9,7 @@ import AIPersonalPage from './pages/Survey/AIPersonalPage';
 import QuestionBuilder from './pages/Survey/QuestionBuilder';
 import SurveyPreview from './pages/Survey/SurveyPreview';
 import MotivationPage from './pages/Survey/MotivationPage';
+import { SurveyViewPage } from './pages/Survey/SurveyViewPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import ThemeSettingsPage from './pages/Settings/ThemeSettingsPage';
 import LanguageSettingsPage from './pages/Settings/LanguageSettingsPage';
@@ -104,6 +105,7 @@ function App() {
           <Route path="/survey/create/ai/business" element={<AIBusinessPage />} />
           <Route path="/survey/create/ai/personal" element={<AIPersonalPage />} />
           <Route path="/survey/create/ai/motivation" element={<MotivationPage />} />
+          <Route path="/survey/:surveyId/view" element={<SurveyViewPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/theme" element={<ThemeSettingsPage />} />
           <Route path="/settings/language" element={<LanguageSettingsPage />} />

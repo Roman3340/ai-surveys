@@ -28,7 +28,7 @@ class Survey(Base):
     topic = Column(String(255))
     audience = Column(String(255))
     purpose = Column(Text)
-    question_count = Column(Integer, default=5)
+    question_count = Column(Integer, nullable=False)  # Реальное количество вопросов
     question_types = Column(JSON)  # Список типов вопросов
     
     # Мотивация

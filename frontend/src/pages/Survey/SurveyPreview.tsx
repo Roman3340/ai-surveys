@@ -60,7 +60,10 @@ const SurveyPreview: React.FC = () => {
           title: draft.settings.title || 'Новый опрос',
           description: draft.settings.description || '',
           questions: draft.questions as any,
-          settings: draft.settings as any
+          settings: {
+            ...draft.settings,
+            motivation: draft.motivation // Добавляем мотивацию из черновика
+          } as any
         } as any);
       } else {
         navigate('/survey/create/manual/questions');
