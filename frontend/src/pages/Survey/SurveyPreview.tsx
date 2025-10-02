@@ -5,6 +5,8 @@ import { Eye, Send, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveQuestions, saveSettings } from '../../utils/surveyDraft';
+import { surveysAPI, CreateSurveyRequest } from '../../api/surveys';
+import { useAppStore } from '../../store/useAppStore';
 import type { Question } from '../../types';
 
 interface SurveyData {
@@ -30,11 +32,13 @@ interface PreviewAnswers {
 const SurveyPreview: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hapticFeedback } = useTelegram();
+  const { hapticFeedback, user: telegramUser } = useTelegram();
+  const { user, addSurvey } = useAppStore();
   
   const [surveyData, setSurveyData] = useState<SurveyData | null>(null);
   const [answers, setAnswers] = useState<PreviewAnswers>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Прокрутка к верху при загрузке страницы
   useEffect(() => {
@@ -105,7 +109,7 @@ const SurveyPreview: React.FC = () => {
     }
   };
 
-  const handlePublishSurvey = () => {
+  const handlePublishSurvey = async () => {
     if (!surveyData) return;
     
     const currentQuestion = surveyData.questions[currentQuestionIndex];
@@ -121,17 +125,88 @@ const SurveyPreview: React.FC = () => {
       }
     }
     
+    setIsPublishing(true);
     hapticFeedback?.success();
-    // Здесь будет логика публикации опроса
-    alert('Опрос опубликован! (В реальном приложении здесь будет API вызов)');
-    // После публикации — очищаем черновик
+    
     try {
-      localStorage.removeItem('surveyPreviewData');
-      // Чистим общий черновик анкеты
-      const key = 'surveyDraft';
-      localStorage.removeItem(key);
-    } catch {}
-    navigate('/');
+      // Получаем ID пользователя
+      const userId = user?.telegramId || telegramUser?.id;
+      if (!userId) {
+        throw new Error('Пользователь не найден');
+      }
+      
+      // Подготавливаем данные для API
+      const surveyRequest: CreateSurveyRequest = {
+        title: surveyData.title,
+        description: surveyData.description,
+        creatorId: userId,
+        creationType: 'manual',
+        questions: surveyData.questions.map(q => ({
+          id: q.id,
+          type: q.type,
+          title: q.title,
+          description: q.description,
+          required: q.required,
+          order: q.order,
+          options: q.options,
+          validation: q.validation
+        })),
+        settings: surveyData.settings
+      };
+      
+      // Отправляем запрос на создание опроса
+      const response = await surveysAPI.createSurvey(surveyRequest);
+      
+      // Добавляем опрос в локальное хранилище
+      const newSurvey = {
+        id: response.survey.id.toString(),
+        title: response.survey.title,
+        description: response.survey.description || '',
+        creatorId: response.survey.user_id,
+        isPublished: response.survey.is_published,
+        isPublic: true,
+        createdAt: response.survey.created_at,
+        updatedAt: response.survey.updated_at || response.survey.created_at,
+        questions: response.questions.map(q => ({
+          id: q.id.toString(),
+          surveyId: response.survey.id.toString(),
+          type: q.type as any,
+          title: q.title,
+          description: q.description,
+          required: q.required,
+          order: q.order,
+          options: q.options || [],
+          validation: q.validation || {}
+        })),
+        responses: [],
+        settings: {
+          allowAnonymous: true,
+          showProgress: true,
+          randomizeQuestions: false,
+          oneResponsePerUser: true,
+          collectTelegramData: true,
+          creationType: 'manual' as const
+        }
+      };
+      
+      addSurvey(newSurvey);
+      
+      // Очищаем черновик
+      try {
+        localStorage.removeItem('surveyPreviewData');
+        localStorage.removeItem('surveyDraft');
+        localStorage.removeItem('surveySettings');
+      } catch {}
+      
+      alert('Опрос успешно опубликован!');
+      navigate('/');
+      
+    } catch (error) {
+      console.error('Ошибка при публикации опроса:', error);
+      alert(`Ошибка при публикации опроса: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const renderQuestionPreview = (question: Question) => {
@@ -632,24 +707,26 @@ const SurveyPreview: React.FC = () => {
         ) : (
           <button
             onClick={handlePublishSurvey}
+            disabled={isPublishing}
             style={{
               flex: 1,
-              backgroundColor: '#34C759',
+              backgroundColor: isPublishing ? '#8E8E93' : '#34C759',
               color: 'white',
               border: 'none',
               borderRadius: '12px',
               padding: '12px 16px',
               fontSize: '16px',
               fontWeight: '500',
-              cursor: 'pointer',
+              cursor: isPublishing ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '8px',
+              opacity: isPublishing ? 0.7 : 1
             }}
           >
             <Send size={16} />
-            Опубликовать
+            {isPublishing ? 'Публикация...' : 'Опубликовать'}
           </button>
         )}
       </div>

@@ -4,14 +4,15 @@ import { Settings, HelpCircle, BarChart3, Users } from 'lucide-react';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useAppStore } from '../../store/useAppStore';
-// import { isTelegramEnvironment } from '../../utils/mockTelegram'; // Не используется
+import { surveysAPI } from '../../api/surveys';
 import type { Survey } from '../../types';
 
 export const HomePage = () => {
   const navigate = useNavigate();
   const { user: telegramUser, hapticFeedback } = useTelegram();
-  const { user, userSurveys, participatedSurveys, setUser } = useAppStore();
+  const { user, userSurveys, participatedSurveys, setUser, setUserSurveys } = useAppStore();
   const [activeTab, setActiveTab] = useState<'created' | 'participated'>('created');
+  const [isLoadingSurveys, setIsLoadingSurveys] = useState(false);
 
   // Создание пользователя из Telegram данных
   useEffect(() => {
@@ -27,6 +28,50 @@ export const HomePage = () => {
       setUser(newUser);
     }
   }, [telegramUser, user, setUser]);
+
+  // Загрузка опросов пользователя
+  useEffect(() => {
+    const loadUserSurveys = async () => {
+      const userId = user?.telegramId || telegramUser?.id;
+      if (!userId) return;
+
+      setIsLoadingSurveys(true);
+      try {
+        const surveys = await surveysAPI.getUserSurveys(userId);
+        
+        // Преобразуем данные в формат фронтенда
+        const formattedSurveys: Survey[] = surveys.map(survey => ({
+          id: survey.id.toString(),
+          title: survey.title,
+          description: survey.description || '',
+          creatorId: survey.user_id,
+          isPublished: survey.is_published,
+          isPublic: true,
+          createdAt: survey.created_at,
+          updatedAt: survey.updated_at || survey.created_at,
+          questions: [], // Вопросы загружаются отдельно при необходимости
+          responses: [],
+          settings: {
+            allowAnonymous: true,
+            showProgress: true,
+            randomizeQuestions: false,
+            oneResponsePerUser: true,
+            collectTelegramData: true,
+            creationType: survey.creation_type as 'manual' | 'ai'
+          }
+        }));
+        
+        setUserSurveys(formattedSurveys);
+      } catch (error) {
+        console.error('Ошибка при загрузке опросов:', error);
+        // В случае ошибки оставляем локальные данные
+      } finally {
+        setIsLoadingSurveys(false);
+      }
+    };
+
+    loadUserSurveys();
+  }, [user, telegramUser, setUserSurveys]);
 
   const handleCreateSurvey = () => {
     hapticFeedback?.light();
@@ -286,7 +331,24 @@ export const HomePage = () => {
 
         {/* Список опросов */}
         <div style={{ marginTop: '16px' }}>
-          {displayedSurveys.length > 0 ? (
+          {isLoadingSurveys ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              color: 'var(--tg-hint-color)'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                ⏳
+              </div>
+              <p style={{
+                fontSize: '16px',
+                margin: '0 0 20px 0',
+                lineHeight: '1.4'
+              }}>
+                Загрузка опросов...
+              </p>
+            </div>
+          ) : displayedSurveys.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {displayedSurveys.slice(0, 3).map((survey) => (
                 <div

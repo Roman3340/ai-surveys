@@ -6,7 +6,7 @@ from typing import Optional
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, WebAppData
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, WebAppData, Update
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
@@ -164,46 +164,6 @@ async def start_command(message: types.Message):
         )
 
 
-@dp.message(F.web_app_data)
-async def handle_web_app_data(message: types.Message):
-    """Обработчик данных от веб-приложения"""
-    try:
-        # Получаем сессию БД
-        db = next(get_db())
-        
-        # Получаем данные от веб-приложения
-        web_app_data = message.web_app_data
-        data = web_app_data.data
-        
-        logger.info(f"Web app data received from user {message.from_user.id}: {data}")
-        
-        # Парсим JSON данные
-        try:
-            import json
-            parsed_data = json.loads(data)
-            action = parsed_data.get('action', 'unknown')
-            logger.info(f"Parsed action: {action}")
-        except json.JSONDecodeError:
-            logger.warning(f"Failed to parse JSON data: {data}")
-            action = 'unknown'
-        
-        # Обновляем пользователя с флагом app_opened=True
-        user = await create_or_update_user(message.from_user, db, app_opened=True)
-        
-        # Отправляем подтверждение пользователю
-        await message.answer(
-            "✅ <b>Приложение успешно открыто!</b>\n\n"
-            f"Действие: {action}\n"
-            f"Открытий приложения: {user.app_opened_count}",
-            parse_mode="HTML"
-        )
-        
-    except Exception as e:
-        logger.error(f"Error handling web app data: {e}")
-        await message.answer(
-            "❌ Произошла ошибка при обработке данных приложения."
-        )
-
 
 @dp.message(Command("help"))
 async def help_command(message: types.Message):
@@ -275,9 +235,49 @@ async def stats_command(message: types.Message):
         await message.answer("❌ Ошибка при получении статистики.")
 
 
+@dp.update()
+async def handle_all_updates(update: Update):
+    """Обработчик всех обновлений для отладки"""
+    logger.info(f"Received update: {update.model_dump_json()}")
+    
+    # Проверяем, есть ли web_app_data в сообщении
+    if update.message and update.message.web_app_data:
+        logger.info(f"Web app data found in update: {update.message.web_app_data.data}")
+        
+        try:
+            db = next(get_db())
+            
+            # Парсим JSON данные
+            import json
+            parsed_data = json.loads(update.message.web_app_data.data)
+            action = parsed_data.get('action', 'unknown')
+            logger.info(f"Parsed action: {action}")
+            
+            # Обновляем пользователя с флагом app_opened=True
+            user = await create_or_update_user(update.message.from_user, db, app_opened=True)
+            
+            # Отправляем подтверждение пользователю
+            await update.message.answer(
+                "✅ <b>Приложение успешно открыто!</b>\n\n"
+                f"Действие: {action}\n"
+                f"Открытий приложения: {user.app_opened_count}",
+                parse_mode="HTML"
+            )
+            
+            logger.info(f"Processed web app data for user {user.telegram_id}, app_opened_count: {user.app_opened_count}")
+            
+        except Exception as e:
+            logger.error(f"Error handling web app data: {e}")
+            await update.message.answer(
+                "❌ Произошла ошибка при обработке данных приложения."
+            )
+
+
 @dp.message()
 async def handle_other_messages(message: types.Message):
     """Обработчик всех остальных сообщений"""
+    logger.info(f"Received message from {message.from_user.id}: {message.text}")
+    
     await message.answer(
         "🤔 Не понимаю эту команду. Используйте /start для начала работы или /help для справки."
     )
