@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Send, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
+import { useAppStore } from '../../store/useAppStore';
 import { getDraft, saveQuestions, saveSettings } from '../../utils/surveyDraft';
 import type { Question } from '../../types';
 
@@ -31,10 +32,12 @@ const SurveyPreview: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { hapticFeedback } = useTelegram();
+  const { createSurvey, publishSurvey } = useAppStore();
   
   const [surveyData, setSurveyData] = useState<SurveyData | null>(null);
   const [answers, setAnswers] = useState<PreviewAnswers>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Прокрутка к верху при загрузке страницы
   useEffect(() => {
@@ -56,7 +59,17 @@ const SurveyPreview: React.FC = () => {
           title: draft.settings.title || 'Новый опрос',
           description: draft.settings.description || '',
           questions: draft.questions as any,
-          settings: draft.settings as any
+          settings: {
+            // Настройки по умолчанию
+            allowAnonymous: true,
+            showProgress: true,
+            randomizeQuestions: false,
+            oneResponsePerUser: true,
+            collectTelegramData: true,
+            creationType: 'manual',
+            // Настройки из черновика
+            ...draft.settings
+          }
         } as any);
       } else {
         navigate('/survey/create/manual/questions');
@@ -105,7 +118,7 @@ const SurveyPreview: React.FC = () => {
     }
   };
 
-  const handlePublishSurvey = () => {
+  const handlePublishSurvey = async () => {
     if (!surveyData) return;
     
     const currentQuestion = surveyData.questions[currentQuestionIndex];
@@ -121,17 +134,38 @@ const SurveyPreview: React.FC = () => {
       }
     }
     
+    setIsPublishing(true);
     hapticFeedback?.success();
-    // Здесь будет логика публикации опроса
-    alert('Опрос опубликован! (В реальном приложении здесь будет API вызов)');
-    // После публикации — очищаем черновик
+    
     try {
-      localStorage.removeItem('surveyPreviewData');
-      // Чистим общий черновик анкеты
-      const key = 'surveyDraft';
-      localStorage.removeItem(key);
-    } catch {}
-    navigate('/');
+      // Создаем опрос
+      const createdSurvey = await createSurvey({
+        title: surveyData.title,
+        description: surveyData.description,
+        is_public: true,
+        settings: {
+          ...surveyData.settings,
+          creationType: 'manual'
+        }
+      });
+
+      // Публикуем опрос
+      await publishSurvey(createdSurvey.id);
+      
+      // Очищаем черновик
+      try {
+        localStorage.removeItem('surveyPreviewData');
+        const key = 'surveyDraft';
+        localStorage.removeItem(key);
+      } catch {}
+      
+      // Переходим на страницу успешной публикации
+      navigate(`/survey/published?surveyId=${createdSurvey.id}`);
+    } catch (error) {
+      console.error('Ошибка публикации опроса:', error);
+      alert('Не удалось опубликовать опрос. Попробуйте снова.');
+      setIsPublishing(false);
+    }
   };
 
   const renderQuestionPreview = (question: Question) => {
@@ -632,24 +666,42 @@ const SurveyPreview: React.FC = () => {
         ) : (
           <button
             onClick={handlePublishSurvey}
+            disabled={isPublishing}
             style={{
               flex: 1,
-              backgroundColor: '#34C759',
+              backgroundColor: isPublishing ? 'var(--tg-hint-color)' : '#34C759',
               color: 'white',
               border: 'none',
               borderRadius: '12px',
               padding: '12px 16px',
               fontSize: '16px',
               fontWeight: '500',
-              cursor: 'pointer',
+              cursor: isPublishing ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '8px',
+              opacity: isPublishing ? 0.7 : 1
             }}
           >
-            <Send size={16} />
-            Опубликовать
+            {isPublishing ? (
+              <>
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid white',
+                  borderTop: '2px solid transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                Публикация...
+              </>
+            ) : (
+              <>
+                <Send size={16} />
+                Опубликовать
+              </>
+            )}
           </button>
         )}
       </div>

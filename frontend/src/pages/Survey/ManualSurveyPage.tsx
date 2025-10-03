@@ -28,10 +28,19 @@ const ManualSurveyPage: React.FC = () => {
 
   const handleNext = () => {
     // Сохраняем данные опроса в черновик
-    saveSettings(surveyData);
+    saveSettings({
+      ...surveyData,
+      // Добавляем настройки по умолчанию для опроса
+      allowAnonymous: true,
+      showProgress: true,
+      randomizeQuestions: false,
+      oneResponsePerUser: true,
+      collectTelegramData: true,
+      creationType: 'manual'
+    });
     // Также сохраняем в localStorage для совместимости
     localStorage.setItem('surveySettings', JSON.stringify(surveyData));
-    navigate('/survey/create/manual/motivation', {
+    navigate('/survey/create/manual/settings', {
       state: surveyData
     });
   };

@@ -3,11 +3,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/Home/HomePage';
 import CreateSurveyPage from './pages/Survey/CreateSurveyPage';
 import ManualSurveyPage from './pages/Survey/ManualSurveyPage';
+import SurveySettingsPage from './pages/Survey/SurveySettingsPage';
 import AISurveyPage from './pages/Survey/AISurveyPage';
 import AIBusinessPage from './pages/Survey/AIBusinessPage';
 import AIPersonalPage from './pages/Survey/AIPersonalPage';
 import QuestionBuilder from './pages/Survey/QuestionBuilder';
 import SurveyPreview from './pages/Survey/SurveyPreview';
+import { SurveyPublishedPage } from './pages/Survey/SurveyPublishedPage';
 import MotivationPage from './pages/Survey/MotivationPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import ThemeSettingsPage from './pages/Settings/ThemeSettingsPage';
@@ -76,6 +78,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/survey/create" element={<CreateSurveyPage />} />
           <Route path="/survey/create/manual" element={<ManualSurveyPage />} />
+          <Route path="/survey/create/manual/settings" element={<SurveySettingsPage />} />
           <Route path="/survey/create/manual/motivation" element={<MotivationPage />} />
           <Route path="/survey/create/manual/questions" element={<QuestionBuilder />} />
           <Route path="/survey/create/manual/preview" element={<SurveyPreview />} />
@@ -83,6 +86,7 @@ function App() {
           <Route path="/survey/create/ai/business" element={<AIBusinessPage />} />
           <Route path="/survey/create/ai/personal" element={<AIPersonalPage />} />
           <Route path="/survey/create/ai/motivation" element={<MotivationPage />} />
+          <Route path="/survey/published" element={<SurveyPublishedPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/theme" element={<ThemeSettingsPage />} />
           <Route path="/settings/language" element={<LanguageSettingsPage />} />

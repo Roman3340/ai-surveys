@@ -10,7 +10,7 @@ import type { Survey } from '../../types';
 export const HomePage = () => {
   const navigate = useNavigate();
   const { user: telegramUser, hapticFeedback } = useTelegram();
-  const { user, userSurveys, participatedSurveys, setUser } = useAppStore();
+  const { user, userSurveys, participatedSurveys, setUser, loadUserSurveys, isLoading, error } = useAppStore();
   const [activeTab, setActiveTab] = useState<'created' | 'participated'>('created');
 
   // Создание пользователя из Telegram данных
@@ -27,6 +27,13 @@ export const HomePage = () => {
       setUser(newUser);
     }
   }, [telegramUser, user, setUser]);
+
+  // Загрузка опросов пользователя
+  useEffect(() => {
+    if (user) {
+      loadUserSurveys();
+    }
+  }, [user, loadUserSurveys]);
 
   const handleCreateSurvey = () => {
     hapticFeedback?.light();
@@ -286,7 +293,56 @@ export const HomePage = () => {
 
         {/* Список опросов */}
         <div style={{ marginTop: '16px' }}>
-          {displayedSurveys.length > 0 ? (
+          {isLoading ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              color: 'var(--tg-hint-color)'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                ⏳
+              </div>
+              <p style={{
+                fontSize: '16px',
+                margin: '0',
+                lineHeight: '1.4'
+              }}>
+                Загрузка опросов...
+              </p>
+            </div>
+          ) : error ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              color: 'var(--tg-hint-color)'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                ❌
+              </div>
+              <p style={{
+                fontSize: '16px',
+                margin: '0 0 20px 0',
+                lineHeight: '1.4'
+              }}>
+                {error}
+              </p>
+              <button 
+                onClick={() => loadUserSurveys()} 
+                style={{
+                  backgroundColor: 'var(--tg-button-color)',
+                  color: 'var(--tg-button-text-color)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px 24px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                🔄 Попробовать снова
+              </button>
+            </div>
+          ) : displayedSurveys.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {displayedSurveys.slice(0, 3).map((survey) => (
                 <div
