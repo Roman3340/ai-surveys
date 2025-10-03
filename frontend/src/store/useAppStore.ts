@@ -16,7 +16,7 @@ interface AppStore {
   userSurveys: Survey[];
   setUserSurveys: (surveys: Survey[]) => void;
   addSurvey: (survey: Survey) => void;
-  updateSurvey: (surveyId: string, updates: Partial<Survey>) => void;
+  updateSurveyLocal: (surveyId: string, updates: Partial<Survey>) => void;
   removeSurvey: (surveyId: string) => void;
   
   // Опросы, в которых участвует пользователь
@@ -70,7 +70,7 @@ export const useAppStore = create<AppStore>()(
         userSurveys: [...state.userSurveys, survey]
       })),
       
-      updateSurvey: (surveyId, updates) => set((state) => ({
+      updateSurveyLocal: (surveyId, updates) => set((state) => ({
         userSurveys: state.userSurveys.map(survey =>
           survey.id === surveyId ? { ...survey, ...updates } : survey
         )

@@ -2,7 +2,7 @@
  * API сервис для работы с бэкендом
  */
 import axios from 'axios';
-import type { Survey, User } from '../types';
+import type { Survey } from '../types';
 
 // Базовый URL API
 const API_BASE_URL = 'http://localhost:8001/api';
