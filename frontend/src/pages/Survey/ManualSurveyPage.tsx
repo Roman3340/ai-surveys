@@ -38,8 +38,6 @@ const ManualSurveyPage: React.FC = () => {
       collectTelegramData: true,
       creationType: 'manual'
     });
-    // Также сохраняем в localStorage для совместимости
-    localStorage.setItem('surveySettings', JSON.stringify(surveyData));
     navigate('/survey/create/manual/settings', {
       state: surveyData
     });
@@ -146,16 +144,16 @@ const ManualSurveyPage: React.FC = () => {
               borderRadius: '3px',
               overflow: 'hidden'
             }}>
-              <motion.div
-                initial={{ width: '0%' }}
-                animate={{ width: '40%' }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                style={{
-                  height: '100%',
-                  background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-                  borderRadius: '3px'
-                }}
-              />
+                <motion.div
+                  initial={{ width: '0%' }}
+                  animate={{ width: '20%' }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  style={{
+                    height: '100%',
+                    background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+                    borderRadius: '3px'
+                  }}
+                />
             </div>
           </div>
         </motion.div>

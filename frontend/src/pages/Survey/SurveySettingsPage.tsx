@@ -75,12 +75,6 @@ const SurveySettingsPage: React.FC = () => {
     targetRoute: '/survey/create/manual'
   });
 
-  const handleInputChange = (field: keyof SurveySettingsData, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
 
   const handleSettingsChange = (field: keyof SurveySettings, value: any) => {
     setFormData(prev => ({
@@ -123,6 +117,23 @@ const SurveySettingsPage: React.FC = () => {
 
   const handleBack = () => {
     hapticFeedback?.light();
+    // Сохраняем текущие настройки перед возвратом
+    saveSettings({
+      title: formData.title,
+      description: formData.description,
+      language: (location.state?.surveyData as any)?.language || 'ru',
+      startDate: (location.state?.surveyData as any)?.startDate,
+      startTime: (location.state?.surveyData as any)?.startTime,
+      endDate: (location.state?.surveyData as any)?.endDate,
+      endTime: (location.state?.surveyData as any)?.endTime,
+      maxParticipants: (location.state?.surveyData as any)?.maxParticipants,
+      allowAnonymous: formData.settings.allowAnonymous,
+      showProgress: formData.settings.showProgress,
+      randomizeQuestions: formData.settings.randomizeQuestions,
+      oneResponsePerUser: formData.settings.oneResponsePerUser,
+      collectTelegramData: formData.settings.collectTelegramData,
+      creationType: 'manual'
+    });
     navigate('/survey/create/manual');
   };
 
@@ -147,14 +158,14 @@ const SurveySettingsPage: React.FC = () => {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
+          justifyContent: 'center',
           marginBottom: '12px'
         }}>
-          <Settings size={20} color="var(--tg-button-color)" />
+          <Settings size={24} color="var(--tg-button-color)" />
           <h1 style={{
-            fontSize: '18px',
+            fontSize: '20px',
             fontWeight: '600',
-            margin: 0
+            margin: '0 0 0 8px'
           }}>
             Настройки опроса
           </h1>
@@ -163,91 +174,47 @@ const SurveySettingsPage: React.FC = () => {
         <div style={{
           fontSize: '14px',
           color: 'var(--tg-hint-color)',
-          lineHeight: '1.4'
+          lineHeight: '1.4',
+          textAlign: 'center'
         }}>
-          Настройте основные параметры и ограничения для вашего опроса
+          Настройте параметры и ограничения для вашего опроса
         </div>
       </div>
 
       <div style={{ padding: '20px 16px' }}>
-        {/* Основная информация */}
+        {/* Прогресс-бар */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '20px'
-          }}
+          style={{ textAlign: 'center', marginBottom: '32px' }}
         >
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: '0 0 16px 0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            📝 Основная информация
-          </h3>
-          
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '500',
-              marginBottom: '8px',
-              color: 'var(--tg-text-color)'
-            }}>
-              Название опроса *
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="Введите название опроса..."
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--tg-section-separator-color)',
-                backgroundColor: 'var(--tg-bg-color)',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                outline: 'none'
-              }}
-            />
+          <div style={{ marginBottom: '10px' }}>
+            <Settings size={48} color="var(--tg-button-color)" />
           </div>
-          
-          <div>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '500',
-              marginBottom: '8px',
-              color: 'var(--tg-text-color)'
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '8px'
+          }}>
+            {/* Прогресс-бар */}
+            <div style={{
+              width: '280px',
+              height: '6px',
+              backgroundColor: 'rgba(244, 109, 0, 0.2)',
+              borderRadius: '3px',
+              overflow: 'hidden'
             }}>
-              Описание (необязательно)
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Краткое описание опроса..."
-              rows={3}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--tg-section-separator-color)',
-                backgroundColor: 'var(--tg-bg-color)',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                resize: 'vertical',
-                outline: 'none'
-              }}
-            />
+              <motion.div
+                initial={{ width: '0%' }}
+                animate={{ width: '40%' }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                style={{
+                  height: '100%',
+                  background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+                  borderRadius: '3px'
+                }}
+              />
+            </div>
           </div>
         </motion.div>
 
@@ -551,89 +518,6 @@ const SurveySettingsPage: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Ограничения */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-          style={{
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '20px'
-          }}
-        >
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: '0 0 16px 0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            📊 Ограничения
-          </h3>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Максимальное количество участников */}
-            <div>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                marginBottom: '8px',
-                color: 'var(--tg-text-color)'
-              }}>
-                Максимальное количество участников
-              </label>
-              <input
-                type="number"
-                value={formData.settings.maxParticipants || ''}
-                onChange={(e) => handleSettingsChange('maxParticipants', e.target.value ? parseInt(e.target.value) : undefined)}
-                placeholder="Без ограничений"
-                min="1"
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-bg-color)',
-                  color: 'var(--tg-text-color)',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-            
-            {/* Дата окончания */}
-            <div>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                marginBottom: '8px',
-                color: 'var(--tg-text-color)'
-              }}>
-                Дата окончания опроса
-              </label>
-              <input
-                type="datetime-local"
-                value={formData.settings.endDate || ''}
-                onChange={(e) => handleSettingsChange('endDate', e.target.value || undefined)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-bg-color)',
-                  color: 'var(--tg-text-color)',
-                  fontSize: '16px',
-                  outline: 'none'
-                }}
-              />
-            </div>
-          </div>
-        </motion.div>
       </div>
 
       {/* Навигация */}

@@ -5,7 +5,7 @@ import axios from 'axios';
 import type { Survey } from '../types';
 
 // Базовый URL API
-const API_BASE_URL = 'http://localhost:8001/api';
+const API_BASE_URL = 'http://localhost:8001/api/';
 
 // Создаем экземпляр axios с базовой конфигурацией
 const api = axios.create({

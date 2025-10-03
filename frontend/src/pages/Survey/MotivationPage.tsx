@@ -93,7 +93,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
           navigate('/survey/create/ai', { replace: true });
         }
       } else {
-        navigate('/survey/create/manual', { replace: true });
+        navigate('/survey/create/manual/settings', { replace: true });
       }
     }
   });
