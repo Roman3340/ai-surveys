@@ -60,11 +60,11 @@ const SurveyCreatorPage: React.FC = () => {
     endDate: '',
     endTime: '',
     maxParticipants: '',
-    allowAnonymous: true,
+    allowAnonymous: false,
     showProgress: true,
     randomizeQuestions: false,
     oneResponsePerUser: true,
-    collectTelegramData: true,
+    collectTelegramData: false,
     creationType: 'manual'
   });
   
@@ -219,8 +219,11 @@ const SurveyCreatorPage: React.FC = () => {
         <div style={{
           display: 'flex',
           justifyContent: 'center',
+          alignItems: 'center',
+          gap: '8px',
           marginBottom: '16px'
         }}>
+          <span style={{ fontSize: '24px' }}>📝</span>
           <h1 style={{
             fontSize: '20px',
             fontWeight: '600',
@@ -449,7 +452,7 @@ const SettingsTab: React.FC<{
               width: '100%',
               padding: '12px 16px',
               borderRadius: '8px',
-              border: '1px solid var(--tg-section-separator-color)',
+              border: '1px solid rgba(128, 128, 128, 0.3)',
               backgroundColor: 'var(--tg-bg-color)',
               color: 'var(--tg-text-color)',
               fontSize: '16px',
@@ -471,13 +474,13 @@ const SettingsTab: React.FC<{
           <textarea
             value={surveyData.description}
             onChange={(e) => onDataChange('description', e.target.value)}
-            placeholder="Краткое описание опроса..."
+            placeholder="Описание опроса..."
             rows={3}
             style={{
               width: '100%',
               padding: '12px 16px',
               borderRadius: '8px',
-              border: '1px solid var(--tg-section-separator-color)',
+              border: '1px solid rgba(128, 128, 128, 0.3)',
               backgroundColor: 'var(--tg-bg-color)',
               color: 'var(--tg-text-color)',
               fontSize: '16px',
@@ -540,16 +543,15 @@ const SettingsTab: React.FC<{
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
+                  border: '1px solid rgba(128, 128, 128, 0.3)',
                   backgroundColor: 'var(--tg-bg-color)',
                   color: 'var(--tg-text-color)',
                   fontSize: '16px',
                   outline: 'none'
                 }}
               >
-                <option value="ru">Русский</option>
-                <option value="en">English</option>
-                <option value="uk">Українська</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="en">🇺🇸 English</option>
               </select>
             </div>
 
@@ -933,41 +935,18 @@ const QuestionsTab: React.FC<{
     >
       <div>
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           marginBottom: '20px'
         }}>
           <h3 style={{
             fontSize: '16px',
             fontWeight: '600',
-            margin: 0,
+            margin: '0 0 16px 0',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}>
             ❓ Вопросы ({questions.length})
           </h3>
-          
-          <button
-            onClick={onAddQuestion}
-            style={{
-              backgroundColor: 'var(--tg-button-color)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <Plus size={16} />
-            Добавить
-          </button>
         </div>
         
         {questions.length === 0 ? (
@@ -1003,16 +982,17 @@ const QuestionsTab: React.FC<{
                 key={question.id}
                 style={{
                   backgroundColor: 'var(--tg-bg-color)',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  border: '1px solid var(--tg-section-separator-color)'
+                  borderRadius: '12px',
+                  padding: '20px',
+                  border: '2px solid var(--tg-button-color)',
+                  boxShadow: '0 2px 8px rgba(244, 109, 0, 0.1)'
                 }}
               >
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'flex-start',
-                  marginBottom: '12px'
+                  marginBottom: '16px'
                 }}>
                   <span style={{
                     fontSize: '14px',
@@ -1052,24 +1032,158 @@ const QuestionsTab: React.FC<{
                   </div>
                 </div>
                 
-                <input
-                  type="text"
-                  value={question.title}
-                  onChange={(e) => onQuestionChange(question.id, { title: e.target.value })}
-                  placeholder="Введите вопрос..."
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-section-bg-color)',
+                {/* Поле для ввода вопроса */}
+                <div style={{ marginBottom: '16px' }}>
+                  <input
+                    type="text"
+                    value={question.title}
+                    onChange={(e) => onQuestionChange(question.id, { title: e.target.value })}
+                    placeholder="Введите вопрос..."
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(128, 128, 128, 0.3)',
+                      backgroundColor: 'var(--tg-section-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Поле для описания */}
+                <div style={{ marginBottom: '16px' }}>
+                  <textarea
+                    value={question.description || ''}
+                    onChange={(e) => onQuestionChange(question.id, { description: e.target.value })}
+                    placeholder="Описание вопроса (необязательно)..."
+                    rows={2}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(128, 128, 128, 0.3)',
+                      backgroundColor: 'var(--tg-section-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      resize: 'vertical',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Тип вопроса */}
+                <div style={{ marginBottom: '16px' }}>
+                  <select
+                    value={question.type}
+                    onChange={(e) => onQuestionChange(question.id, { type: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(128, 128, 128, 0.3)',
+                      backgroundColor: 'var(--tg-section-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="text">📝 Короткий ответ</option>
+                    <option value="textarea">📄 Развернутый ответ</option>
+                    <option value="single_choice">🔘 Один из списка</option>
+                    <option value="multiple_choice">☑️ Несколько из списка</option>
+                    <option value="scale">📊 Шкала</option>
+                    <option value="rating">⭐️ Оценка звёздами</option>
+                    <option value="boolean">✅ Да/Нет</option>
+                    <option value="date">📅 Дата</option>
+                    <option value="number">🔟 Число</option>
+                  </select>
+                </div>
+
+                {/* Загрузчик картинки */}
+                <div style={{ marginBottom: '16px' }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          onQuestionChange(question.id, { 
+                            imageUrl: event.target?.result as string,
+                            imageName: file.name 
+                          });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(128, 128, 128, 0.3)',
+                      backgroundColor: 'var(--tg-section-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Обязательный вопрос */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={question.required}
+                    onChange={(e) => onQuestionChange(question.id, { required: e.target.checked })}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <label style={{
+                    fontSize: '14px',
                     color: 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    outline: 'none'
-                  }}
-                />
+                    cursor: 'pointer'
+                  }}>
+                    Обязательный вопрос
+                  </label>
+                </div>
               </div>
             ))}
+            
+            {/* Кнопка добавления вопроса */}
+            {questions.length > 0 && (
+              <div style={{
+                textAlign: 'center',
+                padding: '16px 0'
+              }}>
+                <button
+                  onClick={onAddQuestion}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: 'var(--tg-hint-color)',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    margin: '0 auto'
+                  }}
+                >
+                  <Plus size={16} />
+                  + добавить вопрос
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
