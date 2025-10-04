@@ -236,28 +236,28 @@ const SurveyCreatorPage: React.FC = () => {
           backgroundColor: 'var(--tg-section-bg-color)',
           borderRadius: '12px',
           padding: '4px',
-          gap: '4px'
+          gap: '2px'
         }}>
           <button
             onClick={() => switchTab('settings')}
             style={{
               flex: 1,
-              padding: '12px 16px',
+              padding: '10px 8px',
               borderRadius: '8px',
               border: 'none',
               backgroundColor: activeTab === 'settings' ? 'var(--tg-button-color)' : 'transparent',
               color: activeTab === 'settings' ? 'white' : 'var(--tg-text-color)',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '500',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
+              gap: '4px',
               transition: 'all 0.2s ease'
             }}
           >
-            <Settings size={16} />
+            <Settings size={14} />
             Настройки
           </button>
           
@@ -265,22 +265,22 @@ const SurveyCreatorPage: React.FC = () => {
             onClick={() => switchTab('questions')}
             style={{
               flex: 1,
-              padding: '12px 16px',
+              padding: '10px 8px',
               borderRadius: '8px',
               border: 'none',
               backgroundColor: activeTab === 'questions' ? 'var(--tg-button-color)' : 'transparent',
               color: activeTab === 'questions' ? 'white' : 'var(--tg-text-color)',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '500',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
+              gap: '4px',
               transition: 'all 0.2s ease'
             }}
           >
-            <HelpCircle size={16} />
+            <HelpCircle size={14} />
             Вопросы
           </button>
           
@@ -288,22 +288,22 @@ const SurveyCreatorPage: React.FC = () => {
             onClick={() => switchTab('preview')}
             style={{
               flex: 1,
-              padding: '12px 16px',
+              padding: '10px 8px',
               borderRadius: '8px',
               border: 'none',
               backgroundColor: activeTab === 'preview' ? 'var(--tg-button-color)' : 'transparent',
               color: activeTab === 'preview' ? 'white' : 'var(--tg-text-color)',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '500',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
+              gap: '4px',
               transition: 'all 0.2s ease'
             }}
           >
-            <Eye size={16} />
+            <Eye size={14} />
             Предпросмотр
           </button>
         </div>
@@ -417,10 +417,7 @@ const SettingsTab: React.FC<{
     >
       {/* Основные настройки */}
       <div style={{
-        backgroundColor: 'var(--tg-section-bg-color)',
-        borderRadius: '12px',
-        padding: '20px',
-        marginBottom: '20px'
+        marginBottom: '24px'
       }}>
         <h3 style={{
           fontSize: '16px',
@@ -492,11 +489,7 @@ const SettingsTab: React.FC<{
       </div>
 
       {/* Расширенные настройки */}
-      <div style={{
-        backgroundColor: 'var(--tg-section-bg-color)',
-        borderRadius: '12px',
-        padding: '20px'
-      }}>
+      <div>
         <button
           onClick={onToggleAdvanced}
           style={{
@@ -527,11 +520,396 @@ const SettingsTab: React.FC<{
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
+            style={{ marginBottom: '20px' }}
           >
-            {/* Здесь будут расширенные настройки */}
-            <p style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
-              Расширенные настройки будут добавлены в следующем шаге
-            </p>
+            {/* Язык опроса */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                marginBottom: '8px',
+                color: 'var(--tg-text-color)'
+              }}>
+                Язык опроса
+              </label>
+              <select
+                value={surveyData.language}
+                onChange={(e) => onDataChange('language', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  outline: 'none'
+                }}
+              >
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+                <option value="uk">Українська</option>
+              </select>
+            </div>
+
+            {/* Даты начала и окончания */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginBottom: '8px',
+                  color: 'var(--tg-text-color)'
+                }}>
+                  Дата начала
+                </label>
+                <input
+                  type="date"
+                  value={surveyData.startDate}
+                  onChange={(e) => onDataChange('startDate', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--tg-section-separator-color)',
+                    backgroundColor: 'var(--tg-bg-color)',
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  marginBottom: '8px',
+                  color: 'var(--tg-text-color)'
+                }}>
+                  Дата окончания
+                </label>
+                <input
+                  type="date"
+                  value={surveyData.endDate}
+                  onChange={(e) => onDataChange('endDate', e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--tg-section-separator-color)',
+                    backgroundColor: 'var(--tg-bg-color)',
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Максимальное количество участников */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                marginBottom: '8px',
+                color: 'var(--tg-text-color)'
+              }}>
+                Максимальное количество участников
+              </label>
+              <input
+                type="number"
+                value={surveyData.maxParticipants}
+                onChange={(e) => onDataChange('maxParticipants', e.target.value)}
+                placeholder="Без ограничений"
+                min="1"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+
+            {/* Настройки опроса */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Анонимные ответы */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0',
+                borderBottom: '1px solid var(--tg-section-separator-color)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Анонимные ответы</div>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                      Разрешить участникам отвечать анонимно
+                    </div>
+                  </div>
+                </div>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '50px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={surveyData.allowAnonymous}
+                    onChange={(e) => onDataChange('allowAnonymous', e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: surveyData.allowAnonymous ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: surveyData.allowAnonymous ? '27px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+
+              {/* Показывать прогресс */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0',
+                borderBottom: '1px solid var(--tg-section-separator-color)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Показывать прогресс</div>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                      Отображать прогресс прохождения опроса
+                    </div>
+                  </div>
+                </div>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '50px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={surveyData.showProgress}
+                    onChange={(e) => onDataChange('showProgress', e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: surveyData.showProgress ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: surveyData.showProgress ? '27px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+
+              {/* Перемешивать вопросы */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0',
+                borderBottom: '1px solid var(--tg-section-separator-color)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Перемешивать вопросы</div>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                      Случайный порядок вопросов для каждого участника
+                    </div>
+                  </div>
+                </div>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '50px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={surveyData.randomizeQuestions}
+                    onChange={(e) => onDataChange('randomizeQuestions', e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: surveyData.randomizeQuestions ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: surveyData.randomizeQuestions ? '27px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+
+              {/* Один ответ на пользователя */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0',
+                borderBottom: '1px solid var(--tg-section-separator-color)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Один ответ на пользователя</div>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                      Запретить повторное участие
+                    </div>
+                  </div>
+                </div>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '50px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={surveyData.oneResponsePerUser}
+                    onChange={(e) => onDataChange('oneResponsePerUser', e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: surveyData.oneResponsePerUser ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: surveyData.oneResponsePerUser ? '27px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+
+              {/* Собирать данные Telegram */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Собирать данные Telegram</div>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                      Получать информацию о пользователе Telegram
+                    </div>
+                  </div>
+                </div>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '50px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={surveyData.collectTelegramData}
+                    onChange={(e) => onDataChange('collectTelegramData', e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: surveyData.collectTelegramData ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: surveyData.collectTelegramData ? '27px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+            </div>
           </motion.div>
         )}
       </div>
@@ -553,11 +931,7 @@ const QuestionsTab: React.FC<{
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div style={{
-        backgroundColor: 'var(--tg-section-bg-color)',
-        borderRadius: '12px',
-        padding: '20px'
-      }}>
+      <div>
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -716,11 +1090,7 @@ const PreviewTab: React.FC<{
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div style={{
-        backgroundColor: 'var(--tg-section-bg-color)',
-        borderRadius: '12px',
-        padding: '20px'
-      }}>
+      <div>
         <h3 style={{
           fontSize: '16px',
           fontWeight: '600',
