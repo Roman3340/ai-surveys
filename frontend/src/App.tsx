@@ -2,13 +2,10 @@ import { useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/Home/HomePage';
 import CreateSurveyPage from './pages/Survey/CreateSurveyPage';
-import ManualSurveyPage from './pages/Survey/ManualSurveyPage';
-import SurveySettingsPage from './pages/Survey/SurveySettingsPage';
+import SurveyCreatorPage from './pages/Survey/SurveyCreatorPage';
 import AISurveyPage from './pages/Survey/AISurveyPage';
 import AIBusinessPage from './pages/Survey/AIBusinessPage';
 import AIPersonalPage from './pages/Survey/AIPersonalPage';
-import QuestionBuilder from './pages/Survey/QuestionBuilder';
-import SurveyPreview from './pages/Survey/SurveyPreview';
 import { SurveyPublishedPage } from './pages/Survey/SurveyPublishedPage';
 import MotivationPage from './pages/Survey/MotivationPage';
 import SettingsPage from './pages/Settings/SettingsPage';
@@ -77,11 +74,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/survey/create" element={<CreateSurveyPage />} />
-          <Route path="/survey/create/manual" element={<ManualSurveyPage />} />
-          <Route path="/survey/create/manual/settings" element={<SurveySettingsPage />} />
-          <Route path="/survey/create/manual/motivation" element={<MotivationPage />} />
-          <Route path="/survey/create/manual/questions" element={<QuestionBuilder />} />
-          <Route path="/survey/create/manual/preview" element={<SurveyPreview />} />
+          <Route path="/survey/create/manual" element={<SurveyCreatorPage />} />
           <Route path="/survey/create/ai" element={<AISurveyPage />} />
           <Route path="/survey/create/ai/business" element={<AIBusinessPage />} />
           <Route path="/survey/create/ai/personal" element={<AIPersonalPage />} />
