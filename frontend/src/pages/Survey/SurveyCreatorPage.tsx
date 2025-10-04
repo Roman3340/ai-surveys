@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Settings, HelpCircle, Eye, Plus, Trash2, Copy } from 'lucide-react';
+import { Settings, HelpCircle, Eye, Plus, Trash2, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveSettings, saveQuestions, clearDraft } from '../../utils/surveyDraft';
@@ -150,6 +150,24 @@ const SurveyCreatorPage: React.FC = () => {
       };
       setQuestions(prev => [...prev, newQuestion]);
       hapticFeedback?.light();
+    }
+  };
+
+  const moveQuestionUp = (questionId: string) => {
+    const index = questions.findIndex(q => q.id === questionId);
+    if (index > 0) {
+      const newQuestions = [...questions];
+      [newQuestions[index - 1], newQuestions[index]] = [newQuestions[index], newQuestions[index - 1]];
+      setQuestions(newQuestions);
+    }
+  };
+
+  const moveQuestionDown = (questionId: string) => {
+    const index = questions.findIndex(q => q.id === questionId);
+    if (index < questions.length - 1) {
+      const newQuestions = [...questions];
+      [newQuestions[index], newQuestions[index + 1]] = [newQuestions[index + 1], newQuestions[index]];
+      setQuestions(newQuestions);
     }
   };
 
@@ -330,6 +348,8 @@ const SurveyCreatorPage: React.FC = () => {
             onAddQuestion={addQuestion}
             onDeleteQuestion={deleteQuestion}
             onDuplicateQuestion={duplicateQuestion}
+            onMoveQuestionUp={moveQuestionUp}
+            onMoveQuestionDown={moveQuestionDown}
           />
         )}
         
@@ -452,8 +472,8 @@ const SettingsTab: React.FC<{
               width: '100%',
               padding: '12px 16px',
               borderRadius: '8px',
-              border: '1px solid rgba(128, 128, 128, 0.3)',
-              backgroundColor: 'var(--tg-bg-color)',
+              border: 'none',
+              backgroundColor: 'var(--tg-section-bg-color)',
               color: 'var(--tg-text-color)',
               fontSize: '16px',
               outline: 'none'
@@ -480,8 +500,8 @@ const SettingsTab: React.FC<{
               width: '100%',
               padding: '12px 16px',
               borderRadius: '8px',
-              border: '1px solid rgba(128, 128, 128, 0.3)',
-              backgroundColor: 'var(--tg-bg-color)',
+              border: 'none',
+              backgroundColor: 'var(--tg-section-bg-color)',
               color: 'var(--tg-text-color)',
               fontSize: '16px',
               resize: 'vertical',
@@ -543,8 +563,8 @@ const SettingsTab: React.FC<{
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: '8px',
-                  border: '1px solid rgba(128, 128, 128, 0.3)',
-                  backgroundColor: 'var(--tg-bg-color)',
+                  border: 'none',
+                  backgroundColor: 'var(--tg-section-bg-color)',
                   color: 'var(--tg-text-color)',
                   fontSize: '16px',
                   outline: 'none'
@@ -575,8 +595,8 @@ const SettingsTab: React.FC<{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-bg-color)',
+                    border: 'none',
+                    backgroundColor: 'var(--tg-section-bg-color)',
                     color: 'var(--tg-text-color)',
                     fontSize: '16px',
                     outline: 'none'
@@ -601,8 +621,8 @@ const SettingsTab: React.FC<{
                     width: '100%',
                     padding: '12px 16px',
                     borderRadius: '8px',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    backgroundColor: 'var(--tg-bg-color)',
+                    border: 'none',
+                    backgroundColor: 'var(--tg-section-bg-color)',
                     color: 'var(--tg-text-color)',
                     fontSize: '16px',
                     outline: 'none'
@@ -632,8 +652,8 @@ const SettingsTab: React.FC<{
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-bg-color)',
+                  border: 'none',
+                  backgroundColor: 'var(--tg-section-bg-color)',
                   color: 'var(--tg-text-color)',
                   fontSize: '16px',
                   outline: 'none'
@@ -795,7 +815,7 @@ const SettingsTab: React.FC<{
                       content: '""',
                       height: '18px',
                       width: '18px',
-                      left: surveyData.randomizeQuestions ? '27px' : '3px',
+                      left: surveyData.randomizeQuestions ? '26px' : '3px',
                       bottom: '3px',
                       backgroundColor: 'white',
                       borderRadius: '50%',
@@ -926,7 +946,9 @@ const QuestionsTab: React.FC<{
   onAddQuestion: () => void;
   onDeleteQuestion: (questionId: string) => void;
   onDuplicateQuestion: (questionId: string) => void;
-}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion }) => {
+  onMoveQuestionUp: (questionId: string) => void;
+  onMoveQuestionDown: (questionId: string) => void;
+}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -981,11 +1003,11 @@ const QuestionsTab: React.FC<{
               <div
                 key={question.id}
                 style={{
-                  backgroundColor: 'var(--tg-bg-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
                   borderRadius: '12px',
                   padding: '20px',
-                  border: '2px solid var(--tg-button-color)',
-                  boxShadow: '0 2px 8px rgba(244, 109, 0, 0.1)'
+                  border: 'none',
+                  boxShadow: 'none'
                 }}
               >
                 <div style={{
@@ -994,13 +1016,55 @@ const QuestionsTab: React.FC<{
                   alignItems: 'flex-start',
                   marginBottom: '16px'
                 }}>
-                  <span style={{
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: 'var(--tg-hint-color)'
-                  }}>
-                    Вопрос {index + 1}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: 'var(--tg-hint-color)'
+                    }}>
+                      Вопрос {index + 1}
+                    </span>
+                    
+                    {/* Стрелочки для изменения порядка */}
+                    {questions.length > 1 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        {index > 0 && (
+                          <button
+                            onClick={() => onMoveQuestionUp(question.id)}
+                            style={{
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: 'var(--tg-hint-color)',
+                              padding: '2px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <ChevronUp size={12} />
+                          </button>
+                        )}
+                        {index < questions.length - 1 && (
+                          <button
+                            onClick={() => onMoveQuestionDown(question.id)}
+                            style={{
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: 'var(--tg-hint-color)',
+                              padding: '2px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <ChevronDown size={12} />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
@@ -1043,8 +1107,8 @@ const QuestionsTab: React.FC<{
                       width: '100%',
                       padding: '12px 16px',
                       borderRadius: '8px',
-                      border: '1px solid rgba(128, 128, 128, 0.3)',
-                      backgroundColor: 'var(--tg-section-bg-color)',
+                      border: 'none',
+                      backgroundColor: 'var(--tg-bg-color)',
                       color: 'var(--tg-text-color)',
                       fontSize: '16px',
                       outline: 'none'
@@ -1063,8 +1127,8 @@ const QuestionsTab: React.FC<{
                       width: '100%',
                       padding: '12px 16px',
                       borderRadius: '8px',
-                      border: '1px solid rgba(128, 128, 128, 0.3)',
-                      backgroundColor: 'var(--tg-section-bg-color)',
+                      border: 'none',
+                      backgroundColor: 'var(--tg-bg-color)',
                       color: 'var(--tg-text-color)',
                       fontSize: '16px',
                       resize: 'vertical',
@@ -1082,8 +1146,8 @@ const QuestionsTab: React.FC<{
                       width: '100%',
                       padding: '12px 16px',
                       borderRadius: '8px',
-                      border: '1px solid rgba(128, 128, 128, 0.3)',
-                      backgroundColor: 'var(--tg-section-bg-color)',
+                      border: 'none',
+                      backgroundColor: 'var(--tg-bg-color)',
                       color: 'var(--tg-text-color)',
                       fontSize: '16px',
                       outline: 'none'
@@ -1123,8 +1187,8 @@ const QuestionsTab: React.FC<{
                       width: '100%',
                       padding: '12px 16px',
                       borderRadius: '8px',
-                      border: '1px solid rgba(128, 128, 128, 0.3)',
-                      backgroundColor: 'var(--tg-section-bg-color)',
+                      border: 'none',
+                      backgroundColor: 'var(--tg-bg-color)',
                       color: 'var(--tg-text-color)',
                       fontSize: '16px',
                       outline: 'none'
@@ -1180,7 +1244,7 @@ const QuestionsTab: React.FC<{
                   }}
                 >
                   <Plus size={16} />
-                  + добавить вопрос
+                  Создать вопрос
                 </button>
               </div>
             )}
@@ -1283,8 +1347,8 @@ const PreviewTab: React.FC<{
                       width: '100%',
                       padding: '12px 16px',
                       borderRadius: '8px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'var(--tg-bg-color)',
+                      border: 'none',
+                      backgroundColor: 'var(--tg-section-bg-color)',
                       color: 'var(--tg-text-color)',
                       fontSize: '16px',
                       outline: 'none'
