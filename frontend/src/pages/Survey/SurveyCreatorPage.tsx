@@ -1961,26 +1961,12 @@ const renderQuestionInput = (question: Question) => {
                 style={{
                   width: '100%',
                   height: '8px',
-                  background: `linear-gradient(to right, var(--tg-button-color) 0%, var(--tg-button-color) 50%, #666 50%, #666 100%)`,
+                  background: '#666', // Простая серая линия
                   borderRadius: '4px',
                   outline: 'none',
                   appearance: 'none'
                 }}
               />
-              {/* Показываем выбранное значение только если это не min/max */}
-              {scaleValue !== min && scaleValue !== max && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  left: `${((scaleValue - min) / (max - min)) * 100}%`,
-                  transform: 'translateX(-50%)',
-                  fontSize: '12px',
-                  color: 'var(--tg-button-color)',
-                  fontWeight: 'bold'
-                }}>
-                  {scaleValue}
-                </div>
-              )}
             </div>
             <span style={{ 
               fontSize: '16px', 
@@ -1992,6 +1978,23 @@ const renderQuestionInput = (question: Question) => {
               {max}
             </span>
           </div>
+          
+          {/* Показываем выбранное значение на отдельной строке */}
+          {scaleValue !== min && scaleValue !== max && (
+            <div style={{ 
+              textAlign: 'center',
+              marginBottom: '8px'
+            }}>
+              <span style={{
+                fontSize: '16px',
+                color: 'var(--tg-button-color)',
+                fontWeight: 'bold'
+              }}>
+                {scaleValue}
+              </span>
+            </div>
+          )}
+          
           {(question.scaleLabels?.min || question.scaleLabels?.max) && (
             <div style={{ 
               display: 'flex', 
