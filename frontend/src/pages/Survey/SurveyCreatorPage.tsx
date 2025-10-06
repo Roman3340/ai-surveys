@@ -138,7 +138,7 @@ const SurveyCreatorPage: React.FC = () => {
           // Автоматически создаем варианты для choice типов
           if (updates.type === 'single_choice' || updates.type === 'multiple_choice') {
             if (!updatedQuestion.options || updatedQuestion.options.length === 0) {
-              updatedQuestion.options = ['Вариант 1', 'Вариант 2'];
+              updatedQuestion.options = ['', '']; // Пустые строки вместо предзаполненного текста
             }
           }
           
@@ -173,9 +173,8 @@ const SurveyCreatorPage: React.FC = () => {
   const addOption = (questionId: string) => {
     const question = questions.find(q => q.id === questionId);
     if (question) {
-      const newOption = `Вариант ${(question.options?.length || 0) + 1}`;
       handleQuestionChange(questionId, {
-        options: [...(question.options || []), newOption]
+        options: [...(question.options || []), ''] // Пустая строка вместо предзаполненного текста
       });
     }
   };
@@ -1413,6 +1412,8 @@ const QuestionsTab: React.FC<{
                         e.currentTarget.blur();
                       }
                     }}
+                    onFocus={() => onKeyboardStateChange(true)}
+                    onBlur={() => onKeyboardStateChange(false)}
                     style={{
                       width: '100%',
                       padding: '12px 16px',
@@ -1468,7 +1469,7 @@ const QuestionsTab: React.FC<{
                       Варианты ответов
                     </label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {(question.options || ['Вариант 1', 'Вариант 2']).map((option, index) => (
+                      {(question.options || ['', '']).map((option, index) => (
                         <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <input
                             type="text"
@@ -1485,6 +1486,8 @@ const QuestionsTab: React.FC<{
                                 e.currentTarget.blur();
                               }
                             }}
+                            onFocus={() => onKeyboardStateChange(true)}
+                            onBlur={() => onKeyboardStateChange(false)}
                             style={{
                               flex: 1,
                               padding: '8px 12px',
@@ -1566,6 +1569,8 @@ const QuestionsTab: React.FC<{
                               e.currentTarget.blur();
                             }
                           }}
+                          onFocus={() => onKeyboardStateChange(true)}
+                          onBlur={() => onKeyboardStateChange(false)}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
@@ -1592,12 +1597,15 @@ const QuestionsTab: React.FC<{
                           value={question.scaleMax || 10}
                           onChange={(e) => onQuestionChange(question.id, { scaleMax: parseInt(e.target.value) || 10 })}
                           min="2"
+                          max="20"
                           enterKeyHint="done"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.currentTarget.blur();
                             }
                           }}
+                          onFocus={() => onKeyboardStateChange(true)}
+                          onBlur={() => onKeyboardStateChange(false)}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
@@ -1637,6 +1645,8 @@ const QuestionsTab: React.FC<{
                               e.currentTarget.blur();
                             }
                           }}
+                          onFocus={() => onKeyboardStateChange(true)}
+                          onBlur={() => onKeyboardStateChange(false)}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
@@ -1674,6 +1684,8 @@ const QuestionsTab: React.FC<{
                               e.currentTarget.blur();
                             }
                           }}
+                          onFocus={() => onKeyboardStateChange(true)}
+                          onBlur={() => onKeyboardStateChange(false)}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
@@ -1875,7 +1887,7 @@ const renderQuestionInput = (question: Question) => {
     case 'single_choice':
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {(question.options || ['Вариант 1', 'Вариант 2']).map((option, index) => (
+          {(question.options || ['', '']).map((option, index) => (
             <label key={index} style={{
               display: 'flex',
               alignItems: 'center',
@@ -1887,7 +1899,9 @@ const renderQuestionInput = (question: Question) => {
                 name={`question_${question.id}`}
                 style={{ margin: 0 }}
               />
-              <span style={{ color: 'var(--tg-text-color)' }}>{option}</span>
+              <span style={{ color: 'var(--tg-text-color)' }}>
+                {option || `Вариант ${index + 1}`}
+              </span>
             </label>
           ))}
         </div>
@@ -1896,7 +1910,7 @@ const renderQuestionInput = (question: Question) => {
     case 'multiple_choice':
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {(question.options || ['Вариант 1', 'Вариант 2']).map((option, index) => (
+          {(question.options || ['', '']).map((option, index) => (
             <label key={index} style={{
               display: 'flex',
               alignItems: 'center',
@@ -1907,7 +1921,9 @@ const renderQuestionInput = (question: Question) => {
                 type="checkbox"
                 style={{ margin: 0 }}
               />
-              <span style={{ color: 'var(--tg-text-color)' }}>{option}</span>
+              <span style={{ color: 'var(--tg-text-color)' }}>
+                {option || `Вариант ${index + 1}`}
+              </span>
             </label>
           ))}
         </div>
@@ -1915,7 +1931,7 @@ const renderQuestionInput = (question: Question) => {
     
     case 'scale':
       const min = question.scaleMin || 1;
-      const max = question.scaleMax || 10;
+      const max = Math.min(question.scaleMax || 10, 20); // Ограничиваем максимум до 20
       const [scaleValue, setScaleValue] = React.useState(Math.floor((min + max) / 2));
       
       return (
@@ -1929,55 +1945,52 @@ const renderQuestionInput = (question: Question) => {
             <span style={{ 
               fontSize: '16px', 
               fontWeight: '600',
-              color: 'var(--tg-text-color)',
+              color: scaleValue === min ? 'var(--tg-button-color)' : 'var(--tg-text-color)',
               minWidth: '20px',
               textAlign: 'center'
             }}>
               {min}
             </span>
-            <input
-              type="range"
-              min={min}
-              max={max}
-              value={scaleValue}
-              onChange={(e) => setScaleValue(parseInt(e.target.value))}
-              style={{
-                flex: 1,
-                height: '8px',
-                background: `linear-gradient(to right, var(--tg-button-color) 0%, var(--tg-button-color) 50%, var(--tg-section-separator-color) 50%, var(--tg-section-separator-color) 100%)`,
-                borderRadius: '4px',
-                outline: 'none',
-                appearance: 'none'
-              }}
-            />
+            <div style={{ flex: 1, position: 'relative' }}>
+              <input
+                type="range"
+                min={min}
+                max={max}
+                value={scaleValue}
+                onChange={(e) => setScaleValue(parseInt(e.target.value))}
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  background: `linear-gradient(to right, var(--tg-button-color) 0%, var(--tg-button-color) 50%, #666 50%, #666 100%)`,
+                  borderRadius: '4px',
+                  outline: 'none',
+                  appearance: 'none'
+                }}
+              />
+              {/* Показываем выбранное значение только если это не min/max */}
+              {scaleValue !== min && scaleValue !== max && (
+                <div style={{
+                  position: 'absolute',
+                  top: '16px',
+                  left: `${((scaleValue - min) / (max - min)) * 100}%`,
+                  transform: 'translateX(-50%)',
+                  fontSize: '12px',
+                  color: 'var(--tg-button-color)',
+                  fontWeight: 'bold'
+                }}>
+                  {scaleValue}
+                </div>
+              )}
+            </div>
             <span style={{ 
               fontSize: '16px', 
               fontWeight: '600',
-              color: 'var(--tg-text-color)',
+              color: scaleValue === max ? 'var(--tg-button-color)' : 'var(--tg-text-color)',
               minWidth: '20px',
               textAlign: 'center'
             }}>
               {max}
             </span>
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            fontSize: '12px',
-            color: 'var(--tg-hint-color)',
-            marginBottom: '8px'
-          }}>
-            {Array.from({ length: max - min + 1 }, (_, i) => min + i).map(num => (
-              <span 
-                key={num} 
-                style={{ 
-                  color: num === scaleValue ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
-                  fontWeight: num === scaleValue ? 'bold' : 'normal'
-                }}
-              >
-                {num}
-              </span>
-            ))}
           </div>
           {(question.scaleLabels?.min || question.scaleLabels?.max) && (
             <div style={{ 
