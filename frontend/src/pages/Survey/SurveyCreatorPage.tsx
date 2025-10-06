@@ -14,10 +14,13 @@ interface Question {
   title: string;
   description?: string;
   required: boolean;
-  options?: any[];
+  options?: string[]; // Для single_choice и multiple_choice
   imageUrl?: string;
   imageName?: string;
   validation?: Record<string, any>;
+  scaleMin?: number; // Для scale
+  scaleMax?: number; // Для scale
+  scaleLabels?: { min: string; max: string }; // Для scale
 }
 
 // Типы для настроек
@@ -37,6 +40,12 @@ interface SurveyData {
   oneResponsePerUser: boolean;
   collectTelegramData: boolean;
   creationType: 'manual';
+  // Мотивация
+  motivationEnabled: boolean;
+  motivationType: string;
+  motivationDetails: string;
+  // UI состояние
+  isKeyboardOpen?: boolean;
 }
 
 type TabType = 'settings' | 'questions' | 'preview';
@@ -65,7 +74,10 @@ const SurveyCreatorPage: React.FC = () => {
     randomizeQuestions: false,
     oneResponsePerUser: true,
     collectTelegramData: false,
-    creationType: 'manual'
+    creationType: 'manual',
+    motivationEnabled: false,
+    motivationType: 'discount',
+    motivationDetails: ''
   });
   
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -133,6 +145,14 @@ const SurveyCreatorPage: React.FC = () => {
     };
     setQuestions(prev => [...prev, newQuestion]);
     hapticFeedback?.light();
+    
+    // Автоскролл к новому вопросу
+    setTimeout(() => {
+      const questionElement = document.getElementById(`question-${newQuestion.id}`);
+      if (questionElement) {
+        questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const deleteQuestion = (questionId: string) => {
@@ -350,6 +370,7 @@ const SurveyCreatorPage: React.FC = () => {
             onDuplicateQuestion={duplicateQuestion}
             onMoveQuestionUp={moveQuestionUp}
             onMoveQuestionDown={moveQuestionDown}
+            onKeyboardStateChange={(isOpen) => setSurveyData(prev => ({ ...prev, isKeyboardOpen: isOpen }))}
           />
         )}
         
@@ -364,15 +385,16 @@ const SurveyCreatorPage: React.FC = () => {
       </div>
 
       {/* Кнопка публикации */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: '16px',
-        backgroundColor: 'var(--tg-bg-color)',
-        borderTop: '1px solid var(--tg-section-separator-color)'
-      }}>
+      {!surveyData.isKeyboardOpen && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '16px',
+          backgroundColor: 'var(--tg-bg-color)',
+          borderTop: '1px solid var(--tg-section-separator-color)'
+        }}>
         <button
           onClick={handlePublish}
           disabled={!isReadyToPublish || isPublishing}
@@ -420,7 +442,8 @@ const SurveyCreatorPage: React.FC = () => {
             Заполните название и добавьте хотя бы один вопрос
           </p>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -469,6 +492,11 @@ const SettingsTab: React.FC<{
             onChange={(e) => onDataChange('title', e.target.value)}
             placeholder="Введите название опроса..."
             enterKeyHint="done"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.currentTarget.blur();
+              }
+            }}
             style={{
               width: '100%',
               padding: '12px 16px',
@@ -498,6 +526,11 @@ const SettingsTab: React.FC<{
             placeholder="Описание опроса..."
             rows={4}
             enterKeyHint="done"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.ctrlKey) {
+                e.currentTarget.blur();
+              }
+            }}
             style={{
               width: '100%',
               padding: '12px 16px',
@@ -886,7 +919,8 @@ const SettingsTab: React.FC<{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '12px 0'
+                padding: '12px 0',
+                borderBottom: '1px solid var(--tg-section-separator-color)'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div>
@@ -933,6 +967,140 @@ const SettingsTab: React.FC<{
                   </span>
                 </label>
               </div>
+
+              {/* Мотивация */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Мотивация</div>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                      Респонденты будут охотнее отвечать, мы их предупредим что они получат награду за прохождение
+                    </div>
+                  </div>
+                </div>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '50px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={surveyData.motivationEnabled}
+                    onChange={(e) => onDataChange('motivationEnabled', e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: surveyData.motivationEnabled ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: surveyData.motivationEnabled ? '27px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+
+              {/* Настройки мотивации */}
+              {surveyData.motivationEnabled && (
+                <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderRadius: '8px' }}>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      marginBottom: '8px',
+                      color: 'var(--tg-text-color)'
+                    }}>
+                      Тип награды
+                    </label>
+                    <select
+                      value={surveyData.motivationType}
+                      onChange={(e) => onDataChange('motivationType', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: 'var(--tg-section-bg-color)',
+                        color: 'var(--tg-text-color)',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value="discount">Скидка</option>
+                      <option value="promo">Промокод</option>
+                      <option value="stars">Звезды Telegram</option>
+                      <option value="gift">Подарок</option>
+                      <option value="other">Другое</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      marginBottom: '8px',
+                      color: 'var(--tg-text-color)'
+                    }}>
+                      {surveyData.motivationType === 'discount' && 'Размер скидки'}
+                      {surveyData.motivationType === 'promo' && 'Что за промокод'}
+                      {surveyData.motivationType === 'stars' && 'Сколько звезд одному пользователю'}
+                      {surveyData.motivationType === 'gift' && 'Что за подарок'}
+                      {surveyData.motivationType === 'other' && 'Пояснение к другому награждению'}
+                    </label>
+                    <input
+                      type="text"
+                      value={surveyData.motivationDetails}
+                      onChange={(e) => onDataChange('motivationDetails', e.target.value)}
+                      placeholder={
+                        surveyData.motivationType === 'discount' ? 'Например: 20%' :
+                        surveyData.motivationType === 'promo' ? 'Например: SAVE20' :
+                        surveyData.motivationType === 'stars' ? 'Например: 50' :
+                        surveyData.motivationType === 'gift' ? 'Например: Футболка с логотипом' :
+                        'Например: Бесплатная консультация'
+                      }
+                      enterKeyHint="done"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: 'var(--tg-section-bg-color)',
+                        color: 'var(--tg-text-color)',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -950,7 +1118,8 @@ const QuestionsTab: React.FC<{
   onDuplicateQuestion: (questionId: string) => void;
   onMoveQuestionUp: (questionId: string) => void;
   onMoveQuestionDown: (questionId: string) => void;
-}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown }) => {
+  onKeyboardStateChange: (isOpen: boolean) => void;
+}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onKeyboardStateChange }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1004,6 +1173,7 @@ const QuestionsTab: React.FC<{
             {questions.map((question, index) => (
               <div
                 key={question.id}
+                id={`question-${question.id}`}
                 style={{
                   backgroundColor: 'var(--tg-section-bg-color)',
                   borderRadius: '12px',
@@ -1106,6 +1276,13 @@ const QuestionsTab: React.FC<{
                     onChange={(e) => onQuestionChange(question.id, { title: e.target.value })}
                     placeholder="Введите вопрос..."
                     enterKeyHint="done"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    onFocus={() => onKeyboardStateChange(true)}
+                    onBlur={() => onKeyboardStateChange(false)}
                     style={{
                       width: '100%',
                       padding: '12px 16px',
@@ -1127,6 +1304,11 @@ const QuestionsTab: React.FC<{
                     placeholder="Описание вопроса (необязательно)..."
                     rows={2}
                     enterKeyHint="done"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.ctrlKey) {
+                        e.currentTarget.blur();
+                      }
+                    }}
                     style={{
                       width: '100%',
                       padding: '12px 16px',
@@ -1169,41 +1351,319 @@ const QuestionsTab: React.FC<{
                   </select>
                 </div>
 
+                {/* Настройки для разных типов вопросов */}
+                {(question.type === 'single_choice' || question.type === 'multiple_choice') && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      marginBottom: '8px',
+                      color: 'var(--tg-text-color)'
+                    }}>
+                      Варианты ответов
+                    </label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {(question.options || ['Вариант 1', 'Вариант 2']).map((option, index) => (
+                        <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            value={option}
+                            onChange={(e) => {
+                              const newOptions = [...(question.options || [])];
+                              newOptions[index] = e.target.value;
+                              onQuestionChange(question.id, { options: newOptions });
+                            }}
+                            placeholder={`Вариант ${index + 1}`}
+                            enterKeyHint="done"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.currentTarget.blur();
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              backgroundColor: 'var(--tg-bg-color)',
+                              color: 'var(--tg-text-color)',
+                              fontSize: '14px',
+                              outline: 'none'
+                            }}
+                          />
+                          <button
+                            onClick={() => {
+                              const newOptions = [...(question.options || [])];
+                              newOptions.splice(index, 1);
+                              onQuestionChange(question.id, { options: newOptions });
+                            }}
+                            style={{
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              color: 'var(--tg-hint-color)',
+                              cursor: 'pointer',
+                              padding: '4px'
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => {
+                          const newOptions = [...(question.options || []), `Вариант ${(question.options || []).length + 1}`];
+                          onQuestionChange(question.id, { options: newOptions });
+                        }}
+                        style={{
+                          backgroundColor: 'transparent',
+                          border: '1px dashed var(--tg-section-separator-color)',
+                          borderRadius: '6px',
+                          padding: '8px 12px',
+                          color: 'var(--tg-hint-color)',
+                          cursor: 'pointer',
+                          fontSize: '14px'
+                        }}
+                      >
+                        + Добавить вариант
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {question.type === 'scale' && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      marginBottom: '8px',
+                      color: 'var(--tg-text-color)'
+                    }}>
+                      Настройки шкалы
+                    </label>
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '12px',
+                          color: 'var(--tg-hint-color)',
+                          marginBottom: '4px'
+                        }}>
+                          От
+                        </label>
+                        <input
+                          type="number"
+                          value={question.scaleMin || 1}
+                          onChange={(e) => onQuestionChange(question.id, { scaleMin: parseInt(e.target.value) || 1 })}
+                          min="1"
+                          enterKeyHint="done"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: 'var(--tg-bg-color)',
+                            color: 'var(--tg-text-color)',
+                            fontSize: '14px',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '12px',
+                          color: 'var(--tg-hint-color)',
+                          marginBottom: '4px'
+                        }}>
+                          До
+                        </label>
+                        <input
+                          type="number"
+                          value={question.scaleMax || 10}
+                          onChange={(e) => onQuestionChange(question.id, { scaleMax: parseInt(e.target.value) || 10 })}
+                          min="2"
+                          enterKeyHint="done"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: 'var(--tg-bg-color)',
+                            color: 'var(--tg-text-color)',
+                            fontSize: '14px',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '12px',
+                          color: 'var(--tg-hint-color)',
+                          marginBottom: '4px'
+                        }}>
+                          Подпись минимума
+                        </label>
+                        <input
+                          type="text"
+                          value={question.scaleLabels?.min || ''}
+                          onChange={(e) => onQuestionChange(question.id, { 
+                            scaleLabels: { 
+                              min: e.target.value,
+                              max: question.scaleLabels?.max || ''
+                            } 
+                          })}
+                          placeholder="Например: Ужасно"
+                          enterKeyHint="done"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: 'var(--tg-bg-color)',
+                            color: 'var(--tg-text-color)',
+                            fontSize: '14px',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '12px',
+                          color: 'var(--tg-hint-color)',
+                          marginBottom: '4px'
+                        }}>
+                          Подпись максимума
+                        </label>
+                        <input
+                          type="text"
+                          value={question.scaleLabels?.max || ''}
+                          onChange={(e) => onQuestionChange(question.id, { 
+                            scaleLabels: { 
+                              min: question.scaleLabels?.min || '',
+                              max: e.target.value
+                            } 
+                          })}
+                          placeholder="Например: Отлично"
+                          enterKeyHint="done"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: 'var(--tg-bg-color)',
+                            color: 'var(--tg-text-color)',
+                            fontSize: '14px',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Загрузчик картинки */}
                 <div style={{ marginBottom: '16px' }}>
-                  <label style={{
-                    display: 'block',
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: 'var(--tg-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    fontWeight: '500'
-                  }}>
-                    📷 Добавить картинку
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            onQuestionChange(question.id, { 
-                              imageUrl: event.target?.result as string,
-                              imageName: file.name 
-                            });
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
+                  {question.imageUrl ? (
+                    <div>
+                      <div style={{
+                        position: 'relative',
+                        marginBottom: '8px'
+                      }}>
+                        <img
+                          src={question.imageUrl}
+                          alt="Загруженная картинка"
+                          style={{
+                            width: '100%',
+                            maxHeight: '200px',
+                            objectFit: 'cover',
+                            borderRadius: '8px'
+                          }}
+                        />
+                        <button
+                          onClick={() => onQuestionChange(question.id, { imageUrl: undefined, imageName: undefined })}
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            backgroundColor: '#ff4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '50%',
+                            width: '28px',
+                            height: '28px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+                          }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      backgroundColor: 'var(--tg-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      fontWeight: '500'
+                    }}>
+                      📷 Добавить картинку
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              onQuestionChange(question.id, { 
+                                imageUrl: event.target?.result as string,
+                                imageName: file.name 
+                              });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  )}
                 </div>
 
                 {/* Обязательный вопрос */}
@@ -1344,43 +1804,99 @@ const renderQuestionInput = (question: Question) => {
       );
     
     case 'scale':
+      const min = question.scaleMin || 1;
+      const max = question.scaleMax || 10;
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>1</span>
-          <input
-            type="range"
-            min="1"
-            max="10"
-            defaultValue="5"
-            style={{
-              flex: 1,
-              height: '6px',
-              background: 'var(--tg-section-separator-color)',
-              borderRadius: '3px',
-              outline: 'none'
-            }}
-          />
-          <span style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>10</span>
+        <div style={{ 
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          padding: '20px',
+          border: '1px solid var(--tg-section-separator-color)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <span style={{ 
+              fontSize: '16px', 
+              fontWeight: '600',
+              color: 'var(--tg-text-color)',
+              minWidth: '20px',
+              textAlign: 'center'
+            }}>
+              {min}
+            </span>
+            <input
+              type="range"
+              min={min}
+              max={max}
+              defaultValue={Math.floor((min + max) / 2)}
+              style={{
+                flex: 1,
+                height: '8px',
+                background: `linear-gradient(to right, var(--tg-button-color) 0%, var(--tg-button-color) 50%, var(--tg-section-separator-color) 50%, var(--tg-section-separator-color) 100%)`,
+                borderRadius: '4px',
+                outline: 'none',
+                appearance: 'none'
+              }}
+            />
+            <span style={{ 
+              fontSize: '16px', 
+              fontWeight: '600',
+              color: 'var(--tg-text-color)',
+              minWidth: '20px',
+              textAlign: 'center'
+            }}>
+              {max}
+            </span>
+          </div>
+          {(question.scaleLabels?.min || question.scaleLabels?.max) && (
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              fontSize: '12px',
+              color: 'var(--tg-hint-color)'
+            }}>
+              <span>{question.scaleLabels?.min || ''}</span>
+              <span>{question.scaleLabels?.max || ''}</span>
+            </div>
+          )}
         </div>
       );
     
     case 'rating':
       return (
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: 'var(--tg-hint-color)'
-              }}
-            >
-              ⭐
-            </button>
-          ))}
+        <div style={{ 
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          padding: '20px',
+          border: '1px solid var(--tg-section-separator-color)'
+        }}>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => {
+                  // Здесь можно добавить логику сохранения выбранной оценки
+                  console.log(`Selected ${star} stars`);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '32px',
+                  cursor: 'pointer',
+                  color: 'var(--tg-hint-color)',
+                  transition: 'color 0.2s ease',
+                  padding: '4px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--tg-button-color)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--tg-hint-color)';
+                }}
+              >
+                ⭐
+              </button>
+            ))}
+          </div>
         </div>
       );
     
@@ -1422,6 +1938,7 @@ const renderQuestionInput = (question: Question) => {
       return (
         <input
           type="date"
+          placeholder="Дата"
           style={baseStyle}
         />
       );
@@ -1432,6 +1949,7 @@ const renderQuestionInput = (question: Question) => {
           type="number"
           placeholder="Введите число..."
           enterKeyHint="done"
+          inputMode="numeric"
           style={baseStyle}
         />
       );
@@ -1541,7 +2059,14 @@ const PreviewTab: React.FC<{
             {/* Кнопка отправки */}
             <div style={{ marginTop: '32px', textAlign: 'center' }}>
               <button
-                disabled
+                onClick={() => {
+                  const requiredQuestions = questions.filter(q => q.required);
+                  if (requiredQuestions.length === 0) {
+                    alert('Опрос успешно пройден!');
+                  } else {
+                    alert('Пожалуйста, ответьте на все обязательные вопросы');
+                  }
+                }}
                 style={{
                   backgroundColor: 'var(--tg-button-color)',
                   color: 'white',
@@ -1550,8 +2075,7 @@ const PreviewTab: React.FC<{
                   padding: '12px 32px',
                   fontSize: '16px',
                   fontWeight: '500',
-                  cursor: 'not-allowed',
-                  opacity: 0.7
+                  cursor: 'pointer'
                 }}
               >
                 Отправить ответы
