@@ -131,7 +131,21 @@ const SurveyCreatorPage: React.FC = () => {
 
   const handleQuestionChange = (questionId: string, updates: Partial<Question>) => {
     setQuestions(prev => 
-      prev.map(q => q.id === questionId ? { ...q, ...updates } : q)
+      prev.map(q => {
+        if (q.id === questionId) {
+          const updatedQuestion = { ...q, ...updates };
+          
+          // Автоматически создаем варианты для choice типов
+          if (updates.type === 'single_choice' || updates.type === 'multiple_choice') {
+            if (!updatedQuestion.options || updatedQuestion.options.length === 0) {
+              updatedQuestion.options = ['Вариант 1', 'Вариант 2'];
+            }
+          }
+          
+          return updatedQuestion;
+        }
+        return q;
+      })
     );
   };
 
@@ -154,6 +168,24 @@ const SurveyCreatorPage: React.FC = () => {
         questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 100);
+  };
+
+  const addOption = (questionId: string) => {
+    const question = questions.find(q => q.id === questionId);
+    if (question) {
+      const newOption = `Вариант ${(question.options?.length || 0) + 1}`;
+      handleQuestionChange(questionId, {
+        options: [...(question.options || []), newOption]
+      });
+    }
+  };
+
+  const removeOption = (questionId: string, optionIndex: number) => {
+    const question = questions.find(q => q.id === questionId);
+    if (question && question.options) {
+      const newOptions = question.options.filter((_, index) => index !== optionIndex);
+      handleQuestionChange(questionId, { options: newOptions });
+    }
   };
 
   const deleteQuestion = (questionId: string) => {
@@ -371,6 +403,8 @@ const SurveyCreatorPage: React.FC = () => {
             onDuplicateQuestion={duplicateQuestion}
             onMoveQuestionUp={moveQuestionUp}
             onMoveQuestionDown={moveQuestionDown}
+            onAddOption={addOption}
+            onRemoveOption={removeOption}
             onKeyboardStateChange={(isOpen) => setSurveyData(prev => ({ ...prev, isKeyboardOpen: isOpen }))}
           />
         )}
@@ -994,47 +1028,58 @@ const SettingsTab: React.FC<{
                     </div>
                   </div>
                 </div>
-                <label style={{
-                  position: 'relative',
-                  display: 'inline-block',
-                  width: '50px',
-                  height: '24px'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={surveyData.motivationEnabled}
-                    onChange={(e) => onDataChange('motivationEnabled', e.target.checked)}
-                    style={{ opacity: 0, width: 0, height: 0 }}
-                  />
-                  <span style={{
-                    position: 'absolute',
-                    cursor: 'pointer',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: surveyData.motivationEnabled ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
-                    borderRadius: '24px',
-                    transition: '0.3s'
-                  }}>
-                    <span style={{
-                      position: 'absolute',
-                      content: '""',
-                      height: '18px',
-                      width: '18px',
-                      left: surveyData.motivationEnabled ? '27px' : '3px',
-                      bottom: '3px',
-                      backgroundColor: 'white',
-                      borderRadius: '50%',
-                      transition: '0.3s'
-                    }} />
-                  </span>
-                </label>
+        <label style={{
+          position: 'relative',
+          display: 'inline-block',
+          width: '50px',
+          height: '24px'
+        }}>
+          <input
+            type="checkbox"
+            checked={surveyData.motivationEnabled}
+            onChange={(e) => {
+              onDataChange('motivationEnabled', e.target.checked);
+              if (e.target.checked) {
+                // Автоскролл к настройкам мотивации
+                setTimeout(() => {
+                  const motivationSettings = document.getElementById('motivation-settings');
+                  if (motivationSettings) {
+                    motivationSettings.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }, 100);
+              }
+            }}
+            style={{ opacity: 0, width: 0, height: 0 }}
+          />
+          <span style={{
+            position: 'absolute',
+            cursor: 'pointer',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: surveyData.motivationEnabled ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+            borderRadius: '24px',
+            transition: '0.3s'
+          }}>
+            <span style={{
+              position: 'absolute',
+              content: '""',
+              height: '18px',
+              width: '18px',
+              left: surveyData.motivationEnabled ? '27px' : '3px',
+              bottom: '3px',
+              backgroundColor: 'white',
+              borderRadius: '50%',
+              transition: '0.3s'
+            }} />
+          </span>
+        </label>
               </div>
 
               {/* Настройки мотивации */}
               {surveyData.motivationEnabled && (
-                <div style={{ marginTop: '8px', padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderRadius: '8px' }}>
+                <div id="motivation-settings" style={{ marginTop: '10px', padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderRadius: '8px' }}>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{
                       display: 'block',
@@ -1175,8 +1220,10 @@ const QuestionsTab: React.FC<{
   onDuplicateQuestion: (questionId: string) => void;
   onMoveQuestionUp: (questionId: string) => void;
   onMoveQuestionDown: (questionId: string) => void;
+  onAddOption: (questionId: string) => void;
+  onRemoveOption: (questionId: string, optionIndex: number) => void;
   onKeyboardStateChange: (isOpen: boolean) => void;
-}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onKeyboardStateChange }) => {
+}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1450,17 +1497,19 @@ const QuestionsTab: React.FC<{
                             }}
                           />
                           <button
-                            onClick={() => {
-                              const newOptions = [...(question.options || [])];
-                              newOptions.splice(index, 1);
-                              onQuestionChange(question.id, { options: newOptions });
-                            }}
+                            onClick={() => onRemoveOption(question.id, index)}
                             style={{
                               backgroundColor: 'transparent',
                               border: 'none',
                               color: 'var(--tg-hint-color)',
                               cursor: 'pointer',
-                              padding: '4px'
+                              padding: '4px',
+                              fontSize: '18px',
+                              width: '24px',
+                              height: '24px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
                             }}
                           >
                             ✕
@@ -1468,10 +1517,7 @@ const QuestionsTab: React.FC<{
                         </div>
                       ))}
                       <button
-                        onClick={() => {
-                          const newOptions = [...(question.options || []), `Вариант ${(question.options || []).length + 1}`];
-                          onQuestionChange(question.id, { options: newOptions });
-                        }}
+                        onClick={() => onAddOption(question.id)}
                         style={{
                           backgroundColor: 'transparent',
                           border: '1px dashed var(--tg-section-separator-color)',
@@ -1682,7 +1728,12 @@ const QuestionsTab: React.FC<{
                             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
                           }}
                         >
-                          🗑️
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3,6 5,6 21,6"></polyline>
+                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                          </svg>
                         </button>
                       </div>
                     </div>
@@ -1705,6 +1756,7 @@ const QuestionsTab: React.FC<{
                         type="file"
                         accept="image/*"
                         onChange={(e) => {
+                          e.stopPropagation();
                           const file = e.target.files?.[0];
                           if (file) {
                             const reader = new FileReader();
@@ -1717,6 +1769,7 @@ const QuestionsTab: React.FC<{
                             reader.readAsDataURL(file);
                           }
                         }}
+                        onClick={(e) => e.stopPropagation()}
                         style={{ display: 'none' }}
                       />
                     </label>
@@ -1822,7 +1875,7 @@ const renderQuestionInput = (question: Question) => {
     case 'single_choice':
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {['Вариант 1', 'Вариант 2', 'Вариант 3'].map((option, index) => (
+          {(question.options || ['Вариант 1', 'Вариант 2']).map((option, index) => (
             <label key={index} style={{
               display: 'flex',
               alignItems: 'center',
@@ -1843,7 +1896,7 @@ const renderQuestionInput = (question: Question) => {
     case 'multiple_choice':
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {['Вариант 1', 'Вариант 2', 'Вариант 3'].map((option, index) => (
+          {(question.options || ['Вариант 1', 'Вариант 2']).map((option, index) => (
             <label key={index} style={{
               display: 'flex',
               alignItems: 'center',
@@ -1863,6 +1916,8 @@ const renderQuestionInput = (question: Question) => {
     case 'scale':
       const min = question.scaleMin || 1;
       const max = question.scaleMax || 10;
+      const [scaleValue, setScaleValue] = React.useState(Math.floor((min + max) / 2));
+      
       return (
         <div style={{ 
           backgroundColor: 'var(--tg-section-bg-color)',
@@ -1884,7 +1939,8 @@ const renderQuestionInput = (question: Question) => {
               type="range"
               min={min}
               max={max}
-              defaultValue={Math.floor((min + max) / 2)}
+              value={scaleValue}
+              onChange={(e) => setScaleValue(parseInt(e.target.value))}
               style={{
                 flex: 1,
                 height: '8px',
@@ -1904,6 +1960,25 @@ const renderQuestionInput = (question: Question) => {
               {max}
             </span>
           </div>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            fontSize: '12px',
+            color: 'var(--tg-hint-color)',
+            marginBottom: '8px'
+          }}>
+            {Array.from({ length: max - min + 1 }, (_, i) => min + i).map(num => (
+              <span 
+                key={num} 
+                style={{ 
+                  color: num === scaleValue ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                  fontWeight: num === scaleValue ? 'bold' : 'normal'
+                }}
+              >
+                {num}
+              </span>
+            ))}
+          </div>
           {(question.scaleLabels?.min || question.scaleLabels?.max) && (
             <div style={{ 
               display: 'flex', 
@@ -1919,6 +1994,8 @@ const renderQuestionInput = (question: Question) => {
       );
     
     case 'rating':
+      const [rating, setRating] = React.useState(0);
+      
       return (
         <div style={{ 
           backgroundColor: 'var(--tg-section-bg-color)',
@@ -1930,27 +2007,31 @@ const renderQuestionInput = (question: Question) => {
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
-                onClick={() => {
-                  // Здесь можно добавить логику сохранения выбранной оценки
-                  console.log(`Selected ${star} stars`);
-                }}
+                onClick={() => setRating(star)}
                 style={{
                   background: 'none',
                   border: 'none',
-                  fontSize: '32px',
                   cursor: 'pointer',
-                  color: 'var(--tg-hint-color)',
-                  transition: 'color 0.2s ease',
-                  padding: '4px'
+                  padding: '4px',
+                  transition: 'transform 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--tg-button-color)';
+                  e.currentTarget.style.transform = 'scale(1.1)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--tg-hint-color)';
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                ⭐
+                <svg 
+                  width="32" 
+                  height="32" 
+                  viewBox="0 0 24 24" 
+                  fill={star <= rating ? "#ffd700" : "none"} 
+                  stroke={star <= rating ? "#ffd700" : "var(--tg-hint-color)"} 
+                  strokeWidth="2"
+                >
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                </svg>
               </button>
             ))}
           </div>
@@ -2106,6 +2187,21 @@ const PreviewTab: React.FC<{
                     }}>
                       {question.description}
                     </p>
+                  )}
+                  
+                  {question.imageUrl && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <img
+                        src={question.imageUrl}
+                        alt="Изображение к вопросу"
+                        style={{
+                          width: '100%',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </div>
                   )}
                   
                   {renderQuestionInput(question)}
