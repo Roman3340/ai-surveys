@@ -44,6 +44,7 @@ interface SurveyData {
   motivationEnabled: boolean;
   motivationType: string;
   motivationDetails: string;
+  motivationConditions?: string;
   // UI состояние
   isKeyboardOpen?: boolean;
 }
@@ -497,6 +498,8 @@ const SettingsTab: React.FC<{
                 e.currentTarget.blur();
               }
             }}
+            onFocus={() => onDataChange('isKeyboardOpen', true)}
+            onBlur={() => onDataChange('isKeyboardOpen', false)}
             style={{
               width: '100%',
               padding: '12px 16px',
@@ -531,6 +534,8 @@ const SettingsTab: React.FC<{
                 e.currentTarget.blur();
               }
             }}
+            onFocus={() => onDataChange('isKeyboardOpen', true)}
+            onBlur={() => onDataChange('isKeyboardOpen', false)}
             style={{
               width: '100%',
               padding: '12px 16px',
@@ -626,6 +631,8 @@ const SettingsTab: React.FC<{
                   type="date"
                   value={surveyData.startDate}
                   onChange={(e) => onDataChange('startDate', e.target.value)}
+                  onFocus={() => onDataChange('isKeyboardOpen', true)}
+                  onBlur={() => onDataChange('isKeyboardOpen', false)}
                   style={{
                     width: '100%',
                     padding: '12px 16px',
@@ -652,6 +659,8 @@ const SettingsTab: React.FC<{
                   type="date"
                   value={surveyData.endDate}
                   onChange={(e) => onDataChange('endDate', e.target.value)}
+                  onFocus={() => onDataChange('isKeyboardOpen', true)}
+                  onBlur={() => onDataChange('isKeyboardOpen', false)}
                   style={{
                     width: '100%',
                     padding: '12px 16px',
@@ -683,6 +692,8 @@ const SettingsTab: React.FC<{
                 onChange={(e) => onDataChange('maxParticipants', e.target.value)}
                 placeholder="Без ограничений"
                 min="1"
+                onFocus={() => onDataChange('isKeyboardOpen', true)}
+                onBlur={() => onDataChange('isKeyboardOpen', false)}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -850,7 +861,7 @@ const SettingsTab: React.FC<{
                       content: '""',
                       height: '18px',
                       width: '18px',
-                      left: surveyData.randomizeQuestions ? '26px' : '3px',
+                      left: surveyData.randomizeQuestions ? '27px' : '3px',
                       bottom: '3px',
                       backgroundColor: 'white',
                       borderRadius: '50%',
@@ -1023,7 +1034,7 @@ const SettingsTab: React.FC<{
 
               {/* Настройки мотивации */}
               {surveyData.motivationEnabled && (
-                <div style={{ marginTop: '16px', padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderRadius: '8px' }}>
+                <div style={{ marginTop: '8px', padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderRadius: '8px' }}>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{
                       display: 'block',
@@ -1039,7 +1050,7 @@ const SettingsTab: React.FC<{
                       onChange={(e) => onDataChange('motivationType', e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '12px 16px',
+                        padding: '16px 16px',
                         borderRadius: '8px',
                         border: 'none',
                         backgroundColor: 'var(--tg-section-bg-color)',
@@ -1056,7 +1067,7 @@ const SettingsTab: React.FC<{
                     </select>
                   </div>
                   
-                  <div>
+                  <div style={{ marginBottom: '16px' }}>
                     <label style={{
                       display: 'block',
                       fontSize: '14px',
@@ -1087,9 +1098,11 @@ const SettingsTab: React.FC<{
                           e.currentTarget.blur();
                         }
                       }}
+                      onFocus={() => onDataChange('isKeyboardOpen', true)}
+                      onBlur={() => onDataChange('isKeyboardOpen', false)}
                       style={{
                         width: '100%',
-                        padding: '12px 16px',
+                        padding: '16px 16px',
                         borderRadius: '8px',
                         border: 'none',
                         backgroundColor: 'var(--tg-section-bg-color)',
@@ -1099,6 +1112,50 @@ const SettingsTab: React.FC<{
                       }}
                     />
                   </div>
+
+                  {/* Дополнительное поле для скидки и промокода */}
+                  {(surveyData.motivationType === 'discount' || surveyData.motivationType === 'promo') && (
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        marginBottom: '8px',
+                        color: 'var(--tg-text-color)'
+                      }}>
+                        {surveyData.motivationType === 'discount' ? 'На что скидка и при каких условиях' : 'На что промокод и при каких условиях'}
+                      </label>
+                      <textarea
+                        value={surveyData.motivationConditions || ''}
+                        onChange={(e) => onDataChange('motivationConditions', e.target.value)}
+                        placeholder={
+                          surveyData.motivationType === 'discount' ? 
+                          'Например: Скидка на товар определенной категории за прохождение опроса' :
+                          'Например: Промокод на бесплатную доставку при заказе от 1000 рублей'
+                        }
+                        rows={3}
+                        enterKeyHint="done"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && e.ctrlKey) {
+                            e.currentTarget.blur();
+                          }
+                        }}
+                        onFocus={() => onDataChange('isKeyboardOpen', true)}
+                        onBlur={() => onDataChange('isKeyboardOpen', false)}
+                        style={{
+                          width: '100%',
+                          padding: '16px 16px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'var(--tg-section-bg-color)',
+                          color: 'var(--tg-text-color)',
+                          fontSize: '16px',
+                          resize: 'vertical',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
