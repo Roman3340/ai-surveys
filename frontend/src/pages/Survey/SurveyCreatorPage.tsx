@@ -211,6 +211,14 @@ const SurveyCreatorPage: React.FC = () => {
       const newQuestions = [...questions];
       [newQuestions[index - 1], newQuestions[index]] = [newQuestions[index], newQuestions[index - 1]];
       setQuestions(newQuestions);
+      
+      // Автоскролл к перемещенному вопросу
+      setTimeout(() => {
+        const questionElement = document.getElementById(`question-${questionId}`);
+        if (questionElement) {
+          questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     }
   };
 
@@ -220,6 +228,14 @@ const SurveyCreatorPage: React.FC = () => {
       const newQuestions = [...questions];
       [newQuestions[index], newQuestions[index + 1]] = [newQuestions[index + 1], newQuestions[index]];
       setQuestions(newQuestions);
+      
+      // Автоскролл к перемещенному вопросу
+      setTimeout(() => {
+        const questionElement = document.getElementById(`question-${questionId}`);
+        if (questionElement) {
+          questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     }
   };
 
@@ -1891,15 +1907,71 @@ const renderQuestionInput = (question: Question) => {
             <label key={index} style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer'
+              gap: '12px',
+              cursor: 'pointer',
+              padding: '12px',
+              borderRadius: '8px',
+              backgroundColor: 'var(--tg-section-bg-color)',
+              border: '1px solid var(--tg-section-separator-color)',
+              transition: 'all 0.2s ease'
             }}>
-              <input
-                type="radio"
-                name={`question_${question.id}`}
-                style={{ margin: 0 }}
-              />
-              <span style={{ color: 'var(--tg-text-color)' }}>
+              <div style={{
+                position: 'relative',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: '2px solid var(--tg-hint-color)',
+                backgroundColor: 'transparent',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                  onChange={() => {
+                    // Обновляем стили всех радио кнопок в группе
+                    const radioButtons = document.querySelectorAll(`input[name="question_${question.id}"]`);
+                    radioButtons.forEach((radio, radioIndex) => {
+                      const label = radio.closest('label');
+                      const circle = label?.querySelector('div') as HTMLElement;
+                      const dot = label?.querySelector('div > div') as HTMLElement;
+                      if (radioIndex === index) {
+                        circle?.style.setProperty('border-color', 'var(--tg-button-color)');
+                        circle?.style.setProperty('background-color', 'var(--tg-button-color)');
+                        dot?.style.setProperty('opacity', '1');
+                      } else {
+                        circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
+                        circle?.style.setProperty('background-color', 'transparent');
+                        dot?.style.setProperty('opacity', '0');
+                      }
+                    });
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  opacity: 0,
+                  transition: 'opacity 0.2s ease'
+                }} />
+              </div>
+              <span style={{ 
+                color: 'var(--tg-text-color)',
+                fontSize: '16px',
+                flex: 1
+              }}>
                 {option || `Вариант ${index + 1}`}
               </span>
             </label>
@@ -1914,14 +1986,69 @@ const renderQuestionInput = (question: Question) => {
             <label key={index} style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer'
+              gap: '12px',
+              cursor: 'pointer',
+              padding: '12px',
+              borderRadius: '8px',
+              backgroundColor: 'var(--tg-section-bg-color)',
+              border: '1px solid var(--tg-section-separator-color)',
+              transition: 'all 0.2s ease'
             }}>
-              <input
-                type="checkbox"
-                style={{ margin: 0 }}
-              />
-              <span style={{ color: 'var(--tg-text-color)' }}>
+              <div style={{
+                position: 'relative',
+                width: '20px',
+                height: '20px',
+                borderRadius: '4px',
+                border: '2px solid var(--tg-hint-color)',
+                backgroundColor: 'transparent',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="checkbox"
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                  onChange={(e) => {
+                    const checkbox = e.target as HTMLInputElement;
+                    const label = checkbox.closest('label');
+                    const square = label?.querySelector('div') as HTMLElement;
+                    const checkmark = label?.querySelector('div > div') as HTMLElement;
+                    if (checkbox.checked) {
+                      square?.style.setProperty('border-color', 'var(--tg-button-color)');
+                      square?.style.setProperty('background-color', 'var(--tg-button-color)');
+                      checkmark?.style.setProperty('opacity', '1');
+                    } else {
+                      square?.style.setProperty('border-color', 'var(--tg-hint-color)');
+                      square?.style.setProperty('background-color', 'transparent');
+                      checkmark?.style.setProperty('opacity', '0');
+                    }
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '12px',
+                  height: '12px',
+                  opacity: 0,
+                  transition: 'opacity 0.2s ease'
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20,6 9,17 4,12"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <span style={{ 
+                color: 'var(--tg-text-color)',
+                fontSize: '16px',
+                flex: 1
+              }}>
                 {option || `Вариант ${index + 1}`}
               </span>
             </label>
