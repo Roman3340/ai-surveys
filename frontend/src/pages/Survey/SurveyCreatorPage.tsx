@@ -236,12 +236,11 @@ const SurveyCreatorPage: React.FC = () => {
       }}>
         <div style={{
           display: 'flex',
-          justifyContent: 'center',
+          flexDirection: 'column',
           alignItems: 'center',
           gap: '8px',
           marginBottom: '16px'
         }}>
-          <span style={{ fontSize: '24px' }}>📝</span>
           <h1 style={{
             fontSize: '20px',
             fontWeight: '600',
@@ -249,6 +248,7 @@ const SurveyCreatorPage: React.FC = () => {
           }}>
             Создание опроса
           </h1>
+          <span style={{ fontSize: '48px' }}>📝</span>
         </div>
         
         {/* Табы */}
@@ -468,6 +468,7 @@ const SettingsTab: React.FC<{
             value={surveyData.title}
             onChange={(e) => onDataChange('title', e.target.value)}
             placeholder="Введите название опроса..."
+            enterKeyHint="done"
             style={{
               width: '100%',
               padding: '12px 16px',
@@ -495,7 +496,8 @@ const SettingsTab: React.FC<{
             value={surveyData.description}
             onChange={(e) => onDataChange('description', e.target.value)}
             placeholder="Описание опроса..."
-            rows={3}
+            rows={4}
+            enterKeyHint="done"
             style={{
               width: '100%',
               padding: '12px 16px',
@@ -1103,6 +1105,7 @@ const QuestionsTab: React.FC<{
                     value={question.title}
                     onChange={(e) => onQuestionChange(question.id, { title: e.target.value })}
                     placeholder="Введите вопрос..."
+                    enterKeyHint="done"
                     style={{
                       width: '100%',
                       padding: '12px 16px',
@@ -1123,6 +1126,7 @@ const QuestionsTab: React.FC<{
                     onChange={(e) => onQuestionChange(question.id, { description: e.target.value })}
                     placeholder="Описание вопроса (необязательно)..."
                     rows={2}
+                    enterKeyHint="done"
                     style={{
                       width: '100%',
                       padding: '12px 16px',
@@ -1144,7 +1148,7 @@ const QuestionsTab: React.FC<{
                     onChange={(e) => onQuestionChange(question.id, { type: e.target.value })}
                     style={{
                       width: '100%',
-                      padding: '12px 16px',
+                      padding: '16px 16px',
                       borderRadius: '8px',
                       border: 'none',
                       backgroundColor: 'var(--tg-bg-color)',
@@ -1167,33 +1171,39 @@ const QuestionsTab: React.FC<{
 
                 {/* Загрузчик картинки */}
                 <div style={{ marginBottom: '16px' }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          onQuestionChange(question.id, { 
-                            imageUrl: event.target?.result as string,
-                            imageName: file.name 
-                          });
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      backgroundColor: 'var(--tg-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '16px',
-                      outline: 'none'
-                    }}
-                  />
+                  <label style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: 'var(--tg-bg-color)',
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    fontWeight: '500'
+                  }}>
+                    📷 Добавить картинку
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            onQuestionChange(question.id, { 
+                              imageUrl: event.target?.result as string,
+                              imageName: file.name 
+                            });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
                 </div>
 
                 {/* Обязательный вопрос */}
@@ -1253,6 +1263,189 @@ const QuestionsTab: React.FC<{
       </div>
     </motion.div>
   );
+};
+
+// Функция для рендеринга разных типов вопросов
+const renderQuestionInput = (question: Question) => {
+  const baseStyle = {
+    width: '100%',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: 'var(--tg-section-bg-color)',
+    color: 'var(--tg-text-color)',
+    fontSize: '16px',
+    outline: 'none'
+  };
+
+  switch (question.type) {
+    case 'text':
+      return (
+        <input
+          type="text"
+          placeholder="Ваш ответ..."
+          enterKeyHint="done"
+          style={baseStyle}
+        />
+      );
+    
+    case 'textarea':
+      return (
+        <textarea
+          placeholder="Ваш ответ..."
+          rows={4}
+          enterKeyHint="done"
+          style={{
+            ...baseStyle,
+            resize: 'vertical'
+          }}
+        />
+      );
+    
+    case 'single_choice':
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {['Вариант 1', 'Вариант 2', 'Вариант 3'].map((option, index) => (
+            <label key={index} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
+            }}>
+              <input
+                type="radio"
+                name={`question_${question.id}`}
+                style={{ margin: 0 }}
+              />
+              <span style={{ color: 'var(--tg-text-color)' }}>{option}</span>
+            </label>
+          ))}
+        </div>
+      );
+    
+    case 'multiple_choice':
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {['Вариант 1', 'Вариант 2', 'Вариант 3'].map((option, index) => (
+            <label key={index} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
+            }}>
+              <input
+                type="checkbox"
+                style={{ margin: 0 }}
+              />
+              <span style={{ color: 'var(--tg-text-color)' }}>{option}</span>
+            </label>
+          ))}
+        </div>
+      );
+    
+    case 'scale':
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>1</span>
+          <input
+            type="range"
+            min="1"
+            max="10"
+            defaultValue="5"
+            style={{
+              flex: 1,
+              height: '6px',
+              background: 'var(--tg-section-separator-color)',
+              borderRadius: '3px',
+              outline: 'none'
+            }}
+          />
+          <span style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>10</span>
+        </div>
+      );
+    
+    case 'rating':
+      return (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: 'var(--tg-hint-color)'
+              }}
+            >
+              ⭐
+            </button>
+          ))}
+        </div>
+      );
+    
+    case 'boolean':
+      return (
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer'
+          }}>
+            <input
+              type="radio"
+              name={`question_${question.id}`}
+              value="yes"
+              style={{ margin: 0 }}
+            />
+            <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
+          </label>
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer'
+          }}>
+            <input
+              type="radio"
+              name={`question_${question.id}`}
+              value="no"
+              style={{ margin: 0 }}
+            />
+            <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
+          </label>
+        </div>
+      );
+    
+    case 'date':
+      return (
+        <input
+          type="date"
+          style={baseStyle}
+        />
+      );
+    
+    case 'number':
+      return (
+        <input
+          type="number"
+          placeholder="Введите число..."
+          enterKeyHint="done"
+          style={baseStyle}
+        />
+      );
+    
+    default:
+      return (
+        <input
+          type="text"
+          placeholder="Ваш ответ..."
+          enterKeyHint="done"
+          style={baseStyle}
+        />
+      );
+  }
 };
 
 // Компонент таба предпросмотра
@@ -1340,20 +1533,7 @@ const PreviewTab: React.FC<{
                     </p>
                   )}
                   
-                  <input
-                    type="text"
-                    placeholder="Ваш ответ..."
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      backgroundColor: 'var(--tg-section-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '16px',
-                      outline: 'none'
-                    }}
-                  />
+                  {renderQuestionInput(question)}
                 </div>
               ))}
             </div>
