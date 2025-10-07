@@ -151,6 +151,17 @@ const SurveyCreatorPage: React.FC = () => {
             }
           }
           
+          // Валидация для шкалы: "От" не должно быть больше или равно "До"
+          if (updatedQuestion.type === 'scale') {
+            const scaleMin = updatedQuestion.scaleMin;
+            const scaleMax = updatedQuestion.scaleMax;
+            
+            if (scaleMin !== undefined && scaleMax !== undefined && scaleMin >= scaleMax) {
+              // Если "От" больше или равно "До", корректируем "До"
+              updatedQuestion.scaleMax = scaleMin + 1;
+            }
+          }
+          
           return updatedQuestion;
         }
         return q;
@@ -1583,17 +1594,19 @@ const QuestionsTab: React.FC<{
                           type="number"
                           value={question.scaleMin || 1}
                           onChange={(e) => {
-                            const value = parseInt(e.target.value) || 1;
-                            const currentMax = question.scaleMax || 10;
-                            // Если новое значение больше максимума, увеличиваем максимум
-                            const newMax = value >= currentMax ? value + 1 : currentMax;
-                            onQuestionChange(question.id, { 
-                              scaleMin: value,
-                              scaleMax: newMax
-                            });
+                            const value = e.target.value;
+                            // Разрешаем пустое значение для полного удаления
+                            if (value === '') {
+                              onQuestionChange(question.id, { scaleMin: undefined });
+                            } else {
+                              const numValue = parseInt(value);
+                              if (!isNaN(numValue)) {
+                                onQuestionChange(question.id, { scaleMin: numValue });
+                              }
+                            }
                           }}
                           min="1"
-                          max="19"
+                          max="99"
                           enterKeyHint="done"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -1601,7 +1614,13 @@ const QuestionsTab: React.FC<{
                             }
                           }}
                           onFocus={() => onKeyboardStateChange(true)}
-                          onBlur={() => onKeyboardStateChange(false)}
+                          onBlur={(e) => {
+                            onKeyboardStateChange(false);
+                            // Если поле пустое при потере фокуса, возвращаем 1
+                            if (e.target.value === '') {
+                              onQuestionChange(question.id, { scaleMin: 1 });
+                            }
+                          }}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
@@ -1634,15 +1653,12 @@ const QuestionsTab: React.FC<{
                             } else {
                               const numValue = parseInt(value);
                               if (!isNaN(numValue)) {
-                                const currentMin = question.scaleMin || 1;
-                                // Убеждаемся что максимум больше минимума
-                                const validMax = numValue > currentMin ? numValue : currentMin + 1;
-                                onQuestionChange(question.id, { scaleMax: validMax });
+                                onQuestionChange(question.id, { scaleMax: numValue });
                               }
                             }
                           }}
-                          min={(question.scaleMin || 1) + 1}
-                          max="20"
+                          min="2"
+                          max="100"
                           enterKeyHint="done"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -1652,9 +1668,12 @@ const QuestionsTab: React.FC<{
                           onFocus={() => onKeyboardStateChange(true)}
                           onBlur={(e) => {
                             onKeyboardStateChange(false);
-                            // Если поле пустое при потере фокуса, возвращаем 10
+                            // Если поле пустое при потере фокуса, устанавливаем значение по умолчанию
                             if (e.target.value === '') {
-                              onQuestionChange(question.id, { scaleMax: 10 });
+                              const currentMin = question.scaleMin || 1;
+                              // Если "От" больше 9, то "До" = "От" + 1, иначе 10
+                              const defaultMax = currentMin > 9 ? currentMin + 1 : 10;
+                              onQuestionChange(question.id, { scaleMax: defaultMax });
                             }
                           }}
                           style={{
