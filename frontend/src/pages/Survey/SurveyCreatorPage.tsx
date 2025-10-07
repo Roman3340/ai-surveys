@@ -2170,15 +2170,15 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                 width: '20px',
                 height: '20px',
                 borderRadius: '50%',
-                border: `2px solid ${answers?.[question.id] === option ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                backgroundColor: answers?.[question.id] === option ? 'var(--tg-button-color)' : 'transparent',
+                border: `2px solid ${answers?.[question.id] === (option && option.trim() !== '' ? option : `Вариант ${index + 1}`) ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answers?.[question.id] === (option && option.trim() !== '' ? option : `Вариант ${index + 1}`) ? 'var(--tg-button-color)' : 'transparent',
                 transition: 'all 0.2s ease'
               }}>
                 <input
                   type="radio"
                   name={`question_${question.id}`}
                   value={option}
-                  checked={answers?.[question.id] === option}
+                  checked={answers?.[question.id] === (option && option.trim() !== '' ? option : `Вариант ${index + 1}`)}
                   style={{ 
                     position: 'absolute',
                     opacity: 0,
@@ -2187,8 +2187,10 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     margin: 0,
                     cursor: 'pointer'
                   }}
-                  onChange={(e) => {
-                    onAnswerChange?.({ ...answers, [question.id]: e.target.value });
+                  onChange={() => {
+                    // Используем option если он не пустой, иначе используем placeholder
+                    const value = option && option.trim() !== '' ? option : `Вариант ${index + 1}`;
+                    onAnswerChange?.({ ...answers, [question.id]: value });
                   }}
                 />
                 <div style={{
@@ -2200,7 +2202,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   height: '8px',
                   borderRadius: '50%',
                   backgroundColor: 'white',
-                  opacity: answers?.[question.id] === option ? 1 : 0,
+                  opacity: answers?.[question.id] === (option && option.trim() !== '' ? option : `Вариант ${index + 1}`) ? 1 : 0,
                   transition: 'opacity 0.2s ease'
                 }} />
               </div>
@@ -2221,7 +2223,8 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {(question.options || ['', '']).map((option, index) => {
             const currentAnswers = answers?.[question.id] || [];
-            const isChecked = currentAnswers.includes(option);
+            const actualValue = option && option.trim() !== '' ? option : `Вариант ${index + 1}`;
+            const isChecked = currentAnswers.includes(actualValue);
             
             return (
               <label key={index} style={{
@@ -2262,10 +2265,10 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                       
                       if (e.target.checked) {
                         // Добавляем к выбранным
-                        newAnswers = [...currentAnswers, option];
+                        newAnswers = [...currentAnswers, actualValue];
                       } else {
                         // Убираем из выбранных
-                        newAnswers = currentAnswers.filter((ans: string) => ans !== option);
+                        newAnswers = currentAnswers.filter((ans: string) => ans !== actualValue);
                       }
                       
                       onAnswerChange?.({ ...answers, [question.id]: newAnswers });
