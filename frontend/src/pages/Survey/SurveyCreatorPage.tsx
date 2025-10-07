@@ -1962,16 +1962,46 @@ const QuestionsTab: React.FC<{
                   alignItems: 'center',
                   gap: '8px'
                 }}>
-                  <input
-                    type="checkbox"
-                    checked={question.required}
-                    onChange={(e) => onQuestionChange(question.id, { required: e.target.checked })}
-                    style={{
-                      width: '18px',
-                      height: '18px',
-                      cursor: 'pointer'
-                    }}
-                  />
+                  <div style={{
+                    position: 'relative',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '4px',
+                    border: '2px solid var(--tg-hint-color)',
+                    backgroundColor: question.required ? 'var(--tg-button-color)' : 'transparent',
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={question.required}
+                      onChange={(e) => onQuestionChange(question.id, { required: e.target.checked })}
+                      style={{
+                        position: 'absolute',
+                        opacity: 0,
+                        width: '100%',
+                        height: '100%',
+                        margin: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+                    {question.required && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -60%)',
+                        width: '10px',
+                        height: '10px',
+                        opacity: 1,
+                        transition: 'opacity 0.2s ease'
+                      }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20,6 9,17 4,12"></polyline>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                   <label style={{
                     fontSize: '14px',
                     color: 'var(--tg-text-color)',
@@ -2185,7 +2215,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
-                  transform: 'translate(-50%, -50%)',
+                  transform: 'translate(-50%, -60%)',
                   width: '12px',
                   height: '12px',
                   opacity: 0,
@@ -2353,12 +2383,56 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
             gap: '8px',
             cursor: 'pointer'
           }}>
-            <input
-              type="radio"
-              name={`question_${question.id}`}
-              value="yes"
-              style={{ margin: 0 }}
-            />
+            <div style={{
+              position: 'relative',
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              border: '2px solid var(--tg-hint-color)',
+              backgroundColor: 'transparent',
+              transition: 'all 0.2s ease'
+            }}>
+              <input
+                type="radio"
+                name={`question_${question.id}`}
+                value="yes"
+                style={{ 
+                  position: 'absolute',
+                  opacity: 0,
+                  width: '100%',
+                  height: '100%',
+                  margin: 0,
+                  cursor: 'pointer'
+                }}
+                onChange={(e) => {
+                  const radio = e.target as HTMLInputElement;
+                  const label = radio.closest('label');
+                  const circle = label?.querySelector('div') as HTMLElement;
+                  const dot = label?.querySelector('div > div') as HTMLElement;
+                  if (radio.checked) {
+                    circle?.style.setProperty('border-color', 'var(--tg-button-color)');
+                    circle?.style.setProperty('background-color', 'var(--tg-button-color)');
+                    dot?.style.setProperty('opacity', '1');
+                  } else {
+                    circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
+                    circle?.style.setProperty('background-color', 'transparent');
+                    dot?.style.setProperty('opacity', '0');
+                  }
+                }}
+              />
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                opacity: 0,
+                transition: 'opacity 0.2s ease'
+              }} />
+            </div>
             <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
           </label>
           <label style={{
@@ -2367,12 +2441,56 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
             gap: '8px',
             cursor: 'pointer'
           }}>
-            <input
-              type="radio"
-              name={`question_${question.id}`}
-              value="no"
-              style={{ margin: 0 }}
-            />
+            <div style={{
+              position: 'relative',
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              border: '2px solid var(--tg-hint-color)',
+              backgroundColor: 'transparent',
+              transition: 'all 0.2s ease'
+            }}>
+              <input
+                type="radio"
+                name={`question_${question.id}`}
+                value="no"
+                style={{ 
+                  position: 'absolute',
+                  opacity: 0,
+                  width: '100%',
+                  height: '100%',
+                  margin: 0,
+                  cursor: 'pointer'
+                }}
+                onChange={(e) => {
+                  const radio = e.target as HTMLInputElement;
+                  const label = radio.closest('label');
+                  const circle = label?.querySelector('div') as HTMLElement;
+                  const dot = label?.querySelector('div > div') as HTMLElement;
+                  if (radio.checked) {
+                    circle?.style.setProperty('border-color', 'var(--tg-button-color)');
+                    circle?.style.setProperty('background-color', 'var(--tg-button-color)');
+                    dot?.style.setProperty('opacity', '1');
+                  } else {
+                    circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
+                    circle?.style.setProperty('background-color', 'transparent');
+                    dot?.style.setProperty('opacity', '0');
+                  }
+                }}
+              />
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                opacity: 0,
+                transition: 'opacity 0.2s ease'
+              }} />
+            </div>
             <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
           </label>
         </div>
