@@ -176,7 +176,9 @@ const SurveyCreatorPage: React.FC = () => {
       title: '',
       description: '',
       required: true,
-      options: []
+      options: [],
+      scaleMin: 1, // Значение по умолчанию для "От"
+      scaleMax: 10 // Значение по умолчанию для "До"
     };
     setQuestions(prev => [...prev, newQuestion]);
     hapticFeedback?.light();
@@ -1255,6 +1257,27 @@ const QuestionsTab: React.FC<{
   onRemoveOption: (questionId: string, optionIndex: number) => void;
   onKeyboardStateChange: (isOpen: boolean) => void;
 }> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange }) => {
+  // Состояние для ошибок валидации
+  const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
+
+  // Функция для проверки валидации
+  const validateScaleValues = (questionId: string, scaleMin?: number, scaleMax?: number) => {
+    const errors: { scaleMin?: string; scaleMax?: string } = {};
+    
+    if (scaleMin !== undefined && scaleMin < 1) {
+      errors.scaleMin = 'Значение не должно быть меньше 1';
+    }
+    
+    if (scaleMax !== undefined && scaleMax > 100) {
+      errors.scaleMax = 'Значение не должно быть больше 100';
+    }
+    
+    setValidationErrors(prev => ({
+      ...prev,
+      [questionId]: errors
+    }));
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1598,6 +1621,7 @@ const QuestionsTab: React.FC<{
                             // Разрешаем пустое значение для полного удаления
                             if (value === '') {
                               onQuestionChange(question.id, { scaleMin: undefined });
+                              validateScaleValues(question.id, undefined, question.scaleMax);
                             } else {
                               const numValue = parseInt(value);
                               if (!isNaN(numValue)) {
@@ -1608,8 +1632,10 @@ const QuestionsTab: React.FC<{
                                     scaleMin: numValue,
                                     scaleMax: numValue + 1
                                   });
+                                  validateScaleValues(question.id, numValue, numValue + 1);
                                 } else {
                                   onQuestionChange(question.id, { scaleMin: numValue });
+                                  validateScaleValues(question.id, numValue, question.scaleMax);
                                 }
                               }
                             }
@@ -1628,19 +1654,29 @@ const QuestionsTab: React.FC<{
                             // Если поле пустое при потере фокуса, возвращаем 1
                             if (e.target.value === '') {
                               onQuestionChange(question.id, { scaleMin: 1 });
+                              validateScaleValues(question.id, 1, question.scaleMax);
                             }
                           }}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
                             borderRadius: '6px',
-                            border: 'none',
+                            border: validationErrors[question.id]?.scaleMin ? '1px solid #FF3B30' : 'none',
                             backgroundColor: 'var(--tg-bg-color)',
                             color: 'var(--tg-text-color)',
                             fontSize: '14px',
                             outline: 'none'
                           }}
                         />
+                        {validationErrors[question.id]?.scaleMin && (
+                          <div style={{
+                            fontSize: '12px',
+                            color: '#FF3B30',
+                            marginTop: '4px'
+                          }}>
+                            {validationErrors[question.id].scaleMin}
+                          </div>
+                        )}
                       </div>
                       <div style={{ flex: 1 }}>
                         <label style={{
@@ -1659,6 +1695,7 @@ const QuestionsTab: React.FC<{
                             // Разрешаем пустое значение для полного удаления
                             if (value === '') {
                               onQuestionChange(question.id, { scaleMax: undefined });
+                              validateScaleValues(question.id, question.scaleMin, undefined);
                             } else {
                               const numValue = parseInt(value);
                               if (!isNaN(numValue)) {
@@ -1669,8 +1706,10 @@ const QuestionsTab: React.FC<{
                                     scaleMin: numValue - 1,
                                     scaleMax: numValue
                                   });
+                                  validateScaleValues(question.id, numValue - 1, numValue);
                                 } else {
                                   onQuestionChange(question.id, { scaleMax: numValue });
+                                  validateScaleValues(question.id, question.scaleMin, numValue);
                                 }
                               }
                             }
@@ -1692,19 +1731,29 @@ const QuestionsTab: React.FC<{
                               // Если "От" больше 9, то "До" = "От" + 1, иначе 10
                               const defaultMax = currentMin > 9 ? currentMin + 1 : 10;
                               onQuestionChange(question.id, { scaleMax: defaultMax });
+                              validateScaleValues(question.id, question.scaleMin, defaultMax);
                             }
                           }}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
                             borderRadius: '6px',
-                            border: 'none',
+                            border: validationErrors[question.id]?.scaleMax ? '1px solid #FF3B30' : 'none',
                             backgroundColor: 'var(--tg-bg-color)',
                             color: 'var(--tg-text-color)',
                             fontSize: '14px',
                             outline: 'none'
                           }}
                         />
+                        {validationErrors[question.id]?.scaleMax && (
+                          <div style={{
+                            fontSize: '12px',
+                            color: '#FF3B30',
+                            marginTop: '4px'
+                          }}>
+                            {validationErrors[question.id].scaleMax}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '12px' }}>
@@ -2130,7 +2179,7 @@ const renderQuestionInput = (question: Question) => {
     
     case 'scale':
       const min = question.scaleMin || 1;
-      const max = Math.min(question.scaleMax || 10, 20); // Ограничиваем максимум до 20
+      const max = question.scaleMax || 10; // Убираем ограничение до 20
       const [scaleValue, setScaleValue] = React.useState(Math.floor((min + max) / 2));
       
       return (
