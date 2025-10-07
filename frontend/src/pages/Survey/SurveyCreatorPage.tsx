@@ -1582,8 +1582,18 @@ const QuestionsTab: React.FC<{
                         <input
                           type="number"
                           value={question.scaleMin || 1}
-                          onChange={(e) => onQuestionChange(question.id, { scaleMin: parseInt(e.target.value) || 1 })}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 1;
+                            const currentMax = question.scaleMax || 10;
+                            // Если новое значение больше максимума, увеличиваем максимум
+                            const newMax = value >= currentMax ? value + 1 : currentMax;
+                            onQuestionChange(question.id, { 
+                              scaleMin: value,
+                              scaleMax: newMax
+                            });
+                          }}
                           min="1"
+                          max="19"
                           enterKeyHint="done"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -1616,8 +1626,22 @@ const QuestionsTab: React.FC<{
                         <input
                           type="number"
                           value={question.scaleMax || 10}
-                          onChange={(e) => onQuestionChange(question.id, { scaleMax: parseInt(e.target.value) || 10 })}
-                          min="2"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Разрешаем пустое значение для полного удаления
+                            if (value === '') {
+                              onQuestionChange(question.id, { scaleMax: undefined });
+                            } else {
+                              const numValue = parseInt(value);
+                              if (!isNaN(numValue)) {
+                                const currentMin = question.scaleMin || 1;
+                                // Убеждаемся что максимум больше минимума
+                                const validMax = numValue > currentMin ? numValue : currentMin + 1;
+                                onQuestionChange(question.id, { scaleMax: validMax });
+                              }
+                            }
+                          }}
+                          min={(question.scaleMin || 1) + 1}
                           max="20"
                           enterKeyHint="done"
                           onKeyDown={(e) => {
@@ -1626,7 +1650,13 @@ const QuestionsTab: React.FC<{
                             }
                           }}
                           onFocus={() => onKeyboardStateChange(true)}
-                          onBlur={() => onKeyboardStateChange(false)}
+                          onBlur={(e) => {
+                            onKeyboardStateChange(false);
+                            // Если поле пустое при потере фокуса, возвращаем 10
+                            if (e.target.value === '') {
+                              onQuestionChange(question.id, { scaleMax: 10 });
+                            }
+                          }}
                           style={{
                             width: '100%',
                             padding: '8px 12px',
