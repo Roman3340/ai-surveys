@@ -60,13 +60,6 @@ const SurveyPreview: React.FC = () => {
           description: draft.settings.description || '',
           questions: draft.questions as any,
           settings: {
-            // Настройки по умолчанию
-            allowAnonymous: true,
-            showProgress: true,
-            randomizeQuestions: false,
-            oneResponsePerUser: true,
-            collectTelegramData: true,
-            creationType: 'manual',
             // Настройки из черновика
             ...draft.settings
           }

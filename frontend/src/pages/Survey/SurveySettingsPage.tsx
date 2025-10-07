@@ -10,7 +10,16 @@ import type { SurveySettings } from '../../types';
 interface SurveySettingsData {
   title: string;
   description: string;
-  settings: SurveySettings;
+  settings: {
+    allowAnonymous: boolean;
+    showProgress: boolean;
+    randomizeQuestions: boolean;
+    oneResponsePerUser: boolean;
+    collectTelegramData: boolean;
+    maxParticipants?: string;
+    endDate?: string;
+    creationType: 'manual';
+  };
 }
 
 const SurveySettingsPage: React.FC = () => {
@@ -27,8 +36,8 @@ const SurveySettingsPage: React.FC = () => {
       randomizeQuestions: false,
       oneResponsePerUser: true,
       collectTelegramData: true,
-      maxParticipants: undefined,
-      endDate: undefined,
+      maxParticipants: '',
+      endDate: '',
       creationType: 'manual'
     }
   });
@@ -54,14 +63,13 @@ const SurveySettingsPage: React.FC = () => {
           description: settings.description || '',
           settings: { 
             ...prev.settings, 
-            ...settings,
             // Убеждаемся что все настройки опроса присутствуют
-            allowAnonymous: settings.allowAnonymous ?? true,
+            allowAnonymous: settings.allowAnonymous ?? false,
             showProgress: settings.showProgress ?? true,
             randomizeQuestions: settings.randomizeQuestions ?? false,
             oneResponsePerUser: settings.oneResponsePerUser ?? true,
-            collectTelegramData: settings.collectTelegramData ?? true,
-            maxParticipants: settings.maxParticipants,
+            collectTelegramData: settings.collectTelegramData ?? false,
+            maxParticipants: settings.maxParticipants?.toString() || '',
             endDate: settings.endDate,
             creationType: 'manual' as const
           }
@@ -95,18 +103,21 @@ const SurveySettingsPage: React.FC = () => {
       description: formData.description,
       // Основные настройки из предыдущей страницы (из location.state)
       language: (location.state?.surveyData as any)?.language || 'ru',
-      startDate: (location.state?.surveyData as any)?.startDate,
-      startTime: (location.state?.surveyData as any)?.startTime,
-      endDate: formData.settings.endDate,
-      endTime: (location.state?.surveyData as any)?.endTime,
-      maxParticipants: formData.settings.maxParticipants,
+      startDate: (location.state?.surveyData as any)?.startDate || '',
+      startTime: (location.state?.surveyData as any)?.startTime || '',
+      endDate: formData.settings.endDate || '',
+      endTime: (location.state?.surveyData as any)?.endTime || '',
+      maxParticipants: formData.settings.maxParticipants?.toString() || '',
       // Настройки опроса
       allowAnonymous: formData.settings.allowAnonymous,
       showProgress: formData.settings.showProgress,
       randomizeQuestions: formData.settings.randomizeQuestions,
       oneResponsePerUser: formData.settings.oneResponsePerUser,
       collectTelegramData: formData.settings.collectTelegramData,
-      creationType: 'manual'
+      creationType: 'manual',
+      motivationEnabled: false,
+      motivationType: 'discount',
+      motivationDetails: ''
     });
     
     // Переходим к мотивации
@@ -122,17 +133,20 @@ const SurveySettingsPage: React.FC = () => {
       title: formData.title,
       description: formData.description,
       language: (location.state?.surveyData as any)?.language || 'ru',
-      startDate: (location.state?.surveyData as any)?.startDate,
-      startTime: (location.state?.surveyData as any)?.startTime,
-      endDate: (location.state?.surveyData as any)?.endDate,
-      endTime: (location.state?.surveyData as any)?.endTime,
-      maxParticipants: (location.state?.surveyData as any)?.maxParticipants,
+      startDate: (location.state?.surveyData as any)?.startDate || '',
+      startTime: (location.state?.surveyData as any)?.startTime || '',
+      endDate: (location.state?.surveyData as any)?.endDate || '',
+      endTime: (location.state?.surveyData as any)?.endTime || '',
+      maxParticipants: (location.state?.surveyData as any)?.maxParticipants?.toString() || '',
       allowAnonymous: formData.settings.allowAnonymous,
       showProgress: formData.settings.showProgress,
       randomizeQuestions: formData.settings.randomizeQuestions,
       oneResponsePerUser: formData.settings.oneResponsePerUser,
       collectTelegramData: formData.settings.collectTelegramData,
-      creationType: 'manual'
+      creationType: 'manual',
+      motivationEnabled: false,
+      motivationType: 'discount',
+      motivationDetails: ''
     });
     navigate('/survey/create/manual');
   };

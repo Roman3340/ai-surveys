@@ -54,24 +54,9 @@ const CreateSurveyPage: React.FC = () => {
     if (draft.mode === 'manual') {
       navigate('/survey/create/manual', { replace: true });
     } else if (draft.mode === 'ai') {
-      // Для AI восстанавливаем на нужном шаге
-      if (draft.questions && draft.questions.length > 0) {
-        // Если есть вопросы, переходим к предпросмотру
-        navigate('/survey/create/ai/preview', { replace: true });
-      } else if (draft.motivation) {
-        // Если есть мотивация, переходим к генерации
-        navigate('/survey/create/ai/generate', { replace: true, state: draft.motivation });
-      } else if (draft.settings?.userType) {
-        // Если есть тип пользователя, переходим на соответствующую страницу
-        if (draft.settings.userType === 'business') {
-          navigate('/survey/create/ai/business', { replace: true });
-        } else {
-          navigate('/survey/create/ai/personal', { replace: true });
-        }
-      } else {
-        // Иначе на выбор типа
-        navigate('/survey/create/ai', { replace: true });
-      }
+      // Для AI пока отключаем восстановление - будем переделывать
+      clearDraft();
+      navigate('/survey/create/ai', { replace: true });
     } else {
       // Если mode не задан, считаем manual как дефолт
       navigate('/survey/create/manual', { replace: true });
@@ -168,22 +153,8 @@ const CreateSurveyPage: React.FC = () => {
               let title = '';
               if (draft?.mode === 'manual' && draft?.settings?.title) {
                 title = draft.settings.title;
-              } else if (draft?.mode === 'ai' && draft?.settings?.userType === 'business' && draft?.settings?.businessSphere) {
-                // Преобразуем значение сферы в русское название
-                const sphereMap: { [key: string]: string } = {
-                  'cafe': 'Кафе',
-                  'online_shop': 'Онлайн-магазин',
-                  'fitness': 'Фитнес',
-                  'beauty': 'Красота и здоровье',
-                  'education': 'Образование',
-                  'services': 'Услуги',
-                  'retail': 'Розничная торговля',
-                  'tech': 'IT и технологии',
-                  'other': 'Другое'
-                };
-                title = sphereMap[draft.settings.businessSphere] || draft.settings.businessSphere;
-              } else if (draft?.mode === 'ai' && draft?.settings?.userType === 'personal' && draft?.settings?.topic) {
-                title = draft.settings.topic;
+              } else if (draft?.mode === 'ai') {
+                title = 'Опрос с ИИ';
               }
               return title ? (
                 <div style={{ fontSize: '14px', color: 'var(--tg-text-color)', marginBottom: '8px', fontWeight: 500 }}>

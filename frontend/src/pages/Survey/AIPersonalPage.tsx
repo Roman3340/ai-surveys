@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-import { getDraft, saveSettings } from '../../utils/surveyDraft';
+// import { getDraft, saveSettings } from '../../utils/surveyDraft'; // Отключено для AI
 
 interface AIPersonalPageProps {}
 
@@ -11,31 +11,19 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
   const navigate = useNavigate();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
-  const [formData, setFormData] = useState(() => {
-    const draft = getDraft();
-    return {
-      topic: draft?.settings?.topic || '',
-      audience: draft?.settings?.audience || '',
-      purpose: draft?.settings?.purpose || '',
-      questionCount: draft?.settings?.questionCount || 5,
-      questionTypes: draft?.settings?.questionTypes || [] as string[]
-    };
+  const [formData, setFormData] = useState({
+    topic: '',
+    audience: '',
+    purpose: '',
+    questionCount: 5,
+    questionTypes: [] as string[]
   });
   
   const [showQuestionTypes, setShowQuestionTypes] = useState(false);
-  const [customQuestionCount, setCustomQuestionCount] = useState(() => {
-    const draft = getDraft();
-    // Если questionCount не является стандартным значением (5, 10, 15, 20), то это кастомное значение
-    const standardCounts = [5, 7, 10, 15];
-    if (draft?.settings?.questionCount && !standardCounts.includes(draft.settings.questionCount)) {
-      return draft.settings.questionCount.toString();
-    }
-    return '';
-  });
+  const [customQuestionCount, setCustomQuestionCount] = useState('');
 
   const handleNext = () => {
-    // Сохраняем данные в черновик
-    saveSettings({ ...formData, userType: 'personal' });
+    // Переходим на следующую страницу без сохранения в LocalStorage
     navigate('/survey/create/ai/motivation', { 
       state: { ...formData, userType: 'personal' }
     });

@@ -71,7 +71,7 @@ export interface SurveySettings {
   collectTelegramData: boolean;
   reward?: SurveyReward;
   endDate?: string;
-  maxParticipants?: number;
+  maxParticipants?: string;
   creationType: 'manual' | 'ai';
 }
 

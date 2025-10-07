@@ -31,12 +31,15 @@ const ManualSurveyPage: React.FC = () => {
     saveSettings({
       ...surveyData,
       // Добавляем настройки по умолчанию для опроса
-      allowAnonymous: true,
+      allowAnonymous: false,
       showProgress: true,
       randomizeQuestions: false,
       oneResponsePerUser: true,
-      collectTelegramData: true,
-      creationType: 'manual'
+      collectTelegramData: false,
+      creationType: 'manual',
+      motivationEnabled: false,
+      motivationType: 'discount',
+      motivationDetails: ''
     });
     navigate('/survey/create/manual/settings', {
       state: surveyData
@@ -75,7 +78,18 @@ const ManualSurveyPage: React.FC = () => {
   useStableBackButton({
     onBack: () => {
       // Сохраняем текущие данные перед возвратом
-      saveSettings(surveyData);
+      saveSettings({
+        ...surveyData,
+        allowAnonymous: false,
+        showProgress: true,
+        randomizeQuestions: false,
+        oneResponsePerUser: true,
+        collectTelegramData: false,
+        creationType: 'manual',
+        motivationEnabled: false,
+        motivationType: 'discount',
+        motivationDetails: ''
+      });
       navigate('/survey/create', { replace: true });
     }
   });

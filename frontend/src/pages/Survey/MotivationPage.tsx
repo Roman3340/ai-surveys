@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-import { getDraft, saveMotivation } from '../../utils/surveyDraft';
+// import { getDraft, saveMotivation } from '../../utils/surveyDraft'; // Отключено для AI
 
 interface MotivationPageProps {}
 
@@ -24,20 +24,16 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   const previousData = location.state || {};
   const isFromAI = location.pathname.includes('/ai/');
 
-  const [motivationData, setMotivationData] = useState<MotivationData>(() => {
-    const draft = getDraft();
-    return {
-      motivation: draft?.motivation?.motivation || 'none',
-      rewardDescription: draft?.motivation?.rewardDescription || '',
-      rewardValue: draft?.motivation?.rewardValue || '',
-      ...previousData
-    } as MotivationData;
-  });
+  const [motivationData, setMotivationData] = useState<MotivationData>({
+    motivation: 'none',
+    rewardDescription: '',
+    rewardValue: '',
+    ...previousData
+  } as MotivationData);
 
   const handleNext = () => {
-    // Сохраняем данные мотивации
+    // Переходим на следующую страницу без сохранения в LocalStorage
     const allData = { ...motivationData };
-    saveMotivation(allData);
 
     if (isFromAI) {
       // Для AI - переходим к генерации
