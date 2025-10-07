@@ -56,7 +56,7 @@ const SurveyCreatorPage: React.FC = () => {
   const { hapticFeedback } = useTelegram();
   const { createSurvey, publishSurvey } = useAppStore();
   
-  const [activeTab, setActiveTab] = useState<TabType>('settings');
+  const [activeTab, setActiveTab] = useState<TabType>('questions');
   const [isPublishing, setIsPublishing] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   
