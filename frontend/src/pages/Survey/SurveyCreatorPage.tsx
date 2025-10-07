@@ -1468,7 +1468,7 @@ const QuestionsTab: React.FC<{
                   animation: 'gradientShift 3s ease infinite',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '12px',
+                  borderRadius: '8px',
                   padding: '12px 24px',
                   fontSize: '14px',
                   fontWeight: '600',
@@ -1498,7 +1498,6 @@ const QuestionsTab: React.FC<{
                   background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
                   transform: 'rotate(45deg)',
                   transition: 'all 0.6s',
-                  borderRadius: '8px',
                   opacity: 0
                 }} />
                 <span style={{ position: 'relative', zIndex: 1 }}>
@@ -1512,7 +1511,7 @@ const QuestionsTab: React.FC<{
               color: 'var(--tg-hint-color)', 
               lineHeight: '1.4',
               maxWidth: '280px',
-              margin: '10px auto 0 auto',
+              margin: '15px auto 0 auto',
               textAlign: 'center'
             }}>
               Искусственный интеллект создаст готовый опрос по вашим требованиям. Требуется подписка.
