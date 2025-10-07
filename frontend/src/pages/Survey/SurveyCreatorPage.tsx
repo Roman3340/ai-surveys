@@ -52,6 +52,27 @@ interface SurveyData {
 type TabType = 'settings' | 'questions' | 'preview';
 
 const SurveyCreatorPage: React.FC = () => {
+  // Добавляем CSS анимации
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
   const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
   const { createSurvey, publishSurvey } = useAppStore();
@@ -1409,50 +1430,77 @@ const QuestionsTab: React.FC<{
               или
             </div>
             
-            <button
-              onClick={() => {
-                // TODO: Implement AI generation
-                console.log('AI generation clicked');
-              }}
-              style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '16px 24px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                transition: 'all 0.3s ease',
-                marginBottom: '12px'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-              }}
-            >
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              {/* Летающие звездочки SVG */}
               <div style={{
                 position: 'absolute',
-                top: '-50%',
-                left: '-50%',
-                width: '200%',
-                height: '200%',
-                background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
-                transform: 'rotate(45deg)',
-                transition: 'all 0.6s',
-                opacity: 0
-              }} />
-              <span style={{ position: 'relative', zIndex: 1 }}>
-                ✨ Создать с ИИ
-              </span>
-            </button>
+                top: '-8px',
+                right: '-8px',
+                animation: 'float 2s ease-in-out infinite',
+                animationDelay: '0s'
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                </svg>
+              </div>
+              <div style={{
+                position: 'absolute',
+                bottom: '-8px',
+                left: '-8px',
+                animation: 'float 2s ease-in-out infinite',
+                animationDelay: '1s'
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                </svg>
+              </div>
+              
+              <button
+                onClick={() => {
+                  // TODO: Implement AI generation
+                  console.log('AI generation clicked');
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  backgroundSize: '200% 200%',
+                  animation: 'gradientShift 3s ease infinite',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '16px 24px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                }}
+              >
+                <div style={{
+                  position: 'absolute',
+                  top: '-50%',
+                  left: '-50%',
+                  width: '200%',
+                  height: '200%',
+                  background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
+                  transform: 'rotate(45deg)',
+                  transition: 'all 0.6s',
+                  opacity: 0
+                }} />
+                <span style={{ position: 'relative', zIndex: 1 }}>
+                  Создать с ИИ
+                </span>
+              </button>
+            </div>
             
             <div style={{ 
               fontSize: '12px', 
@@ -1461,7 +1509,7 @@ const QuestionsTab: React.FC<{
               maxWidth: '280px',
               margin: '0 auto'
             }}>
-              Искусственный интеллект полностью самостоятельно сгенерирует опрос по целевой аудитории и требованиям пользователя. Доступно только по подписке.
+              ИИ создаст готовый опрос по вашим требованиям. Требуется подписка.
             </div>
           </div>
         ) : (
