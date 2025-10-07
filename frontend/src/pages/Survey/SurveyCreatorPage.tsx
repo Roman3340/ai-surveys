@@ -134,20 +134,62 @@ const SurveyCreatorPage: React.FC = () => {
     saveDraft();
   }, [surveyData, questions]);
 
-  // Инициализируем значения по умолчанию для шкалы
+  // Инициализируем значения по умолчанию для шкалы и очищаем несовместимые ответы
   useEffect(() => {
-    const scaleQuestions = questions.filter(q => q.type === 'scale');
     const newAnswers = { ...previewAnswers };
+    let hasChanges = false;
     
-    scaleQuestions.forEach(question => {
-      if (!(question.id in newAnswers)) {
+    questions.forEach(question => {
+      const currentAnswer = newAnswers[question.id];
+      
+      // Очищаем ответы для вопросов, которые изменили тип
+      if (currentAnswer !== undefined) {
+        let shouldClear = false;
+        
+        switch (question.type) {
+          case 'text':
+          case 'textarea':
+            if (typeof currentAnswer !== 'string') shouldClear = true;
+            break;
+          case 'single_choice':
+            if (typeof currentAnswer !== 'string') shouldClear = true;
+            break;
+          case 'multiple_choice':
+            if (!Array.isArray(currentAnswer)) shouldClear = true;
+            break;
+          case 'scale':
+            if (typeof currentAnswer !== 'number') shouldClear = true;
+            break;
+          case 'rating':
+            if (typeof currentAnswer !== 'number') shouldClear = true;
+            break;
+          case 'boolean':
+            if (currentAnswer !== 'yes' && currentAnswer !== 'no' && currentAnswer !== null) shouldClear = true;
+            break;
+          case 'date':
+            if (typeof currentAnswer !== 'string') shouldClear = true;
+            break;
+          case 'number':
+            if (typeof currentAnswer !== 'string' && typeof currentAnswer !== 'number') shouldClear = true;
+            break;
+        }
+        
+        if (shouldClear) {
+          delete newAnswers[question.id];
+          hasChanges = true;
+        }
+      }
+      
+      // Инициализируем значения по умолчанию для шкалы
+      if (question.type === 'scale' && !(question.id in newAnswers)) {
         const min = question.scaleMin || 1;
         const max = question.scaleMax || 10;
         newAnswers[question.id] = Math.floor((min + max) / 2);
+        hasChanges = true;
       }
     });
     
-    if (Object.keys(newAnswers).length !== Object.keys(previewAnswers).length) {
+    if (hasChanges) {
       setPreviewAnswers(newAnswers);
     }
   }, [questions]);
@@ -2144,8 +2186,10 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     cursor: 'pointer'
                   }}
                   onChange={() => {
-                    // Сохраняем ответ
-                    onAnswerChange?.({ ...answers, [question.id]: option });
+                    // Сохраняем ответ только если option не пустой
+                    if (option && option.trim() !== '') {
+                      onAnswerChange?.({ ...answers, [question.id]: option });
+                    }
                     
                     // Обновляем стили всех радио кнопок в группе
                     const radioButtons = document.querySelectorAll(`input[name="question_${question.id}"]`);
@@ -2741,7 +2785,7 @@ const PreviewTab: React.FC<{
                         return !answer;
                       
                       case 'multiple_choice':
-                        return !answer || answer.length === 0;
+                        return !answer || !Array.isArray(answer) || answer.length === 0;
                       
                       case 'scale':
                         // Для шкалы считаем что ответ есть если есть значение (по умолчанию 5)
