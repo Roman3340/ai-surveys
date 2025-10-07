@@ -2068,7 +2068,7 @@ const QuestionsTab: React.FC<{
 };
 
 // Функция для рендеринга разных типов вопросов
-const renderQuestionInput = (question: Question, validationErrors?: Record<string, { scaleMin?: string; scaleMax?: string }>) => {
+const renderQuestionInput = (question: Question, validationErrors?: Record<string, { scaleMin?: string; scaleMax?: string }>, onAnswerChange?: (answers: Record<string, any>) => void, answers?: Record<string, any>) => {
   const baseStyle = {
     width: '100%',
     padding: '12px 16px',
@@ -2087,6 +2087,8 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
           type="text"
           placeholder="Ваш ответ..."
           enterKeyHint="done"
+          value={answers?.[question.id] || ''}
+          onChange={(e) => onAnswerChange?.({ ...answers, [question.id]: e.target.value })}
           style={baseStyle}
         />
       );
@@ -2097,6 +2099,8 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
           placeholder="Ваш ответ..."
           rows={4}
           enterKeyHint="done"
+          value={answers?.[question.id] || ''}
+          onChange={(e) => onAnswerChange?.({ ...answers, [question.id]: e.target.value })}
           style={{
             ...baseStyle,
             resize: 'vertical'
@@ -2140,6 +2144,9 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     cursor: 'pointer'
                   }}
                   onChange={() => {
+                    // Сохраняем ответ
+                    onAnswerChange?.({ ...answers, [question.id]: option });
+                    
                     // Обновляем стили всех радио кнопок в группе
                     const radioButtons = document.querySelectorAll(`input[name="question_${question.id}"]`);
                     radioButtons.forEach((radio, radioIndex) => {
@@ -2222,6 +2229,17 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     const label = checkbox.closest('label');
                     const square = label?.querySelector('div') as HTMLElement;
                     const checkmark = label?.querySelector('div > div') as HTMLElement;
+                    
+                    // Обновляем массив выбранных ответов
+                    const currentAnswers = answers?.[question.id] || [];
+                    let newAnswers;
+                    if (checkbox.checked) {
+                      newAnswers = [...currentAnswers, option];
+                    } else {
+                      newAnswers = currentAnswers.filter((ans: string) => ans !== option);
+                    }
+                    onAnswerChange?.({ ...answers, [question.id]: newAnswers });
+                    
                     if (checkbox.checked) {
                       square?.style.setProperty('border-color', 'var(--tg-button-color)');
                       square?.style.setProperty('background-color', 'var(--tg-button-color)');
@@ -2299,7 +2317,11 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                 min={min}
                 max={max}
                 value={scaleValue}
-                onChange={(e) => setScaleValue(parseInt(e.target.value))}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  setScaleValue(value);
+                  onAnswerChange?.({ ...answers, [question.id]: value });
+                }}
                 style={{
                   width: '100%',
                   height: '8px',
@@ -2365,7 +2387,10 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
-                onClick={() => setRating(star)}
+                onClick={() => {
+                  setRating(star);
+                  onAnswerChange?.({ ...answers, [question.id]: star });
+                }}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -2444,6 +2469,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   // Если кликнули на уже выбранную кнопку, просто сбрасываем выбор
                   if (radio.checked) {
                     radio.checked = false;
+                    onAnswerChange?.({ ...answers, [question.id]: null });
                   } else {
                     // Выбираем новую кнопку
                     radio.checked = true;
@@ -2453,6 +2479,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     circle?.style.setProperty('border-color', 'var(--tg-button-color)');
                     circle?.style.setProperty('background-color', 'var(--tg-button-color)');
                     dot?.style.setProperty('opacity', '1');
+                    onAnswerChange?.({ ...answers, [question.id]: radio.value });
                   }
                 }}
               />
@@ -2516,6 +2543,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   // Если кликнули на уже выбранную кнопку, просто сбрасываем выбор
                   if (radio.checked) {
                     radio.checked = false;
+                    onAnswerChange?.({ ...answers, [question.id]: null });
                   } else {
                     // Выбираем новую кнопку
                     radio.checked = true;
@@ -2525,6 +2553,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     circle?.style.setProperty('border-color', 'var(--tg-button-color)');
                     circle?.style.setProperty('background-color', 'var(--tg-button-color)');
                     dot?.style.setProperty('opacity', '1');
+                    onAnswerChange?.({ ...answers, [question.id]: radio.value });
                   }
                 }}
               />
@@ -2551,6 +2580,8 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
         <input
           type="date"
           placeholder="Дата"
+          value={answers?.[question.id] || ''}
+          onChange={(e) => onAnswerChange?.({ ...answers, [question.id]: e.target.value })}
           style={baseStyle}
         />
       );
@@ -2562,6 +2593,8 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
           placeholder="Введите число..."
           enterKeyHint="done"
           inputMode="numeric"
+          value={answers?.[question.id] || ''}
+          onChange={(e) => onAnswerChange?.({ ...answers, [question.id]: e.target.value })}
           style={baseStyle}
         />
       );
@@ -2586,7 +2619,7 @@ const PreviewTab: React.FC<{
   onAnswerChange: (answers: Record<string, any>) => void;
   validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
   previewAnswers: Record<string, any>;
-}> = ({ surveyData, questions, validationErrors, previewAnswers }) => {
+}> = ({ surveyData, questions, validationErrors, previewAnswers, onAnswerChange, answers }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -2680,7 +2713,7 @@ const PreviewTab: React.FC<{
                     </div>
                   )}
                   
-                  {renderQuestionInput(question, validationErrors)}
+                  {renderQuestionInput(question, validationErrors, onAnswerChange, answers)}
                 </div>
               ))}
             </div>
@@ -2704,17 +2737,17 @@ const PreviewTab: React.FC<{
                       case 'textarea':
                         return !answer || answer.trim() === '';
                       
-                      case 'radio':
+                      case 'single_choice':
                         return !answer;
                       
-                      case 'checkbox':
+                      case 'multiple_choice':
                         return !answer || answer.length === 0;
                       
                       case 'scale':
                         // Для шкалы считаем что ответ есть если есть значение (по умолчанию 5)
                         return answer === undefined || answer === null;
                       
-                      case 'star':
+                      case 'rating':
                         return !answer || answer === 0;
                       
                       case 'boolean':
