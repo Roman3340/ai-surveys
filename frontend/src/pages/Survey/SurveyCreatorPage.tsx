@@ -2153,75 +2153,66 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
     case 'single_choice':
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {(question.options || ['', '']).map((option, index) => {
-            const currentAnswer = answers?.[question.id];
-            const isSelected = currentAnswer === option;
-            
-            return (
-              <label key={index} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                cursor: 'pointer',
-                padding: '12px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                border: '1px solid var(--tg-section-separator-color)',
+          {(question.options || ['', '']).map((option, index) => (
+            <label key={index} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer',
+              padding: '12px',
+              borderRadius: '8px',
+              backgroundColor: 'var(--tg-section-bg-color)',
+              border: '1px solid var(--tg-section-separator-color)',
+              transition: 'all 0.2s ease'
+            }}>
+              <div style={{
+                position: 'relative',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: `2px solid ${answers?.[question.id] === option ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answers?.[question.id] === option ? 'var(--tg-button-color)' : 'transparent',
                 transition: 'all 0.2s ease'
               }}>
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  value={option}
+                  checked={answers?.[question.id] === option}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                  onChange={(e) => {
+                    onAnswerChange?.({ ...answers, [question.id]: e.target.value });
+                  }}
+                />
                 <div style={{
-                  position: 'relative',
-                  width: '20px',
-                  height: '20px',
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
                   borderRadius: '50%',
-                  border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                  backgroundColor: isSelected ? 'var(--tg-button-color)' : 'transparent',
-                  transition: 'all 0.2s ease'
-                }}>
-                  <input
-                    type="radio"
-                    name={`question_${question.id}`}
-                    value={option}
-                    style={{ 
-                      position: 'absolute',
-                      opacity: 0,
-                      width: '100%',
-                      height: '100%',
-                      margin: 0,
-                      cursor: 'pointer'
-                    }}
-                    onChange={() => {
-                      // Сохраняем ответ только если option не пустой
-                      if (option && option.trim() !== '') {
-                        onAnswerChange?.({ ...answers, [question.id]: option });
-                      }
-                    }}
-                  />
-                  {isSelected && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white',
-                      opacity: 1,
-                      transition: 'opacity 0.2s ease'
-                    }} />
-                  )}
-                </div>
-                <span style={{ 
-                  color: 'var(--tg-text-color)',
-                  fontSize: '16px',
-                  flex: 1
-                }}>
-                  {option || `Вариант ${index + 1}`}
-                </span>
-              </label>
-            );
-          })}
+                  backgroundColor: 'white',
+                  opacity: answers?.[question.id] === option ? 1 : 0,
+                  transition: 'opacity 0.2s ease'
+                }} />
+              </div>
+              <span style={{ 
+                color: 'var(--tg-text-color)',
+                fontSize: '16px',
+                flex: 1
+              }}>
+                {option || `Вариант ${index + 1}`}
+              </span>
+            </label>
+          ))}
         </div>
       );
     
@@ -2230,7 +2221,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {(question.options || ['', '']).map((option, index) => {
             const currentAnswers = answers?.[question.id] || [];
-            const isSelected = currentAnswers.includes(option);
+            const isChecked = currentAnswers.includes(option);
             
             return (
               <label key={index} style={{
@@ -2249,13 +2240,14 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   width: '20px',
                   height: '20px',
                   borderRadius: '4px',
-                  border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                  backgroundColor: isSelected ? 'var(--tg-button-color)' : 'transparent',
+                  border: `2px solid ${isChecked ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: isChecked ? 'var(--tg-button-color)' : 'transparent',
                   transition: 'all 0.2s ease'
                 }}>
                   <input
                     type="checkbox"
                     name={`question_${question.id}_${index}`}
+                    checked={isChecked}
                     style={{ 
                       position: 'absolute',
                       opacity: 0,
@@ -2264,38 +2256,35 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                       margin: 0,
                       cursor: 'pointer'
                     }}
-                    onChange={() => {
-                      // Обновляем массив выбранных ответов
+                    onChange={(e) => {
                       const currentAnswers = answers?.[question.id] || [];
                       let newAnswers;
                       
-                      if (isSelected) {
-                        // Убираем из выбранных
-                        newAnswers = currentAnswers.filter((ans: string) => ans !== option);
-                      } else {
+                      if (e.target.checked) {
                         // Добавляем к выбранным
                         newAnswers = [...currentAnswers, option];
+                      } else {
+                        // Убираем из выбранных
+                        newAnswers = currentAnswers.filter((ans: string) => ans !== option);
                       }
                       
                       onAnswerChange?.({ ...answers, [question.id]: newAnswers });
                     }}
                   />
-                  {isSelected && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -90%)',
-                      width: '12px',
-                      height: '12px',
-                      opacity: 1,
-                      transition: 'opacity 0.2s ease'
-                    }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20,6 9,17 4,12"></polyline>
-                      </svg>
-                    </div>
-                  )}
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -90%)',
+                    width: '12px',
+                    height: '12px',
+                    opacity: isChecked ? 1 : 0,
+                    transition: 'opacity 0.2s ease'
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                  </div>
                 </div>
                 <span style={{ 
                   color: 'var(--tg-text-color)',
