@@ -83,6 +83,7 @@ const SurveyCreatorPage: React.FC = () => {
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [previewAnswers, setPreviewAnswers] = useState<Record<string, any>>({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
 
   // Загружаем данные из черновика при инициализации
   useEffect(() => {
@@ -132,6 +133,33 @@ const SurveyCreatorPage: React.FC = () => {
   useEffect(() => {
     saveDraft();
   }, [surveyData, questions]);
+
+  // Функция для проверки валидации
+  const validateScaleValues = (questionId: string, scaleMin?: number, scaleMax?: number) => {
+    const errors: { scaleMin?: string; scaleMax?: string } = {};
+    
+    // Проверяем только если значения определены
+    if (scaleMin !== undefined) {
+      if (scaleMin < 1) {
+        errors.scaleMin = 'Значение не должно быть меньше 1';
+      } else if (scaleMin > 99) {
+        errors.scaleMin = 'Значение не должно быть больше 99';
+      }
+    }
+    
+    if (scaleMax !== undefined) {
+      if (scaleMax < 2) {
+        errors.scaleMax = 'Значение не должно быть меньше 2';
+      } else if (scaleMax > 100) {
+        errors.scaleMax = 'Значение не должно быть больше 100';
+      }
+    }
+    
+    setValidationErrors(prev => ({
+      ...prev,
+      [questionId]: errors
+    }));
+  };
 
   // Обработчики изменений
   const handleSurveyDataChange = (field: keyof SurveyData, value: any) => {
@@ -428,18 +456,20 @@ const SurveyCreatorPage: React.FC = () => {
         )}
         
         {activeTab === 'questions' && (
-          <QuestionsTab
-            questions={questions}
-            onQuestionChange={handleQuestionChange}
-            onAddQuestion={addQuestion}
-            onDeleteQuestion={deleteQuestion}
-            onDuplicateQuestion={duplicateQuestion}
-            onMoveQuestionUp={moveQuestionUp}
-            onMoveQuestionDown={moveQuestionDown}
-            onAddOption={addOption}
-            onRemoveOption={removeOption}
-            onKeyboardStateChange={(isOpen) => setSurveyData(prev => ({ ...prev, isKeyboardOpen: isOpen }))}
-          />
+            <QuestionsTab
+              questions={questions}
+              onQuestionChange={handleQuestionChange}
+              onAddQuestion={addQuestion}
+              onDeleteQuestion={deleteQuestion}
+              onDuplicateQuestion={duplicateQuestion}
+              onMoveQuestionUp={moveQuestionUp}
+              onMoveQuestionDown={moveQuestionDown}
+              onAddOption={addOption}
+              onRemoveOption={removeOption}
+              onKeyboardStateChange={(isOpen) => setSurveyData(prev => ({ ...prev, isKeyboardOpen: isOpen }))}
+              validationErrors={validationErrors}
+              validateScaleValues={validateScaleValues}
+            />
         )}
         
         {activeTab === 'preview' && (
@@ -448,6 +478,7 @@ const SurveyCreatorPage: React.FC = () => {
             questions={questions}
             answers={previewAnswers}
             onAnswerChange={setPreviewAnswers}
+            validationErrors={validationErrors}
           />
         )}
       </div>
@@ -1256,27 +1287,9 @@ const QuestionsTab: React.FC<{
   onAddOption: (questionId: string) => void;
   onRemoveOption: (questionId: string, optionIndex: number) => void;
   onKeyboardStateChange: (isOpen: boolean) => void;
-}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange }) => {
-  // Состояние для ошибок валидации
-  const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
-
-  // Функция для проверки валидации
-  const validateScaleValues = (questionId: string, scaleMin?: number, scaleMax?: number) => {
-    const errors: { scaleMin?: string; scaleMax?: string } = {};
-    
-    if (scaleMin !== undefined && scaleMin < 1) {
-      errors.scaleMin = 'Значение не должно быть меньше 1';
-    }
-    
-    if (scaleMax !== undefined && scaleMax > 100) {
-      errors.scaleMax = 'Значение не должно быть больше 100';
-    }
-    
-    setValidationErrors(prev => ({
-      ...prev,
-      [questionId]: errors
-    }));
-  };
+  validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
+  validateScaleValues: (questionId: string, scaleMin?: number, scaleMax?: number) => void;
+}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues }) => {
 
   return (
     <motion.div
@@ -1625,17 +1638,26 @@ const QuestionsTab: React.FC<{
                             } else {
                               const numValue = parseInt(value);
                               if (!isNaN(numValue)) {
-                                const currentMax = question.scaleMax || 10;
-                                // Если новое значение больше или равно максимуму, корректируем максимум
-                                if (numValue >= currentMax) {
-                                  onQuestionChange(question.id, { 
-                                    scaleMin: numValue,
-                                    scaleMax: numValue + 1
-                                  });
-                                  validateScaleValues(question.id, numValue, numValue + 1);
+                                // Не позволяем вводить значения меньше 1 или больше 99
+                                if (numValue < 1) {
+                                  onQuestionChange(question.id, { scaleMin: 1 });
+                                  validateScaleValues(question.id, 1, question.scaleMax);
+                                } else if (numValue > 99) {
+                                  onQuestionChange(question.id, { scaleMin: 99 });
+                                  validateScaleValues(question.id, 99, question.scaleMax);
                                 } else {
-                                  onQuestionChange(question.id, { scaleMin: numValue });
-                                  validateScaleValues(question.id, numValue, question.scaleMax);
+                                  const currentMax = question.scaleMax || 10;
+                                  // Если новое значение больше или равно максимуму, корректируем максимум
+                                  if (numValue >= currentMax) {
+                                    onQuestionChange(question.id, { 
+                                      scaleMin: numValue,
+                                      scaleMax: numValue + 1
+                                    });
+                                    validateScaleValues(question.id, numValue, numValue + 1);
+                                  } else {
+                                    onQuestionChange(question.id, { scaleMin: numValue });
+                                    validateScaleValues(question.id, numValue, question.scaleMax);
+                                  }
                                 }
                               }
                             }
@@ -1699,17 +1721,26 @@ const QuestionsTab: React.FC<{
                             } else {
                               const numValue = parseInt(value);
                               if (!isNaN(numValue)) {
-                                const currentMin = question.scaleMin || 1;
-                                // Если новое значение меньше или равно минимуму, корректируем минимум
-                                if (numValue <= currentMin) {
-                                  onQuestionChange(question.id, { 
-                                    scaleMin: numValue - 1,
-                                    scaleMax: numValue
-                                  });
-                                  validateScaleValues(question.id, numValue - 1, numValue);
+                                // Не позволяем вводить значения меньше 2 или больше 100
+                                if (numValue < 2) {
+                                  onQuestionChange(question.id, { scaleMax: 2 });
+                                  validateScaleValues(question.id, question.scaleMin, 2);
+                                } else if (numValue > 100) {
+                                  onQuestionChange(question.id, { scaleMax: 100 });
+                                  validateScaleValues(question.id, question.scaleMin, 100);
                                 } else {
-                                  onQuestionChange(question.id, { scaleMax: numValue });
-                                  validateScaleValues(question.id, question.scaleMin, numValue);
+                                  const currentMin = question.scaleMin || 1;
+                                  // Если новое значение меньше или равно минимуму, корректируем минимум
+                                  if (numValue <= currentMin) {
+                                    onQuestionChange(question.id, { 
+                                      scaleMin: numValue - 1,
+                                      scaleMax: numValue
+                                    });
+                                    validateScaleValues(question.id, numValue - 1, numValue);
+                                  } else {
+                                    onQuestionChange(question.id, { scaleMax: numValue });
+                                    validateScaleValues(question.id, question.scaleMin, numValue);
+                                  }
                                 }
                               }
                             }
@@ -1985,7 +2016,7 @@ const QuestionsTab: React.FC<{
 };
 
 // Функция для рендеринга разных типов вопросов
-const renderQuestionInput = (question: Question) => {
+const renderQuestionInput = (question: Question, validationErrors?: Record<string, { scaleMin?: string; scaleMax?: string }>) => {
   const baseStyle = {
     width: '100%',
     padding: '12px 16px',
@@ -2178,8 +2209,19 @@ const renderQuestionInput = (question: Question) => {
       );
     
     case 'scale':
-      const min = question.scaleMin || 1;
-      const max = question.scaleMax || 10; // Убираем ограничение до 20
+      // Проверяем корректность значений
+      const minValue = question.scaleMin || 1;
+      const maxValue = question.scaleMax || 10;
+      
+      // Проверяем есть ли ошибки валидации или некорректные значения
+      const hasErrors = validationErrors && validationErrors[question.id] && 
+        (validationErrors[question.id].scaleMin || validationErrors[question.id].scaleMax);
+      
+      const isInvalidRange = minValue < 1 || minValue > 99 || maxValue < 2 || maxValue > 100 || minValue >= maxValue;
+      
+      // Если есть ошибки или некорректный диапазон, используем значения по умолчанию
+      const min = (hasErrors || isInvalidRange) ? 1 : minValue;
+      const max = (hasErrors || isInvalidRange) ? 10 : maxValue;
       const [scaleValue, setScaleValue] = React.useState(Math.floor((min + max) / 2));
       
       return (
@@ -2374,7 +2416,8 @@ const PreviewTab: React.FC<{
   questions: Question[];
   answers: Record<string, any>;
   onAnswerChange: (answers: Record<string, any>) => void;
-}> = ({ surveyData, questions }) => {
+  validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
+}> = ({ surveyData, questions, validationErrors }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -2468,7 +2511,7 @@ const PreviewTab: React.FC<{
                     </div>
                   )}
                   
-                  {renderQuestionInput(question)}
+                  {renderQuestionInput(question, validationErrors)}
                 </div>
               ))}
             </div>
