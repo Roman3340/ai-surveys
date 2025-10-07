@@ -2151,225 +2151,162 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
       );
     
     case 'single_choice':
-      // Инициализируем визуальное состояние radio кнопок
-      React.useEffect(() => {
-        const currentAnswer = answers?.[question.id];
-        question.options?.forEach((option) => {
-          const isSelected = currentAnswer === option;
-          const radio = document.querySelector(`input[name="question_${question.id}"][value="${option}"]`) as HTMLInputElement;
-          if (radio) {
-            const label = radio.closest('label');
-            const circle = label?.querySelector('div') as HTMLElement;
-            const dot = label?.querySelector('div > div') as HTMLElement;
-            
-            if (isSelected) {
-              circle?.style.setProperty('border-color', 'var(--tg-button-color)');
-              circle?.style.setProperty('background-color', 'var(--tg-button-color)');
-              dot?.style.setProperty('opacity', '1');
-            } else {
-              circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
-              circle?.style.setProperty('background-color', 'transparent');
-              dot?.style.setProperty('opacity', '0');
-            }
-          }
-        });
-      }, [answers, question.id, question.options]);
-      
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {(question.options || ['', '']).map((option, index) => (
-            <label key={index} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer',
-              padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--tg-section-bg-color)',
-              border: '1px solid var(--tg-section-separator-color)',
-              transition: 'all 0.2s ease'
-            }}>
-              <div style={{
-                position: 'relative',
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                border: '2px solid var(--tg-hint-color)',
-                backgroundColor: 'transparent',
+          {(question.options || ['', '']).map((option, index) => {
+            const currentAnswer = answers?.[question.id];
+            const isSelected = currentAnswer === option;
+            
+            return (
+              <label key={index} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                border: '1px solid var(--tg-section-separator-color)',
                 transition: 'all 0.2s ease'
               }}>
-                <input
-                  type="radio"
-                  name={`question_${question.id}`}
-                  value={option}
-                  style={{ 
-                    position: 'absolute',
-                    opacity: 0,
-                    width: '100%',
-                    height: '100%',
-                    margin: 0,
-                    cursor: 'pointer'
-                  }}
-                  onChange={() => {
-                    // Сохраняем ответ только если option не пустой
-                    if (option && option.trim() !== '') {
-                      onAnswerChange?.({ ...answers, [question.id]: option });
-                    }
-                    
-                    // Обновляем стили всех радио кнопок в группе
-                    const radioButtons = document.querySelectorAll(`input[name="question_${question.id}"]`);
-                    radioButtons.forEach((radio, radioIndex) => {
-                      const label = radio.closest('label');
-                      const circle = label?.querySelector('div') as HTMLElement;
-                      const dot = label?.querySelector('div > div') as HTMLElement;
-                      if (radioIndex === index) {
-                        circle?.style.setProperty('border-color', 'var(--tg-button-color)');
-                        circle?.style.setProperty('background-color', 'var(--tg-button-color)');
-                        dot?.style.setProperty('opacity', '1');
-                      } else {
-                        circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
-                        circle?.style.setProperty('background-color', 'transparent');
-                        dot?.style.setProperty('opacity', '0');
-                      }
-                    });
-                  }}
-                />
                 <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '8px',
-                  height: '8px',
+                  position: 'relative',
+                  width: '20px',
+                  height: '20px',
                   borderRadius: '50%',
-                  backgroundColor: 'white',
-                  opacity: 0,
-                  transition: 'opacity 0.2s ease'
-                }} />
-              </div>
-              <span style={{ 
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                flex: 1
-              }}>
-                {option || `Вариант ${index + 1}`}
-              </span>
-            </label>
-          ))}
+                  border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: isSelected ? 'var(--tg-button-color)' : 'transparent',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <input
+                    type="radio"
+                    name={`question_${question.id}`}
+                    value={option}
+                    style={{ 
+                      position: 'absolute',
+                      opacity: 0,
+                      width: '100%',
+                      height: '100%',
+                      margin: 0,
+                      cursor: 'pointer'
+                    }}
+                    onChange={() => {
+                      // Сохраняем ответ только если option не пустой
+                      if (option && option.trim() !== '') {
+                        onAnswerChange?.({ ...answers, [question.id]: option });
+                      }
+                    }}
+                  />
+                  {isSelected && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white',
+                      opacity: 1,
+                      transition: 'opacity 0.2s ease'
+                    }} />
+                  )}
+                </div>
+                <span style={{ 
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  flex: 1
+                }}>
+                  {option || `Вариант ${index + 1}`}
+                </span>
+              </label>
+            );
+          })}
         </div>
       );
     
     case 'multiple_choice':
-      // Инициализируем визуальное состояние checkbox'ов
-      React.useEffect(() => {
-        const currentAnswers = answers?.[question.id] || [];
-        question.options?.forEach((option, index) => {
-          const isSelected = currentAnswers.includes(option);
-          const checkbox = document.querySelector(`input[name="question_${question.id}_${index}"]`) as HTMLInputElement;
-          if (checkbox) {
-            const label = checkbox.closest('label');
-            const square = label?.querySelector('div') as HTMLElement;
-            const checkmark = label?.querySelector('div > div') as HTMLElement;
-            
-            if (isSelected) {
-              square?.style.setProperty('border-color', 'var(--tg-button-color)');
-              square?.style.setProperty('background-color', 'var(--tg-button-color)');
-              checkmark?.style.setProperty('opacity', '1');
-            } else {
-              square?.style.setProperty('border-color', 'var(--tg-hint-color)');
-              square?.style.setProperty('background-color', 'transparent');
-              checkmark?.style.setProperty('opacity', '0');
-            }
-          }
-        });
-      }, [answers, question.id, question.options]);
-      
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {(question.options || ['', '']).map((option, index) => (
-            <label key={index} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer',
-              padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: 'var(--tg-section-bg-color)',
-              border: '1px solid var(--tg-section-separator-color)',
-              transition: 'all 0.2s ease'
-            }}>
-              <div style={{
-                position: 'relative',
-                width: '20px',
-                height: '20px',
-                borderRadius: '4px',
-                border: '2px solid var(--tg-hint-color)',
-                backgroundColor: 'transparent',
+          {(question.options || ['', '']).map((option, index) => {
+            const currentAnswers = answers?.[question.id] || [];
+            const isSelected = currentAnswers.includes(option);
+            
+            return (
+              <label key={index} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                border: '1px solid var(--tg-section-separator-color)',
                 transition: 'all 0.2s ease'
               }}>
-                <input
-                  type="checkbox"
-                  name={`question_${question.id}_${index}`}
-                  style={{ 
-                    position: 'absolute',
-                    opacity: 0,
-                    width: '100%',
-                    height: '100%',
-                    margin: 0,
-                    cursor: 'pointer'
-                  }}
-                  onChange={(e) => {
-                    const checkbox = e.target as HTMLInputElement;
-                    const label = checkbox.closest('label');
-                    const square = label?.querySelector('div') as HTMLElement;
-                    const checkmark = label?.querySelector('div > div') as HTMLElement;
-                    
-                    // Обновляем массив выбранных ответов
-                    const currentAnswers = answers?.[question.id] || [];
-                    const isCurrentlySelected = currentAnswers.includes(option);
-                    let newAnswers;
-                    
-                    if (isCurrentlySelected) {
-                      // Убираем из выбранных
-                      newAnswers = currentAnswers.filter((ans: string) => ans !== option);
-                      square?.style.setProperty('border-color', 'var(--tg-hint-color)');
-                      square?.style.setProperty('background-color', 'transparent');
-                      checkmark?.style.setProperty('opacity', '0');
-                    } else {
-                      // Добавляем к выбранным
-                      newAnswers = [...currentAnswers, option];
-                      square?.style.setProperty('border-color', 'var(--tg-button-color)');
-                      square?.style.setProperty('background-color', 'var(--tg-button-color)');
-                      checkmark?.style.setProperty('opacity', '1');
-                    }
-                    
-                    onAnswerChange?.({ ...answers, [question.id]: newAnswers });
-                  }}
-                />
                 <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -90%)',
-                  width: '12px',
-                  height: '12px',
-                  opacity: 0,
-                  transition: 'opacity 0.2s ease'
+                  position: 'relative',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '4px',
+                  border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: isSelected ? 'var(--tg-button-color)' : 'transparent',
+                  transition: 'all 0.2s ease'
                 }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20,6 9,17 4,12"></polyline>
-                  </svg>
+                  <input
+                    type="checkbox"
+                    name={`question_${question.id}_${index}`}
+                    style={{ 
+                      position: 'absolute',
+                      opacity: 0,
+                      width: '100%',
+                      height: '100%',
+                      margin: 0,
+                      cursor: 'pointer'
+                    }}
+                    onChange={() => {
+                      // Обновляем массив выбранных ответов
+                      const currentAnswers = answers?.[question.id] || [];
+                      let newAnswers;
+                      
+                      if (isSelected) {
+                        // Убираем из выбранных
+                        newAnswers = currentAnswers.filter((ans: string) => ans !== option);
+                      } else {
+                        // Добавляем к выбранным
+                        newAnswers = [...currentAnswers, option];
+                      }
+                      
+                      onAnswerChange?.({ ...answers, [question.id]: newAnswers });
+                    }}
+                  />
+                  {isSelected && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -90%)',
+                      width: '12px',
+                      height: '12px',
+                      opacity: 1,
+                      transition: 'opacity 0.2s ease'
+                    }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                      </svg>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <span style={{ 
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                flex: 1
-              }}>
-                {option || `Вариант ${index + 1}`}
-              </span>
-            </label>
-          ))}
+                <span style={{ 
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  flex: 1
+                }}>
+                  {option || `Вариант ${index + 1}`}
+                </span>
+              </label>
+            );
+          })}
         </div>
       );
     
