@@ -2151,6 +2151,30 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
       );
     
     case 'single_choice':
+      // Инициализируем визуальное состояние radio кнопок
+      React.useEffect(() => {
+        const currentAnswer = answers?.[question.id];
+        question.options?.forEach((option) => {
+          const isSelected = currentAnswer === option;
+          const radio = document.querySelector(`input[name="question_${question.id}"][value="${option}"]`) as HTMLInputElement;
+          if (radio) {
+            const label = radio.closest('label');
+            const circle = label?.querySelector('div') as HTMLElement;
+            const dot = label?.querySelector('div > div') as HTMLElement;
+            
+            if (isSelected) {
+              circle?.style.setProperty('border-color', 'var(--tg-button-color)');
+              circle?.style.setProperty('background-color', 'var(--tg-button-color)');
+              dot?.style.setProperty('opacity', '1');
+            } else {
+              circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
+              circle?.style.setProperty('background-color', 'transparent');
+              dot?.style.setProperty('opacity', '0');
+            }
+          }
+        });
+      }, [answers, question.id, question.options]);
+      
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {(question.options || ['', '']).map((option, index) => (
@@ -2177,6 +2201,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                 <input
                   type="radio"
                   name={`question_${question.id}`}
+                  value={option}
                   style={{ 
                     position: 'absolute',
                     opacity: 0,
@@ -2235,6 +2260,30 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
       );
     
     case 'multiple_choice':
+      // Инициализируем визуальное состояние checkbox'ов
+      React.useEffect(() => {
+        const currentAnswers = answers?.[question.id] || [];
+        question.options?.forEach((option, index) => {
+          const isSelected = currentAnswers.includes(option);
+          const checkbox = document.querySelector(`input[name="question_${question.id}_${index}"]`) as HTMLInputElement;
+          if (checkbox) {
+            const label = checkbox.closest('label');
+            const square = label?.querySelector('div') as HTMLElement;
+            const checkmark = label?.querySelector('div > div') as HTMLElement;
+            
+            if (isSelected) {
+              square?.style.setProperty('border-color', 'var(--tg-button-color)');
+              square?.style.setProperty('background-color', 'var(--tg-button-color)');
+              checkmark?.style.setProperty('opacity', '1');
+            } else {
+              square?.style.setProperty('border-color', 'var(--tg-hint-color)');
+              square?.style.setProperty('background-color', 'transparent');
+              checkmark?.style.setProperty('opacity', '0');
+            }
+          }
+        });
+      }, [answers, question.id, question.options]);
+      
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {(question.options || ['', '']).map((option, index) => (
@@ -2260,6 +2309,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
               }}>
                 <input
                   type="checkbox"
+                  name={`question_${question.id}_${index}`}
                   style={{ 
                     position: 'absolute',
                     opacity: 0,
@@ -2276,23 +2326,24 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     
                     // Обновляем массив выбранных ответов
                     const currentAnswers = answers?.[question.id] || [];
+                    const isCurrentlySelected = currentAnswers.includes(option);
                     let newAnswers;
-                    if (checkbox.checked) {
-                      newAnswers = [...currentAnswers, option];
-                    } else {
-                      newAnswers = currentAnswers.filter((ans: string) => ans !== option);
-                    }
-                    onAnswerChange?.({ ...answers, [question.id]: newAnswers });
                     
-                    if (checkbox.checked) {
-                      square?.style.setProperty('border-color', 'var(--tg-button-color)');
-                      square?.style.setProperty('background-color', 'var(--tg-button-color)');
-                      checkmark?.style.setProperty('opacity', '1');
-                    } else {
+                    if (isCurrentlySelected) {
+                      // Убираем из выбранных
+                      newAnswers = currentAnswers.filter((ans: string) => ans !== option);
                       square?.style.setProperty('border-color', 'var(--tg-hint-color)');
                       square?.style.setProperty('background-color', 'transparent');
                       checkmark?.style.setProperty('opacity', '0');
+                    } else {
+                      // Добавляем к выбранным
+                      newAnswers = [...currentAnswers, option];
+                      square?.style.setProperty('border-color', 'var(--tg-button-color)');
+                      square?.style.setProperty('background-color', 'var(--tg-button-color)');
+                      checkmark?.style.setProperty('opacity', '1');
                     }
+                    
+                    onAnswerChange?.({ ...answers, [question.id]: newAnswers });
                   }}
                 />
                 <div style={{
