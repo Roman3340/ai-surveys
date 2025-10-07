@@ -1416,7 +1416,9 @@ const QuestionsTab: React.FC<{
                 fontSize: '14px',
                 fontWeight: '500',
                 cursor: 'pointer',
-                marginBottom: '12px'
+                marginBottom: '12px',
+                width: '150px',
+                height: '40px'
               }}
             >
               Создать вопрос
@@ -1435,7 +1437,7 @@ const QuestionsTab: React.FC<{
               <div style={{
                 position: 'absolute',
                 top: '-8px',
-                right: '-8px',
+                right: '-16px',
                 animation: 'float 2s ease-in-out infinite',
                 animationDelay: '0s'
               }}>
@@ -1446,7 +1448,7 @@ const QuestionsTab: React.FC<{
               <div style={{
                 position: 'absolute',
                 bottom: '-8px',
-                left: '-8px',
+                left: '-16px',
                 animation: 'float 2s ease-in-out infinite',
                 animationDelay: '1s'
               }}>
@@ -1467,14 +1469,16 @@ const QuestionsTab: React.FC<{
                   color: 'white',
                   border: 'none',
                   borderRadius: '12px',
-                  padding: '16px 24px',
+                  padding: '12px 24px',
                   fontSize: '14px',
                   fontWeight: '600',
                   cursor: 'pointer',
                   position: 'relative',
                   overflow: 'hidden',
                   boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  width: '150px',
+                  height: '40px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
@@ -1507,9 +1511,9 @@ const QuestionsTab: React.FC<{
               color: 'var(--tg-hint-color)', 
               lineHeight: '1.4',
               maxWidth: '280px',
-              margin: '0 auto'
+              margin: '5 auto'
             }}>
-              ИИ создаст готовый опрос по вашим требованиям. Требуется подписка.
+              Искусственный интеллект создаст готовый опрос по вашим требованиям. Требуется подписка.
             </div>
           </div>
         ) : (
