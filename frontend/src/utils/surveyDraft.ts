@@ -8,16 +8,37 @@ export interface DraftQuestion {
   title: string;
   description?: string;
   required: boolean;
-  options?: any[];
+  options?: string[]; // Для single_choice и multiple_choice
   imageUrl?: string;
   imageName?: string;
   validation?: Record<string, any>;
+  scaleMin?: number; // Для scale
+  scaleMax?: number; // Для scale
+  scaleLabels?: { min: string; max: string }; // Для scale
 }
 
 export interface SurveyDraft {
   mode: DraftMode;
-  settings: Record<string, any> | null;
-  motivation: Record<string, any> | null;
+  settings: {
+    title: string;
+    description: string;
+    language: string;
+    startDate: string;
+    startTime: string;
+    endDate: string;
+    endTime: string;
+    maxParticipants: string;
+    allowAnonymous: boolean;
+    showProgress: boolean;
+    randomizeQuestions: boolean;
+    oneResponsePerUser: boolean;
+    collectTelegramData: boolean;
+    creationType: 'manual';
+    motivationEnabled: boolean;
+    motivationType: string;
+    motivationDetails: string;
+    motivationConditions?: string;
+  } | null;
   questions: DraftQuestion[];
   updatedAt: number;
 }
@@ -39,8 +60,7 @@ export function getDraft(): SurveyDraft | null {
 export function saveDraft(partial: Partial<SurveyDraft>) {
   const current = getDraft() || {
     mode: null as DraftMode,
-    settings: null as Record<string, any> | null,
-    motivation: null as Record<string, any> | null,
+    settings: null,
     questions: [] as DraftQuestion[],
     updatedAt: Date.now()
   };
@@ -65,13 +85,29 @@ export function saveMode(mode: DraftMode) {
   saveDraft({ mode });
 }
 
-export function saveSettings(settings: Record<string, any>) {
+export function saveSettings(settings: {
+  title: string;
+  description: string;
+  language: string;
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+  maxParticipants: string;
+  allowAnonymous: boolean;
+  showProgress: boolean;
+  randomizeQuestions: boolean;
+  oneResponsePerUser: boolean;
+  collectTelegramData: boolean;
+  creationType: 'manual';
+  motivationEnabled: boolean;
+  motivationType: string;
+  motivationDetails: string;
+  motivationConditions?: string;
+}) {
   saveDraft({ settings });
 }
 
-export function saveMotivation(motivation: Record<string, any>) {
-  saveDraft({ motivation });
-}
 
 export function saveQuestions(questions: DraftQuestion[]) {
   saveDraft({ questions });

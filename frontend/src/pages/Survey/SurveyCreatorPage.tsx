@@ -91,7 +91,6 @@ const SurveyCreatorPage: React.FC = () => {
       const settings = draft.settings;
       setSurveyData(prev => ({
         ...prev,
-        ...settings,
         title: settings.title || '',
         description: settings.description || '',
         language: settings.language || 'ru',
@@ -100,11 +99,16 @@ const SurveyCreatorPage: React.FC = () => {
         endDate: settings.endDate || '',
         endTime: settings.endTime || '',
         maxParticipants: settings.maxParticipants || '',
-        allowAnonymous: settings.allowAnonymous ?? true,
+        allowAnonymous: settings.allowAnonymous ?? false,
         showProgress: settings.showProgress ?? true,
         randomizeQuestions: settings.randomizeQuestions ?? false,
         oneResponsePerUser: settings.oneResponsePerUser ?? true,
-        collectTelegramData: settings.collectTelegramData ?? true
+        collectTelegramData: settings.collectTelegramData ?? false,
+        creationType: 'manual',
+        motivationEnabled: settings.motivationEnabled ?? false,
+        motivationType: settings.motivationType || 'discount',
+        motivationDetails: settings.motivationDetails || '',
+        motivationConditions: settings.motivationConditions || ''
       }));
     }
     
@@ -123,6 +127,11 @@ const SurveyCreatorPage: React.FC = () => {
     saveSettings(surveyData);
     saveQuestions(questions);
   };
+
+  // Автоматически сохраняем при изменениях
+  useEffect(() => {
+    saveDraft();
+  }, [surveyData, questions]);
 
   // Обработчики изменений
   const handleSurveyDataChange = (field: keyof SurveyData, value: any) => {
@@ -250,9 +259,6 @@ const SurveyCreatorPage: React.FC = () => {
     hapticFeedback?.success();
     
     try {
-      // Сохраняем финальные данные
-      saveDraft();
-      
       // Создаем опрос
       const createdSurvey = await createSurvey({
         title: surveyData.title,
@@ -281,7 +287,6 @@ const SurveyCreatorPage: React.FC = () => {
 
   // Переключение табов
   const switchTab = (tab: TabType) => {
-    saveDraft(); // Сохраняем данные при переключении
     setActiveTab(tab);
     hapticFeedback?.light();
   };

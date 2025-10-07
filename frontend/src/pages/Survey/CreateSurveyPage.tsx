@@ -49,17 +49,10 @@ const CreateSurveyPage: React.FC = () => {
     const draft = getDraft();
     setShowRestorePrompt(false);
     if (!draft) return;
-    // Переходим сразу на релевантный шаг (минует этот экран)
+    
+    // Для manual режима всегда переходим на новую единую страницу
     if (draft.mode === 'manual') {
-      if (draft.questions && draft.questions.length > 0) {
-        navigate('/survey/create/manual/questions', { replace: true });
-      } else if (draft.motivation) {
-        navigate('/survey/create/manual/motivation', { replace: true, state: draft.settings || {} });
-      } else if (draft.settings) {
-        navigate('/survey/create/manual', { replace: true, state: draft.settings });
-      } else {
-        navigate('/survey/create/manual', { replace: true });
-      }
+      navigate('/survey/create/manual', { replace: true });
     } else if (draft.mode === 'ai') {
       // Для AI восстанавливаем на нужном шаге
       if (draft.questions && draft.questions.length > 0) {
