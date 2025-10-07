@@ -1592,7 +1592,7 @@ const QuestionsTab: React.FC<{
                         </label>
                         <input
                           type="number"
-                          value={question.scaleMin || 1}
+                          value={question.scaleMin === undefined ? '' : question.scaleMin}
                           onChange={(e) => {
                             const value = e.target.value;
                             // Разрешаем пустое значение для полного удаления
@@ -1601,7 +1601,16 @@ const QuestionsTab: React.FC<{
                             } else {
                               const numValue = parseInt(value);
                               if (!isNaN(numValue)) {
-                                onQuestionChange(question.id, { scaleMin: numValue });
+                                const currentMax = question.scaleMax || 10;
+                                // Если новое значение больше или равно максимуму, корректируем максимум
+                                if (numValue >= currentMax) {
+                                  onQuestionChange(question.id, { 
+                                    scaleMin: numValue,
+                                    scaleMax: numValue + 1
+                                  });
+                                } else {
+                                  onQuestionChange(question.id, { scaleMin: numValue });
+                                }
                               }
                             }
                           }}
@@ -1644,7 +1653,7 @@ const QuestionsTab: React.FC<{
                         </label>
                         <input
                           type="number"
-                          value={question.scaleMax || 10}
+                          value={question.scaleMax === undefined ? '' : question.scaleMax}
                           onChange={(e) => {
                             const value = e.target.value;
                             // Разрешаем пустое значение для полного удаления
@@ -1653,7 +1662,16 @@ const QuestionsTab: React.FC<{
                             } else {
                               const numValue = parseInt(value);
                               if (!isNaN(numValue)) {
-                                onQuestionChange(question.id, { scaleMax: numValue });
+                                const currentMin = question.scaleMin || 1;
+                                // Если новое значение меньше или равно минимуму, корректируем минимум
+                                if (numValue <= currentMin) {
+                                  onQuestionChange(question.id, { 
+                                    scaleMin: numValue - 1,
+                                    scaleMax: numValue
+                                  });
+                                } else {
+                                  onQuestionChange(question.id, { scaleMax: numValue });
+                                }
                               }
                             }
                           }}
