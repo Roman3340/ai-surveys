@@ -1512,7 +1512,7 @@ const QuestionsTab: React.FC<{
               color: 'var(--tg-hint-color)', 
               lineHeight: '1.4',
               maxWidth: '280px',
-              margin: '5px auto 0 auto',
+              margin: '10px auto 0 auto',
               textAlign: 'center'
             }}>
               Искусственный интеллект создаст готовый опрос по вашим требованиям. Требуется подписка.
