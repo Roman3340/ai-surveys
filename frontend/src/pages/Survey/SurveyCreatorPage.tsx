@@ -1417,7 +1417,7 @@ const QuestionsTab: React.FC<{
                 fontWeight: '500',
                 cursor: 'pointer',
                 marginBottom: '12px',
-                width: '150px',
+                width: '160px',
                 height: '40px'
               }}
             >
@@ -1477,7 +1477,7 @@ const QuestionsTab: React.FC<{
                   overflow: 'hidden',
                   boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
                   transition: 'all 0.3s ease',
-                  width: '150px',
+                  width: '160px',
                   height: '40px'
                 }}
                 onMouseEnter={(e) => {
@@ -1511,7 +1511,7 @@ const QuestionsTab: React.FC<{
               color: 'var(--tg-hint-color)', 
               lineHeight: '1.4',
               maxWidth: '280px',
-              margin: '5 auto'
+              margin: '0 5'
             }}>
               Искусственный интеллект создаст готовый опрос по вашим требованиям. Требуется подписка.
             </div>
