@@ -1149,7 +1149,7 @@ const SettingsTab: React.FC<{
                   <div>
                     <div style={{ fontSize: '16px', fontWeight: '500' }}>Мотивация</div>
                     <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-                      Респонденты будут охотнее отвечать, мы их предупредим что они получат награду за прохождение
+                      Мотивирует участников — они знают, что получат бонус за участие
                     </div>
                   </div>
                 </div>
@@ -1394,11 +1394,75 @@ const QuestionsTab: React.FC<{
                 padding: '12px 24px',
                 fontSize: '14px',
                 fontWeight: '500',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                marginBottom: '12px'
               }}
             >
               Создать вопрос
             </button>
+            
+            <div style={{ 
+              fontSize: '14px', 
+              color: 'var(--tg-hint-color)', 
+              marginBottom: '16px' 
+            }}>
+              или
+            </div>
+            
+            <button
+              onClick={() => {
+                // TODO: Implement AI generation
+                console.log('AI generation clicked');
+              }}
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '16px 24px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                transition: 'all 0.3s ease',
+                marginBottom: '12px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
+                transform: 'rotate(45deg)',
+                transition: 'all 0.6s',
+                opacity: 0
+              }} />
+              <span style={{ position: 'relative', zIndex: 1 }}>
+                ✨ Создать с ИИ
+              </span>
+            </button>
+            
+            <div style={{ 
+              fontSize: '12px', 
+              color: 'var(--tg-hint-color)', 
+              lineHeight: '1.4',
+              maxWidth: '280px',
+              margin: '0 auto'
+            }}>
+              Искусственный интеллект полностью самостоятельно сгенерирует опрос по целевой аудитории и требованиям пользователя. Доступно только по подписке.
+            </div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
