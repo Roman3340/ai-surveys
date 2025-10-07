@@ -134,6 +134,24 @@ const SurveyCreatorPage: React.FC = () => {
     saveDraft();
   }, [surveyData, questions]);
 
+  // Инициализируем значения по умолчанию для шкалы
+  useEffect(() => {
+    const scaleQuestions = questions.filter(q => q.type === 'scale');
+    const newAnswers = { ...previewAnswers };
+    
+    scaleQuestions.forEach(question => {
+      if (!(question.id in newAnswers)) {
+        const min = question.scaleMin || 1;
+        const max = question.scaleMax || 10;
+        newAnswers[question.id] = Math.floor((min + max) / 2);
+      }
+    });
+    
+    if (Object.keys(newAnswers).length !== Object.keys(previewAnswers).length) {
+      setPreviewAnswers(newAnswers);
+    }
+  }, [questions]);
+
   // Функция для проверки валидации
   const validateScaleValues = (questionId: string, scaleMin?: number, scaleMax?: number) => {
     const errors: { scaleMin?: string; scaleMax?: string } = {};
@@ -479,6 +497,7 @@ const SurveyCreatorPage: React.FC = () => {
             answers={previewAnswers}
             onAnswerChange={setPreviewAnswers}
             validationErrors={validationErrors}
+            previewAnswers={previewAnswers}
           />
         )}
       </div>
@@ -1967,7 +1986,7 @@ const QuestionsTab: React.FC<{
                     width: '18px',
                     height: '18px',
                     borderRadius: '4px',
-                    border: 'none',
+                    border: '1px solid var(--tg-hint-color)',
                     backgroundColor: question.required ? 'var(--tg-button-color)' : 'transparent',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer'
@@ -1988,7 +2007,7 @@ const QuestionsTab: React.FC<{
                     {question.required && (
                       <div style={{
                         position: 'absolute',
-                        top: '50%',
+                        top: '35%',
                         left: '50%',
                         transform: 'translate(-50%, -90%)',
                         width: '10px',
@@ -2566,7 +2585,8 @@ const PreviewTab: React.FC<{
   answers: Record<string, any>;
   onAnswerChange: (answers: Record<string, any>) => void;
   validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
-}> = ({ surveyData, questions, validationErrors }) => {
+  previewAnswers: Record<string, any>;
+}> = ({ surveyData, questions, validationErrors, previewAnswers }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -2671,6 +2691,47 @@ const PreviewTab: React.FC<{
                 onClick={() => {
                   const requiredQuestions = questions.filter(q => q.required);
                   if (requiredQuestions.length === 0) {
+                    alert('Опрос успешно пройден!');
+                    return;
+                  }
+                  
+                  // Проверяем ответы на обязательные вопросы
+                  const unansweredRequired = requiredQuestions.filter(question => {
+                    const answer = previewAnswers[question.id];
+                    
+                    switch (question.type) {
+                      case 'text':
+                      case 'textarea':
+                        return !answer || answer.trim() === '';
+                      
+                      case 'radio':
+                        return !answer;
+                      
+                      case 'checkbox':
+                        return !answer || answer.length === 0;
+                      
+                      case 'scale':
+                        // Для шкалы считаем что ответ есть если есть значение (по умолчанию 5)
+                        return answer === undefined || answer === null;
+                      
+                      case 'star':
+                        return !answer || answer === 0;
+                      
+                      case 'boolean':
+                        return answer === undefined || answer === null;
+                      
+                      case 'date':
+                        return !answer;
+                      
+                      case 'number':
+                        return answer === undefined || answer === null || answer === '';
+                      
+                      default:
+                        return !answer;
+                    }
+                  });
+                  
+                  if (unansweredRequired.length === 0) {
                     alert('Опрос успешно пройден!');
                   } else {
                     alert('Пожалуйста, ответьте на все обязательные вопросы');
