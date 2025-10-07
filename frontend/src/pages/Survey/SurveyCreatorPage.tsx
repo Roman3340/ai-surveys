@@ -1967,7 +1967,7 @@ const QuestionsTab: React.FC<{
                     width: '18px',
                     height: '18px',
                     borderRadius: '4px',
-                    border: '2px solid var(--tg-hint-color)',
+                    border: 'none',
                     backgroundColor: question.required ? 'var(--tg-button-color)' : 'transparent',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer'
@@ -1990,7 +1990,7 @@ const QuestionsTab: React.FC<{
                         position: 'absolute',
                         top: '50%',
                         left: '50%',
-                        transform: 'translate(-50%, -60%)',
+                        transform: 'translate(-50%, -50%)',
                         width: '10px',
                         height: '10px',
                         opacity: 1,
@@ -2002,11 +2002,14 @@ const QuestionsTab: React.FC<{
                       </div>
                     )}
                   </div>
-                  <label style={{
-                    fontSize: '14px',
-                    color: 'var(--tg-text-color)',
-                    cursor: 'pointer'
-                  }}>
+                  <label 
+                    style={{
+                      fontSize: '14px',
+                      color: 'var(--tg-text-color)',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => onQuestionChange(question.id, { required: !question.required })}
+                  >
                     Обязательный вопрос
                   </label>
                 </div>
@@ -2215,7 +2218,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
-                  transform: 'translate(-50%, -60%)',
+                  transform: 'translate(-50%, -70%)',
                   width: '12px',
                   height: '12px',
                   opacity: 0,
@@ -2404,19 +2407,33 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   margin: 0,
                   cursor: 'pointer'
                 }}
-                onChange={(e) => {
+                onClick={(e) => {
                   const radio = e.target as HTMLInputElement;
-                  const label = radio.closest('label');
-                  const circle = label?.querySelector('div') as HTMLElement;
-                  const dot = label?.querySelector('div > div') as HTMLElement;
-                  if (radio.checked) {
-                    circle?.style.setProperty('border-color', 'var(--tg-button-color)');
-                    circle?.style.setProperty('background-color', 'var(--tg-button-color)');
-                    dot?.style.setProperty('opacity', '1');
-                  } else {
+                  const allRadios = document.querySelectorAll(`input[name="question_${question.id}"]`) as NodeListOf<HTMLInputElement>;
+                  
+                  // Сбрасываем все radio кнопки
+                  allRadios.forEach(r => {
+                    const label = r.closest('label');
+                    const circle = label?.querySelector('div') as HTMLElement;
+                    const dot = label?.querySelector('div > div') as HTMLElement;
                     circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
                     circle?.style.setProperty('background-color', 'transparent');
                     dot?.style.setProperty('opacity', '0');
+                    r.checked = false;
+                  });
+                  
+                  // Если кликнули на уже выбранную кнопку, просто сбрасываем выбор
+                  if (radio.checked) {
+                    radio.checked = false;
+                  } else {
+                    // Выбираем новую кнопку
+                    radio.checked = true;
+                    const label = radio.closest('label');
+                    const circle = label?.querySelector('div') as HTMLElement;
+                    const dot = label?.querySelector('div > div') as HTMLElement;
+                    circle?.style.setProperty('border-color', 'var(--tg-button-color)');
+                    circle?.style.setProperty('background-color', 'var(--tg-button-color)');
+                    dot?.style.setProperty('opacity', '1');
                   }
                 }}
               />
@@ -2462,19 +2479,33 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   margin: 0,
                   cursor: 'pointer'
                 }}
-                onChange={(e) => {
+                onClick={(e) => {
                   const radio = e.target as HTMLInputElement;
-                  const label = radio.closest('label');
-                  const circle = label?.querySelector('div') as HTMLElement;
-                  const dot = label?.querySelector('div > div') as HTMLElement;
-                  if (radio.checked) {
-                    circle?.style.setProperty('border-color', 'var(--tg-button-color)');
-                    circle?.style.setProperty('background-color', 'var(--tg-button-color)');
-                    dot?.style.setProperty('opacity', '1');
-                  } else {
+                  const allRadios = document.querySelectorAll(`input[name="question_${question.id}"]`) as NodeListOf<HTMLInputElement>;
+                  
+                  // Сбрасываем все radio кнопки
+                  allRadios.forEach(r => {
+                    const label = r.closest('label');
+                    const circle = label?.querySelector('div') as HTMLElement;
+                    const dot = label?.querySelector('div > div') as HTMLElement;
                     circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
                     circle?.style.setProperty('background-color', 'transparent');
                     dot?.style.setProperty('opacity', '0');
+                    r.checked = false;
+                  });
+                  
+                  // Если кликнули на уже выбранную кнопку, просто сбрасываем выбор
+                  if (radio.checked) {
+                    radio.checked = false;
+                  } else {
+                    // Выбираем новую кнопку
+                    radio.checked = true;
+                    const label = radio.closest('label');
+                    const circle = label?.querySelector('div') as HTMLElement;
+                    const dot = label?.querySelector('div > div') as HTMLElement;
+                    circle?.style.setProperty('border-color', 'var(--tg-button-color)');
+                    circle?.style.setProperty('background-color', 'var(--tg-button-color)');
+                    dot?.style.setProperty('opacity', '1');
                   }
                 }}
               />
