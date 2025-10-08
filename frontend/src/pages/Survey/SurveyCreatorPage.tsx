@@ -21,6 +21,7 @@ interface Question {
   scaleMin?: number; // Для scale
   scaleMax?: number; // Для scale
   scaleLabels?: { min: string; max: string }; // Для scale
+  hasOtherOption?: boolean; // Для варианта "Другое"
 }
 
 // Типы для настроек
@@ -1009,7 +1010,7 @@ const SettingsTab: React.FC<{
                   <div>
                     <div style={{ fontSize: '16px', fontWeight: '500' }}>Перемешивать вопросы</div>
                     <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-                      Случайный порядок вопросов для каждого участника
+                      Случайный порядок вопросов для участника
                     </div>
                   </div>
                 </div>
@@ -1170,7 +1171,7 @@ const SettingsTab: React.FC<{
                   <div>
                     <div style={{ fontSize: '16px', fontWeight: '500' }}>Мотивация</div>
                     <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-                      Мотивирует участников — они знают, что получат бонус за участие
+                     Добавить награду за участие в опросе
                     </div>
                   </div>
                 </div>
@@ -1779,6 +1780,54 @@ const QuestionsTab: React.FC<{
                       >
                         + Добавить вариант
                       </button>
+                      
+                      {!question.hasOtherOption && (
+                        <button
+                          onClick={() => onQuestionChange(question.id, { hasOtherOption: true })}
+                          style={{
+                            backgroundColor: 'transparent',
+                            border: '1px dashed var(--tg-button-color)',
+                            borderRadius: '6px',
+                            padding: '8px 12px',
+                            color: 'var(--tg-button-color)',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            marginTop: '8px'
+                          }}
+                        >
+                          + Добавить вариант "Другое"
+                        </button>
+                      )}
+                      
+                      {question.hasOtherOption && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          marginTop: '8px',
+                          padding: '8px 12px',
+                          backgroundColor: 'var(--tg-section-bg-color)',
+                          borderRadius: '6px',
+                          border: '1px solid var(--tg-button-color)'
+                        }}>
+                          <span style={{ color: 'var(--tg-button-color)', fontSize: '14px', fontWeight: '500' }}>
+                            ✓ Вариант "Другое" добавлен
+                          </span>
+                          <button
+                            onClick={() => onQuestionChange(question.id, { hasOtherOption: false })}
+                            style={{
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              color: 'var(--tg-hint-color)',
+                              cursor: 'pointer',
+                              padding: '2px',
+                              fontSize: '12px'
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -2332,6 +2381,98 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
               </span>
             </label>
           ))}
+          
+          {/* Вариант "Другое" */}
+          {question.hasOtherOption && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                border: '1px solid var(--tg-section-separator-color)',
+                transition: 'all 0.2s ease'
+              }}>
+                <div style={{
+                  position: 'relative',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  border: `2px solid ${answers?.[question.id] === 'Другое' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: answers?.[question.id] === 'Другое' ? 'var(--tg-button-color)' : 'transparent',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <input
+                    type="radio"
+                    name={`question_${question.id}`}
+                    value="Другое"
+                    checked={answers?.[question.id] === 'Другое'}
+                    style={{ 
+                      position: 'absolute',
+                      opacity: 0,
+                      width: '100%',
+                      height: '100%',
+                      margin: 0,
+                      cursor: 'pointer'
+                    }}
+                    onChange={() => {
+                      onAnswerChange?.({ ...answers, [question.id]: 'Другое' });
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: 'white',
+                    opacity: answers?.[question.id] === 'Другое' ? 1 : 0,
+                    transition: 'opacity 0.2s ease'
+                  }} />
+                </div>
+                <span style={{ 
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  flex: 1
+                }}>
+                  Другое
+                </span>
+              </label>
+              
+              {/* Поле для ввода текста */}
+              {answers?.[question.id] === 'Другое' && (
+                <div style={{ marginLeft: '32px' }}>
+                  <input
+                    type="text"
+                    placeholder="Другое"
+                    value={answers?.[`${question.id}_other`] || ''}
+                    onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
+                    style={{
+                      ...baseStyle,
+                      border: answers?.[`${question.id}_other`] ? '1px solid var(--tg-section-separator-color)' : '1px solid #ff4444',
+                      backgroundColor: 'var(--tg-bg-color)'
+                    }}
+                    enterKeyHint="done"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                  />
+                  {!answers?.[`${question.id}_other`] && question.required && (
+                    <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
+                      Пожалуйста, введите ваш ответ
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
     
@@ -2416,6 +2557,113 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
               </label>
             );
           })}
+          
+          {/* Вариант "Другое" */}
+          {question.hasOtherOption && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                border: '1px solid var(--tg-section-separator-color)',
+                transition: 'all 0.2s ease'
+              }}>
+                <div style={{
+                  position: 'relative',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '4px',
+                  border: `2px solid ${(answers?.[question.id] || []).includes('Другое') ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: (answers?.[question.id] || []).includes('Другое') ? 'var(--tg-button-color)' : 'transparent',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <input
+                    type="checkbox"
+                    name={`question_${question.id}_other`}
+                    checked={(answers?.[question.id] || []).includes('Другое')}
+                    style={{ 
+                      position: 'absolute',
+                      opacity: 0,
+                      width: '100%',
+                      height: '100%',
+                      margin: 0,
+                      cursor: 'pointer'
+                    }}
+                    onChange={(e) => {
+                      const currentAnswers = answers?.[question.id] || [];
+                      let newAnswers;
+                      
+                      if (e.target.checked) {
+                        // Добавляем к выбранным
+                        newAnswers = [...currentAnswers, 'Другое'];
+                      } else {
+                        // Убираем из выбранных
+                        newAnswers = currentAnswers.filter((ans: string) => ans !== 'Другое');
+                        // Также очищаем текст "Другое"
+                        onAnswerChange?.({ ...answers, [question.id]: newAnswers, [`${question.id}_other`]: '' });
+                        return;
+                      }
+                      
+                      onAnswerChange?.({ ...answers, [question.id]: newAnswers });
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -90%)',
+                    width: '12px',
+                    height: '12px',
+                    opacity: (answers?.[question.id] || []).includes('Другое') ? 1 : 0,
+                    transition: 'opacity 0.2s ease'
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                  </div>
+                </div>
+                <span style={{ 
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  flex: 1
+                }}>
+                  Другое
+                </span>
+              </label>
+              
+              {/* Поле для ввода текста */}
+              {(answers?.[question.id] || []).includes('Другое') && (
+                <div style={{ marginLeft: '32px' }}>
+                  <input
+                    type="text"
+                    placeholder="Другое"
+                    value={answers?.[`${question.id}_other`] || ''}
+                    onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
+                    style={{
+                      ...baseStyle,
+                      border: answers?.[`${question.id}_other`] ? '1px solid var(--tg-section-separator-color)' : '1px solid #ff4444',
+                      backgroundColor: 'var(--tg-bg-color)'
+                    }}
+                    enterKeyHint="done"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                  />
+                  {!answers?.[`${question.id}_other`] && question.required && (
+                    <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
+                      Пожалуйста, введите ваш ответ
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
     
@@ -2879,10 +3127,22 @@ const PreviewTab: React.FC<{
                         return !answer || answer.trim() === '';
                       
                       case 'single_choice':
-                        return !answer;
+                        if (!answer) return true;
+                        // Если выбран вариант "Другое", проверяем заполненность поля
+                        if (answer === 'Другое') {
+                          const otherAnswer = previewAnswers[`${question.id}_other`];
+                          return !otherAnswer || otherAnswer.trim() === '';
+                        }
+                        return false;
                       
                       case 'multiple_choice':
-                        return !answer || !Array.isArray(answer) || answer.length === 0;
+                        if (!answer || !Array.isArray(answer) || answer.length === 0) return true;
+                        // Если выбран вариант "Другое", проверяем заполненность поля
+                        if (answer.includes('Другое')) {
+                          const otherAnswer = previewAnswers[`${question.id}_other`];
+                          return !otherAnswer || otherAnswer.trim() === '';
+                        }
+                        return false;
                       
                       case 'scale':
                         // Для шкалы считаем что ответ есть если есть значение (по умолчанию 5)

@@ -36,6 +36,7 @@ export interface Question {
   validation?: QuestionValidation;
   imageUrl?: string;
   imageName?: string;
+  hasOtherOption?: boolean;
 }
 
 export type QuestionType = 
