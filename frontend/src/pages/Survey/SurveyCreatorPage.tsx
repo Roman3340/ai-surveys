@@ -248,6 +248,14 @@ const SurveyCreatorPage: React.FC = () => {
     setSurveyData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Функция для перехода к созданию опроса с ИИ
+  const handleCreateWithAI = () => {
+    // Очищаем LocalStorage от данных ручного создания опроса
+    clearDraft();
+    // Переходим на страницу выбора типа ИИ-опроса
+    navigate('/survey/create/ai');
+  };
+
   const handleQuestionChange = (questionId: string, updates: Partial<Question>) => {
     setQuestions(prev => 
       prev.map(q => {
@@ -551,6 +559,7 @@ const SurveyCreatorPage: React.FC = () => {
               onKeyboardStateChange={(isOpen) => setSurveyData(prev => ({ ...prev, isKeyboardOpen: isOpen }))}
               validationErrors={validationErrors}
               validateScaleValues={validateScaleValues}
+              onCreateWithAI={handleCreateWithAI}
             />
         )}
         
@@ -1372,7 +1381,8 @@ const QuestionsTab: React.FC<{
   onKeyboardStateChange: (isOpen: boolean) => void;
   validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
   validateScaleValues: (questionId: string, scaleMin?: number, scaleMax?: number) => void;
-}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues }) => {
+  onCreateWithAI: () => void;
+}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues, onCreateWithAI }) => {
 
   return (
     <motion.div
@@ -1459,10 +1469,7 @@ const QuestionsTab: React.FC<{
               </div>
               
               <button
-                onClick={() => {
-                  // TODO: Implement AI generation
-                  console.log('AI generation clicked');
-                }}
+                onClick={onCreateWithAI}
                 style={{
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   backgroundSize: '200% 200%',
