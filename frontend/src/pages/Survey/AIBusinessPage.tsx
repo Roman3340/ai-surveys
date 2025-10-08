@@ -29,11 +29,9 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
       
       // Восстанавливаем кастомное количество вопросов
       const questionCount = data.questionCount;
-      const predefinedCounts = [5, 7, 10, 15, 20, 25];
+      const predefinedCounts = [5, 7, 10, 15]; // Только те значения, для которых есть кнопки
       if (!predefinedCounts.includes(questionCount)) {
         setCustomQuestionCount(questionCount.toString());
-        // Сбрасываем questionCount в formData, чтобы кнопки не подсвечивались
-        setFormData(prev => ({ ...prev, questionCount: 5 }));
       }
     }
   }, []);
