@@ -2478,7 +2478,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
                     style={{
                       ...baseStyle,
-                      border: (!answers?.[`${question.id}_other`] && question.required) ? '1px solid #ff4444' : '1px solid var(--tg-section-separator-color)',
+                      border: (!answers?.[`${question.id}_other`] && question.required) ? '1px solid #ff4444' : '1px solid #e0e0e0',
                       backgroundColor: 'var(--tg-bg-color)'
                     }}
                     enterKeyHint="done"
@@ -2669,7 +2669,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
                     style={{
                       ...baseStyle,
-                      border: (!answers?.[`${question.id}_other`] && question.required) ? '1px solid #ff4444' : '1px solid var(--tg-section-separator-color)',
+                      border: (!answers?.[`${question.id}_other`] && question.required) ? '1px solid #ff4444' : '1px solid #e0e0e0',
                       backgroundColor: 'var(--tg-bg-color)'
                     }}
                     enterKeyHint="done"
