@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-// import { getDraft, saveSettings } from '../../utils/surveyDraft'; // Отключено для AI
+import { getAIDraft, saveAIUserType, saveAIStep } from '../../utils/surveyDraft';
 
 interface AISurveyPageProps {}
 
@@ -12,6 +12,14 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
   const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
   const [selectedType, setSelectedType] = useState<'business' | 'personal' | null>(null);
+
+  // Загружаем данные из черновика при монтировании
+  useEffect(() => {
+    const draft = getAIDraft();
+    if (draft?.userType) {
+      setSelectedType(draft.userType);
+    }
+  }, []);
 
   const handleNext = () => {
     if (!selectedType) return;
@@ -28,6 +36,7 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
   const handleSelectType = (type: 'business' | 'personal') => {
     hapticFeedback?.light();
     setSelectedType(type);
+    saveAIUserType(type);
   };
 
   // Используем стабильный хук для кнопки назад

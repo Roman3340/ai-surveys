@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-// import { getDraft, saveSettings } from '../../utils/surveyDraft'; // Отключено для AI
+import { getAIDraft, saveAIPersonalData } from '../../utils/surveyDraft';
 
 interface AIPersonalPageProps {}
 
@@ -18,11 +18,21 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
     questionCount: 5,
     questionTypes: [] as string[]
   });
+
+  // Загружаем данные из черновика при монтировании
+  useEffect(() => {
+    const draft = getAIDraft();
+    if (draft?.personalData) {
+      setFormData(draft.personalData);
+    }
+  }, []);
   
   const [showQuestionTypes, setShowQuestionTypes] = useState(false);
   const [customQuestionCount, setCustomQuestionCount] = useState('');
 
   const handleNext = () => {
+    // Сохраняем данные в черновик
+    saveAIPersonalData(formData);
     // Переходим на страницу расширенных настроек
     navigate('/survey/create/ai/advanced-settings', { 
       state: { ...formData, userType: 'personal' }
@@ -30,7 +40,10 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+    // Автоматически сохраняем изменения
+    saveAIPersonalData(newFormData);
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {

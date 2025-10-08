@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
+import { getAIDraft, saveAIAdvancedSettings } from '../../utils/surveyDraft';
 
 interface AIAdvancedSettingsPageProps {}
 
@@ -28,7 +29,17 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
     surveyDescription: ''
   });
 
+  // Загружаем данные из черновика при монтировании
+  useEffect(() => {
+    const draft = getAIDraft();
+    if (draft?.advancedSettings) {
+      setAdvancedSettings(draft.advancedSettings);
+    }
+  }, []);
+
   const handleNext = () => {
+    // Сохраняем настройки в черновик
+    saveAIAdvancedSettings(settingsType === 'advanced' ? advancedSettings : undefined);
     navigate('/survey/create/ai/motivation', { 
       state: { 
         ...location.state,
@@ -62,11 +73,13 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
   const handleEndDateChange = (date: string) => {
     if (!date) {
       // Если дата очищена, очищаем и время
-      setAdvancedSettings(prev => ({ 
-        ...prev, 
+      const newSettings = { 
+        ...advancedSettings, 
         endDate: '',
         endTime: ''
-      }));
+      };
+      setAdvancedSettings(newSettings);
+      saveAIAdvancedSettings(newSettings);
       return;
     }
 
@@ -89,11 +102,20 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
       defaultTime = `${nextHour.toString().padStart(2, '0')}:00`;
     }
 
-    setAdvancedSettings(prev => ({ 
-      ...prev, 
+    const newSettings = { 
+      ...advancedSettings, 
       endDate: date,
-      endTime: prev.endTime || defaultTime
-    }));
+      endTime: advancedSettings.endTime || defaultTime
+    };
+    setAdvancedSettings(newSettings);
+    saveAIAdvancedSettings(newSettings);
+  };
+
+  // Функция для обновления настроек с автоматическим сохранением
+  const updateAdvancedSettings = (updates: Partial<typeof advancedSettings>) => {
+    const newSettings = { ...advancedSettings, ...updates };
+    setAdvancedSettings(newSettings);
+    saveAIAdvancedSettings(newSettings);
   };
 
   // Используем стабильный хук для кнопки назад
@@ -291,7 +313,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => setAdvancedSettings(prev => ({ ...prev, allowAnonymous: !prev.allowAnonymous }))}
+                    onClick={() => updateAdvancedSettings({ allowAnonymous: !advancedSettings.allowAnonymous })}
                     style={{
                       width: '48px',
                       height: '28px',
@@ -328,7 +350,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => setAdvancedSettings(prev => ({ ...prev, showProgress: !prev.showProgress }))}
+                    onClick={() => updateAdvancedSettings({ showProgress: !advancedSettings.showProgress })}
                     style={{
                       width: '48px',
                       height: '28px',
@@ -365,7 +387,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => setAdvancedSettings(prev => ({ ...prev, randomizeQuestions: !prev.randomizeQuestions }))}
+                    onClick={() => updateAdvancedSettings({ randomizeQuestions: !advancedSettings.randomizeQuestions })}
                     style={{
                       width: '48px',
                       height: '28px',
@@ -402,7 +424,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => setAdvancedSettings(prev => ({ ...prev, oneResponsePerUser: !prev.oneResponsePerUser }))}
+                    onClick={() => updateAdvancedSettings({ oneResponsePerUser: !advancedSettings.oneResponsePerUser })}
                     style={{
                       width: '48px',
                       height: '28px',
@@ -439,7 +461,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => setAdvancedSettings(prev => ({ ...prev, collectTelegramData: !prev.collectTelegramData }))}
+                    onClick={() => updateAdvancedSettings({ collectTelegramData: !advancedSettings.collectTelegramData })}
                     style={{
                       width: '48px',
                       height: '28px',
@@ -476,7 +498,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     onChange={(e) => {
                       const value = e.target.value;
                       if (value === '' || (parseInt(value) >= 0 && !isNaN(parseInt(value)))) {
-                        setAdvancedSettings(prev => ({ ...prev, maxParticipants: value }));
+                        updateAdvancedSettings({ maxParticipants: value });
                       }
                     }}
                     onFocus={handleInputFocus}
@@ -524,7 +546,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     <input
                       type="time"
                       value={advancedSettings.endTime}
-                      onChange={(e) => setAdvancedSettings(prev => ({ ...prev, endTime: e.target.value }))}
+                      onChange={(e) => updateAdvancedSettings({ endTime: e.target.value })}
                       onFocus={handleInputFocus}
                       onBlur={handleInputBlur}
                       style={{
@@ -588,7 +610,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                   <input
                     type="text"
                     value={advancedSettings.surveyTitle}
-                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, surveyTitle: e.target.value }))}
+                    onChange={(e) => updateAdvancedSettings({ surveyTitle: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                     placeholder="Оставьте пустым для автогенерации"
@@ -612,7 +634,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                   </div>
                   <textarea
                     value={advancedSettings.surveyDescription}
-                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, surveyDescription: e.target.value }))}
+                    onChange={(e) => updateAdvancedSettings({ surveyDescription: e.target.value })}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                     placeholder="Оставьте пустым для автогенерации"

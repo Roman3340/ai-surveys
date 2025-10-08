@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-// import { getDraft, saveSettings } from '../../utils/surveyDraft'; // Отключено для AI
+import { getAIDraft, saveAIBusinessData, saveAIStep } from '../../utils/surveyDraft';
 
 interface AIBusinessPageProps {}
 
@@ -19,11 +19,21 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
     questionCount: 5,
     questionTypes: [] as string[]
   });
+
+  // Загружаем данные из черновика при монтировании
+  useEffect(() => {
+    const draft = getAIDraft();
+    if (draft?.businessData) {
+      setFormData(draft.businessData);
+    }
+  }, []);
   
   const [showQuestionTypes, setShowQuestionTypes] = useState(false);
   const [customQuestionCount, setCustomQuestionCount] = useState('');
 
   const handleNext = () => {
+    // Сохраняем данные в черновик
+    saveAIBusinessData(formData);
     // Переходим на страницу расширенных настроек
     navigate('/survey/create/ai/advanced-settings', { 
       state: { ...formData, userType: 'business' }
@@ -31,7 +41,10 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+    // Автоматически сохраняем изменения
+    saveAIBusinessData(newFormData);
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {

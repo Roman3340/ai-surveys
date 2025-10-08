@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-// import { getDraft, saveMotivation } from '../../utils/surveyDraft'; // Отключено для AI
+import { getAIDraft, saveAIMotivationData } from '../../utils/surveyDraft';
 
 interface MotivationPageProps {}
 
@@ -31,8 +31,18 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     ...previousData
   } as MotivationData);
 
+  // Загружаем данные из черновика при монтировании
+  useEffect(() => {
+    const draft = getAIDraft();
+    if (draft?.motivationData) {
+      setMotivationData(draft.motivationData);
+    }
+  }, []);
+
   const handleNext = () => {
-    // Переходим на следующую страницу без сохранения в LocalStorage
+    // Сохраняем данные мотивации в черновик
+    saveAIMotivationData(motivationData);
+    // Переходим на следующую страницу
     const allData = { ...motivationData };
 
     if (isFromAI) {
@@ -49,7 +59,10 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   };
 
   const handleMotivationChange = (field: string, value: any) => {
-    setMotivationData((prev: MotivationData) => ({ ...prev, [field]: value }));
+    const newData = { ...motivationData, [field]: value };
+    setMotivationData(newData);
+    // Автоматически сохраняем изменения
+    saveAIMotivationData(newData);
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {

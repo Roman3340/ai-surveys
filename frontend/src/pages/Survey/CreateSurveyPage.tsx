@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-import { getDraft, hasDraft, clearDraft, saveMode } from '../../utils/surveyDraft';
+import { getDraft, hasDraft, clearDraft, saveMode, getAIDraft, hasAIDraft, clearAIDraft } from '../../utils/surveyDraft';
 
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,10 +17,11 @@ const CreateSurveyPage: React.FC = () => {
 
   // При входе на экран выбора: если есть черновик — предлагаем восстановить, иначе очищаем (гарантия нового опроса)
   useEffect(() => {
-    if (hasDraft()) {
+    if (hasDraft() || hasAIDraft()) {
       setShowRestorePrompt(true);
     } else {
       clearDraft();
+      clearAIDraft();
     }
   }, []);
 
@@ -32,7 +33,7 @@ const CreateSurveyPage: React.FC = () => {
 
   const handleCreateAI = () => {
     clearDraft();
-    saveMode('ai');
+    clearAIDraft();
     setSelectedOption('ai');
   };
 
@@ -47,16 +48,33 @@ const CreateSurveyPage: React.FC = () => {
   // Восстановление черновика
   const handleRestoreDraft = () => {
     const draft = getDraft();
+    const aiDraft = getAIDraft();
     setShowRestorePrompt(false);
-    if (!draft) return;
     
     // Для manual режима всегда переходим на новую единую страницу
-    if (draft.mode === 'manual') {
+    if (draft && draft.mode === 'manual') {
       navigate('/survey/create/manual', { replace: true });
-    } else if (draft.mode === 'ai') {
-      // Для AI пока отключаем восстановление - будем переделывать
-      clearDraft();
-      navigate('/survey/create/ai', { replace: true });
+    } else if (aiDraft) {
+      // Для AI определяем на какую страницу переходить
+      switch (aiDraft.currentStep) {
+        case 'type':
+          navigate('/survey/create/ai', { replace: true });
+          break;
+        case 'business':
+          navigate('/survey/create/ai/business', { replace: true });
+          break;
+        case 'personal':
+          navigate('/survey/create/ai/personal', { replace: true });
+          break;
+        case 'advanced':
+          navigate('/survey/create/ai/advanced-settings', { replace: true });
+          break;
+        case 'motivation':
+          navigate('/survey/create/ai/motivation', { replace: true });
+          break;
+        default:
+          navigate('/survey/create/ai', { replace: true });
+      }
     } else {
       // Если mode не задан, считаем manual как дефолт
       navigate('/survey/create/manual', { replace: true });
@@ -65,6 +83,7 @@ const CreateSurveyPage: React.FC = () => {
 
   const handleDeclineRestore = () => {
     clearDraft();
+    clearAIDraft();
     setShowRestorePrompt(false);
   };
 
@@ -129,10 +148,11 @@ const CreateSurveyPage: React.FC = () => {
             </div>
             {(() => {
               const draft = getDraft();
+              const aiDraft = getAIDraft();
               let title = '';
               if (draft?.mode === 'manual' && draft?.settings?.title) {
                 title = draft.settings.title;
-              } else if (draft?.mode === 'ai') {
+              } else if (aiDraft) {
                 title = 'Опрос с ИИ';
               }
               return title ? (

@@ -43,7 +43,48 @@ export interface SurveyDraft {
   updatedAt: number;
 }
 
+// Интерфейс для ИИ-опросов
+export interface AISurveyDraft {
+  mode: 'ai';
+  currentStep: 'type' | 'business' | 'personal' | 'advanced' | 'motivation';
+  userType?: 'business' | 'personal';
+  businessData?: {
+    businessSphere: string;
+    targetAudience: string;
+    surveyGoal: string;
+    questionCount: number;
+    questionTypes: string[];
+  };
+  personalData?: {
+    topic: string;
+    audience: string;
+    purpose: string;
+    questionCount: number;
+    questionTypes: string[];
+  };
+  advancedSettings?: {
+    allowAnonymous: boolean;
+    showProgress: boolean;
+    randomizeQuestions: boolean;
+    oneResponsePerUser: boolean;
+    collectTelegramData: boolean;
+    maxParticipants: string;
+    endDate: string;
+    endTime: string;
+    surveyTitle: string;
+    surveyDescription: string;
+  };
+  motivationData?: {
+    motivationEnabled: boolean;
+    motivationType: string;
+    motivationDetails: string;
+    motivationConditions?: string;
+  };
+  updatedAt: number;
+}
+
 const STORAGE_KEY = 'surveyDraft';
+const AI_STORAGE_KEY = 'aiSurveyDraft';
 
 export function getDraft(): SurveyDraft | null {
   try {
@@ -111,6 +152,65 @@ export function saveSettings(settings: {
 
 export function saveQuestions(questions: DraftQuestion[]) {
   saveDraft({ questions });
+}
+
+// Функции для ИИ-опросов
+export function getAIDraft(): AISurveyDraft | null {
+  try {
+    const raw = localStorage.getItem(AI_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as AISurveyDraft;
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function saveAIDraft(partial: Partial<AISurveyDraft>) {
+  const current = getAIDraft() || {
+    mode: 'ai' as const,
+    currentStep: 'type' as const,
+    updatedAt: Date.now()
+  };
+  const next: AISurveyDraft = {
+    ...current,
+    ...partial,
+    updatedAt: Date.now()
+  };
+  localStorage.setItem(AI_STORAGE_KEY, JSON.stringify(next));
+}
+
+export function clearAIDraft() {
+  localStorage.removeItem(AI_STORAGE_KEY);
+}
+
+export function hasAIDraft(): boolean {
+  return !!getAIDraft();
+}
+
+export function saveAIStep(step: AISurveyDraft['currentStep']) {
+  saveAIDraft({ currentStep: step });
+}
+
+export function saveAIUserType(userType: 'business' | 'personal') {
+  saveAIDraft({ userType, currentStep: userType });
+}
+
+export function saveAIBusinessData(data: AISurveyDraft['businessData']) {
+  saveAIDraft({ businessData: data, currentStep: 'advanced' });
+}
+
+export function saveAIPersonalData(data: AISurveyDraft['personalData']) {
+  saveAIDraft({ personalData: data, currentStep: 'advanced' });
+}
+
+export function saveAIAdvancedSettings(settings: AISurveyDraft['advancedSettings']) {
+  saveAIDraft({ advancedSettings: settings, currentStep: 'motivation' });
+}
+
+export function saveAIMotivationData(data: AISurveyDraft['motivationData']) {
+  saveAIDraft({ motivationData: data });
 }
 
 
