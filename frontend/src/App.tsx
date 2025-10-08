@@ -6,6 +6,7 @@ import SurveyCreatorPage from './pages/Survey/SurveyCreatorPage';
 import AISurveyPage from './pages/Survey/AISurveyPage';
 import AIBusinessPage from './pages/Survey/AIBusinessPage';
 import AIPersonalPage from './pages/Survey/AIPersonalPage';
+import AIAdvancedSettingsPage from './pages/Survey/AIAdvancedSettingsPage';
 import { SurveyPublishedPage } from './pages/Survey/SurveyPublishedPage';
 import MotivationPage from './pages/Survey/MotivationPage';
 import SettingsPage from './pages/Settings/SettingsPage';
@@ -78,6 +79,7 @@ function App() {
           <Route path="/survey/create/ai" element={<AISurveyPage />} />
           <Route path="/survey/create/ai/business" element={<AIBusinessPage />} />
           <Route path="/survey/create/ai/personal" element={<AIPersonalPage />} />
+          <Route path="/survey/create/ai/advanced-settings" element={<AIAdvancedSettingsPage />} />
           <Route path="/survey/create/ai/motivation" element={<MotivationPage />} />
           <Route path="/survey/published" element={<SurveyPublishedPage />} />
           <Route path="/settings" element={<SettingsPage />} />

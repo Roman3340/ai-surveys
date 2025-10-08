@@ -24,8 +24,8 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   const [customQuestionCount, setCustomQuestionCount] = useState('');
 
   const handleNext = () => {
-    // Переходим на следующую страницу без сохранения в LocalStorage
-    navigate('/survey/create/ai/motivation', { 
+    // Переходим на страницу расширенных настроек
+    navigate('/survey/create/ai/advanced-settings', { 
       state: { ...formData, userType: 'business' }
     });
   };
