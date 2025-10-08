@@ -297,7 +297,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       height: '28px',
                       borderRadius: '14px',
                       backgroundColor: advancedSettings.allowAnonymous ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: 'none',
+                      border: advancedSettings.allowAnonymous ? 'none' : '1px solid var(--tg-hint-color)',
                       cursor: 'pointer',
                       position: 'relative',
                       transition: 'all 0.2s ease'
@@ -334,7 +334,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       height: '28px',
                       borderRadius: '14px',
                       backgroundColor: advancedSettings.showProgress ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: 'none',
+                      border: advancedSettings.showProgress ? 'none' : '1px solid var(--tg-hint-color)',
                       cursor: 'pointer',
                       position: 'relative',
                       transition: 'all 0.2s ease'
@@ -371,7 +371,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       height: '28px',
                       borderRadius: '14px',
                       backgroundColor: advancedSettings.randomizeQuestions ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: 'none',
+                      border: advancedSettings.randomizeQuestions ? 'none' : '1px solid var(--tg-hint-color)',
                       cursor: 'pointer',
                       position: 'relative',
                       transition: 'all 0.2s ease'
@@ -408,7 +408,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       height: '28px',
                       borderRadius: '14px',
                       backgroundColor: advancedSettings.oneResponsePerUser ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: 'none',
+                      border: advancedSettings.oneResponsePerUser ? 'none' : '1px solid var(--tg-hint-color)',
                       cursor: 'pointer',
                       position: 'relative',
                       transition: 'all 0.2s ease'
@@ -445,7 +445,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       height: '28px',
                       borderRadius: '14px',
                       backgroundColor: advancedSettings.collectTelegramData ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: 'none',
+                      border: advancedSettings.collectTelegramData ? 'none' : '1px solid var(--tg-hint-color)',
                       cursor: 'pointer',
                       position: 'relative',
                       transition: 'all 0.2s ease'
@@ -502,7 +502,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                   <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
                     Дата окончания
                   </div>
-                  <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <input
                       type="date"
                       value={advancedSettings.endDate}
@@ -510,16 +510,6 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       onFocus={handleInputFocus}
                       onBlur={handleInputBlur}
                       min={new Date().toISOString().split('T')[0]}
-                      onKeyDown={(e) => {
-                        // Обработка клавиши Delete для очистки поля
-                        if (e.key === 'Delete' || e.key === 'Backspace') {
-                          setAdvancedSettings(prev => ({ 
-                            ...prev, 
-                            endDate: '',
-                            endTime: ''
-                          }));
-                        }
-                      }}
                       style={{
                         flex: 1,
                         padding: '12px 16px',
@@ -548,6 +538,37 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                         outline: 'none'
                       }}
                     />
+                    {(advancedSettings.endDate || advancedSettings.endTime) && (
+                      <button
+                        type="button"
+                        onClick={() => setAdvancedSettings(prev => ({ 
+                          ...prev, 
+                          endDate: '',
+                          endTime: ''
+                        }))}
+                        style={{
+                          padding: '12px 16px',
+                          borderRadius: '8px',
+                          border: '1px solid var(--tg-section-separator-color)',
+                          backgroundColor: 'var(--tg-section-bg-color)',
+                          color: 'var(--tg-hint-color)',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--tg-hint-color)';
+                          e.currentTarget.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--tg-section-bg-color)';
+                          e.currentTarget.style.color = 'var(--tg-hint-color)';
+                        }}
+                      >
+                        Сбросить
+                      </button>
+                    )}
                   </div>
                   <div style={{ 
                     fontSize: '12px', 
