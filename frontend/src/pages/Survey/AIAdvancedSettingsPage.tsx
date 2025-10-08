@@ -22,8 +22,6 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
     oneResponsePerUser: true,
     collectTelegramData: false,
     maxParticipants: '',
-    startDate: '',
-    startTime: '',
     endDate: '',
     endTime: '',
     surveyTitle: '',
@@ -51,6 +49,51 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
   const handleInputBlur = () => {
     setTimeout(() => setIsKeyboardActive(false), 300);
+  };
+
+  // Функция для получения текущего времени в МСК
+  const getMoscowTime = () => {
+    const now = new Date();
+    const moscowTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
+    return moscowTime;
+  };
+
+  // Функция для валидации и установки времени окончания
+  const handleEndDateChange = (date: string) => {
+    if (!date) {
+      // Если дата очищена, очищаем и время
+      setAdvancedSettings(prev => ({ 
+        ...prev, 
+        endDate: '',
+        endTime: ''
+      }));
+      return;
+    }
+
+    const today = getMoscowTime();
+    const selectedDate = new Date(date);
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const selectedDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+
+    if (selectedDateOnly < todayDate) {
+      // Если дата в прошлом, не устанавливаем
+      return;
+    }
+
+    let defaultTime = '12:00';
+    
+    // Если выбранная дата - сегодня, устанавливаем текущее время + 1 час
+    if (selectedDateOnly.getTime() === todayDate.getTime()) {
+      const currentHour = today.getHours();
+      const nextHour = (currentHour + 1) % 24;
+      defaultTime = `${nextHour.toString().padStart(2, '0')}:00`;
+    }
+
+    setAdvancedSettings(prev => ({ 
+      ...prev, 
+      endDate: date,
+      endTime: prev.endTime || defaultTime
+    }));
   };
 
   // Используем стабильный хук для кнопки назад
@@ -454,100 +497,56 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                   />
                 </div>
 
-                {/* Дата начала */}
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
-                    Дата начала
-                  </div>
-                  <input
-                    type="date"
-                    value={advancedSettings.startDate}
-                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, startDate: e.target.value }))}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'var(--tg-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '16px',
-                      outline: 'none'
-                    }}
-                  />
-                </div>
-
-                {/* Время начала */}
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
-                    Время начала
-                  </div>
-                  <input
-                    type="time"
-                    value={advancedSettings.startTime}
-                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, startTime: e.target.value }))}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'var(--tg-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '16px',
-                      outline: 'none'
-                    }}
-                  />
-                </div>
-
-                {/* Дата окончания */}
+                {/* Дата и время окончания */}
                 <div>
                   <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
                     Дата окончания
                   </div>
-                  <input
-                    type="date"
-                    value={advancedSettings.endDate}
-                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, endDate: e.target.value }))}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'var(--tg-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '16px',
-                      outline: 'none'
-                    }}
-                  />
-                </div>
-
-                {/* Время окончания */}
-                <div>
-                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
-                    Время окончания
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <input
+                      type="date"
+                      value={advancedSettings.endDate}
+                      onChange={(e) => handleEndDateChange(e.target.value)}
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
+                      min={new Date().toISOString().split('T')[0]}
+                      style={{
+                        flex: 1,
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        backgroundColor: 'var(--tg-bg-color)',
+                        color: 'var(--tg-text-color)',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
+                    <input
+                      type="time"
+                      value={advancedSettings.endTime}
+                      onChange={(e) => setAdvancedSettings(prev => ({ ...prev, endTime: e.target.value }))}
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
+                      style={{
+                        flex: 1,
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        backgroundColor: 'var(--tg-bg-color)',
+                        color: 'var(--tg-text-color)',
+                        fontSize: '16px',
+                        outline: 'none'
+                      }}
+                    />
                   </div>
-                  <input
-                    type="time"
-                    value={advancedSettings.endTime}
-                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, endTime: e.target.value }))}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      backgroundColor: 'var(--tg-bg-color)',
-                      color: 'var(--tg-text-color)',
-                      fontSize: '16px',
-                      outline: 'none'
-                    }}
-                  />
+                  <div style={{ 
+                    fontSize: '12px', 
+                    color: 'var(--tg-hint-color)', 
+                    marginTop: '4px',
+                    lineHeight: '1.3'
+                  }}>
+                    Время устанавливать необязательно. Если не указано, опрос будет работать до тех пор, пока вы его не завершите вручную.
+                  </div>
                 </div>
 
                 {/* Название опроса */}
