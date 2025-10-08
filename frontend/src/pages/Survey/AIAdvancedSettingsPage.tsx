@@ -510,6 +510,16 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       onFocus={handleInputFocus}
                       onBlur={handleInputBlur}
                       min={new Date().toISOString().split('T')[0]}
+                      onKeyDown={(e) => {
+                        // Обработка клавиши Delete для очистки поля
+                        if (e.key === 'Delete' || e.key === 'Backspace') {
+                          setAdvancedSettings(prev => ({ 
+                            ...prev, 
+                            endDate: '',
+                            endTime: ''
+                          }));
+                        }
+                      }}
                       style={{
                         flex: 1,
                         padding: '12px 16px',
@@ -545,7 +555,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     marginTop: '4px',
                     lineHeight: '1.3'
                   }}>
-                    Время устанавливать необязательно. Если не указано, опрос будет работать до тех пор, пока вы его не завершите вручную.
+                    Время устанавливать необязательно. Если не указано, опрос будет работать до тех пор, пока вы его не завершите вручную. Время указывается по МСК.
                   </div>
                 </div>
 
