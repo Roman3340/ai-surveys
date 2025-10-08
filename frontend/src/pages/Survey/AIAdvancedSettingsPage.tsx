@@ -49,7 +49,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
-    targetRoute: -1
+    targetRoute: '/survey/create/ai'
   });
 
   // Прокрутка к верху при загрузке страницы
