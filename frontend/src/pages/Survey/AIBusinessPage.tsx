@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-import { getAIDraft, saveAIBusinessData, saveAIStep } from '../../utils/surveyDraft';
+import { getAIDraft, saveAIBusinessData } from '../../utils/surveyDraft';
 
 interface AIBusinessPageProps {}
 

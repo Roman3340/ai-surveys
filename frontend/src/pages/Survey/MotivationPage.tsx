@@ -35,13 +35,27 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   useEffect(() => {
     const draft = getAIDraft();
     if (draft?.motivationData) {
-      setMotivationData(draft.motivationData);
+      // Преобразуем данные из черновика в формат MotivationData
+      setMotivationData({
+        motivation: draft.motivationData.motivationType || 'none',
+        rewardDescription: '',
+        rewardValue: '',
+        motivationType: draft.motivationData.motivationType,
+        motivationDetails: draft.motivationData.motivationDetails,
+        motivationConditions: draft.motivationData.motivationConditions,
+        ...previousData
+      });
     }
   }, []);
 
   const handleNext = () => {
-    // Сохраняем данные мотивации в черновик
-    saveAIMotivationData(motivationData);
+    // Сохраняем данные мотивации в черновик (преобразуем в нужный формат)
+    saveAIMotivationData({
+      motivationEnabled: motivationData.motivation !== 'none',
+      motivationType: motivationData.motivationType || motivationData.motivation,
+      motivationDetails: motivationData.motivationDetails || '',
+      motivationConditions: motivationData.motivationConditions || ''
+    });
     // Переходим на следующую страницу
     const allData = { ...motivationData };
 
@@ -61,8 +75,13 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   const handleMotivationChange = (field: string, value: any) => {
     const newData = { ...motivationData, [field]: value };
     setMotivationData(newData);
-    // Автоматически сохраняем изменения
-    saveAIMotivationData(newData);
+    // Автоматически сохраняем изменения (преобразуем в нужный формат)
+    saveAIMotivationData({
+      motivationEnabled: newData.motivation !== 'none',
+      motivationType: newData.motivationType || newData.motivation,
+      motivationDetails: newData.motivationDetails || '',
+      motivationConditions: newData.motivationConditions || ''
+    });
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
