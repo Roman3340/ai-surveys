@@ -74,7 +74,19 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
   };
 
   const handleMotivationChange = (field: string, value: any) => {
-    const newData = { ...motivationData, [field]: value };
+    let newData = { ...motivationData, [field]: value };
+    
+    // Если изменился тип мотивации, очищаем связанные поля
+    if (field === 'motivation') {
+      newData = {
+        ...newData,
+        rewardDescription: '',
+        rewardValue: '',
+        motivationDetails: '',
+        motivationConditions: ''
+      };
+    }
+    
     setMotivationData(newData);
     // Автоматически сохраняем изменения (преобразуем в нужный формат)
     saveAIMotivationData({

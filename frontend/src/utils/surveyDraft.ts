@@ -221,11 +221,19 @@ export function clearAITypeData(type: 'business' | 'personal') {
   if (!draft) return;
   
   if (type === 'business') {
-    // Очищаем данные личного опроса
-    saveAIDraft({ personalData: undefined });
+    // Очищаем данные личного опроса и общие настройки
+    saveAIDraft({ 
+      personalData: undefined,
+      advancedSettings: undefined,
+      motivationData: undefined
+    });
   } else {
-    // Очищаем данные бизнес опроса
-    saveAIDraft({ businessData: undefined });
+    // Очищаем данные бизнес опроса и общие настройки
+    saveAIDraft({ 
+      businessData: undefined,
+      advancedSettings: undefined,
+      motivationData: undefined
+    });
   }
 }
 

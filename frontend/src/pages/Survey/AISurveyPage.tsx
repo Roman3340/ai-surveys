@@ -26,6 +26,9 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
     
     hapticFeedback?.light();
     
+    // Очищаем данные противоположного типа при переходе
+    clearAITypeData(selectedType);
+    
     if (selectedType === 'business') {
       navigate('/survey/create/ai/business');
     } else {
@@ -36,11 +39,6 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
   const handleSelectType = (type: 'business' | 'personal') => {
     hapticFeedback?.light();
     setSelectedType(type);
-    
-    // Очищаем данные противоположного типа
-    clearAITypeData(type);
-    
-    // Сохраняем выбранный тип
     saveAIUserType(type);
   };
 
