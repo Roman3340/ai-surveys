@@ -28,7 +28,7 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
       
       // Восстанавливаем кастомное количество вопросов
       const questionCount = data.questionCount;
-      const predefinedCounts = [5, 7, 10, 15]; // Только те значения, для которых есть кнопки
+      const predefinedCounts = [5, 7, 10, 15];
       if (!predefinedCounts.includes(questionCount)) {
         setCustomQuestionCount(questionCount.toString());
       }
