@@ -128,7 +128,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
-    targetRoute: () => {
+    targetRoute: (() => {
       const draft = getAIDraft();
       if (draft?.userType === 'business') {
         return '/survey/create/ai/business';
@@ -136,7 +136,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
         return '/survey/create/ai/personal';
       }
       return '/survey/create/ai';
-    }
+    })()
   });
 
   // Прокрутка к верху при загрузке страницы

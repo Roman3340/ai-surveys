@@ -55,9 +55,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       motivationType: motivationData.motivationType || motivationData.motivation,
       motivationDetails: motivationData.motivationDetails || '',
       motivationConditions: motivationData.motivationConditions || '',
-      rewardDescription: motivationData.rewardDescription || '',
-      rewardValue: motivationData.rewardValue || '',
-      ...motivationData // Сохраняем все дополнительные поля
+      ...motivationData // Сохраняем все поля включая rewardDescription и rewardValue
     });
     // Переходим на следующую страницу
     const allData = { ...motivationData };
@@ -84,9 +82,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       motivationType: newData.motivationType || newData.motivation,
       motivationDetails: newData.motivationDetails || '',
       motivationConditions: newData.motivationConditions || '',
-      rewardDescription: newData.rewardDescription || '',
-      rewardValue: newData.rewardValue || '',
-      ...newData // Сохраняем все дополнительные поля
+      ...newData // Сохраняем все поля включая rewardDescription и rewardValue
     });
   };
 
