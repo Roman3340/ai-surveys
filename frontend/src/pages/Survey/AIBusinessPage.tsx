@@ -24,13 +24,16 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
   useEffect(() => {
     const draft = getAIDraft();
     if (draft?.businessData) {
-      setFormData(draft.businessData);
+      const data = draft.businessData;
+      setFormData(data);
       
       // Восстанавливаем кастомное количество вопросов
-      const questionCount = draft.businessData.questionCount;
+      const questionCount = data.questionCount;
       const predefinedCounts = [5, 7, 10, 15, 20, 25];
       if (!predefinedCounts.includes(questionCount)) {
         setCustomQuestionCount(questionCount.toString());
+        // Сбрасываем questionCount в formData, чтобы кнопки не подсвечивались
+        setFormData(prev => ({ ...prev, questionCount: 5 }));
       }
     }
   }, []);

@@ -40,9 +40,9 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
         motivation: draft.motivationData.motivationType || 'none',
         rewardDescription: draft.motivationData.rewardDescription || '',
         rewardValue: draft.motivationData.rewardValue || '',
-        motivationType: draft.motivationData.motivationType,
-        motivationDetails: draft.motivationData.motivationDetails,
-        motivationConditions: draft.motivationData.motivationConditions,
+        motivationType: draft.motivationData.motivationType || 'none',
+        motivationDetails: draft.motivationData.motivationDetails || '',
+        motivationConditions: draft.motivationData.motivationConditions || '',
         ...previousData
       });
     }
@@ -50,13 +50,16 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
 
   const handleNext = () => {
     // Сохраняем данные мотивации в черновик (преобразуем в нужный формат)
-    saveAIMotivationData({
+    const dataToSave = {
       motivationEnabled: motivationData.motivation !== 'none',
       motivationType: motivationData.motivation, // Всегда используем текущее значение motivation
       motivationDetails: motivationData.motivationDetails || '',
       motivationConditions: motivationData.motivationConditions || '',
-      ...motivationData // Сохраняем все поля включая rewardDescription и rewardValue
-    });
+      rewardDescription: motivationData.rewardDescription || '',
+      rewardValue: motivationData.rewardValue || '',
+      ...motivationData // Сохраняем все поля
+    };
+    saveAIMotivationData(dataToSave);
     // Переходим на следующую страницу
     const allData = { ...motivationData };
 
@@ -89,13 +92,16 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     
     setMotivationData(newData);
     // Автоматически сохраняем изменения (преобразуем в нужный формат)
-    saveAIMotivationData({
+    const dataToSave = {
       motivationEnabled: newData.motivation !== 'none',
       motivationType: newData.motivation, // Всегда используем текущее значение motivation
       motivationDetails: newData.motivationDetails || '',
       motivationConditions: newData.motivationConditions || '',
-      ...newData // Сохраняем все поля включая rewardDescription и rewardValue
-    });
+      rewardDescription: newData.rewardDescription || '',
+      rewardValue: newData.rewardValue || '',
+      ...newData // Сохраняем все поля
+    };
+    saveAIMotivationData(dataToSave);
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {

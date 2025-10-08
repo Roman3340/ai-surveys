@@ -23,13 +23,16 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
   useEffect(() => {
     const draft = getAIDraft();
     if (draft?.personalData) {
-      setFormData(draft.personalData);
+      const data = draft.personalData;
+      setFormData(data);
       
       // Восстанавливаем кастомное количество вопросов
-      const questionCount = draft.personalData.questionCount;
+      const questionCount = data.questionCount;
       const predefinedCounts = [5, 7, 10, 15, 20, 25];
       if (!predefinedCounts.includes(questionCount)) {
         setCustomQuestionCount(questionCount.toString());
+        // Сбрасываем questionCount в formData, чтобы кнопки не подсвечивались
+        setFormData(prev => ({ ...prev, questionCount: 5 }));
       }
     }
   }, []);
