@@ -1716,6 +1716,7 @@ const QuestionsTab: React.FC<{
                       Варианты ответов
                     </label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {/* Обычные варианты ответов */}
                       {(question.options || ['', '']).map((option, index) => (
                         <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <input
@@ -1766,53 +1767,26 @@ const QuestionsTab: React.FC<{
                           </button>
                         </div>
                       ))}
-                      <button
-                        onClick={() => onAddOption(question.id)}
-                        style={{
-                          backgroundColor: 'transparent',
-                          border: '1px dashed var(--tg-section-separator-color)',
-                          borderRadius: '6px',
-                          padding: '8px 12px',
-                          color: 'var(--tg-hint-color)',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                      >
-                        + Добавить вариант
-                      </button>
                       
-                      {!question.hasOtherOption && (
-                        <button
-                          onClick={() => onQuestionChange(question.id, { hasOtherOption: true })}
-                          style={{
-                            backgroundColor: 'transparent',
-                            border: '1px dashed var(--tg-button-color)',
-                            borderRadius: '6px',
-                            padding: '8px 12px',
-                            color: 'var(--tg-button-color)',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            marginTop: '8px'
-                          }}
-                        >
-                          + Добавить вариант "Другое"
-                        </button>
-                      )}
-                      
+                      {/* Вариант "Другое" - всегда внизу */}
                       {question.hasOtherOption && (
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          marginTop: '8px',
-                          padding: '8px 12px',
-                          backgroundColor: 'var(--tg-section-bg-color)',
-                          borderRadius: '6px',
-                          border: '1px solid var(--tg-button-color)'
-                        }}>
-                          <span style={{ color: 'var(--tg-button-color)', fontSize: '14px', fontWeight: '500' }}>
-                            ✓ Вариант "Другое" добавлен
-                          </span>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            value="Другое"
+                            readOnly
+                            style={{
+                              flex: 1,
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              backgroundColor: 'var(--tg-section-bg-color)',
+                              color: 'var(--tg-hint-color)',
+                              fontSize: '14px',
+                              outline: 'none',
+                              cursor: 'not-allowed'
+                            }}
+                          />
                           <button
                             onClick={() => onQuestionChange(question.id, { hasOtherOption: false })}
                             style={{
@@ -1820,14 +1794,64 @@ const QuestionsTab: React.FC<{
                               border: 'none',
                               color: 'var(--tg-hint-color)',
                               cursor: 'pointer',
-                              padding: '2px',
-                              fontSize: '12px'
+                              padding: '4px',
+                              fontSize: '18px',
+                              width: '24px',
+                              height: '24px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
                             }}
                           >
                             ✕
                           </button>
                         </div>
                       )}
+                      
+                      {/* Кнопки добавления в одной строке */}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => onAddOption(question.id)}
+                          style={{
+                            flex: 1,
+                            backgroundColor: 'transparent',
+                            border: '1px dashed var(--tg-section-separator-color)',
+                            borderRadius: '6px',
+                            padding: '8px 12px',
+                            color: 'var(--tg-hint-color)',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <span>+</span>
+                          Добавить вариант
+                        </button>
+                        
+                        <button
+                          onClick={() => onQuestionChange(question.id, { hasOtherOption: !question.hasOtherOption })}
+                          style={{
+                            flex: 1,
+                            backgroundColor: 'transparent',
+                            border: '1px dashed var(--tg-section-separator-color)',
+                            borderRadius: '6px',
+                            padding: '8px 12px',
+                            color: 'var(--tg-hint-color)',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <span>{question.hasOtherOption ? '✓' : '+'}</span>
+                          Добавить «Другое»
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -2454,7 +2478,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
                     style={{
                       ...baseStyle,
-                      border: answers?.[`${question.id}_other`] ? '1px solid var(--tg-section-separator-color)' : '1px solid #ff4444',
+                      border: (!answers?.[`${question.id}_other`] && question.required) ? '1px solid #ff4444' : '1px solid var(--tg-section-separator-color)',
                       backgroundColor: 'var(--tg-bg-color)'
                     }}
                     enterKeyHint="done"
@@ -2645,7 +2669,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
                     style={{
                       ...baseStyle,
-                      border: answers?.[`${question.id}_other`] ? '1px solid var(--tg-section-separator-color)' : '1px solid #ff4444',
+                      border: (!answers?.[`${question.id}_other`] && question.required) ? '1px solid #ff4444' : '1px solid var(--tg-section-separator-color)',
                       backgroundColor: 'var(--tg-bg-color)'
                     }}
                     enterKeyHint="done"
