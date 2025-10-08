@@ -24,6 +24,13 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
     const draft = getAIDraft();
     if (draft?.personalData) {
       setFormData(draft.personalData);
+      
+      // Восстанавливаем кастомное количество вопросов
+      const questionCount = draft.personalData.questionCount;
+      const predefinedCounts = [5, 7, 10, 15, 20, 25];
+      if (!predefinedCounts.includes(questionCount)) {
+        setCustomQuestionCount(questionCount.toString());
+      }
     }
   }, []);
   

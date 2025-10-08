@@ -52,7 +52,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     // Сохраняем данные мотивации в черновик (преобразуем в нужный формат)
     saveAIMotivationData({
       motivationEnabled: motivationData.motivation !== 'none',
-      motivationType: motivationData.motivationType || motivationData.motivation,
+      motivationType: motivationData.motivation, // Всегда используем текущее значение motivation
       motivationDetails: motivationData.motivationDetails || '',
       motivationConditions: motivationData.motivationConditions || '',
       ...motivationData // Сохраняем все поля включая rewardDescription и rewardValue
@@ -91,7 +91,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     // Автоматически сохраняем изменения (преобразуем в нужный формат)
     saveAIMotivationData({
       motivationEnabled: newData.motivation !== 'none',
-      motivationType: newData.motivationType || newData.motivation,
+      motivationType: newData.motivation, // Всегда используем текущее значение motivation
       motivationDetails: newData.motivationDetails || '',
       motivationConditions: newData.motivationConditions || '',
       ...newData // Сохраняем все поля включая rewardDescription и rewardValue

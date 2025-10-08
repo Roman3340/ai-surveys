@@ -25,6 +25,13 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
     const draft = getAIDraft();
     if (draft?.businessData) {
       setFormData(draft.businessData);
+      
+      // Восстанавливаем кастомное количество вопросов
+      const questionCount = draft.businessData.questionCount;
+      const predefinedCounts = [5, 7, 10, 15, 20, 25];
+      if (!predefinedCounts.includes(questionCount)) {
+        setCustomQuestionCount(questionCount.toString());
+      }
     }
   }, []);
   
