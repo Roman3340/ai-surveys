@@ -13,6 +13,14 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
   const location = useLocation();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
   const [settingsType, setSettingsType] = useState<'standard' | 'advanced'>('standard');
+
+  // Загружаем состояние выпадающего списка из черновика
+  useEffect(() => {
+    const draft = getAIDraft();
+    if (draft?.advancedSettings) {
+      setSettingsType('advanced');
+    }
+  }, []);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
 
   // Расширенные настройки
@@ -120,7 +128,15 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
-    targetRoute: '/survey/create/ai'
+    targetRoute: () => {
+      const draft = getAIDraft();
+      if (draft?.userType === 'business') {
+        return '/survey/create/ai/business';
+      } else if (draft?.userType === 'personal') {
+        return '/survey/create/ai/personal';
+      }
+      return '/survey/create/ai';
+    }
   });
 
   // Прокрутка к верху при загрузке страницы

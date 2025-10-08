@@ -79,6 +79,9 @@ export interface AISurveyDraft {
     motivationType: string;
     motivationDetails: string;
     motivationConditions?: string;
+    rewardDescription?: string;
+    rewardValue?: string;
+    [key: string]: any; // Для дополнительных полей
   };
   updatedAt: number;
 }
@@ -211,6 +214,19 @@ export function saveAIAdvancedSettings(settings: AISurveyDraft['advancedSettings
 
 export function saveAIMotivationData(data: AISurveyDraft['motivationData']) {
   saveAIDraft({ motivationData: data });
+}
+
+export function clearAITypeData(type: 'business' | 'personal') {
+  const draft = getAIDraft();
+  if (!draft) return;
+  
+  if (type === 'business') {
+    // Очищаем данные личного опроса
+    saveAIDraft({ personalData: undefined });
+  } else {
+    // Очищаем данные бизнес опроса
+    saveAIDraft({ businessData: undefined });
+  }
 }
 
 

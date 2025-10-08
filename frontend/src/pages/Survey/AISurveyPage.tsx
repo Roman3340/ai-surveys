@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
-import { getAIDraft, saveAIUserType } from '../../utils/surveyDraft';
+import { getAIDraft, saveAIUserType, clearAITypeData } from '../../utils/surveyDraft';
 
 interface AISurveyPageProps {}
 
@@ -36,6 +36,11 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
   const handleSelectType = (type: 'business' | 'personal') => {
     hapticFeedback?.light();
     setSelectedType(type);
+    
+    // Очищаем данные противоположного типа
+    clearAITypeData(type);
+    
+    // Сохраняем выбранный тип
     saveAIUserType(type);
   };
 

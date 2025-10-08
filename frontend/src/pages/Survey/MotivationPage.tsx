@@ -38,8 +38,8 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       // Преобразуем данные из черновика в формат MotivationData
       setMotivationData({
         motivation: draft.motivationData.motivationType || 'none',
-        rewardDescription: '',
-        rewardValue: '',
+        rewardDescription: draft.motivationData.rewardDescription || '',
+        rewardValue: draft.motivationData.rewardValue || '',
         motivationType: draft.motivationData.motivationType,
         motivationDetails: draft.motivationData.motivationDetails,
         motivationConditions: draft.motivationData.motivationConditions,
@@ -54,7 +54,10 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       motivationEnabled: motivationData.motivation !== 'none',
       motivationType: motivationData.motivationType || motivationData.motivation,
       motivationDetails: motivationData.motivationDetails || '',
-      motivationConditions: motivationData.motivationConditions || ''
+      motivationConditions: motivationData.motivationConditions || '',
+      rewardDescription: motivationData.rewardDescription || '',
+      rewardValue: motivationData.rewardValue || '',
+      ...motivationData // Сохраняем все дополнительные поля
     });
     // Переходим на следующую страницу
     const allData = { ...motivationData };
@@ -80,7 +83,10 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       motivationEnabled: newData.motivation !== 'none',
       motivationType: newData.motivationType || newData.motivation,
       motivationDetails: newData.motivationDetails || '',
-      motivationConditions: newData.motivationConditions || ''
+      motivationConditions: newData.motivationConditions || '',
+      rewardDescription: newData.rewardDescription || '',
+      rewardValue: newData.rewardValue || '',
+      ...newData // Сохраняем все дополнительные поля
     });
   };
 
