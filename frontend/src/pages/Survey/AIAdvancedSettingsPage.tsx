@@ -16,12 +16,18 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
   // Расширенные настройки
   const [advancedSettings, setAdvancedSettings] = useState({
-    allowAnonymous: true,
+    allowAnonymous: false,
     showProgress: true,
     randomizeQuestions: false,
     oneResponsePerUser: true,
-    collectTelegramData: true,
-    maxParticipants: '1000'
+    collectTelegramData: false,
+    maxParticipants: '',
+    startDate: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
+    surveyTitle: '',
+    surveyDescription: ''
   });
 
   const handleNext = () => {
@@ -233,11 +239,11 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {/* Анонимные ответы */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
+                  <div style={{ flex: 1, marginRight: '16px' }}>
                     <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
                       Анонимные ответы
                     </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
                       Разрешить участникам отвечать анонимно
                     </div>
                   </div>
@@ -270,11 +276,11 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
                 {/* Показывать прогресс */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
+                  <div style={{ flex: 1, marginRight: '16px' }}>
                     <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
                       Показывать прогресс
                     </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
                       Отображать участникам прогресс прохождения
                     </div>
                   </div>
@@ -307,11 +313,11 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
                 {/* Перемешивать вопросы */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
+                  <div style={{ flex: 1, marginRight: '16px' }}>
                     <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
                       Перемешивать вопросы
                     </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
                       Случайный порядок вопросов для каждого участника
                     </div>
                   </div>
@@ -344,11 +350,11 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
                 {/* Один ответ на пользователя */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
+                  <div style={{ flex: 1, marginRight: '16px' }}>
                     <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
                       Один ответ на пользователя
                     </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
                       Запретить повторное участие
                     </div>
                   </div>
@@ -381,11 +387,11 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
                 {/* Собирать данные Telegram */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
+                  <div style={{ flex: 1, marginRight: '16px' }}>
                     <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
                       Собирать данные Telegram
                     </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
                       Получать информацию о пользователе из Telegram
                     </div>
                   </div>
@@ -424,10 +430,17 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                   <input
                     type="number"
                     value={advancedSettings.maxParticipants}
-                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, maxParticipants: e.target.value }))}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || (parseInt(value) >= 0 && !isNaN(parseInt(value)))) {
+                        setAdvancedSettings(prev => ({ ...prev, maxParticipants: value }));
+                      }
+                    }}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
-                    placeholder="1000"
+                    placeholder="Не ограничено"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     style={{
                       width: '100%',
                       padding: '12px 16px',
@@ -437,6 +450,154 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       color: 'var(--tg-text-color)',
                       fontSize: '16px',
                       outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Дата начала */}
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                    Дата начала
+                  </div>
+                  <input
+                    type="date"
+                    value={advancedSettings.startDate}
+                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, startDate: e.target.value }))}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      backgroundColor: 'var(--tg-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Время начала */}
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                    Время начала
+                  </div>
+                  <input
+                    type="time"
+                    value={advancedSettings.startTime}
+                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, startTime: e.target.value }))}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      backgroundColor: 'var(--tg-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Дата окончания */}
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                    Дата окончания
+                  </div>
+                  <input
+                    type="date"
+                    value={advancedSettings.endDate}
+                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, endDate: e.target.value }))}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      backgroundColor: 'var(--tg-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Время окончания */}
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                    Время окончания
+                  </div>
+                  <input
+                    type="time"
+                    value={advancedSettings.endTime}
+                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, endTime: e.target.value }))}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      backgroundColor: 'var(--tg-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Название опроса */}
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                    Название опроса
+                  </div>
+                  <input
+                    type="text"
+                    value={advancedSettings.surveyTitle}
+                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, surveyTitle: e.target.value }))}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    placeholder="Оставьте пустым для автогенерации"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      backgroundColor: 'var(--tg-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Описание опроса */}
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '8px' }}>
+                    Описание опроса
+                  </div>
+                  <textarea
+                    value={advancedSettings.surveyDescription}
+                    onChange={(e) => setAdvancedSettings(prev => ({ ...prev, surveyDescription: e.target.value }))}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    placeholder="Оставьте пустым для автогенерации"
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      backgroundColor: 'var(--tg-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '16px',
+                      outline: 'none',
+                      resize: 'vertical',
+                      minHeight: '80px'
                     }}
                   />
                 </div>
