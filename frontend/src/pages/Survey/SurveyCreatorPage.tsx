@@ -2478,7 +2478,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
                     style={{
                       ...baseStyle,
-                      border: (!answers?.[`${question.id}_other`] && question.required) ? '1px solid #ff4444' : '1px solid #e0e0e0',
+                      border: !answers?.[`${question.id}_other`] ? '1px solid #ff4444' : '1px solid #b0b0b0',
                       backgroundColor: 'var(--tg-bg-color)'
                     }}
                     enterKeyHint="done"
@@ -2488,13 +2488,41 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                       }
                     }}
                   />
-                  {!answers?.[`${question.id}_other`] && question.required && (
+                  {!answers?.[`${question.id}_other`] && (
                     <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
                       Пожалуйста, введите ваш ответ
                     </div>
                   )}
                 </div>
               )}
+            </div>
+          )}
+          
+          {/* Кнопка "Отменить выбор" */}
+          {answers?.[question.id] && (
+            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+              <button
+                type="button"
+                onClick={() => onAnswerChange?.({ ...answers, [question.id]: null })}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'var(--tg-hint-color)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--tg-section-bg-color)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                Отменить выбор
+              </button>
             </div>
           )}
         </div>
@@ -2669,7 +2697,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
                     style={{
                       ...baseStyle,
-                      border: (!answers?.[`${question.id}_other`] && question.required) ? '1px solid #ff4444' : '1px solid #e0e0e0',
+                      border: !answers?.[`${question.id}_other`] ? '1px solid #ff4444' : '1px solid #b0b0b0',
                       backgroundColor: 'var(--tg-bg-color)'
                     }}
                     enterKeyHint="done"
@@ -2679,7 +2707,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                       }
                     }}
                   />
-                  {!answers?.[`${question.id}_other`] && question.required && (
+                  {!answers?.[`${question.id}_other`] && (
                     <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
                       Пожалуйста, введите ваш ответ
                     </div>
