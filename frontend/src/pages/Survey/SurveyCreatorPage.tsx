@@ -3164,10 +3164,6 @@ const PreviewTab: React.FC<{
               <button
                 onClick={() => {
                   const requiredQuestions = questions.filter(q => q.required);
-                  if (requiredQuestions.length === 0) {
-                    alert('Опрос успешно пройден!');
-                    return;
-                  }
                   
                   // Проверяем ответы на обязательные вопросы
                   const unansweredRequired = requiredQuestions.filter(question => {
@@ -3217,10 +3213,31 @@ const PreviewTab: React.FC<{
                     }
                   });
                   
-                  if (unansweredRequired.length === 0) {
+                  // Дополнительно проверяем все вопросы с выбранным вариантом "Другое"
+                  const unansweredOtherOptions = questions.filter(question => {
+                    const answer = previewAnswers[question.id];
+                    
+                    // Проверяем single_choice с "Другое"
+                    if (question.type === 'single_choice' && answer === 'Другое') {
+                      const otherAnswer = previewAnswers[`${question.id}_other`];
+                      return !otherAnswer || otherAnswer.trim() === '';
+                    }
+                    
+                    // Проверяем multiple_choice с "Другое"
+                    if (question.type === 'multiple_choice' && answer && Array.isArray(answer) && answer.includes('Другое')) {
+                      const otherAnswer = previewAnswers[`${question.id}_other`];
+                      return !otherAnswer || otherAnswer.trim() === '';
+                    }
+                    
+                    return false;
+                  });
+                  
+                  if (unansweredRequired.length === 0 && unansweredOtherOptions.length === 0) {
                     alert('Опрос успешно пройден!');
-                  } else {
+                  } else if (unansweredRequired.length > 0) {
                     alert('Пожалуйста, ответьте на все обязательные вопросы');
+                  } else {
+                    alert('Пожалуйста, заполните выбранные поля "Другое"');
                   }
                 }}
                 style={{
