@@ -65,7 +65,7 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
             margin: '0 0 16px 0',
             color: 'var(--tg-text-color)'
           }}>
-            Для кого создаём опрос?
+            Для чего создаём опрос?
           </h1>
           <RealTelegramEmoji 
             emoji="🤖" 
@@ -134,7 +134,9 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '24px'
+              fontSize: '24px',
+              backgroundColor: '#FFD60A',
+              borderRadius: '12px'
             }}>
               💼
             </div>
@@ -198,7 +200,9 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '24px'
+              fontSize: '24px',
+              backgroundColor: '#34C759',
+              borderRadius: '12px'
             }}>
               🙋‍♂️
             </div>

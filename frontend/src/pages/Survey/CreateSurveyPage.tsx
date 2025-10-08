@@ -113,27 +113,6 @@ const CreateSurveyPage: React.FC = () => {
             size="large" 
             onClick={() => console.log('💡 clicked!')}
           />
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            marginBottom: '24px'
-          }}>
-            {/* Прогресс-бар */}
-            <div style={{
-              width: '280px',
-              height: '6px',
-              backgroundColor: 'rgba(244, 109, 0, 0.2)',
-              borderRadius: '3px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: '20%',
-                height: '100%',
-                background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-                borderRadius: '3px'
-              }} />
-            </div>
-          </div>
         </motion.div>
 
         {/* Блок восстановления черновика */}

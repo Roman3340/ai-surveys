@@ -150,7 +150,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
             }}>
               <motion.div
                 initial={{ width: '0%' }}
-                animate={{ width: isFromAI ? '70%' : '60%' }}
+                animate={{ width: isFromAI ? '90%' : '60%' }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 style={{
                   height: '100%',

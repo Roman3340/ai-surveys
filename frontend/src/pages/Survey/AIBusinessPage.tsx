@@ -147,7 +147,7 @@ const AIBusinessPage: React.FC<AIBusinessPageProps> = () => {
             }}>
               <motion.div
                 initial={{ width: '0%' }}
-                animate={{ width: '50%' }}
+                animate={{ width: '60%' }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 style={{
                   height: '100%',
