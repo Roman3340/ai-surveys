@@ -55,9 +55,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       motivationType: motivationData.motivation, // Всегда используем текущее значение motivation
       motivationDetails: motivationData.motivationDetails || '',
       motivationConditions: motivationData.motivationConditions || '',
-      rewardDescription: motivationData.rewardDescription || '',
-      rewardValue: motivationData.rewardValue || '',
-      ...motivationData // Сохраняем все поля
+      ...motivationData // Сохраняем все поля включая rewardDescription и rewardValue
     };
     saveAIMotivationData(dataToSave);
     // Переходим на следующую страницу
@@ -97,9 +95,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       motivationType: newData.motivation, // Всегда используем текущее значение motivation
       motivationDetails: newData.motivationDetails || '',
       motivationConditions: newData.motivationConditions || '',
-      rewardDescription: newData.rewardDescription || '',
-      rewardValue: newData.rewardValue || '',
-      ...newData // Сохраняем все поля
+      ...newData // Сохраняем все поля включая rewardDescription и rewardValue
     };
     saveAIMotivationData(dataToSave);
   };
