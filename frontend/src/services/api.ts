@@ -1,19 +1,8 @@
 /**
  * API сервис для работы с бэкендом
  */
-import axios from 'axios';
 import type { Survey } from '../types';
-
-// Базовый URL API
-const API_BASE_URL = 'http://localhost:8001/api/';
-
-// Создаем экземпляр axios с базовой конфигурацией
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { api } from '../utils/api';
 
 // Интерфейсы для API
 export interface CreateSurveyRequest {
@@ -21,7 +10,6 @@ export interface CreateSurveyRequest {
   description?: string;
   is_public?: boolean;
   settings?: Record<string, any>;
-  creator_telegram_id: number;
 }
 
 export interface UpdateSurveyRequest {
@@ -40,6 +28,26 @@ export interface SurveyCanEditResponse {
 export interface SurveyShareResponse {
   share_url: string;
   qr_code: string;
+}
+
+// Вопросы
+export interface CreateQuestionRequest {
+  survey_id: string;
+  type: string;
+  text: string;
+  description?: string;
+  is_required: boolean;
+  order_index: number;
+  options?: any;
+  scale_min?: number;
+  scale_max?: number;
+  scale_min_label?: string;
+  scale_max_label?: string;
+  rating_max?: number;
+  validation?: Record<string, any>;
+  image_url?: string;
+  image_name?: string;
+  has_other_option?: boolean;
 }
 
 // API методы
@@ -73,58 +81,56 @@ export const surveyApi = {
    */
   async updateSurvey(
     surveyId: string, 
-    surveyData: UpdateSurveyRequest, 
-    creatorTelegramId: number
+    surveyData: UpdateSurveyRequest
   ): Promise<Survey> {
-    const response = await api.put(`/surveys/${surveyId}?creator_telegram_id=${creatorTelegramId}`, surveyData);
+    const response = await api.put(`/surveys/${surveyId}`, surveyData);
     return response.data;
   },
 
   /**
    * Удалить опрос
    */
-  async deleteSurvey(surveyId: string, creatorTelegramId: number): Promise<void> {
-    await api.delete(`/surveys/${surveyId}?creator_telegram_id=${creatorTelegramId}`);
+  async deleteSurvey(surveyId: string): Promise<void> {
+    await api.delete(`/surveys/${surveyId}`);
   },
 
   /**
    * Опубликовать опрос
    */
-  async publishSurvey(surveyId: string, creatorTelegramId: number): Promise<void> {
-    await api.post(`/surveys/${surveyId}/publish?creator_telegram_id=${creatorTelegramId}`);
+  async publishSurvey(surveyId: string): Promise<void> {
+    await api.post(`/surveys/${surveyId}/publish`);
   },
 
   /**
    * Снять опрос с публикации
    */
-  async unpublishSurvey(surveyId: string, creatorTelegramId: number): Promise<void> {
-    await api.post(`/surveys/${surveyId}/unpublish?creator_telegram_id=${creatorTelegramId}`);
+  async unpublishSurvey(surveyId: string): Promise<void> {
+    await api.post(`/surveys/${surveyId}/unpublish`);
   },
 
   /**
    * Проверить возможность редактирования опроса
    */
-  async canEditSurvey(surveyId: string, creatorTelegramId: number): Promise<SurveyCanEditResponse> {
-    const response = await api.get(`/surveys/${surveyId}/can-edit?creator_telegram_id=${creatorTelegramId}`);
+  async canEditSurvey(surveyId: string): Promise<SurveyCanEditResponse> {
+    const response = await api.get(`/surveys/${surveyId}/can-edit`);
     return response.data;
   },
 
   /**
    * Получить ссылку для распространения опроса
    */
-  async getSurveyShareLink(surveyId: string, creatorTelegramId: number): Promise<SurveyShareResponse> {
-    const response = await api.get(`/surveys/${surveyId}/share?creator_telegram_id=${creatorTelegramId}`);
+  async getSurveyShareLink(surveyId: string): Promise<SurveyShareResponse> {
+    const response = await api.get(`/surveys/${surveyId}/share`);
     return response.data;
   },
 };
 
-// Обработка ошибок
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error.response?.data || error.message);
-    throw error;
-  }
-);
+export const questionApi = {
+  async createQuestion(data: CreateQuestionRequest) {
+    const res = await api.post('/questions', data);
+    return res.data;
+  },
+};
 
+// Обработка ошибок
 export default api;

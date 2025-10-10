@@ -128,8 +128,7 @@ export const useAppStore = create<AppStore>()(
           }
 
           const survey = await surveyApi.createSurvey({
-            ...surveyData,
-            creator_telegram_id: user.telegramId
+            ...surveyData
           });
           
           set((state) => ({
@@ -156,7 +155,7 @@ export const useAppStore = create<AppStore>()(
             throw new Error('Пользователь не авторизован');
           }
 
-          await surveyApi.updateSurvey(surveyId, updates, user.telegramId);
+          await surveyApi.updateSurvey(surveyId, updates);
           
           set((state) => ({
             userSurveys: state.userSurveys.map(survey =>
@@ -182,7 +181,7 @@ export const useAppStore = create<AppStore>()(
             throw new Error('Пользователь не авторизован');
           }
 
-          await surveyApi.deleteSurvey(surveyId, user.telegramId);
+          await surveyApi.deleteSurvey(surveyId);
           
           set((state) => ({
             userSurveys: state.userSurveys.filter(survey => survey.id !== surveyId),
@@ -206,7 +205,7 @@ export const useAppStore = create<AppStore>()(
             throw new Error('Пользователь не авторизован');
           }
 
-          await surveyApi.publishSurvey(surveyId, user.telegramId);
+          await surveyApi.publishSurvey(surveyId);
           
           set((state) => ({
             userSurveys: state.userSurveys.map(survey =>
@@ -232,7 +231,7 @@ export const useAppStore = create<AppStore>()(
             throw new Error('Пользователь не авторизован');
           }
 
-          const shareInfo = await surveyApi.getSurveyShareLink(surveyId, user.telegramId);
+          const shareInfo = await surveyApi.getSurveyShareLink(surveyId);
           set({ isLoading: false });
           return shareInfo;
         } catch (error) {

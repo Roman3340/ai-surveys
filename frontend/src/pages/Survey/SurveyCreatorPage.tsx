@@ -6,6 +6,7 @@ import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveSettings, saveQuestions, clearDraft } from '../../utils/surveyDraft';
 import { useAppStore } from '../../store/useAppStore';
+import { questionApi } from '../../services/api';
 
 // Типы для вопросов
 interface Question {
@@ -390,18 +391,63 @@ const SurveyCreatorPage: React.FC = () => {
     hapticFeedback?.success();
     
     try {
-      // Создаем опрос
+      // Создаем опрос (без вложения вопросов в settings)
       const createdSurvey = await createSurvey({
         title: surveyData.title,
         description: surveyData.description,
         is_public: true,
         settings: {
-          ...surveyData,
-          questions: questions
+          allowAnonymous: surveyData.allowAnonymous,
+          showProgress: surveyData.showProgress,
+          randomizeQuestions: surveyData.randomizeQuestions,
+          oneResponsePerUser: surveyData.oneResponsePerUser,
+          collectTelegramData: surveyData.collectTelegramData,
+          creationType: 'manual',
+          endDate: surveyData.endDate,
+          maxParticipants: surveyData.maxParticipants,
+          motivationEnabled: surveyData.motivationEnabled,
+          motivationType: surveyData.motivationType,
+          motivationDetails: surveyData.motivationDetails,
+          motivationConditions: surveyData.motivationConditions,
+          language: surveyData.language,
         }
       });
 
-      // Публикуем опрос
+      // Создаем вопросы для опроса
+      try {
+        const surveyId = createdSurvey.id as string;
+        const createPayloads = questions.map((q, index) => {
+          const optionsClean = (q.options || []).filter((opt) => opt && opt.trim() !== '');
+          return {
+            survey_id: surveyId,
+            type: q.type === 'boolean' ? 'yes_no' : q.type,
+            text: q.title || '',
+            description: q.description || undefined,
+            is_required: q.required,
+            order_index: index + 1,
+            options: optionsClean.length ? optionsClean : undefined,
+            scale_min: q.scaleMin,
+            scale_max: q.scaleMax,
+            scale_min_label: q.scaleLabels?.min,
+            scale_max_label: q.scaleLabels?.max,
+            // rating_max по умолчанию 5 на бэкенде; передавать не обязательно
+            validation: q.validation,
+            image_url: q.imageUrl,
+            image_name: q.imageName,
+            has_other_option: q.hasOtherOption || false,
+          } as const;
+        });
+        // Последовательно или параллельно; используем последовательный сдержанный параллелизм
+        for (const payload of createPayloads) {
+          // eslint-disable-next-line no-await-in-loop
+          await questionApi.createQuestion(payload as any);
+        }
+      } catch (e) {
+        console.error('Ошибка создания вопросов:', e);
+        throw e;
+      }
+
+      // Публикуем опрос сразу
       await publishSurvey(createdSurvey.id);
       
       // Очищаем черновик

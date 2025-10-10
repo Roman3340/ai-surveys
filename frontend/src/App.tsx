@@ -12,6 +12,7 @@ import MotivationPage from './pages/Survey/MotivationPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import ThemeSettingsPage from './pages/Settings/ThemeSettingsPage';
 import LanguageSettingsPage from './pages/Settings/LanguageSettingsPage';
+import SurveyAnalyticsPage from './pages/Survey/SurveyAnalyticsPage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
@@ -82,6 +83,7 @@ function App() {
           <Route path="/survey/create/ai/advanced-settings" element={<AIAdvancedSettingsPage />} />
           <Route path="/survey/create/ai/motivation" element={<MotivationPage />} />
           <Route path="/survey/published" element={<SurveyPublishedPage />} />
+          <Route path="/survey/:surveyId" element={<SurveyAnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/theme" element={<ThemeSettingsPage />} />
           <Route path="/settings/language" element={<LanguageSettingsPage />} />

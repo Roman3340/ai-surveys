@@ -263,6 +263,9 @@ export const useTelegram = () => {
     isReady,
     user,
     startParam,
+    initData: (isTelegramEnvironment() 
+      ? (WebApp as unknown as TelegramWebApp).initData 
+      : getTelegramWebApp().initData) || '',
     theme,
     themeParams,
     isTelegram: isTelegramEnvironment(),

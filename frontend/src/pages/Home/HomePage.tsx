@@ -51,7 +51,7 @@ export const HomePage = () => {
 
   const handleViewAnalytics = (survey: Survey) => {
     hapticFeedback?.light();
-    console.log('Просмотр аналитики для:', survey.title);
+    navigate(`/survey/${survey.id}`);
   };
 
   const handleViewTopSurveys = () => {
