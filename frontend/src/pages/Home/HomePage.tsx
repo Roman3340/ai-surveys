@@ -4,13 +4,13 @@ import { Settings, HelpCircle, BarChart3, Users } from 'lucide-react';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useAppStore } from '../../store/useAppStore';
-import { api, getAccessToken } from '../../utils/api';
+import { api, getAccessToken, authWithTelegramInitData } from '../../utils/api';
 // import { isTelegramEnvironment } from '../../utils/mockTelegram'; // Не используется
 import type { Survey } from '../../types';
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const { user: telegramUser, hapticFeedback } = useTelegram();
+  const { user: telegramUser, hapticFeedback, initData, isTelegram } = useTelegram();
   const { user, userSurveys, participatedSurveys, setUser, loadUserSurveys, isLoading, error } = useAppStore();
   const [activeTab, setActiveTab] = useState<'created' | 'participated'>('created');
   const [debugOpen, setDebugOpen] = useState<boolean>(true);
@@ -94,6 +94,8 @@ export const HomePage = () => {
     appendLog('ENV VITE_API_BASE', apiBase);
     const token = getAccessToken();
     appendLog('AUTH token present', { present: Boolean(token), length: token?.length || 0 });
+    appendLog('ENV origin', window.location.origin);
+    appendLog('TG env', { isTelegram, initDataLength: (initData || '').length });
     const originBase = apiBase.replace(/\/?api\/?$/, '');
     const healthUrl = `${originBase.replace(/\/$/, '')}/health`;
     appendLog('HEALTH check', healthUrl);
@@ -560,6 +562,17 @@ export const HomePage = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ fontWeight: 600 }}>Отладочные логи</div>
             <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={async () => {
+                try {
+                  appendLog('ACTION authWithTelegramInitData', { initDataLength: (initData || '').length });
+                  const res = await authWithTelegramInitData(initData || '');
+                  appendLog('ACTION auth done', { ok: true, keys: Object.keys(res || {}) });
+                } catch (e: any) {
+                  appendLog('ACTION auth failed', { message: e?.message, response: e?.response?.data });
+                }
+              }} style={{
+                background: 'none', border: '1px solid var(--tg-section-separator-color)', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', color: 'var(--tg-text-color)'
+              }}>Авторизоваться</button>
               <button onClick={() => setDebugOpen((v) => !v)} style={{
                 background: 'none', border: '1px solid var(--tg-section-separator-color)', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', color: 'var(--tg-text-color)'
               }}>{debugOpen ? 'Скрыть' : 'Показать'}</button>
