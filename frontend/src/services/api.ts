@@ -56,7 +56,7 @@ export const surveyApi = {
    * Получить опросы пользователя
    */
   async getUserSurveys(): Promise<Survey[]> {
-    const response = await api.get(`/surveys/`); // устраняем 307 редирект
+    const response = await api.get(`/surveys/`, undefined as any); // устраняем 307 редирект; skipAuth проставим через request interceptor
     return response.data;
   },
 
