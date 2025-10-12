@@ -1,6 +1,18 @@
 import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+// Диагностика: выводим базовый URL и проверяем доступность /health в проде
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line no-console
+  console.info('[API] base URL:', API_BASE);
+  const healthUrl = `${API_BASE.replace(/\/$/, '')}/health`;
+  if (import.meta.env.PROD) {
+    fetch(healthUrl, { method: 'GET' }).catch(() => {
+      // eslint-disable-next-line no-console
+      console.warn('[API] health check failed:', healthUrl);
+    });
+  }
+}
 
 let accessToken: string | null = null;
 

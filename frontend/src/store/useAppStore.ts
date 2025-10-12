@@ -108,7 +108,7 @@ export const useAppStore = create<AppStore>()(
             throw new Error('Пользователь не авторизован');
           }
           
-          const surveys = await surveyApi.getUserSurveys(user.telegramId);
+          const surveys = await surveyApi.getUserSurveys();
           set({ userSurveys: surveys, isLoading: false });
         } catch (error) {
           console.error('Ошибка загрузки опросов:', error);

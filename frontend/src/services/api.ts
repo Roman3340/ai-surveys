@@ -55,8 +55,8 @@ export const surveyApi = {
   /**
    * Получить опросы пользователя
    */
-  async getUserSurveys(creatorTelegramId: number): Promise<Survey[]> {
-    const response = await api.get(`/surveys?creator_telegram_id=${creatorTelegramId}`);
+  async getUserSurveys(): Promise<Survey[]> {
+    const response = await api.get(`/surveys`);
     return response.data;
   },
 
