@@ -103,11 +103,7 @@ export const useAppStore = create<AppStore>()(
       loadUserSurveys: async () => {
         set({ isLoading: true, error: null });
         try {
-          const user = useAppStore.getState().user;
-          if (!user) {
-            throw new Error('Пользователь не авторизован');
-          }
-          
+          // Список опросов доступен публично; не требуем user/JWT
           const surveys = await surveyApi.getUserSurveys();
           set({ userSurveys: surveys, isLoading: false });
         } catch (error) {

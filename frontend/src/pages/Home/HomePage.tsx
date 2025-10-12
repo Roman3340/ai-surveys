@@ -80,13 +80,14 @@ export const HomePage = () => {
 
   // Загрузка опросов пользователя
   useEffect(() => {
-    if (user) {
-      appendLog('ACTION loadUserSurveys start');
-      loadUserSurveys()
-        .then(() => appendLog('ACTION loadUserSurveys done'))
-        .catch((e) => appendLog('ACTION loadUserSurveys failed', { message: e?.message }));
-    }
-  }, [user, loadUserSurveys]);
+    // Загружаем список один раз на монтировании,
+    // и повторно после успешной авторизации (см. кнопку Авторизоваться)
+    appendLog('ACTION loadUserSurveys start');
+    loadUserSurveys()
+      .then(() => appendLog('ACTION loadUserSurveys done'))
+      .catch((e) => appendLog('ACTION loadUserSurveys failed', { message: e?.message }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Диагностика окружения/базового URL
   const apiBase = useMemo(() => (import.meta.env.VITE_API_BASE || '/api') as string, []);
