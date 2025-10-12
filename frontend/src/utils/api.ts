@@ -5,7 +5,9 @@ const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 if (typeof window !== 'undefined') {
   // eslint-disable-next-line no-console
   console.info('[API] base URL:', API_BASE);
-  const healthUrl = `${API_BASE.replace(/\/$/, '')}/health`;
+  // health лежит на корне (а не под /api)
+  const originBase = API_BASE.replace(/\/?api\/?$/, '');
+  const healthUrl = `${originBase.replace(/\/$/, '')}/health`;
   if (import.meta.env.PROD) {
     fetch(healthUrl, { method: 'GET' }).catch(() => {
       // eslint-disable-next-line no-console
