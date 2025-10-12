@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Фоновая авторизация по initData (если пользователь уже запускал бот)
+// Фоновая авторизация по initData (если пользователь уже запускал бот).
 ;(async () => {
   try {
     const tg = isTelegramEnvironment() ? (WebApp as unknown as any) : getTelegramWebApp()
