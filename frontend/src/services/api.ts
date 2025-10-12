@@ -64,7 +64,7 @@ export const surveyApi = {
    * Создать новый опрос
    */
   async createSurvey(surveyData: CreateSurveyRequest): Promise<Survey> {
-    const response = await api.post('/surveys', surveyData);
+    const response = await api.post('/surveys/', surveyData);
     return response.data;
   },
 

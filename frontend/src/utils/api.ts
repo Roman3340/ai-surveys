@@ -35,8 +35,10 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = getAccessToken();
-  // помечаем публичные GET без авторизации (избегаем preflight в WebView)
-  const isPublicGet = config.method?.toUpperCase() === 'GET' && (config.url?.startsWith('/surveys'));
+  // помечаем публичные GET без авторизации ТОЛЬКО для списка '/surveys' или '/surveys/'
+  const isGet = config.method?.toUpperCase() === 'GET';
+  const u = config.url || '';
+  const isPublicGet = isGet && (u === '/surveys' || u === '/surveys/');
   const skipAuth = (config as any).skipAuth === true || isPublicGet;
   if (token && !skipAuth) {
     config.headers = config.headers || {};
