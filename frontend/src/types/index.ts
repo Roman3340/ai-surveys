@@ -21,6 +21,7 @@ export interface Survey {
   updatedAt: string;
   questions: Question[];
   responses?: SurveyResponse[];
+  responsesCount?: number;
   settings: SurveySettings;
 }
 

@@ -469,7 +469,7 @@ export const HomePage = () => {
                       color: 'var(--tg-hint-color)'
                     }}>
                       <Users size={14} />
-                      {survey.responses?.length || 0}
+                      {survey.responsesCount ?? survey.responses?.length ?? 0}
                     </div>
                     <div style={{
                       display: 'flex',
