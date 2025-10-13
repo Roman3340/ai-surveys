@@ -127,7 +127,7 @@ export const surveyApi = {
 
 export const questionApi = {
   async createQuestion(data: CreateQuestionRequest) {
-    const res = await api.post('/questions', data);
+    const res = await api.post('/questions/', data);
     return res.data;
   },
 };
