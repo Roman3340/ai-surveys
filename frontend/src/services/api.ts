@@ -153,8 +153,8 @@ export const surveyApi = {
   /**
    * Получить опрос для публичного доступа (без авторизации)
    */
-  async getSurveyPublic(surveyId: string, participantTelegramId?: number): Promise<any> {
-    const params = participantTelegramId ? { participant_telegram_id: participantTelegramId } : {};
+  async getSurveyPublic(surveyId: string, userTelegramId?: number): Promise<any> {
+    const params = userTelegramId ? { user_telegram_id: userTelegramId } : {};
     const response = await api.get(`/surveys/${surveyId}/public`, { params });
     return response.data;
   },
