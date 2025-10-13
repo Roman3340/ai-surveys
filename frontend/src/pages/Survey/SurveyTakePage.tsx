@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
 
@@ -38,6 +38,10 @@ interface Answers {
   [questionId: string]: any;
 }
 
+const OTHER_INPUT_PREFIX = 'other_input_';
+const OTHER_OPTION_VALUE = 'other_option_value';
+
+
 export default function SurveyTakePage() {
   const { surveyId } = useParams();
   const navigate = useNavigate();
@@ -47,7 +51,7 @@ export default function SurveyTakePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Answers>({});
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -79,67 +83,87 @@ export default function SurveyTakePage() {
       ...prev,
       [questionId]: value
     }));
+    // Сбрасываем ошибку валидации при изменении ответа
+    if (validationErrors[questionId]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[questionId];
+        return newErrors;
+      });
+    }
   };
-
-  const validateCurrentQuestion = (): boolean => {
+  
+  const validateAllQuestions = (): boolean => {
     if (!survey) return false;
     
-    const currentQuestion = survey.questions[currentQuestionIndex];
-    const answer = answers[currentQuestion.id];
+    const errors: Record<string, string> = {};
     
-    if (currentQuestion.isRequired) {
-      if (!answer || 
-          (typeof answer === 'string' && answer.trim() === '') ||
-          (Array.isArray(answer) && answer.length === 0)) {
-        alert('Этот вопрос обязателен для ответа');
-        return false;
+    survey.questions.forEach(question => {
+      if (question.isRequired) {
+        const answer = answers[question.id];
+        
+        let isEmpty = false;
+        if (!answer) {
+          isEmpty = true;
+        } else if (typeof answer === 'string' && answer.trim() === '') {
+          isEmpty = true;
+        } else if (Array.isArray(answer) && answer.length === 0) {
+          isEmpty = true;
+        } else if (
+            question.hasOtherOption && 
+            answer === OTHER_OPTION_VALUE &&
+            !answers[OTHER_INPUT_PREFIX + question.id]?.trim()
+        ) {
+            // Если выбрано "Другое", но текстовое поле пустое
+            isEmpty = true;
+        }
+
+        if (isEmpty) {
+          errors[question.id] = 'Это обязательный вопрос';
+        }
       }
-    }
-    
-    return true;
-  };
+    });
 
-  const handleNextQuestion = () => {
-    if (!survey) return;
-    
-    if (!validateCurrentQuestion()) return;
-    
-    hapticFeedback?.light();
-    if (currentQuestionIndex < survey.questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handlePrevQuestion = () => {
-    hapticFeedback?.light();
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!survey || !surveyId) return;
-    
-    if (!validateCurrentQuestion()) return;
+
+    if (!validateAllQuestions()) {
+      hapticFeedback?.error();
+      // Найдем первый вопрос с ошибкой и прокрутим к нему
+      const firstErrorId = Object.keys(validationErrors)[0] || (survey.questions.find(q => validationErrors[q.id])?.id);
+      if (firstErrorId) {
+        document.getElementById(`question-${firstErrorId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
     
     setSubmitting(true);
     hapticFeedback?.medium();
     
     try {
-      // Формируем ответы в нужном формате для бэкенда
-      const formattedAnswers = survey.questions.map(q => ({
-        question_id: q.id,
-        answer_value: answers[q.id] || null
-      }));
+      const formattedAnswers = survey.questions.map(q => {
+        let answerValue = answers[q.id] || null;
+        
+        // Обработка "Другого" варианта
+        if (q.hasOtherOption && answerValue === OTHER_OPTION_VALUE) {
+            answerValue = answers[OTHER_INPUT_PREFIX + q.id] || null;
+        }
+
+        return {
+          question_id: q.id,
+          answer_value: answerValue
+        };
+      });
 
       await surveyApi.submitSurveyAnswers(surveyId, formattedAnswers, user?.id);
       
       hapticFeedback?.success();
       navigate(`/survey/${surveyId}/completed`, { 
         state: { 
-          surveyTitle: survey.title, 
           hasReward: survey.settings?.motivationEnabled,
           creatorUsername: survey.creatorUsername
         }
@@ -147,55 +171,34 @@ export default function SurveyTakePage() {
     } catch (error: any) {
       console.error('Ошибка отправки ответов:', error);
       alert(error?.response?.data?.detail || 'Не удалось отправить ответы. Попробуйте снова.');
-      setSubmitting(false);
+      hapticFeedback?.error();
+    } finally {
+        setSubmitting(false);
     }
   };
 
   const renderQuestion = (question: Question) => {
     const answer = answers[question.id];
+    const error = validationErrors[question.id];
+    const otherAnswer = answers[OTHER_INPUT_PREFIX + question.id] || '';
+
+    const baseInputStyle = {
+        width: '100%',
+        padding: '14px 16px',
+        borderRadius: '12px',
+        border: `1px solid ${error ? 'var(--tg-destructive-text-color)' : 'var(--tg-section-separator-color)'}`,
+        backgroundColor: 'var(--tg-section-bg-color)',
+        color: 'var(--tg-text-color)',
+        fontSize: '16px',
+        outline: 'none',
+        transition: 'border-color 0.2s ease',
+    };
 
     switch (question.type) {
       case 'text':
-        return (
-          <input
-            type="text"
-            value={answer || ''}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            placeholder="Ваш ответ..."
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              borderRadius: '12px',
-              border: '1px solid var(--tg-section-separator-color)',
-              backgroundColor: 'var(--tg-section-bg-color)',
-              color: 'var(--tg-text-color)',
-              fontSize: '16px',
-              outline: 'none'
-            }}
-          />
-        );
-
+        return <input type="text" value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Ваш ответ..." style={baseInputStyle} />;
       case 'textarea':
-        return (
-          <textarea
-            value={answer || ''}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            placeholder="Ваш развернутый ответ..."
-            rows={5}
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              borderRadius: '12px',
-              border: '1px solid var(--tg-section-separator-color)',
-              backgroundColor: 'var(--tg-section-bg-color)',
-              color: 'var(--tg-text-color)',
-              fontSize: '16px',
-              resize: 'vertical',
-              outline: 'none',
-              fontFamily: 'inherit'
-            }}
-          />
-        );
+        return <textarea value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Ваш развернутый ответ..." rows={5} style={{...baseInputStyle, resize: 'vertical', fontFamily: 'inherit'}} />;
 
       case 'single_choice':
         return (
@@ -205,8 +208,7 @@ export default function SurveyTakePage() {
               const isSelected = answer === optionText;
               
               return (
-                <label
-                  key={index}
+                <label key={index}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -246,78 +248,115 @@ export default function SurveyTakePage() {
             })}
             
             {question.hasOtherOption && (
-              <input
-                type="text"
-                value={answer?.startsWith('other:') ? answer.replace('other:', '') : ''}
-                onChange={(e) => handleAnswerChange(question.id, `other:${e.target.value}`)}
-                placeholder="Другое (укажите свой вариант)..."
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  borderRadius: '12px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  color: 'var(--tg-text-color)',
-                  fontSize: '15px',
-                  outline: 'none'
-                }}
-              />
+                <>
+                    <label 
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '12px',
+                            border: `2px solid ${answer === OTHER_OPTION_VALUE ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
+                            backgroundColor: answer === OTHER_OPTION_VALUE ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
+                            cursor: 'pointer', transition: 'all 0.2s ease'
+                        }}
+                        onClick={() => handleAnswerChange(question.id, OTHER_OPTION_VALUE)}
+                    >
+                        <span style={{ fontSize: '15px' }}>Другое</span>
+                    </label>
+                    {answer === OTHER_OPTION_VALUE && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.3 }}>
+                            <input
+                                type="text"
+                                value={otherAnswer}
+                                onChange={(e) => handleAnswerChange(OTHER_INPUT_PREFIX + question.id, e.target.value)}
+                                placeholder="Напишите свой вариант..."
+                                style={{ ...baseInputStyle, marginTop: '8px' }}
+                            />
+                        </motion.div>
+                    )}
+                </>
             )}
           </div>
         );
 
       case 'multiple_choice':
+        const currentAnswers = Array.isArray(answer) ? answer : [];
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {question.options?.map((option: any, index: number) => {
-              const optionText = typeof option === 'string' ? option : option.text;
-              const currentAnswers = Array.isArray(answer) ? answer : [];
-              const isSelected = currentAnswers.includes(optionText);
-              
-              return (
-                <label
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '14px 16px',
-                    borderRadius: '12px',
-                    border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                    backgroundColor: isSelected ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onClick={() => {
-                    const newAnswers = isSelected
-                      ? currentAnswers.filter((a: string) => a !== optionText)
-                      : [...currentAnswers, optionText];
-                    handleAnswerChange(question.id, newAnswers);
-                  }}
-                >
-                  <div style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '4px',
-                    border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                    backgroundColor: isSelected ? 'var(--tg-button-color)' : 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    {isSelected && (
-                      <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>✓</span>
-                    )}
-                  </div>
-                  <span style={{ fontSize: '15px' }}>{optionText}</span>
-                </label>
-              );
-            })}
-          </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {question.options?.map((option: any, index: number) => {
+                    const optionText = typeof option === 'string' ? option : option.text;
+                    const isSelected = currentAnswers.includes(optionText);
+                    return (
+                        <label key={index}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            padding: '14px 16px',
+                            borderRadius: '12px',
+                            border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
+                            backgroundColor: isSelected ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
+                            color: 'var(--tg-text-color)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onClick={() => {
+                            const newAnswers = isSelected
+                                ? currentAnswers.filter((a: string) => a !== optionText)
+                                : [...currentAnswers, optionText];
+                            handleAnswerChange(question.id, newAnswers);
+                          }}
+                        >
+                            <div style={{
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '4px',
+                                border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                                backgroundColor: isSelected ? 'var(--tg-button-color)' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}>
+                                {isSelected && (
+                                    <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>✓</span>
+                                )}
+                            </div>
+                            <span style={{ fontSize: '15px' }}>{optionText}</span>
+                        </label>
+                    );
+                })}
+                {question.hasOtherOption && (
+                    <>
+                        <label 
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '12px',
+                                border: `2px solid ${currentAnswers.includes(OTHER_OPTION_VALUE) ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
+                                backgroundColor: currentAnswers.includes(OTHER_OPTION_VALUE) ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
+                                cursor: 'pointer', transition: 'all 0.2s ease'
+                            }}
+                            onClick={() => {
+                                const newAnswers = currentAnswers.includes(OTHER_OPTION_VALUE)
+                                    ? currentAnswers.filter((a: string) => a !== OTHER_OPTION_VALUE)
+                                    : [...currentAnswers, OTHER_OPTION_VALUE];
+                                handleAnswerChange(question.id, newAnswers);
+                            }}
+                        >
+                           <span style={{ fontSize: '15px' }}>Другое</span>
+                        </label>
+                        {currentAnswers.includes(OTHER_OPTION_VALUE) && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.3 }}>
+                                <input
+                                    type="text"
+                                    value={otherAnswer}
+                                    onChange={(e) => handleAnswerChange(OTHER_INPUT_PREFIX + question.id, e.target.value)}
+                                    placeholder="Напишите свой вариант..."
+                                    style={{ ...baseInputStyle, marginTop: '8px' }}
+                                />
+                            </motion.div>
+                        )}
+                    </>
+                )}
+            </div>
         );
-
+      
       case 'scale':
         const scaleMin = question.scaleMin || 1;
         const scaleMax = question.scaleMax || 10;
@@ -547,216 +586,79 @@ export default function SurveyTakePage() {
     );
   }
 
-  const currentQuestion = survey.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / survey.questions.length) * 100;
-  const isFirstQuestion = currentQuestionIndex === 0;
-  const isLastQuestion = currentQuestionIndex === survey.questions.length - 1;
-
   return (
     <div style={{
       minHeight: '100vh',
       backgroundColor: 'var(--tg-bg-color)',
       color: 'var(--tg-text-color)',
-      paddingBottom: '120px'
     }}>
-      {/* Шапка с прогрессом */}
-      <div style={{
-        padding: '16px 20px',
-        borderBottom: '1px solid var(--tg-section-separator-color)',
-        backgroundColor: 'var(--tg-bg-color)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10
-      }}>
-        <div style={{ marginBottom: '16px' }}>
-          <h1 style={{
-            fontSize: '20px',
-            fontWeight: '700',
-            margin: '0 0 8px 0'
-          }}>
-            {survey.title}
-          </h1>
-          {survey.description && (
-            <p style={{ 
-              fontSize: '14px', 
-              color: 'var(--tg-hint-color)',
-              margin: 0
-            }}>
-              {survey.description}
-            </p>
-          )}
-        </div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            flex: 1,
-            height: '6px',
-            backgroundColor: 'rgba(244, 109, 0, 0.15)',
-            borderRadius: '3px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              width: `${progress}%`,
-              height: '100%',
-              backgroundColor: 'var(--tg-button-color)',
-              borderRadius: '3px',
-              transition: 'width 0.3s ease'
-            }} />
-          </div>
-          <span style={{ 
-            fontSize: '13px', 
-            color: 'var(--tg-hint-color)',
-            fontWeight: '500',
-            minWidth: '60px',
-            textAlign: 'right'
-          }}>
-            {currentQuestionIndex + 1} / {survey.questions.length}
-          </span>
-        </div>
+      {/* Шапка опроса */}
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '700', margin: '0 0 8px 0' }}>{survey.title}</h1>
+        {survey.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0 }}>{survey.description}</p>}
       </div>
 
-      {/* Вопрос */}
-      <motion.div
-        key={currentQuestionIndex}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        transition={{ duration: 0.3 }}
-        style={{
-          padding: '24px 20px'
-        }}
-      >
-        {/* Изображение вопроса */}
-        {currentQuestion.imageUrl && (
-          <div style={{ marginBottom: '20px' }}>
-            <img 
-              src={currentQuestion.imageUrl} 
-              alt="Question illustration"
-              style={{
-                width: '100%',
-                maxHeight: '200px',
-                objectFit: 'cover',
-                borderRadius: '12px'
-              }}
-            />
-          </div>
-        )}
-
-        {/* Текст вопроса */}
-        <div style={{ marginBottom: '24px' }}>
-          <h2 style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            margin: '0 0 8px 0',
-            lineHeight: '1.4'
-          }}>
-            {currentQuestion.text}
-            {currentQuestion.isRequired && (
-              <span style={{ color: 'var(--tg-button-color)', marginLeft: '4px' }}>*</span>
+      {/* Список вопросов */}
+      <div style={{ padding: '0 20px 120px 20px' }}>
+        {survey.questions.map((question, index) => (
+          <motion.div
+            key={question.id}
+            id={`question-${question.id}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            style={{ paddingTop: '24px', borderBottom: index < survey.questions.length - 1 ? '1px solid var(--tg-section-separator-color)' : 'none', paddingBottom: '24px' }}
+          >
+            {/* Изображение вопроса */}
+            {question.imageUrl && (
+              <div style={{ marginBottom: '20px' }}>
+                <img 
+                  src={question.imageUrl} 
+                  alt="Question illustration"
+                  style={{
+                    width: '100%',
+                    maxHeight: '200px',
+                    objectFit: 'cover',
+                    borderRadius: '12px'
+                  }}
+                />
+              </div>
             )}
-          </h2>
-          {currentQuestion.description && (
-            <p style={{ 
-              fontSize: '14px', 
-              color: 'var(--tg-hint-color)',
-              margin: 0,
-              lineHeight: '1.5'
-            }}>
-              {currentQuestion.description}
-            </p>
-          )}
-        </div>
 
-        {/* Поле ответа */}
-        <div>
-          {renderQuestion(currentQuestion)}
-        </div>
-      </motion.div>
+            {/* Текст вопроса */}
+            <div style={{ marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 8px 0', lineHeight: '1.4' }}>
+                    {question.text}
+                    {question.isRequired && <span style={{ color: 'var(--tg-destructive-text-color)', marginLeft: '4px' }}>*</span>}
+                </h2>
+                {question.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: '1.5' }}>{question.description}</p>}
+                {validationErrors[question.id] && <p style={{ fontSize: '13px', color: 'var(--tg-destructive-text-color)', margin: '8px 0 0 0' }}>{validationErrors[question.id]}</p>}
+            </div>
 
-      {/* Навигация */}
+            <div>
+              {renderQuestion(question)}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Кнопка отправки */}
       <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: '16px 20px',
-        backgroundColor: 'var(--tg-bg-color)',
-        borderTop: '1px solid var(--tg-section-separator-color)',
-        display: 'flex',
-        gap: '12px'
+        position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px',
+        backgroundColor: 'var(--tg-bg-color)', borderTop: '1px solid var(--tg-section-separator-color)',
       }}>
-        {!isFirstQuestion && (
-          <button
-            onClick={handlePrevQuestion}
-            disabled={submitting}
-            style={{
-              padding: '14px 20px',
-              borderRadius: '12px',
-              border: '1px solid var(--tg-section-separator-color)',
-              backgroundColor: 'var(--tg-section-bg-color)',
-              color: 'var(--tg-text-color)',
-              fontSize: '15px',
-              fontWeight: '500',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              opacity: submitting ? 0.5 : 1
-            }}
-          >
-            <ChevronLeft size={20} />
-            Назад
-          </button>
-        )}
-        
-        {!isLastQuestion ? (
-          <button
-            onClick={handleNextQuestion}
-            disabled={submitting}
-            style={{
-              flex: 1,
-              padding: '14px 20px',
-              borderRadius: '12px',
-              border: 'none',
-              backgroundColor: 'var(--tg-button-color)',
-              color: 'var(--tg-button-text-color)',
-              fontSize: '15px',
-              fontWeight: '600',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              opacity: submitting ? 0.5 : 1
-            }}
-          >
-            Далее
-            <ChevronRight size={20} />
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            style={{
-              flex: 1,
-              padding: '14px 20px',
-              borderRadius: '12px',
-              border: 'none',
-              backgroundColor: 'var(--tg-button-color)',
-              color: 'var(--tg-button-text-color)',
-              fontSize: '15px',
-              fontWeight: '600',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              opacity: submitting ? 0.5 : 1
-            }}
-          >
-            {submitting ? 'Отправка...' : '✓ Отправить ответы'}
-          </button>
-        )}
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          style={{
+            width: '100%', padding: '16px', borderRadius: '12px', border: 'none',
+            backgroundColor: 'var(--tg-button-color)', color: 'var(--tg-button-text-color)',
+            fontSize: '16px', fontWeight: '600', cursor: submitting ? 'not-allowed' : 'pointer',
+            opacity: submitting ? 0.5 : 1, transition: 'opacity 0.2s ease'
+          }}
+        >
+          {submitting ? 'Отправка...' : 'Отправить ответы'}
+        </button>
       </div>
     </div>
   );

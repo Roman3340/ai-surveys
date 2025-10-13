@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
@@ -189,7 +189,9 @@ export default function SurveyCompletedPage() {
         >
           Хотите создать свой опрос?
           <br />
-          Откройте главную страницу AI Surveys
+          <Link to="/" style={{ color: 'var(--tg-link-color)', textDecoration: 'none', fontWeight: '500' }}>
+            Откройте главную страницу AI Surveys
+          </Link>
         </motion.p>
       </motion.div>
     </div>
