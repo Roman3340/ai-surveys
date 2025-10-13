@@ -158,6 +158,15 @@ export const surveyApi = {
     const response = await api.get(`/surveys/${surveyId}/public`, { params });
     return response.data;
   },
+
+  /**
+   * Отправить ответы на опрос
+   */
+  async submitSurveyAnswers(surveyId: string, answers: Array<{ question_id: string; answer_value: any }>, userTelegramId?: number): Promise<any> {
+    const params = userTelegramId ? { user_telegram_id: userTelegramId } : {};
+    const response = await api.post(`/surveys/${surveyId}/submit`, { answers }, { params });
+    return response.data;
+  },
 };
 
 export const questionApi = {

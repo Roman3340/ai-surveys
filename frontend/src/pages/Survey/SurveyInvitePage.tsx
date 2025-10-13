@@ -116,7 +116,7 @@ export default function SurveyInvitePage() {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      background: 'linear-gradient(135deg, var(--tg-button-color) 0%, var(--tg-theme-bg-color) 100%)',
+      background: 'var(--tg-bg-color)',
       padding: '40px 20px',
       display: 'flex',
       flexDirection: 'column',
@@ -200,29 +200,27 @@ export default function SurveyInvitePage() {
         )}
 
         {/* Организатор */}
-        {survey.creatorUsername && (
-          <button
-            onClick={handleContactCreator}
-            style={{
-              width: '100%',
-              background: 'var(--tg-section-bg-color)',
-              border: '1px solid var(--tg-section-separator-color)',
-              borderRadius: '12px',
-              padding: '14px',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-          >
-            <span style={{ fontSize: '14px', color: 'var(--tg-text-color)' }}>
-              👤 Организатор: @{survey.creatorUsername}
-            </span>
-          </button>
-        )}
+        <button
+          onClick={handleContactCreator}
+          style={{
+            width: '100%',
+            background: 'var(--tg-section-bg-color)',
+            border: '1px solid var(--tg-section-separator-color)',
+            borderRadius: '12px',
+            padding: '14px',
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          <span style={{ fontSize: '14px', color: 'var(--tg-text-color)' }}>
+            👤 Организатор: {survey.creatorUsername ? `@${survey.creatorUsername}` : 'Пользователь Telegram'}
+          </span>
+        </button>
 
         {/* Кнопка участия */}
         {survey.canParticipate ? (
@@ -241,7 +239,7 @@ export default function SurveyInvitePage() {
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
             }}
           >
-            Принять участие
+            📝 Начать опрос
           </button>
         ) : (
           <div style={{
