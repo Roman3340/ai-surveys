@@ -27,6 +27,10 @@ interface AppStore {
   currentSurvey: Survey | null;
   setCurrentSurvey: (survey: Survey | null) => void;
   
+  // ID опроса для приглашения (из startapp параметра)
+  surveyInviteId: string | null;
+  setSurveyInviteId: (id: string | null) => void;
+  
   // Состояние загрузки и ошибки
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
@@ -54,6 +58,7 @@ export const useAppStore = create<AppStore>()(
       userSurveys: [],
       participatedSurveys: [],
       currentSurvey: null,
+      surveyInviteId: null,
       isLoading: false,
       error: null,
 
@@ -85,6 +90,9 @@ export const useAppStore = create<AppStore>()(
 
       // Текущий опрос
       setCurrentSurvey: (survey) => set({ currentSurvey: survey }),
+
+      // ID опроса для приглашения
+      setSurveyInviteId: (id) => set({ surveyInviteId: id }),
 
       // Состояние
       setIsLoading: (loading) => set({ isLoading: loading }),

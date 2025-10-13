@@ -19,6 +19,14 @@ createRoot(document.getElementById('root')!).render(
     const initData: string = tg?.initData || ''
     if (!initData) return
 
+    // Обрабатываем startapp параметр для прямого перехода к опросу
+    const startParam = tg?.initDataUnsafe?.start_param
+    if (startParam && startParam.startsWith('survey_')) {
+      const surveyId = startParam.replace('survey_', '')
+      // Сохраняем ID опроса для редиректа
+      useAppStore.getState().setSurveyInviteId(surveyId)
+    }
+
     await authWithTelegramInitData(initData)
 
     // Сохраняем пользователя из initDataUnsafe (для фронтовой логики)

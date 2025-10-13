@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { HomePage } from './pages/Home/HomePage';
 import CreateSurveyPage from './pages/Survey/CreateSurveyPage';
 import SurveyCreatorPage from './pages/Survey/SurveyCreatorPage';
@@ -13,10 +13,43 @@ import SettingsPage from './pages/Settings/SettingsPage';
 import ThemeSettingsPage from './pages/Settings/ThemeSettingsPage';
 import LanguageSettingsPage from './pages/Settings/LanguageSettingsPage';
 import SurveyAnalyticsPage from './pages/Survey/SurveyAnalyticsPage';
+import SurveyInvitePage from './pages/Survey/SurveyInvitePage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
 import './styles/globals.css';
+
+function AppRoutes() {
+  const navigate = useNavigate();
+  const { surveyInviteId, setSurveyInviteId } = useAppStore();
+  
+  // Редирект на страницу приглашения если есть surveyInviteId
+  useEffect(() => {
+    if (surveyInviteId) {
+      navigate(`/survey/${surveyInviteId}/invite`);
+      setSurveyInviteId(null); // Очищаем после редиректа
+    }
+  }, [surveyInviteId, navigate, setSurveyInviteId]);
+  
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/survey/create" element={<CreateSurveyPage />} />
+      <Route path="/survey/create/manual" element={<SurveyCreatorPage />} />
+      <Route path="/survey/create/ai" element={<AISurveyPage />} />
+      <Route path="/survey/create/ai/business" element={<AIBusinessPage />} />
+      <Route path="/survey/create/ai/personal" element={<AIPersonalPage />} />
+      <Route path="/survey/create/ai/advanced-settings" element={<AIAdvancedSettingsPage />} />
+      <Route path="/survey/create/ai/motivation" element={<MotivationPage />} />
+      <Route path="/survey/published" element={<SurveyPublishedPage />} />
+      <Route path="/survey/:surveyId" element={<SurveyAnalyticsPage />} />
+      <Route path="/survey/:surveyId/invite" element={<SurveyInvitePage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/settings/theme" element={<ThemeSettingsPage />} />
+      <Route path="/settings/language" element={<LanguageSettingsPage />} />
+    </Routes>
+  );
+}
 
 function App() {
   const { isReady, theme: telegramTheme } = useTelegram();
@@ -73,21 +106,7 @@ function App() {
   return (
     <Router basename={import.meta.env.PROD ? '/ai-surveys' : ''}>
       <div className="min-h-screen bg-primary">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/survey/create" element={<CreateSurveyPage />} />
-          <Route path="/survey/create/manual" element={<SurveyCreatorPage />} />
-          <Route path="/survey/create/ai" element={<AISurveyPage />} />
-          <Route path="/survey/create/ai/business" element={<AIBusinessPage />} />
-          <Route path="/survey/create/ai/personal" element={<AIPersonalPage />} />
-          <Route path="/survey/create/ai/advanced-settings" element={<AIAdvancedSettingsPage />} />
-          <Route path="/survey/create/ai/motivation" element={<MotivationPage />} />
-          <Route path="/survey/published" element={<SurveyPublishedPage />} />
-          <Route path="/survey/:surveyId" element={<SurveyAnalyticsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/settings/theme" element={<ThemeSettingsPage />} />
-          <Route path="/settings/language" element={<LanguageSettingsPage />} />
-        </Routes>
+        <AppRoutes />
         <DevTools />
       </div>
     </Router>
