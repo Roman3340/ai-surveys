@@ -178,354 +178,201 @@ export default function SurveyTakePage() {
   };
 
   const renderQuestion = (question: Question) => {
-    const answer = answers[question.id];
-    const error = validationErrors[question.id];
-    const otherAnswer = answers[OTHER_INPUT_PREFIX + question.id] || '';
+        const answer = answers[question.id];
+        const error = validationErrors[question.id];
+        const otherAnswer = answers[OTHER_INPUT_PREFIX + question.id] || '';
 
-    const baseInputStyle = {
-        width: '100%',
-        padding: '14px 16px',
-        borderRadius: '12px',
-        border: `1px solid ${error ? 'var(--tg-destructive-text-color)' : 'var(--tg-section-separator-color)'}`,
-        backgroundColor: 'var(--tg-section-bg-color)',
-        color: 'var(--tg-text-color)',
-        fontSize: '16px',
-        outline: 'none',
-        transition: 'border-color 0.2s ease',
-    };
+        const baseInputStyle: React.CSSProperties = {
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: '12px',
+            border: `1px solid ${error ? 'var(--tg-destructive-text-color)' : 'var(--tg-section-separator-color)'}`,
+            backgroundColor: 'var(--tg-section-bg-color)',
+            color: 'var(--tg-text-color)',
+            fontSize: '16px',
+            outline: 'none',
+            transition: 'border-color 0.2s ease',
+        };
 
-    switch (question.type) {
-      case 'text':
-        return <input type="text" value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Ваш ответ..." style={baseInputStyle} />;
-      case 'textarea':
-        return <textarea value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Ваш развернутый ответ..." rows={5} style={{...baseInputStyle, resize: 'vertical', fontFamily: 'inherit'}} />;
-
-      case 'single_choice':
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {question.options?.map((option: any, index: number) => {
-              const optionText = typeof option === 'string' ? option : option.text;
-              const isSelected = answer === optionText;
-              
-              return (
-                <label key={index}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '14px 16px',
-                    borderRadius: '12px',
-                    border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                    backgroundColor: isSelected ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onClick={() => handleAnswerChange(question.id, optionText)}
-                >
-                  <div style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    {isSelected && (
-                      <div style={{
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--tg-button-color)'
-                      }} />
-                    )}
-                  </div>
-                  <span style={{ fontSize: '15px' }}>{optionText}</span>
-                </label>
-              );
-            })}
+        switch (question.type) {
+            case 'text':
+                return <input type="text" value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Ваш ответ..." style={baseInputStyle} />;
             
-            {question.hasOtherOption && (
-                <>
-                    <label 
-                        style={{
-                            display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '12px',
-                            border: `2px solid ${answer === OTHER_OPTION_VALUE ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                            backgroundColor: answer === OTHER_OPTION_VALUE ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
-                            cursor: 'pointer', transition: 'all 0.2s ease'
-                        }}
-                        onClick={() => handleAnswerChange(question.id, OTHER_OPTION_VALUE)}
-                    >
-                        <span style={{ fontSize: '15px' }}>Другое</span>
-                    </label>
-                    {answer === OTHER_OPTION_VALUE && (
-                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.3 }}>
-                            <input
-                                type="text"
-                                value={otherAnswer}
-                                onChange={(e) => handleAnswerChange(OTHER_INPUT_PREFIX + question.id, e.target.value)}
-                                placeholder="Напишите свой вариант..."
-                                style={{ ...baseInputStyle, marginTop: '8px' }}
-                            />
-                        </motion.div>
-                    )}
-                </>
-            )}
-          </div>
-        );
+            case 'textarea':
+                return <textarea value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Ваш развернутый ответ..." rows={5} style={{ ...baseInputStyle, resize: 'vertical', fontFamily: 'inherit' }} />;
 
-      case 'multiple_choice':
-        const currentAnswers = Array.isArray(answer) ? answer : [];
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {question.options?.map((option: any, index: number) => {
-                    const optionText = typeof option === 'string' ? option : option.text;
-                    const isSelected = currentAnswers.includes(optionText);
-                    return (
-                        <label key={index}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: '14px 16px',
-                            borderRadius: '12px',
-                            border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                            backgroundColor: isSelected ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
-                            color: 'var(--tg-text-color)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                          }}
-                          onClick={() => {
-                            const newAnswers = isSelected
-                                ? currentAnswers.filter((a: string) => a !== optionText)
-                                : [...currentAnswers, optionText];
-                            handleAnswerChange(question.id, newAnswers);
-                          }}
-                        >
-                            <div style={{
-                                width: '20px',
-                                height: '20px',
-                                borderRadius: '4px',
-                                border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                                backgroundColor: isSelected ? 'var(--tg-button-color)' : 'transparent',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0
-                            }}>
-                                {isSelected && (
-                                    <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>✓</span>
-                                )}
-                            </div>
-                            <span style={{ fontSize: '15px' }}>{optionText}</span>
-                        </label>
-                    );
-                })}
-                {question.hasOtherOption && (
-                    <>
-                        <label 
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '12px',
-                                border: `2px solid ${currentAnswers.includes(OTHER_OPTION_VALUE) ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                                backgroundColor: currentAnswers.includes(OTHER_OPTION_VALUE) ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
-                                cursor: 'pointer', transition: 'all 0.2s ease'
-                            }}
-                            onClick={() => {
-                                const newAnswers = currentAnswers.includes(OTHER_OPTION_VALUE)
-                                    ? currentAnswers.filter((a: string) => a !== OTHER_OPTION_VALUE)
-                                    : [...currentAnswers, OTHER_OPTION_VALUE];
-                                handleAnswerChange(question.id, newAnswers);
-                            }}
-                        >
-                           <span style={{ fontSize: '15px' }}>Другое</span>
-                        </label>
-                        {currentAnswers.includes(OTHER_OPTION_VALUE) && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.3 }}>
-                                <input
-                                    type="text"
-                                    value={otherAnswer}
-                                    onChange={(e) => handleAnswerChange(OTHER_INPUT_PREFIX + question.id, e.target.value)}
-                                    placeholder="Напишите свой вариант..."
-                                    style={{ ...baseInputStyle, marginTop: '8px' }}
-                                />
-                            </motion.div>
-                        )}
-                    </>
-                )}
-            </div>
-        );
-      
-      case 'scale':
-        const scaleMin = question.scaleMin || 1;
-        const scaleMax = question.scaleMax || 10;
-        
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
-              <span style={{ fontSize: '13px', color: 'var(--tg-hint-color)' }}>
-                {question.scaleMinLabel || scaleMin}
-              </span>
-              <span style={{ fontSize: '13px', color: 'var(--tg-hint-color)' }}>
-                {question.scaleMaxLabel || scaleMax}
-              </span>
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              gap: '6px', 
-              flexWrap: 'wrap',
-              justifyContent: 'center'
-            }}>
-              {Array.from({ length: scaleMax - scaleMin + 1 }, (_, i) => {
-                const value = scaleMin + i;
-                const isSelected = answer === value;
-                
+            case 'single_choice':
+            case 'multiple_choice':
+                const isMultiple = question.type === 'multiple_choice';
+                const currentAnswers = Array.isArray(answer) ? answer : (answer ? [answer] : []);
+
+                const handleSelection = (optionText: string) => {
+                    if (isMultiple) {
+                        const newAnswers = currentAnswers.includes(optionText)
+                            ? currentAnswers.filter((a: string) => a !== optionText)
+                            : [...currentAnswers, optionText];
+                        handleAnswerChange(question.id, newAnswers);
+                    } else {
+                        handleAnswerChange(question.id, optionText);
+                    }
+                };
+
                 return (
-                  <button
-                    key={value}
-                    onClick={() => handleAnswerChange(question.id, value)}
-                    style={{
-                      minWidth: '44px',
-                      height: '44px',
-                      padding: '0 8px',
-                      borderRadius: '12px',
-                      border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                      backgroundColor: isSelected ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
-                      color: isSelected ? 'white' : 'var(--tg-text-color)',
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {value}
-                  </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {question.options?.map((option: any, index: number) => {
+                            const optionText = typeof option === 'string' ? option : option.text;
+                            const isSelected = currentAnswers.includes(optionText);
+                            return (
+                                <label
+                                    key={index}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '12px',
+                                        border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
+                                        backgroundColor: isSelected ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
+                                        color: 'var(--tg-text-color)', cursor: 'pointer', transition: 'all 0.2s ease'
+                                    }}
+                                    onClick={() => handleSelection(optionText)}
+                                >
+                                    <div style={{
+                                        width: '20px', height: '20px', borderRadius: isMultiple ? '4px' : '50%',
+                                        border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                                        backgroundColor: isSelected && isMultiple ? 'var(--tg-button-color)' : 'transparent',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                                    }}>
+                                        {isSelected && !isMultiple && <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--tg-button-color)' }} />}
+                                        {isSelected && isMultiple && <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>✓</span>}
+                                    </div>
+                                    <span style={{ fontSize: '15px' }}>{optionText}</span>
+                                </label>
+                            );
+                        })}
+                        {question.hasOtherOption && (
+                            <>
+                                <label
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '12px',
+                                        border: `2px solid ${currentAnswers.includes(OTHER_OPTION_VALUE) ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
+                                        backgroundColor: currentAnswers.includes(OTHER_OPTION_VALUE) ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
+                                        cursor: 'pointer', transition: 'all 0.2s ease'
+                                    }}
+                                    onClick={() => handleSelection(OTHER_OPTION_VALUE)}
+                                >
+                                     <div style={{
+                                        width: '20px', height: '20px', borderRadius: isMultiple ? '4px' : '50%',
+                                        border: `2px solid ${currentAnswers.includes(OTHER_OPTION_VALUE) ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                                        backgroundColor: currentAnswers.includes(OTHER_OPTION_VALUE) && isMultiple ? 'var(--tg-button-color)' : 'transparent',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                                    }}>
+                                        {currentAnswers.includes(OTHER_OPTION_VALUE) && !isMultiple && <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--tg-button-color)' }} />}
+                                        {currentAnswers.includes(OTHER_OPTION_VALUE) && isMultiple && <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>✓</span>}
+                                    </div>
+                                    <span style={{ fontSize: '15px' }}>Другое</span>
+                                </label>
+                                {currentAnswers.includes(OTHER_OPTION_VALUE) && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.3 }}>
+                                        <input
+                                            type="text"
+                                            value={otherAnswer}
+                                            onChange={(e) => handleAnswerChange(OTHER_INPUT_PREFIX + question.id, e.target.value)}
+                                            placeholder="Напишите свой вариант..."
+                                            style={{ ...baseInputStyle, marginTop: '8px' }}
+                                        />
+                                    </motion.div>
+                                )}
+                            </>
+                        )}
+                    </div>
                 );
-              })}
-            </div>
-          </div>
-        );
 
-      case 'rating':
-        const maxRating = question.ratingMax || 5;
-        
-        return (
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', padding: '12px 0' }}>
-            {Array.from({ length: maxRating }, (_, i) => {
-              const starValue = i + 1;
-              const isSelected = answer && starValue <= answer;
-              
-              return (
-                <button
-                  key={starValue}
-                  onClick={() => handleAnswerChange(question.id, starValue)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '8px',
-                    transition: 'transform 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <Star 
-                    size={32}
-                    fill={isSelected ? '#FFD700' : 'none'} 
-                    stroke={isSelected ? '#FFD700' : 'var(--tg-hint-color)'}
-                    strokeWidth={2}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        );
+            case 'scale':
+                const scaleMin = question.scaleMin || 1;
+                const scaleMax = question.scaleMax || 5;
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
+                            <span style={{ fontSize: '13px', color: 'var(--tg-hint-color)' }}>{question.scaleMinLabel || scaleMin}</span>
+                            <span style={{ fontSize: '13px', color: 'var(--tg-hint-color)' }}>{question.scaleMaxLabel || scaleMax}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {Array.from({ length: scaleMax - scaleMin + 1 }, (_, i) => {
+                                const value = scaleMin + i;
+                                return (
+                                    <button
+                                        key={value}
+                                        onClick={() => handleAnswerChange(question.id, value)}
+                                        style={{
+                                            minWidth: '44px', height: '44px', borderRadius: '50%', padding: '0 8px',
+                                            border: '2px solid var(--tg-section-separator-color)',
+                                            backgroundColor: answer === value ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
+                                            color: answer === value ? 'var(--tg-button-text-color)' : 'var(--tg-text-color)',
+                                            fontSize: '16px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        {value}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
 
-      case 'yes_no':
-        return (
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {[
-              { text: 'Да', emoji: '✅', color: '#34C759' },
-              { text: 'Нет', emoji: '❌', color: '#FF3B30' }
-            ].map((option) => {
-              const isSelected = answer === option.text;
-              
-              return (
-                <button
-                  key={option.text}
-                  onClick={() => handleAnswerChange(question.id, option.text)}
-                  style={{
-                    flex: 1,
-                    padding: '16px 24px',
-                    borderRadius: '12px',
-                    border: `2px solid ${isSelected ? option.color : 'var(--tg-section-separator-color)'}`,
-                    backgroundColor: isSelected ? option.color : 'var(--tg-section-bg-color)',
-                    color: isSelected ? 'white' : 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <span style={{ fontSize: '20px' }}>{option.emoji}</span>
-                  {option.text}
-                </button>
-              );
-            })}
-          </div>
-        );
+            case 'rating':
+                const maxRating = question.ratingMax || 5;
+                return (
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', padding: '12px 0' }}>
+                        {Array.from({ length: maxRating }, (_, i) => {
+                            const starValue = i + 1;
+                            return (
+                                <button
+                                    key={starValue}
+                                    onClick={() => handleAnswerChange(question.id, starValue)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', transition: 'transform 0.2s ease' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                >
+                                    <Star size={36} fill={(answer && starValue <= answer) ? '#FFD700' : 'var(--tg-section-bg-color)'} stroke={(answer && starValue <= answer) ? '#FFD700' : 'var(--tg-hint-color)'} strokeWidth={1.5} />
+                                </button>
+                            );
+                        })}
+                    </div>
+                );
 
-      case 'date':
-        return (
-          <input
-            type="date"
-            value={answer || ''}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              borderRadius: '12px',
-              border: '2px solid var(--tg-button-color)',
-              backgroundColor: 'var(--tg-section-bg-color)',
-              color: 'var(--tg-text-color)',
-              fontSize: '16px',
-              outline: 'none'
-            }}
-          />
-        );
+            case 'yes_no':
+                return (
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        {[{ text: 'Да', emoji: '✅', color: '#34C759' }, { text: 'Нет', emoji: '❌', color: '#FF3B30' }].map((option) => {
+                            const isSelected = answer === option.text;
+                            return (
+                                <button
+                                    key={option.text}
+                                    onClick={() => handleAnswerChange(question.id, option.text)}
+                                    style={{
+                                        flex: 1, padding: '16px 24px', borderRadius: '12px',
+                                        border: `2px solid ${isSelected ? option.color : 'var(--tg-section-separator-color)'}`,
+                                        backgroundColor: isSelected ? option.color : 'var(--tg-section-bg-color)',
+                                        color: isSelected ? 'white' : 'var(--tg-text-color)',
+                                        fontSize: '16px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                    }}
+                                >
+                                    <span style={{ fontSize: '20px' }}>{option.emoji}</span>
+                                    {option.text}
+                                </button>
+                            );
+                        })}
+                    </div>
+                );
 
-      case 'number':
-        return (
-          <input
-            type="number"
-            inputMode="numeric"
-            value={answer || ''}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            placeholder="Введите число..."
-            min={question.validation?.min}
-            max={question.validation?.max}
-            style={{
-              width: '100%',
-              padding: '14px 16px',
-              borderRadius: '12px',
-              border: '1px solid var(--tg-section-separator-color)',
-              backgroundColor: 'var(--tg-section-bg-color)',
-              color: 'var(--tg-text-color)',
-              fontSize: '16px',
-              outline: 'none'
-            }}
-          />
-        );
+            case 'date':
+                return <input type="date" value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} style={{...baseInputStyle, border: `2px solid ${error ? 'var(--tg-destructive-text-color)' : 'var(--tg-button-color)'}` }} />;
 
-      default:
-        return <div>Неподдерживаемый тип вопроса</div>;
-    }
-  };
+            case 'number':
+                return <input type="number" inputMode="numeric" value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Введите число..." min={question.validation?.min} max={question.validation?.max} style={baseInputStyle} />;
+
+            default:
+                return <div>Неподдерживаемый тип вопроса</div>;
+        }
+    };
 
   if (loading) {
     return (

@@ -125,7 +125,7 @@ export default function SurveyCompletedPage() {
         )}
 
         {/* Кнопка связи с создателем */}
-        {creatorUsername && (
+        {hasReward && creatorUsername && (
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -136,7 +136,7 @@ export default function SurveyCompletedPage() {
               padding: '16px',
               borderRadius: '12px',
               border: '2px solid var(--tg-button-color)',
-              backgroundColor: 'rgba(244, 109, 0, 0.1)',
+              backgroundColor: 'transparent',
               color: 'var(--tg-button-color)',
               fontSize: '15px',
               fontWeight: '600',
