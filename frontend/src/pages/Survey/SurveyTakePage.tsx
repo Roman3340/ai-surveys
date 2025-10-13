@@ -31,6 +31,7 @@ interface SurveyData {
   settings: any;
   canParticipate: boolean;
   participationMessage?: string;
+  creatorUsername?: string;
 }
 
 interface Answers {
@@ -137,7 +138,11 @@ export default function SurveyTakePage() {
       
       hapticFeedback?.success();
       navigate(`/survey/${surveyId}/completed`, { 
-        state: { surveyTitle: survey.title, hasReward: survey.settings?.motivationEnabled }
+        state: { 
+          surveyTitle: survey.title, 
+          hasReward: survey.settings?.motivationEnabled,
+          creatorUsername: survey.creatorUsername
+        }
       });
     } catch (error: any) {
       console.error('Ошибка отправки ответов:', error);
