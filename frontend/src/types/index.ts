@@ -75,6 +75,10 @@ export interface SurveySettings {
   endDate?: string;
   maxParticipants?: string;
   creationType: 'manual' | 'ai';
+  motivationEnabled?: boolean;
+  motivationType?: 'stars' | 'discount' | 'gift' | 'contest';
+  motivationDetails?: string;
+  motivationConditions?: string;
 }
 
 export interface SurveyReward {
