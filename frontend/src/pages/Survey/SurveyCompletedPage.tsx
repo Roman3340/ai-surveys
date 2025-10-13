@@ -1,21 +1,19 @@
 import { useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTelegram } from '../../hooks/useTelegram';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
 
 export default function SurveyCompletedPage() {
-  const { surveyId } = useParams();
   const location = useLocation();
   const { close, hapticFeedback } = useTelegram();
 
-  const surveyTitle = location.state?.surveyTitle || 'опрос';
   const hasReward = location.state?.hasReward || false;
   const creatorUsername = location.state?.creatorUsername;
 
   useEffect(() => {
     hapticFeedback?.success();
-  }, []);
+  }, [hapticFeedback]);
 
   const handleClose = () => {
     hapticFeedback?.light();

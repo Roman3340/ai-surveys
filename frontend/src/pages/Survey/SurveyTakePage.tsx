@@ -319,7 +319,7 @@ export default function SurveyTakePage() {
         
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingX: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
               <span style={{ fontSize: '13px', color: 'var(--tg-hint-color)' }}>
                 {question.scaleMinLabel || scaleMin}
               </span>
