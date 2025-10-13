@@ -71,8 +71,8 @@ export const surveyApi = {
   /**
    * Получить опрос по ID
    */
-  async getSurvey(surveyId: string): Promise<Survey> {
-    const response = await api.get(`/surveys/${surveyId}`);
+  async getSurvey(surveyId: string, includeResponses = false): Promise<Survey> {
+    const response = await api.get(`/surveys/${surveyId}` + (includeResponses ? `?include_responses=true` : ''));
     return response.data;
   },
 
@@ -123,12 +123,26 @@ export const surveyApi = {
     const response = await api.get(`/surveys/${surveyId}/share`);
     return response.data;
   },
+
+  async getSurveyStats(surveyId: string): Promise<{ total_responses: number; completed_today?: number | null; average_time_seconds?: number | null; }> {
+    const response = await api.get(`/surveys/${surveyId}/stats`);
+    return response.data;
+  },
+
+  async getSurveyResponses(surveyId: string, limit = 20, offset = 0): Promise<any[]> {
+    const response = await api.get(`/surveys/${surveyId}/responses`, { params: { limit, offset } as any });
+    return response.data;
+  },
 };
 
 export const questionApi = {
   async createQuestion(data: CreateQuestionRequest) {
     const res = await api.post('/questions/', data);
     return res.data;
+  },
+  async getSurveyQuestions(surveyId: string) {
+    const res = await api.get(`/questions/survey/${surveyId}`);
+    return res.data as any[];
   },
 };
 
