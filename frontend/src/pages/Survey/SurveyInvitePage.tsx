@@ -23,7 +23,7 @@ interface SurveyPublicData {
 export default function SurveyInvitePage() {
   const { surveyId } = useParams();
   const navigate = useNavigate();
-  const { user, hapticFeedback } = useTelegram();
+  const { user, hapticFeedback, isReady } = useTelegram();
   
   const [survey, setSurvey] = useState<SurveyPublicData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,6 +32,10 @@ export default function SurveyInvitePage() {
   useEffect(() => {
     const loadSurvey = async () => {
       if (!surveyId) return;
+      
+      // Ждем пока Telegram WebApp инициализируется
+      if (!isReady) return;
+      
       try {
         setLoading(true);
         const response = await surveyApi.getSurveyPublic(surveyId, user?.id);
@@ -44,7 +48,7 @@ export default function SurveyInvitePage() {
       }
     };
     loadSurvey();
-  }, [surveyId, user?.id]);
+  }, [surveyId, user?.id, isReady]);
 
   const handleParticipate = () => {
     if (!survey?.canParticipate) {
