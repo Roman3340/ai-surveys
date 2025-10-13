@@ -453,7 +453,7 @@ export const HomePage = () => {
                       marginLeft: '12px',
                       whiteSpace: 'nowrap'
                     }}>
-                      {formatDate(survey.createdAt)}
+                      {formatDate(survey.publishedAt || survey.createdAt)}
                     </div>
                   </div>
                   
@@ -487,7 +487,7 @@ export const HomePage = () => {
                       const statusMap: Record<string, { text: string; color: string }> = {
                         active: { text: 'Активен', color: '#34C759' },
                         draft: { text: 'Черновик', color: '#8E8E93' },
-                        completed: { text: 'Завершён', color: '#007AFF' },
+                        completed: { text: 'Завершён', color: '#FF6B6B' },
                         archived: { text: 'Архив', color: '#FF9500' }
                       };
                       const statusInfo = statusMap[survey.status] || { text: survey.status, color: '#8E8E93' };
