@@ -19,6 +19,7 @@ export interface Survey {
   isPublic: boolean;
   status: string;
   publishedAt?: string;
+  maxParticipants?: number;
   createdAt: string;
   updatedAt: string;
   questions: Question[];

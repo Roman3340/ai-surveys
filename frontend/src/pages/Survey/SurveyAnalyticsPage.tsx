@@ -1,12 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Copy, Share, Settings, Edit, Check, X, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X, Plus, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { surveyApi, questionApi } from '../../services/api';
 import type { SurveyShareResponse } from '../../services/api';
-import type { Survey, SurveySettings } from '../../types';
+import type { Survey, SurveySettings, QuestionType } from '../../types';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
+
+interface EditableQuestion {
+  id: string;
+  type: QuestionType;
+  text: string;
+  description?: string;
+  is_required: boolean;
+  order_index: number;
+  options?: string[];
+  has_other_option?: boolean;
+  scale_min?: number;
+  scale_max?: number;
+  scale_min_label?: string;
+  scale_max_label?: string;
+  image_url?: string;
+  image_name?: string;
+}
 
 export default function SurveyAnalyticsPage() {
   const { surveyId } = useParams();
@@ -19,11 +37,14 @@ export default function SurveyAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'questions' | 'analytics'>('overview');
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<EditableQuestion[]>([]);
   const [responsesPage, setResponsesPage] = useState<any[] | null>(null);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
   const [editingSettings, setEditingSettings] = useState(false);
   const [editedSettings, setEditedSettings] = useState<SurveySettings | null>(null);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [editingQuestions, setEditingQuestions] = useState(false);
+  const [editedQuestions, setEditedQuestions] = useState<EditableQuestion[]>([]);
 
   useStableBackButton({ targetRoute: '/' });
 
@@ -56,7 +77,24 @@ export default function SurveyAnalyticsPage() {
       if (activeTab !== 'questions' || !surveyId) return;
       try {
         const list = await questionApi.getSurveyQuestions(surveyId);
-        setQuestions(list);
+        const mapped = list.map((q: any) => ({
+          id: q.id,
+          type: q.type,
+          text: q.text,
+          description: q.description,
+          is_required: q.is_required,
+          order_index: q.order_index,
+          options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
+          has_other_option: q.has_other_option,
+          scale_min: q.scale_min,
+          scale_max: q.scale_max,
+          scale_min_label: q.scale_min_label,
+          scale_max_label: q.scale_max_label,
+          image_url: q.image_url,
+          image_name: q.image_name
+        }));
+        setQuestions(mapped);
+        setEditedQuestions(JSON.parse(JSON.stringify(mapped)));
       } catch (e) {
         console.error(e);
       }
@@ -91,6 +129,7 @@ export default function SurveyAnalyticsPage() {
       await surveyApi.updateSurveyStatus(surveyId, newStatus);
       const fresh = await surveyApi.getSurvey(surveyId);
       setSurvey(fresh);
+      setShowStatusDropdown(false);
       hapticFeedback?.success();
     } catch (e: any) {
       console.error(e);
@@ -101,7 +140,11 @@ export default function SurveyAnalyticsPage() {
   const handleSaveSettings = async () => {
     if (!survey || !surveyId || !editedSettings) return;
     try {
-      await surveyApi.updateSurveySettings(surveyId, editedSettings);
+      const settingsToSend = {
+        ...editedSettings,
+        maxParticipants: survey.maxParticipants?.toString() || ''
+      };
+      await surveyApi.updateSurveySettings(surveyId, settingsToSend);
       const fresh = await surveyApi.getSurvey(surveyId);
       setSurvey(fresh);
       setEditedSettings(fresh.settings);
@@ -112,6 +155,79 @@ export default function SurveyAnalyticsPage() {
       console.error(e);
       alert('Не удалось сохранить настройки');
     }
+  };
+
+  const handleSaveQuestions = async () => {
+    if (!surveyId) return;
+    try {
+      // Сохраняем каждый изменённый вопрос
+      for (const q of editedQuestions) {
+        await questionApi.updateQuestion(q.id, {
+          type: q.type,
+          text: q.text,
+          description: q.description,
+          is_required: q.is_required,
+          order_index: q.order_index,
+          options: q.options,
+          has_other_option: q.has_other_option,
+          scale_min: q.scale_min,
+          scale_max: q.scale_max,
+          scale_min_label: q.scale_min_label,
+          scale_max_label: q.scale_max_label,
+        });
+      }
+      
+      // Перезагружаем вопросы
+      const list = await questionApi.getSurveyQuestions(surveyId);
+      const mapped = list.map((q: any) => ({
+        id: q.id,
+        type: q.type,
+        text: q.text,
+        description: q.description,
+        is_required: q.is_required,
+        order_index: q.order_index,
+        options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
+        has_other_option: q.has_other_option,
+        scale_min: q.scale_min,
+        scale_max: q.scale_max,
+        scale_min_label: q.scale_min_label,
+        scale_max_label: q.scale_max_label,
+        image_url: q.image_url,
+        image_name: q.image_name
+      }));
+      setQuestions(mapped);
+      setEditedQuestions(JSON.parse(JSON.stringify(mapped)));
+      setEditingQuestions(false);
+      hapticFeedback?.success();
+      alert('Вопросы успешно обновлены!');
+    } catch (e) {
+      console.error(e);
+      alert('Не удалось сохранить вопросы');
+    }
+  };
+
+  const updateEditedQuestion = (index: number, updates: Partial<EditableQuestion>) => {
+    setEditedQuestions(prev => prev.map((q, i) => i === index ? { ...q, ...updates } : q));
+  };
+
+  const addOption = (questionIndex: number) => {
+    const q = editedQuestions[questionIndex];
+    updateEditedQuestion(questionIndex, {
+      options: [...(q.options || []), '']
+    });
+  };
+
+  const updateOption = (questionIndex: number, optionIndex: number, value: string) => {
+    const q = editedQuestions[questionIndex];
+    const newOptions = [...(q.options || [])];
+    newOptions[optionIndex] = value;
+    updateEditedQuestion(questionIndex, { options: newOptions });
+  };
+
+  const removeOption = (questionIndex: number, optionIndex: number) => {
+    const q = editedQuestions[questionIndex];
+    const newOptions = (q.options || []).filter((_, i) => i !== optionIndex);
+    updateEditedQuestion(questionIndex, { options: newOptions });
   };
 
   const handleCopy = async () => {
@@ -140,6 +256,18 @@ export default function SurveyAnalyticsPage() {
     }
   };
 
+  const questionTypes = [
+    { value: 'text', label: 'Короткий ответ', icon: '📝' },
+    { value: 'textarea', label: 'Развёрнутый ответ', icon: '📄' },
+    { value: 'single_choice', label: 'Один из списка', icon: '🔘' },
+    { value: 'multiple_choice', label: 'Несколько из списка', icon: '☑️' },
+    { value: 'scale', label: 'Шкала', icon: '📊' },
+    { value: 'rating', label: 'Оценка звёздами', icon: '⭐' },
+    { value: 'yes_no', label: 'Да/Нет', icon: '✅' },
+    { value: 'date', label: 'Дата', icon: '📅' },
+    { value: 'number', label: 'Число', icon: '🔢' }
+  ];
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--tg-bg-color)', color: 'var(--tg-text-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -159,6 +287,274 @@ export default function SurveyAnalyticsPage() {
   const statusBadge = getStatusBadge();
   const canEdit = (stats?.total_responses ?? 0) === 0;
   const settings = survey.settings || {};
+
+  const renderQuestionEditor = (question: EditableQuestion, index: number) => {
+    const disabled = !editingQuestions;
+
+    return (
+      <motion.div
+        key={question.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+      >
+        <div
+          style={{
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '16px',
+            border: editingQuestions ? '2px solid var(--tg-button-color)' : '1px solid var(--tg-section-separator-color)',
+          }}
+        >
+          {/* Заголовок вопроса */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+            <div
+              style={{
+                minWidth: 28,
+                height: 28,
+                borderRadius: '50%',
+                background: 'var(--tg-button-color)',
+                color: 'var(--tg-button-text-color)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 600,
+                fontSize: 14,
+              }}
+            >
+              {index + 1}
+            </div>
+            <div style={{ flex: 1 }}>
+              <input
+                type="text"
+                value={question.text}
+                onChange={(e) => updateEditedQuestion(index, { text: e.target.value })}
+                disabled={disabled}
+                placeholder="Вопрос"
+                style={{
+                  width: '100%',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  padding: '12px 0',
+                  border: 'none',
+                  borderBottom: '2px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'transparent',
+                  color: 'var(--tg-text-color)',
+                  outline: 'none',
+                  opacity: disabled ? 0.6 : 1
+                }}
+              />
+              
+              <input
+                type="text"
+                value={question.description || ''}
+                onChange={(e) => updateEditedQuestion(index, { description: e.target.value })}
+                disabled={disabled}
+                placeholder="Описание (необязательно)"
+                style={{
+                  width: '100%',
+                  fontSize: '14px',
+                  padding: '8px 0',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  color: 'var(--tg-hint-color)',
+                  outline: 'none',
+                  marginTop: '8px',
+                  opacity: disabled ? 0.6 : 1
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Тип вопроса */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ position: 'relative', minWidth: '200px' }}>
+              <select
+                value={question.type}
+                onChange={(e) => updateEditedQuestion(index, {
+                  type: e.target.value as QuestionType,
+                  options: ['single_choice', 'multiple_choice'].includes(e.target.value) ? [''] : []
+                })}
+                disabled={disabled}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  appearance: 'none',
+                  cursor: disabled ? 'not-allowed' : 'pointer',
+                  opacity: disabled ? 0.6 : 1
+                }}
+              >
+                {questionTypes.map(type => (
+                  <option key={type.value} value={type.value}>
+                    {type.icon} {type.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown 
+                size={16} 
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--tg-hint-color)',
+                  pointerEvents: 'none'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Варианты ответов для множественного выбора */}
+          {(['single_choice', 'multiple_choice'].includes(question.type)) && (
+            <div style={{ marginBottom: '16px' }}>
+              <AnimatePresence>
+                {question.options?.map((option, optIdx) => (
+                  <motion.div
+                    key={optIdx}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}
+                  >
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: question.type === 'single_choice' ? '50%' : '4px',
+                      border: '2px solid var(--tg-section-separator-color)',
+                      backgroundColor: 'var(--tg-section-bg-color)'
+                    }} />
+                    <input
+                      type="text"
+                      value={option}
+                      onChange={(e) => updateOption(index, optIdx, e.target.value)}
+                      disabled={disabled}
+                      placeholder={`Вариант ${optIdx + 1}`}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        backgroundColor: 'var(--tg-bg-color)',
+                        color: 'var(--tg-text-color)',
+                        fontSize: '14px',
+                        outline: 'none',
+                        opacity: disabled ? 0.6 : 1
+                      }}
+                    />
+                    {!disabled && question.options && question.options.length > 1 && (
+                      <button
+                        onClick={() => removeOption(index, optIdx)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--tg-hint-color)',
+                          cursor: 'pointer',
+                          padding: '4px'
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              
+              {!disabled && (
+                <button
+                  onClick={() => addOption(index)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px dashed var(--tg-section-separator-color)',
+                    backgroundColor: 'transparent',
+                    color: 'var(--tg-hint-color)',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    width: '100%',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Plus size={16} />
+                  Добавить вариант
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Шкала для типа scale */}
+          {question.type === 'scale' && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '16px',
+              padding: '12px',
+              backgroundColor: 'var(--tg-bg-color)',
+              borderRadius: '8px'
+            }}>
+              <span style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                {question.scale_min || 1}
+              </span>
+              <div style={{ flex: 1, display: 'flex', gap: '8px' }}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      height: '8px',
+                      backgroundColor: 'var(--tg-section-separator-color)',
+                      borderRadius: '4px'
+                    }}
+                  />
+                ))}
+              </div>
+              <span style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                {question.scale_max || 5}
+              </span>
+            </div>
+          )}
+
+          {/* Обязательный вопрос */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingTop: '12px',
+            borderTop: '1px solid var(--tg-section-separator-color)'
+          }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              color: 'var(--tg-text-color)',
+              cursor: disabled ? 'not-allowed' : 'pointer',
+              opacity: disabled ? 0.6 : 1
+            }}>
+              <input
+                type="checkbox"
+                checked={question.is_required}
+                onChange={(e) => updateEditedQuestion(index, { is_required: e.target.checked })}
+                disabled={disabled}
+                style={{ marginRight: '4px' }}
+              />
+              Обязательный вопрос
+            </label>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--tg-bg-color)', color: 'var(--tg-text-color)', padding: 12, paddingBottom: 80 }}>
@@ -206,73 +602,118 @@ export default function SurveyAnalyticsPage() {
           {/* Управление статусом */}
           <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 14, padding: 14 }}>
             <h3 style={{ margin: '0 0 12px 0', fontSize: 16, fontWeight: 600 }}>Статус опроса</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {survey.status === 'draft' && (
-                <button
-                  onClick={() => handleStatusChange('active')}
-                  style={{
-                    background: '#34C759',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 10,
-                    padding: 12,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <Check size={16} /> Опубликовать
-                </button>
-              )}
-              {survey.status === 'active' && (
-                <>
-                  {canEdit && (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                style={{
+                  width: '100%',
+                  background: 'var(--tg-button-color)',
+                  color: 'var(--tg-button-text-color)',
+                  border: 'none',
+                  borderRadius: 10,
+                  padding: '12px 16px',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: 'pointer',
+                }}
+              >
+                <span>{statusBadge?.text}</span>
+                <ChevronDown size={18} />
+              </button>
+              {showStatusDropdown && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: 4,
+                  background: 'var(--tg-section-bg-color)',
+                  borderRadius: 10,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  zIndex: 100,
+                  overflow: 'hidden',
+                  border: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  {survey.status !== 'active' && (
+                    <button
+                      onClick={() => handleStatusChange('active')}
+                      style={{
+                        width: '100%',
+                        background: 'transparent',
+                        border: 'none',
+                        padding: '12px 16px',
+                        textAlign: 'left',
+                        fontSize: 14,
+                        color: 'var(--tg-text-color)',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid var(--tg-section-separator-color)'
+                      }}
+                    >
+                      ✅ Активировать
+                    </button>
+                  )}
+                  {survey.status === 'active' && canEdit && (
                     <button
                       onClick={() => handleStatusChange('draft')}
                       style={{
-                        background: '#8E8E93',
-                        color: 'white',
+                        width: '100%',
+                        background: 'transparent',
                         border: 'none',
-                        borderRadius: 10,
-                        padding: 12,
-                        fontWeight: 600,
+                        padding: '12px 16px',
+                        textAlign: 'left',
                         fontSize: 14,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
+                        color: 'var(--tg-text-color)',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid var(--tg-section-separator-color)'
                       }}
                     >
-                      <X size={16} /> Перевести в черновик
+                      📝 Перевести в черновик
                     </button>
                   )}
-                  <button
-                    onClick={() => handleStatusChange('completed')}
-                    style={{
-                      background: '#007AFF',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: 10,
-                      padding: 12,
-                      fontWeight: 600,
-                      fontSize: 14,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
-                    }}
-                  >
-                    <Check size={16} /> Завершить опрос
-                  </button>
-                </>
+                  {survey.status !== 'completed' && (
+                    <button
+                      onClick={() => handleStatusChange('completed')}
+                      style={{
+                        width: '100%',
+                        background: 'transparent',
+                        border: 'none',
+                        padding: '12px 16px',
+                        textAlign: 'left',
+                        fontSize: 14,
+                        color: 'var(--tg-text-color)',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid var(--tg-section-separator-color)'
+                      }}
+                    >
+                      ✔️ Завершить опрос
+                    </button>
+                  )}
+                  {survey.status !== 'archived' && (
+                    <button
+                      onClick={() => handleStatusChange('archived')}
+                      style={{
+                        width: '100%',
+                        background: 'transparent',
+                        border: 'none',
+                        padding: '12px 16px',
+                        textAlign: 'left',
+                        fontSize: 14,
+                        color: 'var(--tg-text-color)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      📦 Архивировать
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
 
-          {/* Распространение - показываем всегда если есть share */}
+          {/* Распространение */}
           {share && (
             <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 14, padding: 14 }}>
               <h3 style={{ margin: '0 0 12px 0', fontSize: 16, fontWeight: 600 }}>Распространение</h3>
@@ -329,28 +770,33 @@ export default function SurveyAnalyticsPage() {
 
           {/* Настройки опроса */}
           <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 14, padding: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: settingsExpanded ? 12 : 0 }}>
-              <button
-                onClick={() => {
-                  setSettingsExpanded(!settingsExpanded);
-                  hapticFeedback?.light();
-                }}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: 0,
-                  color: 'var(--tg-text-color)',
-                  cursor: 'pointer',
-                }}
-              >
+            <button
+              onClick={() => {
+                setSettingsExpanded(!settingsExpanded);
+                hapticFeedback?.light();
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: 0,
+                marginBottom: settingsExpanded ? 12 : 0,
+                color: 'var(--tg-text-color)',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Settings size={18} />
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Настройки опроса</h3>
-                {settingsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </button>
-              {settingsExpanded && (
+              </div>
+              {settingsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </button>
+            
+            {settingsExpanded && (
+              <>
                 <button
                   onClick={() => {
                     if (editingSettings) {
@@ -365,128 +811,270 @@ export default function SurveyAnalyticsPage() {
                     color: 'white',
                     border: 'none',
                     borderRadius: 8,
-                    padding: '8px 14px',
+                    padding: '10px 16px',
                     fontWeight: 600,
-                    fontSize: 13,
+                    fontSize: 14,
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: 6,
                     cursor: 'pointer',
+                    width: '100%',
+                    marginBottom: 12
                   }}
                 >
-                  {editingSettings ? <><Save size={14} /> Сохранить</> : <><Edit size={14} /> Редактировать</>}
+                  {editingSettings ? <><Save size={16} /> Сохранить изменения</> : <>⚙️ Редактировать</>}
                 </button>
-              )}
-            </div>
-            {settingsExpanded && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--tg-hint-color)' }}>Показывать прогресс</span>
-                  {editingSettings ? (
-                    <input
-                      type="checkbox"
-                      checked={editedSettings?.showProgress || false}
-                      onChange={(e) => setEditedSettings({ ...editedSettings!, showProgress: e.target.checked })}
-                      style={{ width: 18, height: 18 }}
-                    />
-                  ) : (
-                    <span style={{ fontWeight: 500 }}>{settings.showProgress ? 'Да' : 'Нет'}</span>
-                  )}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--tg-hint-color)' }}>Один ответ на пользователя</span>
-                  {editingSettings ? (
-                    <input
-                      type="checkbox"
-                      checked={editedSettings?.oneResponsePerUser || false}
-                      onChange={(e) => setEditedSettings({ ...editedSettings!, oneResponsePerUser: e.target.checked })}
-                      style={{ width: 18, height: 18 }}
-                    />
-                  ) : (
-                    <span style={{ fontWeight: 500 }}>{settings.oneResponsePerUser ? 'Да' : 'Нет'}</span>
-                  )}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--tg-hint-color)' }}>Анонимность</span>
-                  {editingSettings ? (
-                    <input
-                      type="checkbox"
-                      checked={editedSettings?.allowAnonymous || false}
-                      onChange={(e) => setEditedSettings({ ...editedSettings!, allowAnonymous: e.target.checked })}
-                      style={{ width: 18, height: 18 }}
-                    />
-                  ) : (
-                    <span style={{ fontWeight: 500 }}>{settings.allowAnonymous ? 'Разрешена' : 'Запрещена'}</span>
-                  )}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--tg-hint-color)' }}>Сбор Telegram-данных</span>
-                  {editingSettings ? (
-                    <input
-                      type="checkbox"
-                      checked={editedSettings?.collectTelegramData || false}
-                      onChange={(e) => setEditedSettings({ ...editedSettings!, collectTelegramData: e.target.checked })}
-                      style={{ width: 18, height: 18 }}
-                    />
-                  ) : (
-                    <span style={{ fontWeight: 500 }}>{settings.collectTelegramData ? 'Да' : 'Нет'}</span>
-                  )}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--tg-hint-color)' }}>Перемешать вопросы</span>
-                  {editingSettings ? (
-                    <input
-                      type="checkbox"
-                      checked={editedSettings?.randomizeQuestions || false}
-                      onChange={(e) => setEditedSettings({ ...editedSettings!, randomizeQuestions: e.target.checked })}
-                      style={{ width: 18, height: 18 }}
-                    />
-                  ) : (
-                    <span style={{ fontWeight: 500 }}>{settings.randomizeQuestions ? 'Да' : 'Нет'}</span>
-                  )}
-                </div>
-                {(settings.maxParticipants || editingSettings) && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)', alignItems: 'center' }}>
+                
+                {editingSettings && (
+                  <button
+                    onClick={() => {
+                      setEditingSettings(false);
+                      setEditedSettings(survey.settings);
+                      hapticFeedback?.light();
+                    }}
+                    style={{
+                      background: '#FF3B30',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '10px 16px',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      cursor: 'pointer',
+                      width: '100%',
+                      marginBottom: 12
+                    }}
+                  >
+                    <X size={16} /> Отменить
+                  </button>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 14 }}>
+                  {/* Показывать прогресс */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>Показывать прогресс</span>
+                    {editingSettings ? (
+                      <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                        <input
+                          type="checkbox"
+                          checked={editedSettings?.showProgress || false}
+                          onChange={(e) => setEditedSettings({ ...editedSettings!, showProgress: e.target.checked })}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute',
+                          cursor: 'pointer',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: editedSettings?.showProgress ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                          borderRadius: '24px',
+                          transition: '0.3s'
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            content: '',
+                            height: '18px',
+                            width: '18px',
+                            left: editedSettings?.showProgress ? '28px' : '3px',
+                            bottom: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            transition: '0.3s'
+                          }} />
+                        </span>
+                      </label>
+                    ) : (
+                      <span style={{ fontWeight: 500 }}>{settings.showProgress ? 'Да' : 'Нет'}</span>
+                    )}
+                  </div>
+
+                  {/* Один ответ на пользователя */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>Один ответ на пользователя</span>
+                    {editingSettings ? (
+                      <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                        <input
+                          type="checkbox"
+                          checked={editedSettings?.oneResponsePerUser || false}
+                          onChange={(e) => setEditedSettings({ ...editedSettings!, oneResponsePerUser: e.target.checked })}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute',
+                          cursor: 'pointer',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: editedSettings?.oneResponsePerUser ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                          borderRadius: '24px',
+                          transition: '0.3s'
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            content: '',
+                            height: '18px',
+                            width: '18px',
+                            left: editedSettings?.oneResponsePerUser ? '28px' : '3px',
+                            bottom: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            transition: '0.3s'
+                          }} />
+                        </span>
+                      </label>
+                    ) : (
+                      <span style={{ fontWeight: 500 }}>{settings.oneResponsePerUser ? 'Да' : 'Нет'}</span>
+                    )}
+                  </div>
+
+                  {/* Анонимность */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>Анонимность</span>
+                    {editingSettings ? (
+                      <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                        <input
+                          type="checkbox"
+                          checked={editedSettings?.allowAnonymous || false}
+                          onChange={(e) => setEditedSettings({ ...editedSettings!, allowAnonymous: e.target.checked })}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute',
+                          cursor: 'pointer',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: editedSettings?.allowAnonymous ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                          borderRadius: '24px',
+                          transition: '0.3s'
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            content: '',
+                            height: '18px',
+                            width: '18px',
+                            left: editedSettings?.allowAnonymous ? '28px' : '3px',
+                            bottom: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            transition: '0.3s'
+                          }} />
+                        </span>
+                      </label>
+                    ) : (
+                      <span style={{ fontWeight: 500 }}>{settings.allowAnonymous ? 'Разрешена' : 'Запрещена'}</span>
+                    )}
+                  </div>
+
+                  {/* Сбор Telegram-данных */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>Сбор Telegram-данных</span>
+                    {editingSettings ? (
+                      <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                        <input
+                          type="checkbox"
+                          checked={editedSettings?.collectTelegramData || false}
+                          onChange={(e) => setEditedSettings({ ...editedSettings!, collectTelegramData: e.target.checked })}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute',
+                          cursor: 'pointer',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: editedSettings?.collectTelegramData ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                          borderRadius: '24px',
+                          transition: '0.3s'
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            content: '',
+                            height: '18px',
+                            width: '18px',
+                            left: editedSettings?.collectTelegramData ? '28px' : '3px',
+                            bottom: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            transition: '0.3s'
+                          }} />
+                        </span>
+                      </label>
+                    ) : (
+                      <span style={{ fontWeight: 500 }}>{settings.collectTelegramData ? 'Да' : 'Нет'}</span>
+                    )}
+                  </div>
+
+                  {/* Перемешать вопросы */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>Перемешать вопросы</span>
+                    {editingSettings ? (
+                      <label style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                        <input
+                          type="checkbox"
+                          checked={editedSettings?.randomizeQuestions || false}
+                          onChange={(e) => setEditedSettings({ ...editedSettings!, randomizeQuestions: e.target.checked })}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute',
+                          cursor: 'pointer',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: editedSettings?.randomizeQuestions ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                          borderRadius: '24px',
+                          transition: '0.3s'
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            content: '',
+                            height: '18px',
+                            width: '18px',
+                            left: editedSettings?.randomizeQuestions ? '28px' : '3px',
+                            bottom: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            transition: '0.3s'
+                          }} />
+                        </span>
+                      </label>
+                    ) : (
+                      <span style={{ fontWeight: 500 }}>{settings.randomizeQuestions ? 'Да' : 'Нет'}</span>
+                    )}
+                  </div>
+
+                  {/* Макс. участников */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                     <span style={{ color: 'var(--tg-hint-color)' }}>Макс. участников</span>
-                    {editingSettings ? (
-                      <input
-                        type="number"
-                        value={editedSettings?.maxParticipants || ''}
-                        onChange={(e) => setEditedSettings({ ...editedSettings!, maxParticipants: e.target.value })}
-                        style={{ width: 80, padding: 6, borderRadius: 6, border: '1px solid var(--tg-section-separator-color)', background: 'var(--tg-bg-color)', color: 'var(--tg-text-color)' }}
-                      />
-                    ) : (
-                      <span style={{ fontWeight: 500 }}>{settings.maxParticipants}</span>
-                    )}
+                    <span style={{ fontWeight: 500 }}>{survey.maxParticipants || 'Не указано'}</span>
                   </div>
-                )}
-                {(settings.endDate || editingSettings) && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)', alignItems: 'center' }}>
-                    <span style={{ color: 'var(--tg-hint-color)' }}>Дата окончания</span>
-                    {editingSettings ? (
-                      <input
-                        type="date"
-                        value={editedSettings?.endDate || ''}
-                        onChange={(e) => setEditedSettings({ ...editedSettings!, endDate: e.target.value })}
-                        style={{ padding: 6, borderRadius: 6, border: '1px solid var(--tg-section-separator-color)', background: 'var(--tg-bg-color)', color: 'var(--tg-text-color)' }}
-                      />
-                    ) : (
-                      <span style={{ fontWeight: 500 }}>{settings.endDate ? new Date(settings.endDate).toLocaleDateString() : '—'}</span>
-                    )}
-                  </div>
-                )}
-                {settings.motivationEnabled && settings.motivationType && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
-                    <span style={{ color: 'var(--tg-hint-color)' }}>Мотивация</span>
-                    <span style={{ fontWeight: 500 }}>
-                      {settings.motivationType === 'stars' && '⭐ Telegram Stars'}
-                      {settings.motivationType === 'discount' && '🎁 Промокод'}
-                      {settings.motivationType === 'gift' && '🎁 Подарок'}
-                      {settings.motivationType === 'contest' && '🏆 Конкурс'}
-                    </span>
-                  </div>
-                )}
-              </div>
+
+                  {/* Мотивация */}
+                  {settings.motivationEnabled && settings.motivationType && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
+                      <span style={{ color: 'var(--tg-hint-color)' }}>Мотивация</span>
+                      <span style={{ fontWeight: 500 }}>
+                        {settings.motivationType === 'stars' && '⭐ Telegram Stars'}
+                        {settings.motivationType === 'discount' && '🎁 Промокод'}
+                        {settings.motivationType === 'gift' && '🎁 Подарок'}
+                        {settings.motivationType === 'contest' && '🏆 Конкурс'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -496,8 +1084,61 @@ export default function SurveyAnalyticsPage() {
       {activeTab === 'questions' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {canEdit && (
-            <div style={{ background: '#E3F2FD', color: '#1976D2', borderRadius: 10, padding: 12, fontSize: 13 }}>
-              ℹ️ Редактирование вопросов пока не реализовано. Скоро добавим!
+            <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 14, color: 'var(--tg-hint-color)' }}>
+                  {editingQuestions ? 'Режим редактирования активен' : 'Редактирование доступно'}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  if (editingQuestions) {
+                    handleSaveQuestions();
+                  } else {
+                    setEditingQuestions(true);
+                  }
+                  hapticFeedback?.light();
+                }}
+                style={{
+                  background: editingQuestions ? '#34C759' : 'var(--tg-button-color)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '10px 16px',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                {editingQuestions ? <><Save size={16} /> Сохранить изменения</> : <>⚙️ Редактировать вопросы</>}
+              </button>
+              {editingQuestions && (
+                <button
+                  onClick={() => {
+                    setEditingQuestions(false);
+                    setEditedQuestions(JSON.parse(JSON.stringify(questions)));
+                    hapticFeedback?.light();
+                  }}
+                  style={{
+                    background: '#FF3B30',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '10px 16px',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <X size={16} /> Отменить
+                </button>
+              )}
             </div>
           )}
           {!canEdit && (
@@ -505,79 +1146,15 @@ export default function SurveyAnalyticsPage() {
               ⚠️ Редактирование невозможно — есть ответы на опрос
             </div>
           )}
-          {questions.length === 0 ? (
+          {editedQuestions.length === 0 ? (
             <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 20, textAlign: 'center', color: 'var(--tg-hint-color)' }}>
               Вопросов нет
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {questions.map((q, idx) => (
-                <div
-                  key={q.id}
-                  style={{
-                    background: 'var(--tg-section-bg-color)',
-                    borderRadius: 12,
-                    padding: 14,
-                    border: '1px solid var(--tg-section-separator-color)',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
-                    <div
-                      style={{
-                        minWidth: 26,
-                        height: 26,
-                        borderRadius: '50%',
-                        background: 'var(--tg-button-color)',
-                        color: 'var(--tg-button-text-color)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 600,
-                        fontSize: 13,
-                      }}
-                    >
-                      {idx + 1}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>{q.text}</div>
-                      {q.description && (
-                        <div style={{ color: 'var(--tg-hint-color)', fontSize: 13, marginBottom: 8 }}>{q.description}</div>
-                      )}
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 12, color: 'var(--tg-hint-color)' }}>
-                        <span>Тип: {q.type}</span>
-                        <span>•</span>
-                        <span>{q.is_required ? 'Обязательный' : 'Необязательный'}</span>
-                        {q.has_other_option && (
-                          <>
-                            <span>•</span>
-                            <span>Есть «Другое»</span>
-                          </>
-                        )}
-                      </div>
-                      {(q.type === 'single_choice' || q.type === 'multiple_choice') && Array.isArray(q.options) && q.options.length > 0 && (
-                        <div style={{ marginTop: 8, padding: 8, background: 'var(--tg-bg-color)', borderRadius: 8 }}>
-                          <div style={{ fontSize: 12, color: 'var(--tg-hint-color)', marginBottom: 4 }}>Варианты:</div>
-                          {q.options.map((opt: string, i: number) => (
-                            <div key={i} style={{ fontSize: 13, padding: '4px 0' }}>
-                              {i + 1}. {opt}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {q.type === 'scale' && (
-                        <div style={{ marginTop: 8, padding: 8, background: 'var(--tg-bg-color)', borderRadius: 8, fontSize: 13 }}>
-                          Шкала: {q.scale_min}–{q.scale_max}
-                          {(q.scale_min_label || q.scale_max_label) && (
-                            <span style={{ color: 'var(--tg-hint-color)', marginLeft: 8 }}>
-                              ({q.scale_min_label || '—'} / {q.scale_max_label || '—'})
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <AnimatePresence>
+                {editedQuestions.map((q, idx) => renderQuestionEditor(q, idx))}
+              </AnimatePresence>
             </div>
           )}
         </div>

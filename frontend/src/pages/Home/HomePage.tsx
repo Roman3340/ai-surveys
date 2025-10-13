@@ -137,8 +137,10 @@ export const HomePage = () => {
     { id: 'participated' as const, label: 'Где участвую?' }
   ];
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '—';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '—';
     return date.toLocaleDateString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
@@ -481,29 +483,27 @@ export const HomePage = () => {
                       <BarChart3 size={14} />
                       {survey.questions.length} вопр.
                     </div>
-                    {survey.isPublished ? (
-                      <div style={{
-                        backgroundColor: '#34C759',
-                        color: 'white',
-                        fontSize: '12px',
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        fontWeight: '500'
-                      }}>
-                        Активен
-                      </div>
-                    ) : (
-                      <div style={{
-                        backgroundColor: 'var(--tg-hint-color)',
-                        color: 'white',
-                        fontSize: '12px',
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        fontWeight: '500'
-                      }}>
-                        Черновик
-                      </div>
-                    )}
+                    {(() => {
+                      const statusMap: Record<string, { text: string; color: string }> = {
+                        active: { text: 'Активен', color: '#34C759' },
+                        draft: { text: 'Черновик', color: '#8E8E93' },
+                        completed: { text: 'Завершён', color: '#007AFF' },
+                        archived: { text: 'Архив', color: '#FF9500' }
+                      };
+                      const statusInfo = statusMap[survey.status] || { text: survey.status, color: '#8E8E93' };
+                      return (
+                        <div style={{
+                          backgroundColor: statusInfo.color,
+                          color: 'white',
+                          fontSize: '12px',
+                          padding: '2px 8px',
+                          borderRadius: '6px',
+                          fontWeight: '500'
+                        }}>
+                          {statusInfo.text}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

@@ -160,6 +160,10 @@ export const questionApi = {
     const res = await api.get(`/questions/survey/${surveyId}`);
     return res.data as any[];
   },
+  async updateQuestion(questionId: string, data: any) {
+    const res = await api.put(`/questions/${questionId}`, data);
+    return res.data;
+  },
 };
 
 // Обработка ошибок
