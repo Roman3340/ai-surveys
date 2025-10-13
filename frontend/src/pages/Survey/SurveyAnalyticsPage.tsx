@@ -5,12 +5,14 @@ import { surveyApi, questionApi } from '../../services/api';
 import type { SurveyShareResponse } from '../../services/api';
 import type { Survey } from '../../types';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 
 export default function SurveyAnalyticsPage() {
   const navigate = useNavigate();
   const { surveyId } = useParams();
   const { hapticFeedback } = useTelegram();
+  useStableBackButton({ targetRoute: '/' });
 
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [share, setShare] = useState<SurveyShareResponse | null>(null);
@@ -72,12 +74,28 @@ export default function SurveyAnalyticsPage() {
       setLoading(true);
       if (survey.isPublished) await surveyApi.unpublishSurvey(surveyId);
       else await surveyApi.publishSurvey(surveyId);
-      const fresh = await surveyApi.getSurvey(surveyId);
+      const fresh = await surveyApi.getSurvey(surveyId, false);
       setSurvey(fresh);
       setLoading(false);
     } catch (e) {
       console.error(e);
       setError('Не удалось изменить статус публикации');
+      setLoading(false);
+    }
+  };
+
+  const closeSurvey = async () => {
+    if (!survey || !surveyId) return;
+    try {
+      if (!window.confirm('Завершить опрос? Новые ответы приниматься не будут.')) return;
+      setLoading(true);
+      await fetch(`${import.meta.env.VITE_API_BASE || '/api'}/surveys/${surveyId}/close`, { method: 'POST', headers: { 'Authorization': '' } } as any);
+      const fresh = await surveyApi.getSurvey(surveyId, false);
+      setSurvey(fresh);
+      setLoading(false);
+    } catch (e) {
+      console.error(e);
+      setError('Не удалось завершить опрос');
       setLoading(false);
     }
   };
@@ -165,6 +183,9 @@ export default function SurveyAnalyticsPage() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={togglePublish} style={{ flex: 1, background: 'var(--tg-section-bg-color)', color: 'var(--tg-text-color)', border: 'none', borderRadius: 12, padding: 12, fontWeight: 600 }}>
               {survey.isPublished ? 'Снять с публикации' : 'Опубликовать'}
+            </button>
+            <button onClick={closeSurvey} style={{ flex: 1, background: '#ff3b30', color: 'white', border: 'none', borderRadius: 12, padding: 12, fontWeight: 600 }}>
+              Завершить опрос
             </button>
           </div>
         </>
