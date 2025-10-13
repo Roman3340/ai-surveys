@@ -412,6 +412,55 @@ export default function SurveyAnalyticsPage() {
             </div>
           </div>
 
+          {/* Изображение к вопросу */}
+          {question.image_url && (
+            <div style={{ marginBottom: '12px', position: 'relative' }}>
+              <img 
+                src={question.image_url} 
+                alt={question.image_name || 'Изображение'} 
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '200px',
+                  borderRadius: '8px',
+                  objectFit: 'contain',
+                  border: '1px solid var(--tg-section-separator-color)'
+                }}
+              />
+              {!disabled && (
+                <button
+                  onClick={() => updateEditedQuestion(index, { image_url: undefined, image_name: undefined })}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: '#FF3B30',
+                    border: 'none',
+                    color: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 4H14M6 7V11M10 7V11M3 4L4 13C4 13.5304 4.21071 14.0391 4.58579 14.4142C4.96086 14.7893 5.46957 15 6 15H10C10.5304 15 11.0391 14.7893 11.4142 14.4142C11.7893 14.0391 12 13.5304 12 13L13 4M5 4V2C5 1.73478 5.10536 1.48043 5.29289 1.29289C5.48043 1.10536 5.73478 1 6 1H10C10.2652 1 10.5196 1.10536 10.7071 1.29289C10.8946 1.48043 11 1.73478 11 2V4" 
+                      stroke="white" 
+                      strokeWidth="1.5" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
+
+
           {/* Варианты ответов для множественного выбора */}
           {(['single_choice', 'multiple_choice'].includes(question.type)) && (
             <div style={{ marginBottom: '12px' }}>
@@ -527,7 +576,8 @@ export default function SurveyAnalyticsPage() {
                   <button
                     onClick={() => addOption(index)}
                     style={{
-                      flex: 1,
+                      flex: question.has_other_option ? undefined : 1,
+                      width: question.has_other_option ? '100%' : undefined,
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
@@ -545,26 +595,28 @@ export default function SurveyAnalyticsPage() {
                     Добавить вариант
                   </button>
 
-                  <button
-                    onClick={() => updateEditedQuestion(index, { has_other_option: !question.has_other_option })}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px dashed var(--tg-section-separator-color)',
-                      backgroundColor: 'transparent',
-                      color: 'var(--tg-hint-color)',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <span>{question.has_other_option ? '✓' : '+'}</span>
-                    Добавить «Другое»
-                  </button>
+                  {!question.has_other_option && (
+                    <button
+                      onClick={() => updateEditedQuestion(index, { has_other_option: true })}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px dashed var(--tg-section-separator-color)',
+                        backgroundColor: 'transparent',
+                        color: 'var(--tg-hint-color)',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <span>+</span>
+                      Добавить «Другое»
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -810,9 +862,9 @@ export default function SurveyAnalyticsPage() {
                 onClick={() => setShowStatusDropdown(!showStatusDropdown)}
                 style={{
                   width: '100%',
-                  background: 'var(--tg-button-color)',
-                  color: 'var(--tg-button-text-color)',
-                  border: 'none',
+                  background: 'var(--tg-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  border: '1px solid var(--tg-section-separator-color)',
                   borderRadius: 10,
                   padding: '11px 14px',
                   fontWeight: 600,
@@ -1336,7 +1388,12 @@ export default function SurveyAnalyticsPage() {
                             </label>
                             <select
                               value={editedSettings?.motivationType || 'discount'}
-                              onChange={(e) => setEditedSettings({ ...editedSettings!, motivationType: e.target.value as any })}
+                              onChange={(e) => setEditedSettings({ 
+                                ...editedSettings!, 
+                                motivationType: e.target.value as any,
+                                motivationDetails: '',
+                                motivationConditions: ''
+                              })}
                               style={{
                                 width: '100%',
                                 padding: '8px',
@@ -1348,7 +1405,7 @@ export default function SurveyAnalyticsPage() {
                                 outline: 'none'
                               }}
                             >
-                              <option value="promo_code">Промокод на скидку</option>
+                              <option value="promo_code">🛒 Промокод на скидку</option>
                               <option value="stars">⭐ Звёзды Telegram</option>
                               <option value="gift">🎁 Подарок</option>
                               <option value="other">Другое</option>
@@ -1358,19 +1415,28 @@ export default function SurveyAnalyticsPage() {
                           {editedSettings?.motivationType === 'stars' && (
                             <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                               <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                Количество звёзд
+                                Количество звёзд (1-100)
                               </label>
                               <input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 value={editedSettings?.motivationDetails || ''}
                                 onChange={(e) => {
-                                  const val = parseInt(e.target.value) || 0;
-                                  const clamped = Math.max(1, Math.min(100, val));
-                                  setEditedSettings({ ...editedSettings!, motivationDetails: clamped.toString() });
+                                  const val = e.target.value.replace(/\D/g, ''); // Только цифры
+                                  if (val === '') {
+                                    setEditedSettings({ ...editedSettings!, motivationDetails: '' });
+                                  } else {
+                                    const num = parseInt(val);
+                                    if (num >= 1 && num <= 100) {
+                                      setEditedSettings({ ...editedSettings!, motivationDetails: num.toString() });
+                                    } else if (num > 100) {
+                                      setEditedSettings({ ...editedSettings!, motivationDetails: '100' });
+                                    } else {
+                                      setEditedSettings({ ...editedSettings!, motivationDetails: '1' });
+                                    }
+                                  }
                                 }}
                                 placeholder="50"
-                                min={1}
-                                max={100}
                                 style={{
                                   width: '100%',
                                   padding: '8px',
