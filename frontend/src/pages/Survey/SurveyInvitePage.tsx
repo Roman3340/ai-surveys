@@ -48,7 +48,7 @@ export default function SurveyInvitePage() {
       }
     };
     loadSurvey();
-  }, [surveyId, user?.id, isReady]);
+  }, [surveyId, user, isReady]);
 
   const handleParticipate = () => {
     if (!survey?.canParticipate) {
