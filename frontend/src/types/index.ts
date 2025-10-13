@@ -79,7 +79,7 @@ export interface SurveySettings {
   maxParticipants?: string;
   creationType: 'manual' | 'ai';
   motivationEnabled?: boolean;
-  motivationType?: 'stars' | 'discount' | 'gift' | 'contest';
+  motivationType?: 'stars' | 'discount' | 'gift' | 'contest' | 'promo_code' | 'other';
   motivationDetails?: string;
   motivationConditions?: string;
 }
