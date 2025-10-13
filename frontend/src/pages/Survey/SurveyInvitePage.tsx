@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
-import { TelegramEmoji } from '../../components/ui/TelegramEmoji';
+import TelegramEmoji from '../../components/ui/TelegramEmoji';
 
 interface SurveyPublicData {
   id: string;
@@ -23,7 +23,7 @@ interface SurveyPublicData {
 export default function SurveyInvitePage() {
   const { surveyId } = useParams();
   const navigate = useNavigate();
-  const { webApp, user, hapticFeedback } = useTelegram();
+  const { user, hapticFeedback } = useTelegram();
   
   const [survey, setSurvey] = useState<SurveyPublicData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ export default function SurveyInvitePage() {
       if (!surveyId) return;
       try {
         setLoading(true);
-        const response = await surveyApi.getSurveyPublic(surveyId, user?.telegramId);
+        const response = await surveyApi.getSurveyPublic(surveyId, user?.id);
         setSurvey(response);
       } catch (e: any) {
         console.error(e);
@@ -44,7 +44,7 @@ export default function SurveyInvitePage() {
       }
     };
     loadSurvey();
-  }, [surveyId, user?.telegramId]);
+  }, [surveyId, user?.id]);
 
   const handleParticipate = () => {
     if (!survey?.canParticipate) {
@@ -57,7 +57,10 @@ export default function SurveyInvitePage() {
 
   const handleContactCreator = () => {
     if (survey) {
-      webApp?.openTelegramLink(`https://t.me/${survey.creatorUsername || `user?id=${survey.creatorTelegramId}`}`);
+      const url = survey.creatorUsername 
+        ? `https://t.me/${survey.creatorUsername}` 
+        : `tg://user?id=${survey.creatorTelegramId}`;
+      window.open(url, '_blank');
       hapticFeedback?.light();
     }
   };
