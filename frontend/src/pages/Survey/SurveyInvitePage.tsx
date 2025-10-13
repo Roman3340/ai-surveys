@@ -135,7 +135,7 @@ export default function SurveyInvitePage() {
       >
         {/* Анимированный эмодзи */}
         <div style={{ marginBottom: '24px' }}>
-          <TelegramEmoji emoji="📝" size={80} />
+          <TelegramEmoji emoji="📝" size="large" />
         </div>
 
         {/* Название опроса */}
