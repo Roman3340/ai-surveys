@@ -133,6 +133,22 @@ export const surveyApi = {
     const response = await api.get(`/surveys/${surveyId}/responses`, { params: { limit, offset } as any });
     return response.data;
   },
+
+  /**
+   * Обновить настройки опроса
+   */
+  async updateSurveySettings(surveyId: string, settings: any): Promise<{ message: string }> {
+    const response = await api.put(`/surveys/${surveyId}/settings`, settings);
+    return response.data;
+  },
+
+  /**
+   * Изменить статус опроса
+   */
+  async updateSurveyStatus(surveyId: string, status: string): Promise<{ message: string }> {
+    const response = await api.post(`/surveys/${surveyId}/status`, { status });
+    return response.data;
+  },
 };
 
 export const questionApi = {

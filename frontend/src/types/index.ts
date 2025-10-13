@@ -17,6 +17,8 @@ export interface Survey {
   creatorId: number;
   isPublished: boolean;
   isPublic: boolean;
+  status: string;
+  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
   questions: Question[];
