@@ -46,6 +46,7 @@ export default function SurveyAnalyticsPage() {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [editingQuestions, setEditingQuestions] = useState(false);
   const [editedQuestions, setEditedQuestions] = useState<EditableQuestion[]>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
 
   useStableBackButton({ targetRoute: '/' });
 
@@ -146,11 +147,10 @@ export default function SurveyAnalyticsPage() {
         ...editedSettings,
         maxParticipants: editedMaxParticipants
       };
-      await surveyApi.updateSurveySettings(surveyId, settingsToSend);
-      const fresh = await surveyApi.getSurvey(surveyId);
-      setSurvey(fresh);
-      setEditedSettings(fresh.settings);
-      setEditedMaxParticipants(fresh.maxParticipants?.toString() || '');
+      const updated = await surveyApi.updateSurveySettings(surveyId, settingsToSend);
+      setSurvey(updated);
+      setEditedSettings(updated.settings);
+      setEditedMaxParticipants(updated.maxParticipants?.toString() || '');
       setEditingSettings(false);
       hapticFeedback?.success();
       alert('Настройки успешно обновлены!');
@@ -158,6 +158,39 @@ export default function SurveyAnalyticsPage() {
       console.error(e);
       alert('Не удалось сохранить настройки');
     }
+  };
+
+  const validateScaleValues = (questionId: string, scaleMin?: number, scaleMax?: number) => {
+    const errors: { scaleMin?: string; scaleMax?: string } = {};
+    
+    // Проверяем только если значения определены
+    if (scaleMin !== undefined) {
+      if (scaleMin < 1) {
+        errors.scaleMin = 'Значение не должно быть меньше 1';
+      } else if (scaleMin > 99) {
+        errors.scaleMin = 'Значение не должно быть больше 99';
+      }
+    }
+    
+    if (scaleMax !== undefined) {
+      if (scaleMax < 2) {
+        errors.scaleMax = 'Значение не должно быть меньше 2';
+      } else if (scaleMax > 100) {
+        errors.scaleMax = 'Значение не должно быть больше 100';
+      }
+    }
+    
+    // Проверяем что "От" меньше "До"
+    if (scaleMin !== undefined && scaleMax !== undefined && scaleMin >= scaleMax) {
+      errors.scaleMin = '"От" должно быть меньше "До"';
+    }
+    
+    setValidationErrors(prev => ({
+      ...prev,
+      [questionId]: errors
+    }));
+    
+    return Object.keys(errors).length === 0;
   };
 
   const handleSaveQuestions = async () => {
@@ -630,47 +663,115 @@ export default function SurveyAnalyticsPage() {
                   <div style={{ display: 'flex', gap: '12px', marginBottom: '10px' }}>
                     <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '4px' }}>
-                        Мин. значение
+                        От (1-99)
                       </label>
                       <input
                         type="number"
-                        value={question.scale_min || 1}
-                        onChange={(e) => updateEditedQuestion(index, { scale_min: parseInt(e.target.value) || 1 })}
+                        value={question.scale_min === undefined ? '' : question.scale_min}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '') {
+                            updateEditedQuestion(index, { scale_min: undefined });
+                            validateScaleValues(question.id, undefined, question.scale_max);
+                          } else {
+                            const numValue = parseInt(value);
+                            if (!isNaN(numValue)) {
+                              if (numValue < 1) {
+                                updateEditedQuestion(index, { scale_min: 1 });
+                                validateScaleValues(question.id, 1, question.scale_max);
+                              } else if (numValue > 99) {
+                                updateEditedQuestion(index, { scale_min: 99 });
+                                validateScaleValues(question.id, 99, question.scale_max);
+                              } else {
+                                const currentMax = question.scale_max || 10;
+                                if (numValue >= currentMax) {
+                                  updateEditedQuestion(index, { 
+                                    scale_min: numValue,
+                                    scale_max: numValue + 1
+                                  });
+                                  validateScaleValues(question.id, numValue, numValue + 1);
+                                } else {
+                                  updateEditedQuestion(index, { scale_min: numValue });
+                                  validateScaleValues(question.id, numValue, question.scale_max);
+                                }
+                              }
+                            }
+                          }
+                        }}
                         min={1}
                         max={99}
                         style={{
                           width: '100%',
                           padding: '8px 12px',
                           borderRadius: '6px',
-                          border: '1px solid var(--tg-section-separator-color)',
+                          border: `1px solid ${validationErrors[question.id]?.scaleMin ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
                           backgroundColor: 'var(--tg-bg-color)',
                           color: 'var(--tg-text-color)',
                           fontSize: '14px',
                           outline: 'none'
                         }}
                       />
+                      {validationErrors[question.id]?.scaleMin && (
+                        <div style={{ fontSize: '11px', color: '#FF3B30', marginTop: '4px' }}>
+                          {validationErrors[question.id].scaleMin}
+                        </div>
+                      )}
                     </div>
                     <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '4px' }}>
-                        Макс. значение
+                        До (2-100)
                       </label>
                       <input
                         type="number"
-                        value={question.scale_max || 5}
-                        onChange={(e) => updateEditedQuestion(index, { scale_max: parseInt(e.target.value) || 5 })}
+                        value={question.scale_max === undefined ? '' : question.scale_max}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '') {
+                            updateEditedQuestion(index, { scale_max: undefined });
+                            validateScaleValues(question.id, question.scale_min, undefined);
+                          } else {
+                            const numValue = parseInt(value);
+                            if (!isNaN(numValue)) {
+                              if (numValue < 2) {
+                                updateEditedQuestion(index, { scale_max: 2 });
+                                validateScaleValues(question.id, question.scale_min, 2);
+                              } else if (numValue > 100) {
+                                updateEditedQuestion(index, { scale_max: 100 });
+                                validateScaleValues(question.id, question.scale_min, 100);
+                              } else {
+                                const currentMin = question.scale_min || 1;
+                                if (numValue <= currentMin) {
+                                  updateEditedQuestion(index, { 
+                                    scale_max: numValue,
+                                    scale_min: numValue - 1
+                                  });
+                                  validateScaleValues(question.id, numValue - 1, numValue);
+                                } else {
+                                  updateEditedQuestion(index, { scale_max: numValue });
+                                  validateScaleValues(question.id, question.scale_min, numValue);
+                                }
+                              }
+                            }
+                          }
+                        }}
                         min={2}
                         max={100}
                         style={{
                           width: '100%',
                           padding: '8px 12px',
                           borderRadius: '6px',
-                          border: '1px solid var(--tg-section-separator-color)',
+                          border: `1px solid ${validationErrors[question.id]?.scaleMax ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
                           backgroundColor: 'var(--tg-bg-color)',
                           color: 'var(--tg-text-color)',
                           fontSize: '14px',
                           outline: 'none'
                         }}
                       />
+                      {validationErrors[question.id]?.scaleMax && (
+                        <div style={{ fontSize: '11px', color: '#FF3B30', marginTop: '4px' }}>
+                          {validationErrors[question.id].scaleMax}
+                        </div>
+                      )}
                     </div>
                   </div>
                   

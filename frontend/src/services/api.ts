@@ -137,7 +137,7 @@ export const surveyApi = {
   /**
    * Обновить настройки опроса
    */
-  async updateSurveySettings(surveyId: string, settings: any): Promise<{ message: string }> {
+  async updateSurveySettings(surveyId: string, settings: any): Promise<Survey> {
     const response = await api.put(`/surveys/${surveyId}/settings`, settings);
     return response.data;
   },
