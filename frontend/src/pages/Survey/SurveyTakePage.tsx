@@ -394,6 +394,28 @@ export default function SurveyTakePage() {
               )}
             </div>
           )}
+          
+          {/* Кнопка "Отменить выбор" */}
+          {answer && (
+            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+              <button
+                type="button"
+                onClick={() => handleAnswerChange(question.id, null)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'var(--tg-hint-color)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Отменить выбор
+              </button>
+            </div>
+          )}
         </div>
       );
     }
@@ -703,96 +725,120 @@ export default function SurveyTakePage() {
     // Yes/No
     if (question.type === 'yes_no') {
       return (
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer'
-          }}>
-            <div style={{
-              position: 'relative',
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              border: `2px solid ${answer === 'yes' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-              backgroundColor: answer === 'yes' ? 'var(--tg-button-color)' : 'transparent',
-              transition: 'all 0.2s ease'
+        <div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
             }}>
-              <input
-                type="radio"
-                name={`question_${question.id}`}
-                checked={answer === 'yes'}
-                onChange={() => handleAnswerChange(question.id, 'yes')}
-                style={{ 
-                  position: 'absolute',
-                  opacity: 0,
-                  width: '100%',
-                  height: '100%',
-                  margin: 0,
-                  cursor: 'pointer'
-                }}
-              />
               <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '8px',
-                height: '8px',
+                position: 'relative',
+                width: '20px',
+                height: '20px',
                 borderRadius: '50%',
-                backgroundColor: 'white',
-                opacity: answer === 'yes' ? 1 : 0,
-                transition: 'opacity 0.2s ease'
-              }} />
-            </div>
-            <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
-          </label>
+                border: `2px solid ${answer === 'yes' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answer === 'yes' ? 'var(--tg-button-color)' : 'transparent',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  checked={answer === 'yes'}
+                  onChange={() => handleAnswerChange(question.id, 'yes')}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  opacity: answer === 'yes' ? 1 : 0,
+                  transition: 'opacity 0.2s ease'
+                }} />
+              </div>
+              <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
+            </label>
+            
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
+            }}>
+              <div style={{
+                position: 'relative',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: `2px solid ${answer === 'no' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answer === 'no' ? 'var(--tg-button-color)' : 'transparent',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  checked={answer === 'no'}
+                  onChange={() => handleAnswerChange(question.id, 'no')}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  opacity: answer === 'no' ? 1 : 0,
+                  transition: 'opacity 0.2s ease'
+                }} />
+              </div>
+              <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
+            </label>
+          </div>
           
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer'
-          }}>
-            <div style={{
-              position: 'relative',
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              border: `2px solid ${answer === 'no' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-              backgroundColor: answer === 'no' ? 'var(--tg-button-color)' : 'transparent',
-              transition: 'all 0.2s ease'
-            }}>
-              <input
-                type="radio"
-                name={`question_${question.id}`}
-                checked={answer === 'no'}
-                onChange={() => handleAnswerChange(question.id, 'no')}
-                style={{ 
-                  position: 'absolute',
-                  opacity: 0,
-                  width: '100%',
-                  height: '100%',
-                  margin: 0,
-                  cursor: 'pointer'
+          {/* Кнопка "Отменить выбор" */}
+          {answer && (
+            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+              <button
+                type="button"
+                onClick={() => handleAnswerChange(question.id, null)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'var(--tg-hint-color)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease'
                 }}
-              />
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: 'white',
-                opacity: answer === 'no' ? 1 : 0,
-                transition: 'opacity 0.2s ease'
-              }} />
+              >
+                Отменить выбор
+              </button>
             </div>
-            <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
-          </label>
+          )}
         </div>
       );
     }

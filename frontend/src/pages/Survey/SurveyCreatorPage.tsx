@@ -2879,8 +2879,9 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
     
     case 'boolean':
       return (
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <label style={{
+        <div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <label style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -2954,25 +2955,25 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
             </div>
             <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
           </label>
-          <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer'
-          }}>
-            <div style={{
-              position: 'relative',
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              border: '2px solid var(--tg-hint-color)',
-              backgroundColor: 'transparent',
-              transition: 'all 0.2s ease'
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
             }}>
-              <input
-                type="radio"
-                name={`question_${question.id}`}
-                value="no"
+              <div style={{
+                position: 'relative',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: '2px solid var(--tg-hint-color)',
+                backgroundColor: 'transparent',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  value="no"
                 style={{ 
                   position: 'absolute',
                   opacity: 0,
@@ -3013,21 +3014,44 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   }
                 }}
               />
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: 'white',
-                opacity: 0,
-                transition: 'opacity 0.2s ease'
-              }} />
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  opacity: 0,
+                  transition: 'opacity 0.2s ease'
+                }} />
+              </div>
+              <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
+            </label>
+          </div>
+          
+          {/* Кнопка "Отменить выбор" */}
+          {answers?.[question.id] && (
+            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+              <button
+                type="button"
+                onClick={() => onAnswerChange?.({ ...answers, [question.id]: null })}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'var(--tg-hint-color)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Отменить выбор
+              </button>
             </div>
-            <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
-          </label>
+          )}
         </div>
       );
     
