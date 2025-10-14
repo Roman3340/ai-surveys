@@ -64,11 +64,7 @@ export const useAppStore = create<AppStore>()(
       error: null,
 
       // Действия с пользователем
-      setUser: (user) => set({ 
-        user,
-        // Очищаем данные при смене пользователя
-        participatedSurveys: user ? [] : []
-      }),
+      setUser: (user) => set({ user }),
 
       // Действия с темой
       setTheme: (theme) => set({ theme }),
@@ -131,13 +127,18 @@ export const useAppStore = create<AppStore>()(
       loadParticipatedSurveys: async () => {
         set({ isLoading: true, error: null });
         try {
-          const surveys = await surveyApi.getParticipatedSurveys();
+          const user = useAppStore.getState().user;
+          if (!user) {
+            set({ participatedSurveys: [], isLoading: false });
+            return;
+          }
+
+          const surveys = await surveyApi.getParticipatedSurveys(user.telegramId);
           set({ participatedSurveys: surveys, isLoading: false });
         } catch (error) {
           console.error('Ошибка загрузки опросов участия:', error);
-          // Не показываем ошибку для опросов участия, просто оставляем пустой массив
           set({ 
-            participatedSurveys: [],
+            error: error instanceof Error ? error.message : 'Ошибка загрузки опросов участия',
             isLoading: false 
           });
         }

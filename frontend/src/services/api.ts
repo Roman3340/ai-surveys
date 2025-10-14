@@ -61,14 +61,6 @@ export const surveyApi = {
   },
 
   /**
-   * Получить опросы, в которых участвовал пользователь
-   */
-  async getParticipatedSurveys(): Promise<Survey[]> {
-    const response = await api.get('/surveys/participated');
-    return response.data;
-  },
-
-  /**
    * Создать новый опрос
    */
   async createSurvey(surveyData: CreateSurveyRequest): Promise<Survey> {
@@ -175,6 +167,14 @@ export const surveyApi = {
     const response = await api.post(`/surveys/${surveyId}/submit`, { answers }, { params });
     return response.data;
   },
+
+  /**
+   * Получить опросы, в которых участвовал пользователь
+   */
+  async getParticipatedSurveys(userTelegramId: number): Promise<any[]> {
+    const response = await api.get(`/surveys/participated?user_telegram_id=${userTelegramId}`);
+    return response.data;
+  },
 };
 
 export const questionApi = {
@@ -190,6 +190,7 @@ export const questionApi = {
     const res = await api.put(`/questions/${questionId}`, data);
     return res.data;
   },
+
 };
 
 // Обработка ошибок

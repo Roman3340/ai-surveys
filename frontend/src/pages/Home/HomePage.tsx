@@ -32,20 +32,9 @@ export const HomePage = () => {
     // Загружаем список один раз на монтировании,
     // и повторно после успешной авторизации (см. кнопку Авторизоваться)
     loadUserSurveys();
+    loadParticipatedSurveys();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Загрузка опросов участия после авторизации
-  useEffect(() => {
-    if (user && user.telegramId) {
-      // Добавляем небольшую задержку, чтобы авторизация точно завершилась
-      const timer = setTimeout(() => {
-        loadParticipatedSurveys();
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [user, loadParticipatedSurveys]);
 
 
   const handleCreateSurvey = () => {
@@ -65,11 +54,6 @@ export const HomePage = () => {
   const handleViewAnalytics = (survey: Survey) => {
     hapticFeedback?.light();
     navigate(`/survey/${survey.id}`);
-  };
-
-  const handleViewParticipatedSurvey = () => {
-    // Опросы участия не кликабельны
-    hapticFeedback?.light();
   };
 
   const handleViewTopSurveys = () => {
@@ -367,7 +351,7 @@ export const HomePage = () => {
               {displayedSurveys.slice(0, 3).map((survey) => (
                 <div
                   key={survey.id}
-                  onClick={activeTab === 'created' ? () => handleViewAnalytics(survey) : handleViewParticipatedSurvey}
+                  onClick={activeTab === 'created' ? () => handleViewAnalytics(survey) : undefined}
                   style={{
                     backgroundColor: 'var(--tg-section-bg-color)',
                     borderRadius: '12px',
@@ -402,7 +386,7 @@ export const HomePage = () => {
                     }}>
                       {activeTab === 'created' 
                         ? formatDate(survey.publishedAt || survey.createdAt)
-                        : formatDate((survey as any).participated_at)
+                        : formatDate((survey as any).completed_at)
                       }
                     </div>
                   </div>
@@ -466,7 +450,7 @@ export const HomePage = () => {
                         color: 'var(--tg-hint-color)'
                       }}>
                         <BarChart3 size={14} />
-                        {(survey as any).questionsCount || survey.questions.length} вопр.
+                        {(survey as any).questions_count || survey.questions?.length || 0} вопр.
                       </div>
                     )}
                   </div>

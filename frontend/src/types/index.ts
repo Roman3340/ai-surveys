@@ -26,6 +26,9 @@ export interface Survey {
   responses?: SurveyResponse[];
   responsesCount?: number;
   settings: SurveySettings;
+  // Поля для опросов участия
+  completed_at?: string;
+  questions_count?: number;
 }
 
 export interface Question {
