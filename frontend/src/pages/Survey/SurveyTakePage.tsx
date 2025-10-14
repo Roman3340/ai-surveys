@@ -170,9 +170,9 @@ export default function SurveyTakePage() {
         };
       });
 
-      // Если включена анонимность, не передаем user_id
-      const userId = survey.settings?.allowAnonymous ? undefined : user?.id;
-      await surveyApi.submitSurveyAnswers(surveyId, formattedAnswers, userId);
+      // Всегда передаем user_id для проверки oneResponsePerUser
+      // Анонимность контролируется флагом is_anonymous в бэкенде
+      await surveyApi.submitSurveyAnswers(surveyId, formattedAnswers, user?.id);
       
       hapticFeedback?.success();
       navigate(`/survey/${surveyId}/completed`, { 
