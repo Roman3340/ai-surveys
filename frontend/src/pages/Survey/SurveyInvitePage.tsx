@@ -72,20 +72,6 @@ export default function SurveyInvitePage() {
 
   const handlePopoverClick = (type: string) => {
     console.log('Popover clicked:', type); // Debug log
-    
-    // Временная отладка - показываем alert для проверки
-    if (type === 'anonymous') {
-      alert('Анонимность: Ваш аккаунт будет скрыт');
-    } else if (type === 'reward') {
-      alert('Награда: Вы получите подарок за участие');
-    } else if (type === 'oneResponse') {
-      alert('Один ответ: Можно участвовать только один раз');
-    } else if (type === 'random') {
-      alert('Случайный порядок: Вопросы будут перемешаны');
-    } else if (type === 'info') {
-      alert('Настройки опросов:\n🔒 Анонимность - ваш аккаунт будет скрыт\n🎁 Награда - вы получите подарок\n🔄 Один ответ - можно участвовать только один раз\n🎲 Случайный порядок - вопросы перемешаны');
-    }
-    
     setActivePopover(activePopover === type ? null : type);
     hapticFeedback?.light();
   };
@@ -254,14 +240,14 @@ export default function SurveyInvitePage() {
                         left: '50%',
                         transform: 'translateX(-50%)',
                         marginBottom: '8px',
-                        background: '#ffffff',
-                        border: '1px solid #e1e1e1',
+                        background: '#2c2c2e',
+                        border: '1px solid #48484a',
                         borderRadius: '8px',
                         padding: '8px 12px',
                         fontSize: '11px',
-                        color: '#000000',
+                        color: '#ffffff',
                         whiteSpace: 'nowrap',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
                         maxWidth: '200px',
                         textAlign: 'center'
@@ -278,7 +264,16 @@ export default function SurveyInvitePage() {
             {survey.settings?.motivationEnabled && (
               <div style={{ position: 'relative' }}>
                 <button
-                  onClick={() => handlePopoverClick('reward')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('reward');
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('reward');
+                  }}
                   style={{
                     background: 'rgba(255, 165, 0, 0.15)',
                     border: '1px solid rgba(255, 165, 0, 0.3)',
@@ -306,14 +301,14 @@ export default function SurveyInvitePage() {
                         left: '50%',
                         transform: 'translateX(-50%)',
                         marginBottom: '8px',
-                        background: '#ffffff',
-                        border: '1px solid #e1e1e1',
+                        background: '#2c2c2e',
+                        border: '1px solid #48484a',
                         borderRadius: '8px',
                         padding: '8px 12px',
                         fontSize: '11px',
-                        color: '#000000',
+                        color: '#ffffff',
                         whiteSpace: 'nowrap',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
                         maxWidth: '200px',
                         textAlign: 'center'
@@ -333,7 +328,16 @@ export default function SurveyInvitePage() {
             {survey.settings?.oneResponsePerUser && (
               <div style={{ position: 'relative' }}>
                 <button
-                  onClick={() => handlePopoverClick('oneResponse')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('oneResponse');
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('oneResponse');
+                  }}
                   style={{
                     background: 'rgba(0, 122, 255, 0.15)',
                     border: '1px solid rgba(0, 122, 255, 0.3)',
@@ -361,14 +365,14 @@ export default function SurveyInvitePage() {
                         left: '50%',
                         transform: 'translateX(-50%)',
                         marginBottom: '8px',
-                        background: '#ffffff',
-                        border: '1px solid #e1e1e1',
+                        background: '#2c2c2e',
+                        border: '1px solid #48484a',
                         borderRadius: '8px',
                         padding: '8px 12px',
                         fontSize: '11px',
-                        color: '#000000',
+                        color: '#ffffff',
                         whiteSpace: 'nowrap',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
                         maxWidth: '200px',
                         textAlign: 'center'
@@ -385,7 +389,16 @@ export default function SurveyInvitePage() {
             {survey.settings?.randomizeQuestions && (
               <div style={{ position: 'relative' }}>
                 <button
-                  onClick={() => handlePopoverClick('random')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('random');
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('random');
+                  }}
                   style={{
                     background: 'rgba(255, 45, 85, 0.15)',
                     border: '1px solid rgba(255, 45, 85, 0.3)',
@@ -413,14 +426,14 @@ export default function SurveyInvitePage() {
                         left: '50%',
                         transform: 'translateX(-50%)',
                         marginBottom: '8px',
-                        background: '#ffffff',
-                        border: '1px solid #e1e1e1',
+                        background: '#2c2c2e',
+                        border: '1px solid #48484a',
                         borderRadius: '8px',
                         padding: '8px 12px',
                         fontSize: '11px',
-                        color: '#000000',
+                        color: '#ffffff',
                         whiteSpace: 'nowrap',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
                         maxWidth: '200px',
                         textAlign: 'center'
@@ -436,7 +449,16 @@ export default function SurveyInvitePage() {
             {/* Информативный хэштег - всегда показывается */}
             <div style={{ position: 'relative' }}>
               <button
-                onClick={() => handlePopoverClick('info')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handlePopoverClick('info');
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handlePopoverClick('info');
+                }}
                 style={{
                   background: 'rgba(142, 142, 147, 0.15)',
                   border: '1px solid rgba(142, 142, 147, 0.3)',
@@ -464,13 +486,13 @@ export default function SurveyInvitePage() {
                       left: '50%',
                       transform: 'translateX(-50%)',
                       marginBottom: '8px',
-                      background: '#ffffff',
-                      border: '1px solid #e1e1e1',
+                      background: '#2c2c2e',
+                      border: '1px solid #48484a',
                       borderRadius: '8px',
                       padding: '12px',
                       fontSize: '11px',
-                      color: '#000000',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                      color: '#ffffff',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                       zIndex: 9999,
                       maxWidth: '280px',
                       textAlign: 'left',
