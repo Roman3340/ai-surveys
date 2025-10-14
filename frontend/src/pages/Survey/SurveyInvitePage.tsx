@@ -408,6 +408,78 @@ export default function SurveyInvitePage() {
                 </AnimatePresence>
               </div>
             )}
+
+            {/* Информативный хэштег - всегда показывается */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => handlePopoverClick('info')}
+                style={{
+                  background: 'rgba(142, 142, 147, 0.15)',
+                  border: '1px solid rgba(142, 142, 147, 0.3)',
+                  borderRadius: '16px',
+                  padding: '6px 12px',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  color: '#8E8E93',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                ℹ️ Настройки
+              </button>
+              <AnimatePresence>
+                {activePopover === 'info' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      marginBottom: '8px',
+                      background: 'var(--tg-section-bg-color)',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      fontSize: '11px',
+                      color: 'var(--tg-text-color)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      zIndex: 1000,
+                      maxWidth: '280px',
+                      textAlign: 'left',
+                      lineHeight: '1.4'
+                    }}
+                  >
+                    <div style={{ marginBottom: '8px', fontWeight: '600' }}>
+                      Возможные настройки опросов:
+                    </div>
+                    <div style={{ marginBottom: '4px' }}>
+                      🔒 <strong>Анонимность</strong> - ваш аккаунт будет скрыт
+                    </div>
+                    <div style={{ marginBottom: '4px' }}>
+                      🎁 <strong>Награда</strong> - вы получите подарок за участие
+                    </div>
+                    <div style={{ marginBottom: '4px' }}>
+                      🔄 <strong>Один ответ</strong> - можно участвовать только один раз
+                    </div>
+                    <div style={{ marginBottom: '0' }}>
+                      🎲 <strong>Случайный порядок</strong> - вопросы перемешаны
+                    </div>
+                    <div style={{ 
+                      marginTop: '8px', 
+                      fontSize: '10px', 
+                      color: 'var(--tg-hint-color)',
+                      fontStyle: 'italic'
+                    }}>
+                      Если видите хэштеги - значит они включены
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
           
           {/* Подсказка */}
@@ -446,23 +518,66 @@ export default function SurveyInvitePage() {
 
         {/* Кнопка участия */}
         {survey.canParticipate ? (
-          <button
-            onClick={handleParticipate}
-            style={{
-              width: '100%',
-              background: 'var(--tg-button-color)',
-              color: 'var(--tg-button-text-color)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '16px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-            }}
-          >
-            📝 Начать опрос
-          </button>
+          <div style={{ width: '100%' }}>
+            <button
+              onClick={handleParticipate}
+              style={{
+                width: '100%',
+                background: 'var(--tg-button-color)',
+                color: 'var(--tg-button-text-color)',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '16px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                marginBottom: '12px'
+              }}
+            >
+              📝 Начать опрос
+            </button>
+            
+            {/* Текст согласия */}
+            <p style={{
+              fontSize: '11px',
+              color: 'var(--tg-hint-color)',
+              textAlign: 'center',
+              lineHeight: '1.4',
+              margin: 0
+            }}>
+              Запуская опрос вы соглашаетесь с{' '}
+              <a 
+                href="#" 
+                style={{
+                  color: 'var(--tg-link-color)',
+                  textDecoration: 'none',
+                  fontWeight: '500'
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  // TODO: Открыть политику обработки данных
+                }}
+              >
+                политикой обработки данных
+              </a>
+              {' '}и{' '}
+              <a 
+                href="#" 
+                style={{
+                  color: 'var(--tg-link-color)',
+                  textDecoration: 'none',
+                  fontWeight: '500'
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  // TODO: Открыть политику конфиденциальности
+                }}
+              >
+                политикой конфиденциальности
+              </a>
+            </p>
+          </div>
         ) : (
           <div style={{
             background: 'var(--tg-section-bg-color)',
