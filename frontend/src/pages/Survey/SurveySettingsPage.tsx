@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Settings, ArrowLeft, ArrowRight, Users, Eye, Shuffle, Lock, Gift } from 'lucide-react';
+import { Settings, ArrowLeft, ArrowRight, Users, Shuffle, Lock } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveSettings } from '../../utils/surveyDraft';
@@ -32,7 +32,7 @@ const SurveySettingsPage: React.FC = () => {
     description: '',
     settings: {
       allowAnonymous: true,
-      showProgress: true,
+      showProgress: false,
       randomizeQuestions: false,
       oneResponsePerUser: true,
       collectTelegramData: true,
@@ -65,7 +65,7 @@ const SurveySettingsPage: React.FC = () => {
             ...prev.settings, 
             // Убеждаемся что все настройки опроса присутствуют
             allowAnonymous: settings.allowAnonymous ?? false,
-            showProgress: settings.showProgress ?? true,
+            showProgress: settings.showProgress ?? false,
             randomizeQuestions: settings.randomizeQuestions ?? false,
             oneResponsePerUser: settings.oneResponsePerUser ?? true,
             collectTelegramData: settings.collectTelegramData ?? false,
@@ -311,8 +311,8 @@ const SurveySettingsPage: React.FC = () => {
               </label>
             </div>
 
-            {/* Показывать прогресс */}
-            <div style={{
+            {/* Показывать прогресс - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
+            {/* <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -364,7 +364,7 @@ const SurveySettingsPage: React.FC = () => {
                   }} />
                 </span>
               </label>
-            </div>
+            </div> */}
 
             {/* Перемешивать вопросы */}
             <div style={{
@@ -476,8 +476,8 @@ const SurveySettingsPage: React.FC = () => {
               </label>
             </div>
 
-            {/* Собирать данные Telegram */}
-            <div style={{
+            {/* Собирать данные Telegram - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
+            {/* <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -528,7 +528,7 @@ const SurveySettingsPage: React.FC = () => {
                   }} />
                 </span>
               </label>
-            </div>
+            </div> */}
           </div>
         </motion.div>
 

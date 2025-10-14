@@ -94,7 +94,7 @@ const SurveyCreatorPage: React.FC = () => {
     endTime: '',
     maxParticipants: '',
     allowAnonymous: false,
-    showProgress: true,
+    showProgress: false,
     randomizeQuestions: false,
     oneResponsePerUser: true,
     collectTelegramData: false,
@@ -124,7 +124,7 @@ const SurveyCreatorPage: React.FC = () => {
         endTime: settings.endTime || '',
         maxParticipants: settings.maxParticipants || '',
         allowAnonymous: settings.allowAnonymous ?? false,
-        showProgress: settings.showProgress ?? true,
+        showProgress: settings.showProgress ?? false,
         randomizeQuestions: settings.randomizeQuestions ?? false,
         oneResponsePerUser: settings.oneResponsePerUser ?? true,
         collectTelegramData: settings.collectTelegramData ?? false,
@@ -999,8 +999,8 @@ const SettingsTab: React.FC<{
                 </label>
               </div>
 
-              {/* Показывать прогресс */}
-              <div style={{
+              {/* Показывать прогресс - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
+              {/* <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -1051,7 +1051,7 @@ const SettingsTab: React.FC<{
                     }} />
                   </span>
                 </label>
-              </div>
+              </div> */}
 
               {/* Перемешивать вопросы */}
               <div style={{
@@ -1161,8 +1161,8 @@ const SettingsTab: React.FC<{
                 </label>
               </div>
 
-              {/* Собирать данные Telegram */}
-              <div style={{
+              {/* Собирать данные Telegram - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
+              {/* <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -1213,7 +1213,7 @@ const SettingsTab: React.FC<{
                     }} />
                   </span>
                 </label>
-              </div>
+              </div> */}
 
               {/* Мотивация */}
               <div style={{

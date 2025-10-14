@@ -26,7 +26,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
   // Расширенные настройки
   const [advancedSettings, setAdvancedSettings] = useState({
     allowAnonymous: false,
-    showProgress: true,
+    showProgress: false,
     randomizeQuestions: false,
     oneResponsePerUser: true,
     collectTelegramData: false,
@@ -355,8 +355,8 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                   </button>
                 </div>
 
-                {/* Показывать прогресс */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {/* Показывать прогресс - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
+                {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ flex: 1, marginRight: '16px' }}>
                     <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
                       Показывать прогресс
@@ -390,7 +390,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }} />
                   </button>
-                </div>
+                </div> */}
 
                 {/* Перемешивать вопросы */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -466,8 +466,8 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                   </button>
                 </div>
 
-                {/* Собирать данные Telegram */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {/* Собирать данные Telegram - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
+                {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ flex: 1, marginRight: '16px' }}>
                     <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
                       Собирать данные Telegram
@@ -501,7 +501,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }} />
                   </button>
-                </div>
+                </div> */}
 
                 {/* Максимальное количество участников */}
                 <div>

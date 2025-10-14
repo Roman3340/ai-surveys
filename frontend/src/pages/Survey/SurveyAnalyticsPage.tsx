@@ -1264,8 +1264,8 @@ export default function SurveyAnalyticsPage() {
                 )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
-                  {/* Показывать прогресс */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                  {/* Показывать прогресс - закомментировано */}
+                  {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                     <span style={{ color: 'var(--tg-hint-color)' }}>Показывать прогресс</span>
                     {editingSettings ? (
                       <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
@@ -1302,7 +1302,7 @@ export default function SurveyAnalyticsPage() {
                     ) : (
                       <span style={{ fontWeight: 500 }}>{settings.showProgress ? 'Да' : 'Нет'}</span>
                     )}
-                  </div>
+                  </div> */}
 
                   {/* Один ответ на пользователя */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
@@ -1384,8 +1384,8 @@ export default function SurveyAnalyticsPage() {
                     )}
                   </div>
 
-                  {/* Сбор Telegram-данных */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                  {/* Сбор Telegram-данных - закомментировано */}
+                  {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                     <span style={{ color: 'var(--tg-hint-color)' }}>Сбор Telegram-данных</span>
                     {editingSettings ? (
                       <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
@@ -1422,7 +1422,7 @@ export default function SurveyAnalyticsPage() {
                     ) : (
                       <span style={{ fontWeight: 500 }}>{settings.collectTelegramData ? 'Да' : 'Нет'}</span>
                     )}
-                  </div>
+                  </div> */}
 
                   {/* Перемешать вопросы */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>

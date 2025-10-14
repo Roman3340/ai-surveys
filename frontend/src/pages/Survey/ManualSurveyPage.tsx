@@ -32,7 +32,7 @@ const ManualSurveyPage: React.FC = () => {
       ...surveyData,
       // Добавляем настройки по умолчанию для опроса
       allowAnonymous: false,
-      showProgress: true,
+      showProgress: false,
       randomizeQuestions: false,
       oneResponsePerUser: true,
       collectTelegramData: false,
@@ -81,7 +81,7 @@ const ManualSurveyPage: React.FC = () => {
       saveSettings({
         ...surveyData,
         allowAnonymous: false,
-        showProgress: true,
+        showProgress: false,
         randomizeQuestions: false,
         oneResponsePerUser: true,
         collectTelegramData: false,
