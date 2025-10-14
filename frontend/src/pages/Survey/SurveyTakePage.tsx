@@ -140,7 +140,9 @@ export default function SurveyTakePage() {
     hapticFeedback?.medium();
     
     try {
-      const formattedAnswers = survey.questions.map(q => {
+      const formattedAnswers = survey.questions
+        .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+        .map(q => {
         let answerValue = answers[q.id] || null;
         
         if (answerValue === 'Другое') {
@@ -917,7 +919,9 @@ export default function SurveyTakePage() {
       </div>
 
       <div style={{ padding: '0 20px 120px 20px' }}>
-        {survey.questions.map((question, index) => (
+        {survey.questions
+          .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+          .map((question, index) => (
           <motion.div
             key={question.id}
             id={`question-${question.id}`}
