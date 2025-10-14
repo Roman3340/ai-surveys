@@ -921,40 +921,32 @@ export default function SurveyTakePage() {
             {error}
           </p>
           
-          {/* Дополнительная информация */}
-          <div style={{ 
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '12px',
-            padding: '20px',
-            border: '1px solid var(--tg-section-separator-color)'
+          {/* Дополнительный текст */}
+          <p style={{
+            fontSize: '12px',
+            color: 'var(--tg-hint-color)',
+            marginTop: '24px',
+            lineHeight: '1.5'
           }}>
-            <p style={{ 
-              color: 'var(--tg-text-color)', 
-              fontSize: '16px', 
-              margin: '0 0 16px 0',
-              lineHeight: '1.5'
-            }}>
-              Хотите создать свой опрос?
-            </p>
+            Хотите создать свой опрос?
+            <br />
             <button
               onClick={() => navigate('/')}
               style={{
                 backgroundColor: 'transparent',
                 border: 'none',
-                color: 'var(--tg-button-color)',
-                fontSize: '16px',
-                fontWeight: '600',
+                color: 'var(--tg-link-color)',
+                fontSize: '12px',
+                fontWeight: '500',
                 cursor: 'pointer',
-                textDecoration: 'underline',
-                padding: '8px 0',
-                transition: 'opacity 0.2s ease'
+                textDecoration: 'none',
+                padding: '0',
+                margin: '0'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
             >
               Откройте главную страницу AI Surveys
             </button>
-          </div>
+          </p>
         </div>
       </div>
     );
