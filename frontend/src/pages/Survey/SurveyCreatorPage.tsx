@@ -3087,7 +3087,8 @@ const PreviewTab: React.FC<{
                   fontSize: '16px',
                   color: 'var(--tg-hint-color)',
                   margin: 0,
-                  lineHeight: '1.4'
+                  lineHeight: '1.4',
+                  whiteSpace: 'pre-wrap'
                 }}>
                   {surveyData.description}
                 </p>
@@ -3113,7 +3114,8 @@ const PreviewTab: React.FC<{
                     <p style={{
                       fontSize: '14px',
                       color: 'var(--tg-hint-color)',
-                      margin: '0 0 12px 0'
+                      margin: '0 0 12px 0',
+                      whiteSpace: 'pre-wrap'
                     }}>
                       {question.description}
                     </p>

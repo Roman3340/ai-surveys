@@ -913,7 +913,7 @@ export default function SurveyTakePage() {
     }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
         <h1 style={{ fontSize: '20px', fontWeight: '700', margin: '0 0 8px 0' }}>{survey.title}</h1>
-        {survey.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0 }}>{survey.description}</p>}
+        {survey.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, whiteSpace: 'pre-wrap' }}>{survey.description}</p>}
       </div>
 
       <div style={{ padding: '0 20px 120px 20px' }}>
@@ -946,7 +946,7 @@ export default function SurveyTakePage() {
                     {question.text}
                     {question.isRequired && <span style={{ color: 'var(--tg-destructive-text-color)', marginLeft: '4px' }}>*</span>}
                 </h2>
-                {question.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: '1.5' }}>{question.description}</p>}
+                {question.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{question.description}</p>}
                 {validationErrors[question.id] && <p style={{ fontSize: '13px', color: 'var(--tg-destructive-text-color)', margin: '8px 0 0 0' }}>{validationErrors[question.id]}</p>}
             </div>
 

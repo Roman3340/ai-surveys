@@ -925,7 +925,7 @@ export default function SurveyAnalyticsPage() {
           )}
         </div>
         {survey.description && (
-          <p style={{ color: 'var(--tg-hint-color)', margin: '8px 0 0 0', fontSize: 14, lineHeight: 1.4 }}>{survey.description}</p>
+          <p style={{ color: 'var(--tg-hint-color)', margin: '8px 0 0 0', fontSize: 14, lineHeight: 1.4, whiteSpace: 'pre-wrap' }}>{survey.description}</p>
         )}
         <div style={{ display: 'flex', gap: 12, marginTop: 10, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--tg-hint-color)' }}>

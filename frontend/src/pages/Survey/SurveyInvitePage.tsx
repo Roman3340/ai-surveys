@@ -159,7 +159,8 @@ export default function SurveyInvitePage() {
             fontSize: '15px', 
             color: 'var(--tg-hint-color)',
             marginBottom: '24px',
-            lineHeight: '1.5'
+            lineHeight: '1.5',
+            whiteSpace: 'pre-wrap'
           }}>
             {survey.description}
           </p>

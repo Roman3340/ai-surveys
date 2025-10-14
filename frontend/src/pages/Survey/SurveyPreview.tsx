@@ -522,7 +522,8 @@ const SurveyPreview: React.FC = () => {
             fontSize: '14px',
             color: 'var(--tg-hint-color)',
             margin: 0,
-            lineHeight: '1.4'
+            lineHeight: '1.4',
+            whiteSpace: 'pre-wrap'
           }}>
             {surveyData.description}
           </p>
@@ -580,7 +581,8 @@ const SurveyPreview: React.FC = () => {
                   <p style={{
                     fontSize: '14px',
                     color: 'var(--tg-hint-color)',
-                    margin: '0 0 16px 0'
+                    margin: '0 0 16px 0',
+                    whiteSpace: 'pre-wrap'
                   }}>
                     {currentQuestion.description}
                   </p>
