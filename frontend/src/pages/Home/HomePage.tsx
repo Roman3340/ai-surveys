@@ -9,7 +9,7 @@ import type { Survey } from '../../types';
 export const HomePage = () => {
   const navigate = useNavigate();
   const { user: telegramUser, hapticFeedback } = useTelegram();
-  const { user, userSurveys, participatedSurveys, setUser, loadUserSurveys, isLoading, error } = useAppStore();
+  const { user, userSurveys, participatedSurveys, setUser, loadUserSurveys, loadParticipatedSurveys, isLoading, error } = useAppStore();
   const [activeTab, setActiveTab] = useState<'created' | 'participated'>('created');
 
   // Создание пользователя из Telegram данных
@@ -32,6 +32,7 @@ export const HomePage = () => {
     // Загружаем список один раз на монтировании,
     // и повторно после успешной авторизации (см. кнопку Авторизоваться)
     loadUserSurveys();
+    loadParticipatedSurveys();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -53,6 +54,11 @@ export const HomePage = () => {
   const handleViewAnalytics = (survey: Survey) => {
     hapticFeedback?.light();
     navigate(`/survey/${survey.id}`);
+  };
+
+  const handleViewParticipatedSurvey = (survey: Survey) => {
+    // Опросы участия не кликабельны
+    hapticFeedback?.light();
   };
 
   const handleViewTopSurveys = () => {
@@ -350,17 +356,17 @@ export const HomePage = () => {
               {displayedSurveys.slice(0, 3).map((survey) => (
                 <div
                   key={survey.id}
-                  onClick={() => handleViewAnalytics(survey)}
+                  onClick={activeTab === 'created' ? () => handleViewAnalytics(survey) : () => handleViewParticipatedSurvey(survey)}
                   style={{
                     backgroundColor: 'var(--tg-section-bg-color)',
                     borderRadius: '12px',
                     padding: '16px',
-                    cursor: 'pointer',
+                    cursor: activeTab === 'created' ? 'pointer' : 'default',
                     transition: 'transform 0.1s ease'
                   }}
-                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseDown={activeTab === 'created' ? (e) => e.currentTarget.style.transform = 'scale(0.98)' : undefined}
+                  onMouseUp={activeTab === 'created' ? (e) => e.currentTarget.style.transform = 'scale(1)' : undefined}
+                  onMouseLeave={activeTab === 'created' ? (e) => e.currentTarget.style.transform = 'scale(1)' : undefined}
                 >
                   <div style={{
                     display: 'flex',
@@ -383,7 +389,10 @@ export const HomePage = () => {
                       marginLeft: '12px',
                       whiteSpace: 'nowrap'
                     }}>
-                      {formatDate(survey.publishedAt || survey.createdAt)}
+                      {activeTab === 'created' 
+                        ? formatDate(survey.publishedAt || survey.createdAt)
+                        : formatDate((survey as any).participated_at)
+                      }
                     </div>
                   </div>
                   
@@ -393,47 +402,62 @@ export const HomePage = () => {
                     gap: '16px',
                     marginTop: '8px'
                   }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '14px',
-                      color: 'var(--tg-hint-color)'
-                    }}>
-                      <Users size={14} />
-                      {survey.responsesCount ?? survey.responses?.length ?? 0}
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '14px',
-                      color: 'var(--tg-hint-color)'
-                    }}>
-                      <BarChart3 size={14} />
-                      {survey.questions.length} вопр.
-                    </div>
-                    {(() => {
-                      const statusMap: Record<string, { text: string; color: string }> = {
-                        active: { text: 'Активен', color: '#34C759' },
-                        draft: { text: 'Черновик', color: '#8E8E93' },
-                        completed: { text: 'Завершён', color: '#FF6B6B' },
-                        archived: { text: 'Архив', color: '#FF9500' }
-                      };
-                      const statusInfo = statusMap[survey.status] || { text: survey.status, color: '#8E8E93' };
-                      return (
+                    {activeTab === 'created' ? (
+                      <>
                         <div style={{
-                          backgroundColor: statusInfo.color,
-                          color: 'white',
-                          fontSize: '12px',
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          fontWeight: '500'
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '14px',
+                          color: 'var(--tg-hint-color)'
                         }}>
-                          {statusInfo.text}
+                          <Users size={14} />
+                          {survey.responsesCount ?? survey.responses?.length ?? 0}
                         </div>
-                      );
-                    })()}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '14px',
+                          color: 'var(--tg-hint-color)'
+                        }}>
+                          <BarChart3 size={14} />
+                          {survey.questions.length} вопр.
+                        </div>
+                        {(() => {
+                          const statusMap: Record<string, { text: string; color: string }> = {
+                            active: { text: 'Активен', color: '#34C759' },
+                            draft: { text: 'Черновик', color: '#8E8E93' },
+                            completed: { text: 'Завершён', color: '#FF6B6B' },
+                            archived: { text: 'Архив', color: '#FF9500' }
+                          };
+                          const statusInfo = statusMap[survey.status] || { text: survey.status, color: '#8E8E93' };
+                          return (
+                            <div style={{
+                              backgroundColor: statusInfo.color,
+                              color: 'white',
+                              fontSize: '12px',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontWeight: '500'
+                            }}>
+                              {statusInfo.text}
+                            </div>
+                          );
+                        })()}
+                      </>
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '14px',
+                        color: 'var(--tg-hint-color)'
+                      }}>
+                        <BarChart3 size={14} />
+                        {survey.questions.length} вопр.
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -454,7 +478,7 @@ export const HomePage = () => {
               }}>
                 {activeTab === 'created' 
                   ? 'Создайте свой первый опрос'
-                  : 'Пока нет опросов для участия'
+                  : 'Вы еще не участвовали в опросах'
                 }
               </p>
               {activeTab === 'created' && (

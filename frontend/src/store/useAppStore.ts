@@ -42,6 +42,7 @@ interface AppStore {
   
   // API методы
   loadUserSurveys: () => Promise<void>;
+  loadParticipatedSurveys: () => Promise<void>;
   createSurvey: (surveyData: any) => Promise<Survey>;
   updateSurvey: (surveyId: string, updates: any) => Promise<void>;
   deleteSurvey: (surveyId: string) => Promise<void>;
@@ -118,6 +119,20 @@ export const useAppStore = create<AppStore>()(
           console.error('Ошибка загрузки опросов:', error);
           set({ 
             error: error instanceof Error ? error.message : 'Ошибка загрузки опросов',
+            isLoading: false 
+          });
+        }
+      },
+
+      loadParticipatedSurveys: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const surveys = await surveyApi.getParticipatedSurveys();
+          set({ participatedSurveys: surveys, isLoading: false });
+        } catch (error) {
+          console.error('Ошибка загрузки опросов участия:', error);
+          set({ 
+            error: error instanceof Error ? error.message : 'Ошибка загрузки опросов участия',
             isLoading: false 
           });
         }

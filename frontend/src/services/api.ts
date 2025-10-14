@@ -61,6 +61,14 @@ export const surveyApi = {
   },
 
   /**
+   * Получить опросы, в которых участвовал пользователь
+   */
+  async getParticipatedSurveys(): Promise<Survey[]> {
+    const response = await api.get('/surveys/participated');
+    return response.data;
+  },
+
+  /**
    * Создать новый опрос
    */
   async createSurvey(surveyData: CreateSurveyRequest): Promise<Survey> {
