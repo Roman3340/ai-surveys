@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
 
@@ -38,10 +37,6 @@ interface Answers {
   [questionId: string]: any;
 }
 
-const OTHER_INPUT_PREFIX = 'other_input_';
-const OTHER_OPTION_VALUE = 'other_option_value';
-
-
 export default function SurveyTakePage() {
   const { surveyId } = useParams();
   const navigate = useNavigate();
@@ -55,7 +50,6 @@ export default function SurveyTakePage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     const loadSurvey = async () => {
       if (!surveyId) return;
       try {
@@ -64,6 +58,7 @@ export default function SurveyTakePage() {
         
         if (!response.canParticipate) {
           setError(response.participationMessage || 'Участие в опросе недоступно');
+          setLoading(false);
           return;
         }
         
@@ -79,18 +74,11 @@ export default function SurveyTakePage() {
   }, [surveyId, user?.id]);
 
   const handleAnswerChange = (questionId: string, value: any) => {
-    setAnswers(prev => {
-        const newAnswers = { ...prev };
-        const question = survey?.questions.find(q => q.id === questionId);
-
-        if (question?.type === 'single_choice' && !questionId.startsWith(OTHER_INPUT_PREFIX) && value !== OTHER_OPTION_VALUE) {
-            delete newAnswers[OTHER_INPUT_PREFIX + questionId];
-        }
-
-        newAnswers[questionId] = value;
-        return newAnswers;
-    });
-
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+    // Сбрасываем ошибку валидации при изменении ответа
     if (validationErrors[questionId]) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -100,62 +88,82 @@ export default function SurveyTakePage() {
     }
   };
   
-  const validateAllQuestions = (): Record<string, string> => {
-    if (!survey) return {};
+  const validateAllQuestions = (): boolean => {
+    if (!survey) return false;
+    
     const errors: Record<string, string> = {};
+    
     survey.questions.forEach(question => {
       if (question.isRequired) {
         const answer = answers[question.id];
+        const otherAnswer = answers[`${question.id}_other`];
+        
         let isEmpty = false;
-        if (answer === undefined || answer === null || (typeof answer === 'string' && answer.trim() === '') || (Array.isArray(answer) && answer.length === 0)) {
+        if (!answer) {
           isEmpty = true;
-        } else if (
-            (question.type === 'single_choice' && answer === OTHER_OPTION_VALUE && !answers[OTHER_INPUT_PREFIX + question.id]?.trim()) ||
-            (question.type === 'multiple_choice' && Array.isArray(answer) && answer.includes(OTHER_OPTION_VALUE) && !answers[OTHER_INPUT_PREFIX + question.id]?.trim())
-        ) {
-            isEmpty = true;
+        } else if (typeof answer === 'string' && answer.trim() === '') {
+          isEmpty = true;
+        } else if (Array.isArray(answer) && answer.length === 0) {
+          isEmpty = true;
+        } else if (answer === 'Другое' && !otherAnswer?.trim()) {
+          // Для single_choice с "Другое"
+          isEmpty = true;
+        } else if (Array.isArray(answer) && answer.includes('Другое') && !otherAnswer?.trim()) {
+          // Для multiple_choice с "Другое"
+          isEmpty = true;
         }
+
         if (isEmpty) {
           errors[question.id] = 'Это обязательный вопрос';
         }
       }
     });
+
     setValidationErrors(errors);
-    return errors;
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async () => {
-    const errors = validateAllQuestions();
-    if (Object.keys(errors).length > 0) {
+    if (!survey || !surveyId) return;
+
+    if (!validateAllQuestions()) {
       hapticFeedback?.error();
-      const firstErrorId = Object.keys(errors)[0];
+      // Найдем первый вопрос с ошибкой и прокрутим к нему
+      const firstErrorId = Object.keys(validationErrors)[0];
       if (firstErrorId) {
         document.getElementById(`question-${firstErrorId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       return;
     }
     
-    if (!survey || !surveyId) return;
     setSubmitting(true);
     hapticFeedback?.medium();
     
     try {
-        const formattedAnswers = survey.questions.map(q => {
-            let answerValue = answers[q.id];
-            if ((q.type === 'single_choice' || q.type === 'multiple_choice') && q.hasOtherOption) {
-                const otherInput = answers[OTHER_INPUT_PREFIX + q.id];
-                if (q.type === 'multiple_choice' && Array.isArray(answerValue)) {
-                    answerValue = answerValue.map(a => a === OTHER_OPTION_VALUE ? otherInput || '' : a).filter(Boolean);
-                } else if (q.type === 'single_choice' && answerValue === OTHER_OPTION_VALUE) {
-                    answerValue = otherInput || null;
-                }
-            }
-            return {
-              question_id: q.id,
-              answer_value: answerValue === undefined ? null : answerValue,
-            };
-        });
+      const formattedAnswers = survey.questions.map(q => {
+        let answerValue = answers[q.id] || null;
+        
+        // Обработка "Другого" варианта для single_choice
+        if (answerValue === 'Другое') {
+          answerValue = answers[`${q.id}_other`] || null;
+        }
+        
+        // Обработка "Другого" варианта для multiple_choice
+        if (Array.isArray(answerValue) && answerValue.includes('Другое')) {
+          const otherText = answers[`${q.id}_other`] || '';
+          answerValue = answerValue
+            .map((a: string) => (a === 'Другое' ? otherText : a))
+            .filter((a: string) => a && String(a).trim() !== '');
+        }
+
+        return {
+          question_id: q.id,
+          answer_value: answerValue
+        };
+      });
+
       await surveyApi.submitSurveyAnswers(surveyId, formattedAnswers, user?.id);
+      
       hapticFeedback?.success();
       navigate(`/survey/${surveyId}/completed`, { 
         state: { 
@@ -175,216 +183,739 @@ export default function SurveyTakePage() {
   const renderQuestion = (question: Question) => {
     const answer = answers[question.id];
     const error = validationErrors[question.id];
-    const baseInputStyle: React.CSSProperties = {
-        width: '100%', padding: '12px 16px', borderRadius: '8px',
-        border: `1px solid ${error ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
-        backgroundColor: 'var(--tg-section-bg-color)', color: 'var(--tg-text-color)',
-        fontSize: '16px', outline: 'none'
+
+    const baseStyle = {
+      width: '100%',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      border: error ? '1px solid var(--tg-destructive-text-color)' : 'none',
+      backgroundColor: 'var(--tg-section-bg-color)',
+      color: 'var(--tg-text-color)',
+      fontSize: '16px',
+      outline: 'none'
     };
 
     switch (question.type) {
-        case 'text':
-            return <input type="text" value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Ваш ответ..." style={baseInputStyle} />;
-        case 'textarea':
-            return <textarea value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Ваш развернутый ответ..." rows={4} style={{ ...baseInputStyle, resize: 'vertical', fontFamily: 'inherit' }} />;
-        case 'single_choice':
-        case 'multiple_choice':
-            const isMultiple = question.type === 'multiple_choice';
-            const currentAnswers = Array.isArray(answer) ? answer : (answer ? [answer] : []);
-            const otherAnswer = answers[OTHER_INPUT_PREFIX + question.id] || '';
-            const handleSelection = (optionText: string) => {
-                let newAnswers;
-                if (isMultiple) {
-                    newAnswers = currentAnswers.includes(optionText)
-                        ? currentAnswers.filter((a: string) => a !== optionText)
-                        : [...currentAnswers, optionText];
-                } else { newAnswers = optionText; }
-                handleAnswerChange(question.id, newAnswers);
-            };
-            const renderOption = (optionText: string, isOther: boolean = false) => {
-                const valueToToggle = isOther ? OTHER_OPTION_VALUE : optionText;
-                const isSelected = currentAnswers.includes(valueToToggle);
+      case 'text':
+        return (
+          <input
+            type="text"
+            placeholder="Ваш ответ..."
+            value={answer || ''}
+            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+            style={baseStyle}
+          />
+        );
+
+      case 'textarea':
+        return (
+          <textarea
+            placeholder="Ваш ответ..."
+            rows={4}
+            value={answer || ''}
+            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+            style={{
+              ...baseStyle,
+              resize: 'vertical'
+            }}
+          />
+        );
+
+      case 'single_choice':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {question.options?.map((option: any, index: number) => {
+              const optionText = typeof option === 'string' ? option : option.text;
+              const isSelected = answer === optionText;
+              
+              return (
+                <label key={index} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <div style={{
+                    position: 'relative',
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                    backgroundColor: isSelected ? 'var(--tg-button-color)' : 'transparent',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <input
+                      type="radio"
+                      name={`question_${question.id}`}
+                      checked={isSelected}
+                      onChange={() => handleAnswerChange(question.id, optionText)}
+                      style={{ 
+                        position: 'absolute',
+                        opacity: 0,
+                        width: '100%',
+                        height: '100%',
+                        margin: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white',
+                      opacity: isSelected ? 1 : 0,
+                      transition: 'opacity 0.2s ease'
+                    }} />
+                  </div>
+                  <span style={{ 
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    flex: 1
+                  }}>
+                    {optionText}
+                  </span>
+                </label>
+              );
+            })}
+            
+            {question.hasOtherOption && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <div style={{
+                    position: 'relative',
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    border: `2px solid ${answer === 'Другое' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                    backgroundColor: answer === 'Другое' ? 'var(--tg-button-color)' : 'transparent',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <input
+                      type="radio"
+                      name={`question_${question.id}`}
+                      checked={answer === 'Другое'}
+                      onChange={() => handleAnswerChange(question.id, 'Другое')}
+                      style={{ 
+                        position: 'absolute',
+                        opacity: 0,
+                        width: '100%',
+                        height: '100%',
+                        margin: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white',
+                      opacity: answer === 'Другое' ? 1 : 0,
+                      transition: 'opacity 0.2s ease'
+                    }} />
+                  </div>
+                  <span style={{ 
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    flex: 1
+                  }}>
+                    Другое
+                  </span>
+                </label>
+                
+                {answer === 'Другое' && (
+                  <div style={{ marginLeft: '32px' }}>
+                    <input
+                      type="text"
+                      placeholder="Другое"
+                      value={answers[`${question.id}_other`] || ''}
+                      onChange={(e) => handleAnswerChange(`${question.id}_other`, e.target.value)}
+                      style={{
+                        ...baseStyle,
+                        border: !answers[`${question.id}_other`] ? '1px solid #ff4444' : '1px solid #b0b0b0',
+                        backgroundColor: 'var(--tg-bg-color)'
+                      }}
+                    />
+                    {!answers[`${question.id}_other`] && (
+                      <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
+                        Пожалуйста, введите ваш ответ
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+
+      case 'multiple_choice':
+        const currentAnswers = Array.isArray(answer) ? answer : [];
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {question.options?.map((option: any, index: number) => {
+              const optionText = typeof option === 'string' ? option : option.text;
+              const isChecked = currentAnswers.includes(optionText);
+              
+              return (
+                <label key={index} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <div style={{
+                    position: 'relative',
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '4px',
+                    border: `2px solid ${isChecked ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                    backgroundColor: isChecked ? 'var(--tg-button-color)' : 'transparent',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        const newAnswers = e.target.checked
+                          ? [...currentAnswers, optionText]
+                          : currentAnswers.filter((a: string) => a !== optionText);
+                        handleAnswerChange(question.id, newAnswers);
+                      }}
+                      style={{ 
+                        position: 'absolute',
+                        opacity: 0,
+                        width: '100%',
+                        height: '100%',
+                        margin: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -90%)',
+                      width: '12px',
+                      height: '12px',
+                      opacity: isChecked ? 1 : 0,
+                      transition: 'opacity 0.2s ease'
+                    }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                  <span style={{ 
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    flex: 1
+                  }}>
+                    {optionText}
+                  </span>
+                </label>
+              );
+            })}
+            
+            {question.hasOtherOption && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  transition: 'all 0.2s ease'
+                }}>
+                  <div style={{
+                    position: 'relative',
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '4px',
+                    border: `2px solid ${currentAnswers.includes('Другое') ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                    backgroundColor: currentAnswers.includes('Другое') ? 'var(--tg-button-color)' : 'transparent',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={currentAnswers.includes('Другое')}
+                      onChange={(e) => {
+                        const newAnswers = e.target.checked
+                          ? [...currentAnswers, 'Другое']
+                          : currentAnswers.filter((a: string) => a !== 'Другое');
+                        
+                        if (!e.target.checked) {
+                          // Также очищаем текст "Другое"
+                          handleAnswerChange(`${question.id}_other`, '');
+                        }
+                        
+                        handleAnswerChange(question.id, newAnswers);
+                      }}
+                      style={{ 
+                        position: 'absolute',
+                        opacity: 0,
+                        width: '100%',
+                        height: '100%',
+                        margin: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -90%)',
+                      width: '12px',
+                      height: '12px',
+                      opacity: currentAnswers.includes('Другое') ? 1 : 0,
+                      transition: 'opacity 0.2s ease'
+                    }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                  <span style={{ 
+                    color: 'var(--tg-text-color)',
+                    fontSize: '16px',
+                    flex: 1
+                  }}>
+                    Другое
+                  </span>
+                </label>
+                
+                {currentAnswers.includes('Другое') && (
+                  <div style={{ marginLeft: '32px' }}>
+                    <input
+                      type="text"
+                      placeholder="Другое"
+                      value={answers[`${question.id}_other`] || ''}
+                      onChange={(e) => handleAnswerChange(`${question.id}_other`, e.target.value)}
+                      style={{
+                        ...baseStyle,
+                        border: !answers[`${question.id}_other`] ? '1px solid #ff4444' : '1px solid #b0b0b0',
+                        backgroundColor: 'var(--tg-bg-color)'
+                      }}
+                    />
+                    {!answers[`${question.id}_other`] && (
+                      <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
+                        Пожалуйста, введите ваш ответ
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'scale':
+        const scaleMin = question.scaleMin || 1;
+        const scaleMax = question.scaleMax || 10;
+        const [scaleValue, setScaleValue] = useState(answer || Math.floor((scaleMin + scaleMax) / 2));
+        
+        return (
+          <div style={{ 
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            border: '1px solid var(--tg-section-separator-color)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <span style={{ 
+                fontSize: '16px', 
+                fontWeight: '600',
+                color: scaleValue === scaleMin ? 'var(--tg-button-color)' : 'var(--tg-text-color)',
+                minWidth: '20px',
+                textAlign: 'center'
+              }}>
+                {scaleMin}
+              </span>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="range"
+                  min={scaleMin}
+                  max={scaleMax}
+                  value={scaleValue}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    setScaleValue(value);
+                    handleAnswerChange(question.id, value);
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '8px',
+                    background: '#666',
+                    borderRadius: '4px',
+                    outline: 'none',
+                    appearance: 'none'
+                  }}
+                />
+              </div>
+              <span style={{ 
+                fontSize: '16px', 
+                fontWeight: '600',
+                color: scaleValue === scaleMax ? 'var(--tg-button-color)' : 'var(--tg-text-color)',
+                minWidth: '20px',
+                textAlign: 'center'
+              }}>
+                {scaleMax}
+              </span>
+            </div>
+            
+            {scaleValue !== scaleMin && scaleValue !== scaleMax && (
+              <div style={{ 
+                textAlign: 'center',
+                marginBottom: '8px'
+              }}>
+                <span style={{
+                  fontSize: '16px',
+                  color: 'var(--tg-button-color)',
+                  fontWeight: 'bold'
+                }}>
+                  {scaleValue}
+                </span>
+              </div>
+            )}
+            
+            {(question.scaleMinLabel || question.scaleMaxLabel) && (
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                fontSize: '12px',
+                color: 'var(--tg-hint-color)'
+              }}>
+                <span>{question.scaleMinLabel || ''}</span>
+                <span>{question.scaleMaxLabel || ''}</span>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'rating':
+        const maxRating = question.ratingMax || 5;
+        const [rating, setRating] = useState(answer || 0);
+        
+        return (
+          <div style={{ 
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            border: '1px solid var(--tg-section-separator-color)'
+          }}>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+              {Array.from({ length: maxRating }, (_, i) => {
+                const star = i + 1;
                 return (
-                    <div key={valueToToggle}>
-                        <label
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '8px',
-                                border: `1px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                                backgroundColor: isSelected ? 'rgba(244, 109, 0, 0.1)' : 'var(--tg-section-bg-color)',
-                                color: 'var(--tg-text-color)', cursor: 'pointer', transition: 'all 0.2s ease'
-                            }}
-                            onClick={() => handleSelection(valueToToggle)}
-                        >
-                            <div style={{
-                                width: '20px', height: '20px', borderRadius: isMultiple ? '4px' : '50%', flexShrink: 0,
-                                border: `2px solid ${isSelected ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                                backgroundColor: isSelected && isMultiple ? 'var(--tg-button-color)' : 'transparent',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center'
-                            }}>
-                                {isSelected && !isMultiple && <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--tg-button-color)' }} />}
-                                {isSelected && isMultiple && <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>✓</span>}
-                            </div>
-                            <span>{optionText}</span>
-                        </label>
-                        {isOther && isSelected && (
-                             <motion.div initial={{ opacity: 0, marginTop: -10 }} animate={{ opacity: 1, marginTop: 8 }} transition={{ duration: 0.3 }}>
-                                <input
-                                    type="text"
-                                    value={otherAnswer}
-                                    onChange={(e) => handleAnswerChange(OTHER_INPUT_PREFIX + question.id, e.target.value)}
-                                    placeholder="Напишите свой вариант..."
-                                    style={{ ...baseInputStyle, width: 'calc(100% - 32px)', marginLeft: '32px' }}
-                                />
-                            </motion.div>
-                        )}
-                    </div>
+                  <button
+                    key={star}
+                    onClick={() => {
+                      setRating(star);
+                      handleAnswerChange(question.id, star);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      transition: 'transform 0.2s ease'
+                    }}
+                  >
+                    <svg 
+                      width="32" 
+                      height="32" 
+                      viewBox="0 0 24 24" 
+                      fill={star <= rating ? "#ffd700" : "none"} 
+                      stroke={star <= rating ? "#ffd700" : "var(--tg-hint-color)"} 
+                      strokeWidth="2"
+                    >
+                      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                    </svg>
+                  </button>
                 );
-            };
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {question.options?.map((option: any) => renderOption(typeof option === 'string' ? option : option.text))}
-                    {question.hasOtherOption && renderOption('Другое', true)}
-                </div>
-            );
-        case 'scale':
-            const scaleMin = question.scaleMin || 1;
-            const scaleMax = question.scaleMax || 5;
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>{question.scaleMinLabel || scaleMin}</span>
-                        <span style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>{question.scaleMaxLabel || scaleMax}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        {Array.from({ length: scaleMax - scaleMin + 1 }, (_, i) => {
-                            const value = scaleMin + i;
-                            return (
-                                <button
-                                    key={value}
-                                    onClick={() => handleAnswerChange(question.id, value)}
-                                    style={{
-                                        width: '40px', height: '40px', borderRadius: '50%',
-                                        border: `1px solid ${answer === value ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                                        backgroundColor: answer === value ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
-                                        color: answer === value ? 'var(--tg-button-text-color)' : 'var(--tg-text-color)',
-                                        fontSize: '16px', fontWeight: '500', cursor: 'pointer', transition: 'all 0.2s ease'
-                                    }}
-                                >
-                                    {value}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
-        case 'rating':
-            const maxRating = question.ratingMax || 5;
-            return (
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', padding: '8px 0' }}>
-                    {Array.from({ length: maxRating }, (_, i) => {
-                        const starValue = i + 1;
-                        return (
-                            <button
-                                key={starValue}
-                                onClick={() => handleAnswerChange(question.id, starValue)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', transition: 'transform 0.2s ease', color: (answer && starValue <= answer) ? '#FFD700' : 'var(--tg-hint-color)' }}
-                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                            >
-                                <Star size={36} fill={(answer && starValue <= answer) ? 'currentColor' : 'none'} strokeWidth={1.5} />
-                            </button>
-                        );
-                    })}
-                </div>
-            );
-        case 'yes_no':
-            return (
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    {[{ text: 'Да', emoji: '✅', color: '#34C759' }, { text: 'Нет', emoji: '❌', color: '#FF3B30' }].map((option) => {
-                        const isSelected = answer === option.text;
-                        return (
-                            <button
-                                key={option.text}
-                                onClick={() => handleAnswerChange(question.id, option.text)}
-                                style={{
-                                    flex: 1, padding: '12px 24px', borderRadius: '8px',
-                                    border: isSelected ? `2px solid ${option.color}` : '1px solid var(--tg-section-separator-color)',
-                                    backgroundColor: isSelected ? option.color : 'var(--tg-section-bg-color)',
-                                    color: isSelected ? 'white' : 'var(--tg-text-color)',
-                                    fontSize: '16px', fontWeight: '500', cursor: 'pointer', transition: 'all 0.2s ease',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                                }}
-                            >
-                                <span style={{ fontSize: '18px' }}>{option.emoji}</span>
-                                {option.text}
-                            </button>
-                        );
-                    })}
-                </div>
-            );
-        case 'date':
-            return <input type="date" value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} style={{ ...baseInputStyle, border: `2px solid ${error ? '#FF3B30' : 'var(--tg-button-color)'}` }} />;
-        case 'number':
-            return <input type="number" inputMode="numeric" value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)} placeholder="Введите число..." min={question.validation?.min} max={question.validation?.max} style={baseInputStyle} />;
-        default:
-            return <div>Неподдерживаемый тип вопроса: {question.type}</div>;
+              })}
+            </div>
+          </div>
+        );
+
+      case 'yes_no':
+        return (
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
+            }}>
+              <div style={{
+                position: 'relative',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: `2px solid ${answer === 'yes' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answer === 'yes' ? 'var(--tg-button-color)' : 'transparent',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  checked={answer === 'yes'}
+                  onChange={() => handleAnswerChange(question.id, 'yes')}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  opacity: answer === 'yes' ? 1 : 0,
+                  transition: 'opacity 0.2s ease'
+                }} />
+              </div>
+              <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
+            </label>
+            
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
+            }}>
+              <div style={{
+                position: 'relative',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: `2px solid ${answer === 'no' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answer === 'no' ? 'var(--tg-button-color)' : 'transparent',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  checked={answer === 'no'}
+                  onChange={() => handleAnswerChange(question.id, 'no')}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  opacity: answer === 'no' ? 1 : 0,
+                  transition: 'opacity 0.2s ease'
+                }} />
+              </div>
+              <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
+            </label>
+          </div>
+        );
+
+      case 'date':
+        return (
+          <input
+            type="date"
+            value={answer || ''}
+            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+            style={baseStyle}
+          />
+        );
+
+      case 'number':
+        return (
+          <input
+            type="number"
+            placeholder="Введите число..."
+            value={answer || ''}
+            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+            style={baseStyle}
+          />
+        );
+
+      default:
+        return <div>Неподдерживаемый тип вопроса</div>;
     }
   };
 
-  if (loading) { return <div>Загрузка...</div> }
-  if (error) { return <div>Ошибка: {error}</div> }
-  if (!survey) { return <div>Опрос не найден.</div> }
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: 'var(--tg-bg-color)'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            width: '40px', 
+            height: '40px', 
+            border: '3px solid var(--tg-button-color)', 
+            borderTop: '3px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 12px'
+          }} />
+          <p style={{ color: 'var(--tg-hint-color)' }}>Загрузка опроса...</p>
+        </div>
+        
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}} />
+      </div>
+    );
+  }
+
+  if (error || !survey) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: 'var(--tg-bg-color)',
+        padding: '20px'
+      }}>
+        <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>😔</div>
+          <h2 style={{ 
+            fontSize: '20px', 
+            fontWeight: '600',
+            color: 'var(--tg-text-color)', 
+            marginBottom: '12px' 
+          }}>
+            Опрос недоступен
+          </h2>
+          <p style={{ color: 'var(--tg-hint-color)', fontSize: '15px', lineHeight: '1.5' }}>
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--tg-bg-color)', color: 'var(--tg-text-color)', paddingBottom: '100px' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--tg-section-separator-color)', backgroundColor: 'var(--tg-bg-color)', position: 'sticky', top: 0, zIndex: 10 }}>
-        <h1 style={{ fontSize: '20px', fontWeight: '600', margin: '0 0 8px 0' }}>{survey.title}</h1>
-        {survey.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: 1.5 }}>{survey.description}</p>}
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: 'var(--tg-bg-color)',
+      color: 'var(--tg-text-color)',
+    }}>
+      {/* Шапка опроса */}
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: '700', margin: '0 0 8px 0' }}>{survey.title}</h1>
+        {survey.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0 }}>{survey.description}</p>}
       </div>
 
-      <div style={{ padding: '0 16px' }}>
-        {survey.questions.sort((a, b) => a.orderIndex - b.orderIndex).map((question, index) => (
+      {/* Список вопросов */}
+      <div style={{ padding: '0 20px 120px 20px' }}>
+        {survey.questions.map((question, index) => (
           <motion.div
             key={question.id}
             id={`question-${question.id}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            style={{ padding: '24px 0', borderBottom: index < survey.questions.length - 1 ? '1px solid var(--tg-section-separator-color)' : 'none' }}
+            style={{ paddingTop: '24px', borderBottom: index < survey.questions.length - 1 ? '1px solid var(--tg-section-separator-color)' : 'none', paddingBottom: '24px' }}
           >
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
-              <div style={{
-                  minWidth: '24px', height: '24px', borderRadius: '50%', backgroundColor: 'var(--tg-button-color)', color: 'var(--tg-button-text-color)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600'
-              }}>
-                  {index + 1}
+            {/* Изображение вопроса */}
+            {question.imageUrl && (
+              <div style={{ marginBottom: '20px' }}>
+                <img 
+                  src={question.imageUrl} 
+                  alt="Question illustration"
+                  style={{
+                    width: '100%',
+                    maxHeight: '200px',
+                    objectFit: 'cover',
+                    borderRadius: '12px'
+                  }}
+                />
               </div>
-              <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '500', margin: '0 0 8px 0', lineHeight: '1.4' }}>
-                      {question.text}
-                      {question.isRequired && <span style={{ color: '#FF3B30', marginLeft: '4px' }}>*</span>}
-                  </h3>
-                  {question.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: '1.5' }}>{question.description}</p>}
-                  {validationErrors[question.id] && <p style={{ fontSize: '13px', color: '#FF3B30', margin: '8px 0 0 0', fontWeight: 500 }}>{validationErrors[question.id]}</p>}
-              </div>
+            )}
+
+            {/* Текст вопроса */}
+            <div style={{ marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 8px 0', lineHeight: '1.4' }}>
+                    {question.text}
+                    {question.isRequired && <span style={{ color: 'var(--tg-destructive-text-color)', marginLeft: '4px' }}>*</span>}
+                </h2>
+                {question.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: '1.5' }}>{question.description}</p>}
+                {validationErrors[question.id] && <p style={{ fontSize: '13px', color: 'var(--tg-destructive-text-color)', margin: '8px 0 0 0' }}>{validationErrors[question.id]}</p>}
             </div>
-            
-            <div style={{ marginLeft: '36px' }}>
+
+            <div>
               {renderQuestion(question)}
             </div>
           </motion.div>
         ))}
       </div>
 
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderTop: '1px solid var(--tg-section-separator-color)' }}>
+      {/* Кнопка отправки */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px',
+        backgroundColor: 'var(--tg-bg-color)', borderTop: '1px solid var(--tg-section-separator-color)',
+      }}>
         <button
           onClick={handleSubmit}
           disabled={submitting}
           style={{
-            width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+            width: '100%', padding: '16px', borderRadius: '12px', border: 'none',
             backgroundColor: 'var(--tg-button-color)', color: 'var(--tg-button-text-color)',
             fontSize: '16px', fontWeight: '600', cursor: submitting ? 'not-allowed' : 'pointer',
-            opacity: submitting ? 0.7 : 1, transition: 'all 0.2s ease'
+            opacity: submitting ? 0.5 : 1, transition: 'opacity 0.2s ease'
           }}
         >
           {submitting ? 'Отправка...' : 'Отправить ответы'}
@@ -393,4 +924,3 @@ export default function SurveyTakePage() {
     </div>
   );
 }
-
