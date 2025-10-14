@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
@@ -28,6 +28,7 @@ export default function SurveyInvitePage() {
   const [survey, setSurvey] = useState<SurveyPublicData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activePopover, setActivePopover] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSurvey = async () => {
@@ -67,6 +68,11 @@ export default function SurveyInvitePage() {
       window.open(url, '_blank');
       hapticFeedback?.light();
     }
+  };
+
+  const handlePopoverClick = (type: string) => {
+    setActivePopover(activePopover === type ? null : type);
+    hapticFeedback?.light();
   };
 
   if (loading) {
@@ -118,15 +124,18 @@ export default function SurveyInvitePage() {
   }
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: 'var(--tg-bg-color)',
-      padding: '40px 20px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
+    <div 
+      onClick={() => setActivePopover(null)}
+      style={{ 
+        minHeight: '100vh', 
+        background: 'var(--tg-bg-color)',
+        padding: '40px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -147,62 +156,235 @@ export default function SurveyInvitePage() {
           fontSize: '24px', 
           fontWeight: '700', 
           color: 'var(--tg-text-color)',
-          marginBottom: '12px',
+          marginBottom: '20px',
           lineHeight: '1.3'
         }}>
           {survey.title}
         </h1>
 
-        {/* Описание */}
-        {survey.description && (
-          <p style={{ 
-            fontSize: '15px', 
-            color: 'var(--tg-hint-color)',
-            marginBottom: '24px',
-            lineHeight: '1.5',
-            whiteSpace: 'pre-wrap'
+        {/* Хэштеги с настройками */}
+        <div style={{ marginBottom: '20px', width: '100%' }}>
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: '8px', 
+            justifyContent: 'center',
+            marginBottom: '8px'
           }}>
-            {survey.description}
-          </p>
-        )}
+            {/* Анонимность */}
+            {survey.settings?.allowAnonymous && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => handlePopoverClick('anonymous')}
+                  style={{
+                    background: 'rgba(52, 199, 89, 0.15)',
+                    border: '1px solid rgba(52, 199, 89, 0.3)',
+                    borderRadius: '16px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#34C759',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🔒 Анонимность
+                </button>
+                <AnimatePresence>
+                  {activePopover === 'anonymous' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        marginBottom: '8px',
+                        background: 'var(--tg-section-bg-color)',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        fontSize: '11px',
+                        color: 'var(--tg-text-color)',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        zIndex: 10
+                      }}
+                    >
+                      Ваши ответы будут анонимными
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
 
-        {/* Мотивация */}
-        {survey.settings?.motivationEnabled && (
-          <div style={{
-            background: 'rgba(255, 165, 0, 0.1)',
-            border: '2px solid rgba(255, 165, 0, 0.3)',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '20px'
-          }}>
-            <div style={{ fontSize: '28px', marginBottom: '8px' }}>🎁</div>
-            <div style={{ 
-              fontSize: '15px', 
-              fontWeight: '600',
-              color: 'var(--tg-text-color)',
-              marginBottom: '8px'
-            }}>
-              Награда за участие
-            </div>
-            <div style={{ 
-              fontSize: '14px', 
-              color: 'var(--tg-text-color)',
-              marginBottom: '12px'
-            }}>
-              {survey.settings.motivationType === 'stars' && `⭐ ${survey.settings.motivationDetails || '50'} звёзд Telegram`}
-              {survey.settings.motivationType === 'promo_code' && `💎 ${survey.settings.motivationDetails || 'Промокод на скидку'}`}
-              {survey.settings.motivationType === 'gift' && `🎁 ${survey.settings.motivationDetails || 'Подарок'}`}
-              {survey.settings.motivationType === 'other' && survey.settings.motivationDetails}
-            </div>
-            <div style={{ 
-              fontSize: '11px', 
-              color: 'var(--tg-hint-color)',
-              fontStyle: 'italic'
-            }}>
-              Все награды выдаются организаторами опроса. AI Surveys не участвует в их хранении и передаче.
-            </div>
+            {/* Награда */}
+            {survey.settings?.motivationEnabled && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => handlePopoverClick('reward')}
+                  style={{
+                    background: 'rgba(255, 165, 0, 0.15)',
+                    border: '1px solid rgba(255, 165, 0, 0.3)',
+                    borderRadius: '16px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#FF9500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🎁 Награда
+                </button>
+                <AnimatePresence>
+                  {activePopover === 'reward' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        marginBottom: '8px',
+                        background: 'var(--tg-section-bg-color)',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        fontSize: '11px',
+                        color: 'var(--tg-text-color)',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        zIndex: 10
+                      }}
+                    >
+                      {survey.settings.motivationType === 'stars' && `⭐ ${survey.settings.motivationDetails || '50'} звёзд Telegram`}
+                      {survey.settings.motivationType === 'promo_code' && `💎 ${survey.settings.motivationDetails || 'Промокод на скидку'}`}
+                      {survey.settings.motivationType === 'gift' && `🎁 ${survey.settings.motivationDetails || 'Подарок'}`}
+                      {survey.settings.motivationType === 'other' && survey.settings.motivationDetails}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Один ответ */}
+            {survey.settings?.oneResponsePerUser && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => handlePopoverClick('oneResponse')}
+                  style={{
+                    background: 'rgba(0, 122, 255, 0.15)',
+                    border: '1px solid rgba(0, 122, 255, 0.3)',
+                    borderRadius: '16px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#007AFF',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🔄 Один ответ
+                </button>
+                <AnimatePresence>
+                  {activePopover === 'oneResponse' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        marginBottom: '8px',
+                        background: 'var(--tg-section-bg-color)',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        fontSize: '11px',
+                        color: 'var(--tg-text-color)',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        zIndex: 10
+                      }}
+                    >
+                      Можно участвовать только один раз
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Случайный порядок */}
+            {survey.settings?.randomizeQuestions && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => handlePopoverClick('random')}
+                  style={{
+                    background: 'rgba(255, 45, 85, 0.15)',
+                    border: '1px solid rgba(255, 45, 85, 0.3)',
+                    borderRadius: '16px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#FF2D55',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🎲 Случайный порядок
+                </button>
+                <AnimatePresence>
+                  {activePopover === 'random' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        marginBottom: '8px',
+                        background: 'var(--tg-section-bg-color)',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        fontSize: '11px',
+                        color: 'var(--tg-text-color)',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        zIndex: 10
+                      }}
+                    >
+                      Вопросы будут в случайном порядке
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
-        )}
+          
+          {/* Подсказка */}
+          <p style={{ 
+            fontSize: '11px', 
+            color: 'var(--tg-hint-color)',
+            textAlign: 'center',
+            margin: 0
+          }}>
+            Нажмите на любой блок для подробностей
+          </p>
+        </div>
 
         {/* Организатор */}
         <button

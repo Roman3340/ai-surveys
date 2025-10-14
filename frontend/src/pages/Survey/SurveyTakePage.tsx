@@ -162,7 +162,9 @@ export default function SurveyTakePage() {
         };
       });
 
-      await surveyApi.submitSurveyAnswers(surveyId, formattedAnswers, user?.id);
+      // Если включена анонимность, не передаем user_id
+      const userId = survey.settings?.allowAnonymous ? undefined : user?.id;
+      await surveyApi.submitSurveyAnswers(surveyId, formattedAnswers, userId);
       
       hapticFeedback?.success();
       navigate(`/survey/${surveyId}/completed`, { 
@@ -920,7 +922,14 @@ export default function SurveyTakePage() {
 
       <div style={{ padding: '0 20px 120px 20px' }}>
         {survey.questions
-          .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
+          .sort((a, b) => {
+            // Если включено перемешивание вопросов, используем случайный порядок
+            if (survey.settings?.randomizeQuestions) {
+              return Math.random() - 0.5;
+            }
+            // Иначе используем обычную сортировку по orderIndex
+            return (a.orderIndex || 0) - (b.orderIndex || 0);
+          })
           .map((question, index) => (
           <motion.div
             key={question.id}
