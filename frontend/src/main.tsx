@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Фоновая авторизация по initData (если пользователь уже запускал бот).
+// Фоновая авторизация по initData (автоматическая регистрация при первом входе).
 ;(async () => {
   try {
     const tg = isTelegramEnvironment() ? (WebApp as unknown as any) : getTelegramWebApp()
@@ -27,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
       useAppStore.getState().setSurveyInviteId(surveyId)
     }
 
+    // Автоматически регистрируем пользователя при первом входе в мини-приложение
     await authWithTelegramInitData(initData)
 
     // Сохраняем пользователя из initDataUnsafe (для фронтовой логики)
@@ -43,6 +44,6 @@ createRoot(document.getElementById('root')!).render(
       })
     }
   } catch (e) {
-    console.warn('Auth skipped:', e)
+    console.warn('Auth failed:', e)
   }
 })()
