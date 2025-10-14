@@ -64,7 +64,11 @@ export const useAppStore = create<AppStore>()(
       error: null,
 
       // Действия с пользователем
-      setUser: (user) => set({ user }),
+      setUser: (user) => set({ 
+        user,
+        // Очищаем данные при смене пользователя
+        participatedSurveys: user ? [] : []
+      }),
 
       // Действия с темой
       setTheme: (theme) => set({ theme }),
@@ -131,8 +135,9 @@ export const useAppStore = create<AppStore>()(
           set({ participatedSurveys: surveys, isLoading: false });
         } catch (error) {
           console.error('Ошибка загрузки опросов участия:', error);
+          // Не показываем ошибку для опросов участия, просто оставляем пустой массив
           set({ 
-            error: error instanceof Error ? error.message : 'Ошибка загрузки опросов участия',
+            participatedSurveys: [],
             isLoading: false 
           });
         }

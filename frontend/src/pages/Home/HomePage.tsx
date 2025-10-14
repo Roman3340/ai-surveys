@@ -32,9 +32,20 @@ export const HomePage = () => {
     // Загружаем список один раз на монтировании,
     // и повторно после успешной авторизации (см. кнопку Авторизоваться)
     loadUserSurveys();
-    loadParticipatedSurveys();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Загрузка опросов участия после авторизации
+  useEffect(() => {
+    if (user && user.telegramId) {
+      // Добавляем небольшую задержку, чтобы авторизация точно завершилась
+      const timer = setTimeout(() => {
+        loadParticipatedSurveys();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, loadParticipatedSurveys]);
 
 
   const handleCreateSurvey = () => {
