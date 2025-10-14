@@ -1,67 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings, HelpCircle, BarChart3, Users } from 'lucide-react';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useAppStore } from '../../store/useAppStore';
-import { api, getAccessToken, authWithTelegramInitData } from '../../utils/api';
-// import { isTelegramEnvironment } from '../../utils/mockTelegram'; // Не используется
 import type { Survey } from '../../types';
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const { user: telegramUser, hapticFeedback, initData, isTelegram } = useTelegram();
+  const { user: telegramUser, hapticFeedback } = useTelegram();
   const { user, userSurveys, participatedSurveys, setUser, loadUserSurveys, isLoading, error } = useAppStore();
   const [activeTab, setActiveTab] = useState<'created' | 'participated'>('created');
-  const [debugOpen, setDebugOpen] = useState<boolean>(true);
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-
-  const appendLog = (msg: string, data?: unknown) => {
-    const ts = new Date().toISOString().split('T')[1]?.replace('Z', '');
-    let line = `[${ts}] ${msg}`;
-    if (typeof data !== 'undefined') {
-      try {
-        line += ' ' + JSON.stringify(data);
-      } catch {
-        line += ' [unserializable]';
-      }
-    }
-    setDebugLogs((prev) => [...prev.slice(-200), line]);
-  };
-
-  // Перехватчики запросов для логирования
-  useEffect(() => {
-    const reqId = api.interceptors.request.use((config) => {
-      const method = (config.method || 'GET').toUpperCase();
-      const base = config.baseURL || '';
-      const url = (config.url || '');
-      appendLog(`REQ ${method} ${base}${url}`);
-      if (config.headers && (config.headers as any).Authorization) {
-        appendLog('REQ headers Authorization: present');
-      } else {
-        appendLog('REQ headers Authorization: missing');
-      }
-      return config;
-    }, (err) => {
-      appendLog('REQ ERR', { message: err?.message });
-      return Promise.reject(err);
-    });
-
-    const resId = api.interceptors.response.use((res) => {
-      appendLog(`RES ${res.status} ${res.config.baseURL || ''}${res.config.url || ''}`);
-      return res;
-    }, (err) => {
-      const status = err?.response?.status;
-      const url = (err?.config?.baseURL || '') + (err?.config?.url || '');
-      appendLog(`RES ERR ${status || 'no-status'} ${url}`, err?.response?.data || { message: err?.message });
-      return Promise.reject(err);
-    });
-
-    return () => {
-      api.interceptors.request.eject(reqId);
-      api.interceptors.response.eject(resId);
-    };
-  }, []);
 
   // Создание пользователя из Telegram данных
   useEffect(() => {
@@ -82,29 +31,10 @@ export const HomePage = () => {
   useEffect(() => {
     // Загружаем список один раз на монтировании,
     // и повторно после успешной авторизации (см. кнопку Авторизоваться)
-    appendLog('ACTION loadUserSurveys start');
-    loadUserSurveys()
-      .then(() => appendLog('ACTION loadUserSurveys done'))
-      .catch((e) => appendLog('ACTION loadUserSurveys failed', { message: e?.message }));
+    loadUserSurveys();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Диагностика окружения/базового URL
-  const apiBase = useMemo(() => (import.meta.env.VITE_API_BASE || '/api') as string, []);
-  useEffect(() => {
-    appendLog('ENV VITE_API_BASE', apiBase);
-    const token = getAccessToken();
-    appendLog('AUTH token present', { present: Boolean(token), length: token?.length || 0 });
-    appendLog('ENV origin', window.location.origin);
-    appendLog('TG env', { isTelegram, initDataLength: (initData || '').length });
-    const originBase = apiBase.replace(/\/?api\/?$/, '');
-    const healthUrl = `${originBase.replace(/\/$/, '')}/health`;
-    appendLog('HEALTH check', healthUrl);
-    fetch(healthUrl).then(async (r) => {
-      const text = await r.text().catch(() => '');
-      appendLog('HEALTH status', { status: r.status, body: text });
-    }).catch((e) => appendLog('HEALTH failed', { message: e?.message }));
-  }, [apiBase]);
 
   const handleCreateSurvey = () => {
     hapticFeedback?.light();
@@ -552,51 +482,6 @@ export const HomePage = () => {
         </div>
       </div>
 
-      {/* DEBUG LOGS (temporary) */}
-      <div style={{ padding: '16px' }}>
-        <div style={{
-          backgroundColor: 'var(--tg-section-bg-color)',
-          border: '1px solid var(--tg-section-separator-color)',
-          borderRadius: '12px',
-          padding: '12px'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontWeight: 600 }}>Отладочные логи</div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={async () => {
-                try {
-                  appendLog('ACTION authWithTelegramInitData', { initDataLength: (initData || '').length });
-                  const res = await authWithTelegramInitData(initData || '');
-                  appendLog('ACTION auth done', { ok: true, keys: Object.keys(res || {}) });
-                } catch (e: any) {
-                  appendLog('ACTION auth failed', { message: e?.message, response: e?.response?.data });
-                }
-              }} style={{
-                background: 'none', border: '1px solid var(--tg-section-separator-color)', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', color: 'var(--tg-text-color)'
-              }}>Авторизоваться</button>
-              <button onClick={() => setDebugOpen((v) => !v)} style={{
-                background: 'none', border: '1px solid var(--tg-section-separator-color)', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', color: 'var(--tg-text-color)'
-              }}>{debugOpen ? 'Скрыть' : 'Показать'}</button>
-              <button onClick={() => setDebugLogs([])} style={{
-                background: 'none', border: '1px solid var(--tg-section-separator-color)', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', color: 'var(--tg-text-color)'
-              }}>Очистить</button>
-            </div>
-          </div>
-          {debugOpen && (
-            <pre style={{
-              marginTop: '8px',
-              maxHeight: '240px',
-              overflow: 'auto',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              fontSize: '12px',
-              lineHeight: 1.35
-            }}>
-{debugLogs.join('\n')}
-            </pre>
-          )}
-        </div>
-      </div>
 
       {/* Подробнее */}
       {displayedSurveys.length > 3 && (

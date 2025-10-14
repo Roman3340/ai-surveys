@@ -107,10 +107,11 @@ export default function SurveyTakePage() {
     const errors: Record<string, string> = {};
     
     survey.questions.forEach(question => {
+      const answer = answers[question.id];
+      const otherAnswer = answers[`${question.id}_other`];
+      
+      // Проверяем обязательные вопросы
       if (question.isRequired) {
-        const answer = answers[question.id];
-        const otherAnswer = answers[`${question.id}_other`];
-        
         let isEmpty = false;
         if (!answer) {
           isEmpty = true;
@@ -127,6 +128,13 @@ export default function SurveyTakePage() {
         if (isEmpty) {
           errors[question.id] = 'Это обязательный вопрос';
         }
+      }
+      
+      // Проверяем валидацию "Другое" для всех вопросов (обязательных и необязательных)
+      if (answer === 'Другое' && !otherAnswer?.trim()) {
+        errors[question.id] = 'Пожалуйста, введите ваш ответ в поле "Другое"';
+      } else if (Array.isArray(answer) && answer.includes('Другое') && !otherAnswer?.trim()) {
+        errors[question.id] = 'Пожалуйста, введите ваш ответ в поле "Другое"';
       }
     });
 
