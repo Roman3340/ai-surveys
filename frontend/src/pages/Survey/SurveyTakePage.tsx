@@ -917,9 +917,44 @@ export default function SurveyTakePage() {
           }}>
             Опрос недоступен
           </h2>
-          <p style={{ color: 'var(--tg-hint-color)', fontSize: '15px', lineHeight: '1.5' }}>
+          <p style={{ color: 'var(--tg-hint-color)', fontSize: '15px', lineHeight: '1.5', marginBottom: '24px' }}>
             {error}
           </p>
+          
+          {/* Дополнительная информация */}
+          <div style={{ 
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            border: '1px solid var(--tg-section-separator-color)'
+          }}>
+            <p style={{ 
+              color: 'var(--tg-text-color)', 
+              fontSize: '16px', 
+              margin: '0 0 16px 0',
+              lineHeight: '1.5'
+            }}>
+              Хотите создать свой опрос?
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: 'var(--tg-button-color)',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                padding: '8px 0',
+                transition: 'opacity 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              Откройте главную страницу AI Surveys
+            </button>
+          </div>
         </div>
       </div>
     );

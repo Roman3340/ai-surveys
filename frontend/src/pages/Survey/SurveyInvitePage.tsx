@@ -110,14 +110,49 @@ export default function SurveyInvitePage() {
         background: 'var(--tg-bg-color)',
         padding: '20px'
       }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', maxWidth: '400px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
           <p style={{ color: 'var(--tg-text-color)', fontSize: '16px', marginBottom: '8px' }}>
             Опрос не найден
           </p>
-          <p style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
+          <p style={{ color: 'var(--tg-hint-color)', fontSize: '14px', marginBottom: '24px' }}>
             {error}
           </p>
+          
+          {/* Дополнительная информация */}
+          <div style={{ 
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            border: '1px solid var(--tg-section-separator-color)'
+          }}>
+            <p style={{ 
+              color: 'var(--tg-text-color)', 
+              fontSize: '16px', 
+              margin: '0 0 16px 0',
+              lineHeight: '1.5'
+            }}>
+              Хотите создать свой опрос?
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: 'var(--tg-button-color)',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                padding: '8px 0',
+                transition: 'opacity 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              Откройте главную страницу AI Surveys
+            </button>
+          </div>
         </div>
       </div>
     );
