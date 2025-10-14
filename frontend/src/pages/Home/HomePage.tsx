@@ -466,7 +466,7 @@ export const HomePage = () => {
                         color: 'var(--tg-hint-color)'
                       }}>
                         <BarChart3 size={14} />
-                        {survey.questions.length} вопр.
+                        {(survey as any).questionsCount || survey.questions.length} вопр.
                       </div>
                     )}
                   </div>
