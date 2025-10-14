@@ -85,16 +85,16 @@ export default function SurveyAnalyticsPage() {
           type: q.type,
           text: q.text,
           description: q.description,
-          is_required: q.is_required,
-          order_index: q.order_index,
+          is_required: q.isRequired || q.is_required,
+          order_index: q.orderIndex || q.order_index,
           options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
-          has_other_option: q.has_other_option,
-          scale_min: q.scale_min,
-          scale_max: q.scale_max,
-          scale_min_label: q.scale_min_label,
-          scale_max_label: q.scale_max_label,
-          image_url: q.image_url,
-          image_name: q.image_name
+          has_other_option: q.hasOtherOption || q.has_other_option,
+          scale_min: q.scaleMin || q.scale_min,
+          scale_max: q.scaleMax || q.scale_max,
+          scale_min_label: q.scaleMinLabel || q.scale_min_label,
+          scale_max_label: q.scaleMaxLabel || q.scale_max_label,
+          image_url: q.imageUrl || q.image_url,
+          image_name: q.imageName || q.image_name
         }));
         setQuestions(mapped);
         setEditedQuestions(JSON.parse(JSON.stringify(mapped)));
@@ -218,16 +218,16 @@ export default function SurveyAnalyticsPage() {
         type: q.type,
         text: q.text,
         description: q.description,
-        is_required: q.is_required,
-        order_index: q.order_index,
+        is_required: q.isRequired || q.is_required,
+        order_index: q.orderIndex || q.order_index,
         options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
-        has_other_option: q.has_other_option,
-        scale_min: q.scale_min,
-        scale_max: q.scale_max,
-        scale_min_label: q.scale_min_label,
-        scale_max_label: q.scale_max_label,
-        image_url: q.image_url,
-        image_name: q.image_name
+        has_other_option: q.hasOtherOption || q.has_other_option,
+        scale_min: q.scaleMin || q.scale_min,
+        scale_max: q.scaleMax || q.scale_max,
+        scale_min_label: q.scaleMinLabel || q.scale_min_label,
+        scale_max_label: q.scaleMaxLabel || q.scale_max_label,
+        image_url: q.imageUrl || q.image_url,
+        image_name: q.imageName || q.image_name
       }));
       setQuestions(mapped);
       setEditedQuestions(JSON.parse(JSON.stringify(mapped)));
@@ -242,6 +242,46 @@ export default function SurveyAnalyticsPage() {
 
   const updateEditedQuestion = (index: number, updates: Partial<EditableQuestion>) => {
     setEditedQuestions(prev => prev.map((q, i) => i === index ? { ...q, ...updates } : q));
+  };
+
+  const moveQuestionUp = (questionId: string) => {
+    const index = editedQuestions.findIndex(q => q.id === questionId);
+    if (index > 0) {
+      const newQuestions = [...editedQuestions];
+      [newQuestions[index - 1], newQuestions[index]] = [newQuestions[index], newQuestions[index - 1]];
+      
+      // Обновляем order_index для всех вопросов
+      const updatedQuestions = newQuestions.map((q, i) => ({ ...q, order_index: i + 1 }));
+      setEditedQuestions(updatedQuestions);
+      
+      // Автоскролл к перемещенному вопросу
+      setTimeout(() => {
+        const questionElement = document.getElementById(`question-${questionId}`);
+        if (questionElement) {
+          questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  };
+
+  const moveQuestionDown = (questionId: string) => {
+    const index = editedQuestions.findIndex(q => q.id === questionId);
+    if (index < editedQuestions.length - 1) {
+      const newQuestions = [...editedQuestions];
+      [newQuestions[index], newQuestions[index + 1]] = [newQuestions[index + 1], newQuestions[index]];
+      
+      // Обновляем order_index для всех вопросов
+      const updatedQuestions = newQuestions.map((q, i) => ({ ...q, order_index: i + 1 }));
+      setEditedQuestions(updatedQuestions);
+      
+      // Автоскролл к перемещенному вопросу
+      setTimeout(() => {
+        const questionElement = document.getElementById(`question-${questionId}`);
+        if (questionElement) {
+          questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
   };
 
   const addOption = (questionIndex: number) => {
@@ -355,6 +395,7 @@ export default function SurveyAnalyticsPage() {
                 justifyContent: 'center',
                 fontWeight: 600,
                 fontSize: 12,
+                marginTop: '2px'
               }}
             >
               {index + 1}
@@ -380,12 +421,12 @@ export default function SurveyAnalyticsPage() {
                 }}
               />
               
-              <input
-                type="text"
+              <textarea
                 value={question.description || ''}
                 onChange={(e) => updateEditedQuestion(index, { description: e.target.value })}
                 disabled={disabled}
                 placeholder="Описание (необязательно)"
+                rows={3}
                 style={{
                   width: '100%',
                   fontSize: '13px',
@@ -395,10 +436,51 @@ export default function SurveyAnalyticsPage() {
                   color: 'var(--tg-hint-color)',
                   outline: 'none',
                   marginTop: '6px',
-                  opacity: disabled ? 0.6 : 1
+                  opacity: disabled ? 0.6 : 1,
+                  resize: 'vertical'
                 }}
               />
             </div>
+            
+            {/* Кнопки перемещения */}
+            {editingQuestions && editedQuestions.length > 1 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                {index > 0 && (
+                  <button
+                    onClick={() => moveQuestionUp(question.id)}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--tg-hint-color)',
+                      padding: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <ChevronUp size={12} />
+                  </button>
+                )}
+                {index < editedQuestions.length - 1 && (
+                  <button
+                    onClick={() => moveQuestionDown(question.id)}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--tg-hint-color)',
+                      padding: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <ChevronDown size={12} />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Тип вопроса */}
@@ -822,36 +904,6 @@ export default function SurveyAnalyticsPage() {
                 </>
               )}
 
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '10px',
-                backgroundColor: 'var(--tg-bg-color)',
-                borderRadius: '8px'
-              }}>
-                <div style={{ fontSize: '12px', color: 'var(--tg-hint-color)', textAlign: 'center', minWidth: '50px' }}>
-                  {question.scale_min || 1}
-                  {question.scale_min_label && <div style={{ fontSize: '10px', marginTop: '2px' }}>{question.scale_min_label}</div>}
-                </div>
-                <div style={{ flex: 1, display: 'flex', gap: '6px' }}>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        flex: 1,
-                        height: '6px',
-                        backgroundColor: 'var(--tg-section-separator-color)',
-                        borderRadius: '3px'
-                      }}
-                    />
-                  ))}
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--tg-hint-color)', textAlign: 'center', minWidth: '50px' }}>
-                  {question.scale_max || 5}
-                  {question.scale_max_label && <div style={{ fontSize: '10px', marginTop: '2px' }}>{question.scale_max_label}</div>}
-                </div>
-              </div>
             </div>
           )}
 
