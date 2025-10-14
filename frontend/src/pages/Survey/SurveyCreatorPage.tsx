@@ -2882,79 +2882,50 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
         <div>
           <div style={{ display: 'flex', gap: '16px' }}>
             <label style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer'
-          }}>
-            <div style={{
-              position: 'relative',
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              border: '2px solid var(--tg-hint-color)',
-              backgroundColor: 'transparent',
-              transition: 'all 0.2s ease'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
             }}>
-              <input
-                type="radio"
-                name={`question_${question.id}`}
-                value="yes"
-                style={{ 
-                  position: 'absolute',
-                  opacity: 0,
-                  width: '100%',
-                  height: '100%',
-                  margin: 0,
-                  cursor: 'pointer'
-                }}
-                onClick={(e) => {
-                  const radio = e.target as HTMLInputElement;
-                  const allRadios = document.querySelectorAll(`input[name="question_${question.id}"]`) as NodeListOf<HTMLInputElement>;
-                  
-                  // Сбрасываем все radio кнопки
-                  allRadios.forEach(r => {
-                    const label = r.closest('label');
-                    const circle = label?.querySelector('div') as HTMLElement;
-                    const dot = label?.querySelector('div > div') as HTMLElement;
-                    circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
-                    circle?.style.setProperty('background-color', 'transparent');
-                    dot?.style.setProperty('opacity', '0');
-                    r.checked = false;
-                  });
-                  
-                  // Если кликнули на уже выбранную кнопку, просто сбрасываем выбор
-                  if (radio.checked) {
-                    radio.checked = false;
-                    onAnswerChange?.({ ...answers, [question.id]: null });
-                  } else {
-                    // Выбираем новую кнопку
-                    radio.checked = true;
-                    const label = radio.closest('label');
-                    const circle = label?.querySelector('div') as HTMLElement;
-                    const dot = label?.querySelector('div > div') as HTMLElement;
-                    circle?.style.setProperty('border-color', 'var(--tg-button-color)');
-                    circle?.style.setProperty('background-color', 'var(--tg-button-color)');
-                    dot?.style.setProperty('opacity', '1');
-                    onAnswerChange?.({ ...answers, [question.id]: radio.value });
-                  }
-                }}
-              />
               <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '8px',
-                height: '8px',
+                position: 'relative',
+                width: '20px',
+                height: '20px',
                 borderRadius: '50%',
-                backgroundColor: 'white',
-                opacity: 0,
-                transition: 'opacity 0.2s ease'
-              }} />
-            </div>
-            <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
-          </label>
+                border: `2px solid ${answers?.[question.id] === 'yes' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answers?.[question.id] === 'yes' ? 'var(--tg-button-color)' : 'transparent',
+                transition: 'all 0.2s ease'
+              }}>
+                <input
+                  type="radio"
+                  name={`question_${question.id}`}
+                  checked={answers?.[question.id] === 'yes'}
+                  onChange={() => onAnswerChange?.({ ...answers, [question.id]: 'yes' })}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  opacity: answers?.[question.id] === 'yes' ? 1 : 0,
+                  transition: 'opacity 0.2s ease'
+                }} />
+              </div>
+              <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
+            </label>
+            
             <label style={{
               display: 'flex',
               alignItems: 'center',
@@ -2966,54 +2937,24 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                 width: '20px',
                 height: '20px',
                 borderRadius: '50%',
-                border: '2px solid var(--tg-hint-color)',
-                backgroundColor: 'transparent',
+                border: `2px solid ${answers?.[question.id] === 'no' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answers?.[question.id] === 'no' ? 'var(--tg-button-color)' : 'transparent',
                 transition: 'all 0.2s ease'
               }}>
                 <input
                   type="radio"
                   name={`question_${question.id}`}
-                  value="no"
-                style={{ 
-                  position: 'absolute',
-                  opacity: 0,
-                  width: '100%',
-                  height: '100%',
-                  margin: 0,
-                  cursor: 'pointer'
-                }}
-                onClick={(e) => {
-                  const radio = e.target as HTMLInputElement;
-                  const allRadios = document.querySelectorAll(`input[name="question_${question.id}"]`) as NodeListOf<HTMLInputElement>;
-                  
-                  // Сбрасываем все radio кнопки
-                  allRadios.forEach(r => {
-                    const label = r.closest('label');
-                    const circle = label?.querySelector('div') as HTMLElement;
-                    const dot = label?.querySelector('div > div') as HTMLElement;
-                    circle?.style.setProperty('border-color', 'var(--tg-hint-color)');
-                    circle?.style.setProperty('background-color', 'transparent');
-                    dot?.style.setProperty('opacity', '0');
-                    r.checked = false;
-                  });
-                  
-                  // Если кликнули на уже выбранную кнопку, просто сбрасываем выбор
-                  if (radio.checked) {
-                    radio.checked = false;
-                    onAnswerChange?.({ ...answers, [question.id]: null });
-                  } else {
-                    // Выбираем новую кнопку
-                    radio.checked = true;
-                    const label = radio.closest('label');
-                    const circle = label?.querySelector('div') as HTMLElement;
-                    const dot = label?.querySelector('div > div') as HTMLElement;
-                    circle?.style.setProperty('border-color', 'var(--tg-button-color)');
-                    circle?.style.setProperty('background-color', 'var(--tg-button-color)');
-                    dot?.style.setProperty('opacity', '1');
-                    onAnswerChange?.({ ...answers, [question.id]: radio.value });
-                  }
-                }}
-              />
+                  checked={answers?.[question.id] === 'no'}
+                  onChange={() => onAnswerChange?.({ ...answers, [question.id]: 'no' })}
+                  style={{ 
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    margin: 0,
+                    cursor: 'pointer'
+                  }}
+                />
                 <div style={{
                   position: 'absolute',
                   top: '50%',
@@ -3023,7 +2964,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   height: '8px',
                   borderRadius: '50%',
                   backgroundColor: 'white',
-                  opacity: 0,
+                  opacity: answers?.[question.id] === 'no' ? 1 : 0,
                   transition: 'opacity 0.2s ease'
                 }} />
               </div>
