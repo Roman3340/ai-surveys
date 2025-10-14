@@ -56,7 +56,7 @@ export const HomePage = () => {
     navigate(`/survey/${survey.id}`);
   };
 
-  const handleViewParticipatedSurvey = (survey: Survey) => {
+  const handleViewParticipatedSurvey = () => {
     // Опросы участия не кликабельны
     hapticFeedback?.light();
   };
@@ -356,7 +356,7 @@ export const HomePage = () => {
               {displayedSurveys.slice(0, 3).map((survey) => (
                 <div
                   key={survey.id}
-                  onClick={activeTab === 'created' ? () => handleViewAnalytics(survey) : () => handleViewParticipatedSurvey(survey)}
+                  onClick={activeTab === 'created' ? () => handleViewAnalytics(survey) : handleViewParticipatedSurvey}
                   style={{
                     backgroundColor: 'var(--tg-section-bg-color)',
                     borderRadius: '12px',
