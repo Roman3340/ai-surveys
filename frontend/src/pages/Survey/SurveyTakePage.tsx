@@ -48,6 +48,10 @@ export default function SurveyTakePage() {
   const [answers, setAnswers] = useState<Answers>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  
+  // Состояния для scale и rating вопросов
+  const [scaleValues, setScaleValues] = useState<Record<string, number>>({});
+  const [ratingValues, setRatingValues] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const loadSurvey = async () => {
@@ -541,7 +545,7 @@ export default function SurveyTakePage() {
       case 'scale':
         const scaleMin = question.scaleMin || 1;
         const scaleMax = question.scaleMax || 10;
-        const [scaleValue, setScaleValue] = useState(answer || Math.floor((scaleMin + scaleMax) / 2));
+        const scaleValue = scaleValues[question.id] ?? answer ?? Math.floor((scaleMin + scaleMax) / 2);
         
         return (
           <div style={{ 
@@ -568,7 +572,7 @@ export default function SurveyTakePage() {
                   value={scaleValue}
                   onChange={(e) => {
                     const value = parseInt(e.target.value);
-                    setScaleValue(value);
+                    setScaleValues(prev => ({ ...prev, [question.id]: value }));
                     handleAnswerChange(question.id, value);
                   }}
                   style={{
@@ -623,7 +627,7 @@ export default function SurveyTakePage() {
 
       case 'rating':
         const maxRating = question.ratingMax || 5;
-        const [rating, setRating] = useState(answer || 0);
+        const rating = ratingValues[question.id] ?? answer ?? 0;
         
         return (
           <div style={{ 
@@ -639,7 +643,7 @@ export default function SurveyTakePage() {
                   <button
                     key={star}
                     onClick={() => {
-                      setRating(star);
+                      setRatingValues(prev => ({ ...prev, [question.id]: star }));
                       handleAnswerChange(question.id, star);
                     }}
                     style={{
