@@ -310,18 +310,29 @@ export default function SurveyInvitePage() {
                         padding: '12px 16px',
                         fontSize: '12px',
                         color: '#ffffff',
-                        whiteSpace: 'nowrap',
+                        whiteSpace: 'normal',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        minWidth: '180px',
-                        maxWidth: '250px',
+                        minWidth: '200px',
+                        maxWidth: '280px',
                         textAlign: 'center'
                       }}
                     >
-                      {survey.settings.motivationType === 'stars' && `⭐ ${survey.settings.motivationDetails || '50'} звёзд Telegram`}
-                      {survey.settings.motivationType === 'promo_code' && `💎 ${survey.settings.motivationDetails || 'Промокод на скидку'}`}
-                      {survey.settings.motivationType === 'gift' && `🎁 ${survey.settings.motivationDetails || 'Подарок'}`}
-                      {survey.settings.motivationType === 'other' && survey.settings.motivationDetails}
+                      <div style={{ marginBottom: '8px' }}>
+                        {survey.settings.motivationType === 'stars' && `⭐ ${survey.settings.motivationDetails || '50'} звёзд Telegram`}
+                        {survey.settings.motivationType === 'promo_code' && `💎 ${survey.settings.motivationDetails || 'Промокод на скидку'}`}
+                        {survey.settings.motivationType === 'gift' && `🎁 ${survey.settings.motivationDetails || 'Подарок'}`}
+                        {survey.settings.motivationType === 'other' && survey.settings.motivationDetails}
+                      </div>
+                      <div style={{ 
+                        fontSize: '10px', 
+                        color: '#a0a0a0',
+                        lineHeight: '1.3',
+                        borderTop: '1px solid #48484a',
+                        paddingTop: '6px'
+                      }}>
+                        Все награды выдаются организаторами опроса. AI Surveys не участвует в их хранении и передаче.
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
