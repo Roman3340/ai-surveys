@@ -71,6 +71,21 @@ export default function SurveyInvitePage() {
   };
 
   const handlePopoverClick = (type: string) => {
+    console.log('Popover clicked:', type); // Debug log
+    
+    // Временная отладка - показываем alert для проверки
+    if (type === 'anonymous') {
+      alert('Анонимность: Ваш аккаунт будет скрыт');
+    } else if (type === 'reward') {
+      alert('Награда: Вы получите подарок за участие');
+    } else if (type === 'oneResponse') {
+      alert('Один ответ: Можно участвовать только один раз');
+    } else if (type === 'random') {
+      alert('Случайный порядок: Вопросы будут перемешаны');
+    } else if (type === 'info') {
+      alert('Настройки опросов:\n🔒 Анонимность - ваш аккаунт будет скрыт\n🎁 Награда - вы получите подарок\n🔄 Один ответ - можно участвовать только один раз\n🎲 Случайный порядок - вопросы перемешаны');
+    }
+    
     setActivePopover(activePopover === type ? null : type);
     hapticFeedback?.light();
   };
@@ -202,7 +217,16 @@ export default function SurveyInvitePage() {
             {survey.settings?.allowAnonymous && (
               <div style={{ position: 'relative' }}>
                 <button
-                  onClick={() => handlePopoverClick('anonymous')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('anonymous');
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('anonymous');
+                  }}
                   style={{
                     background: 'rgba(52, 199, 89, 0.15)',
                     border: '1px solid rgba(52, 199, 89, 0.3)',
@@ -230,15 +254,15 @@ export default function SurveyInvitePage() {
                         left: '50%',
                         transform: 'translateX(-50%)',
                         marginBottom: '8px',
-                        background: 'var(--tg-section-bg-color)',
-                        border: '1px solid var(--tg-section-separator-color)',
+                        background: '#ffffff',
+                        border: '1px solid #e1e1e1',
                         borderRadius: '8px',
                         padding: '8px 12px',
                         fontSize: '11px',
-                        color: 'var(--tg-text-color)',
+                        color: '#000000',
                         whiteSpace: 'nowrap',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 1000,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        zIndex: 9999,
                         maxWidth: '200px',
                         textAlign: 'center'
                       }}
@@ -282,15 +306,15 @@ export default function SurveyInvitePage() {
                         left: '50%',
                         transform: 'translateX(-50%)',
                         marginBottom: '8px',
-                        background: 'var(--tg-section-bg-color)',
-                        border: '1px solid var(--tg-section-separator-color)',
+                        background: '#ffffff',
+                        border: '1px solid #e1e1e1',
                         borderRadius: '8px',
                         padding: '8px 12px',
                         fontSize: '11px',
-                        color: 'var(--tg-text-color)',
+                        color: '#000000',
                         whiteSpace: 'nowrap',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 1000,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        zIndex: 9999,
                         maxWidth: '200px',
                         textAlign: 'center'
                       }}
@@ -337,15 +361,15 @@ export default function SurveyInvitePage() {
                         left: '50%',
                         transform: 'translateX(-50%)',
                         marginBottom: '8px',
-                        background: 'var(--tg-section-bg-color)',
-                        border: '1px solid var(--tg-section-separator-color)',
+                        background: '#ffffff',
+                        border: '1px solid #e1e1e1',
                         borderRadius: '8px',
                         padding: '8px 12px',
                         fontSize: '11px',
-                        color: 'var(--tg-text-color)',
+                        color: '#000000',
                         whiteSpace: 'nowrap',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 1000,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        zIndex: 9999,
                         maxWidth: '200px',
                         textAlign: 'center'
                       }}
@@ -389,15 +413,15 @@ export default function SurveyInvitePage() {
                         left: '50%',
                         transform: 'translateX(-50%)',
                         marginBottom: '8px',
-                        background: 'var(--tg-section-bg-color)',
-                        border: '1px solid var(--tg-section-separator-color)',
+                        background: '#ffffff',
+                        border: '1px solid #e1e1e1',
                         borderRadius: '8px',
                         padding: '8px 12px',
                         fontSize: '11px',
-                        color: 'var(--tg-text-color)',
+                        color: '#000000',
                         whiteSpace: 'nowrap',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 1000,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                        zIndex: 9999,
                         maxWidth: '200px',
                         textAlign: 'center'
                       }}
@@ -440,14 +464,14 @@ export default function SurveyInvitePage() {
                       left: '50%',
                       transform: 'translateX(-50%)',
                       marginBottom: '8px',
-                      background: 'var(--tg-section-bg-color)',
-                      border: '1px solid var(--tg-section-separator-color)',
+                      background: '#ffffff',
+                      border: '1px solid #e1e1e1',
                       borderRadius: '8px',
                       padding: '12px',
                       fontSize: '11px',
-                      color: 'var(--tg-text-color)',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      zIndex: 1000,
+                      color: '#000000',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                      zIndex: 9999,
                       maxWidth: '280px',
                       textAlign: 'left',
                       lineHeight: '1.4'
