@@ -243,13 +243,14 @@ export default function SurveyInvitePage() {
                         background: '#2c2c2e',
                         border: '1px solid #48484a',
                         borderRadius: '8px',
-                        padding: '8px 12px',
-                        fontSize: '11px',
+                        padding: '12px 16px',
+                        fontSize: '12px',
                         color: '#ffffff',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        maxWidth: '200px',
+                        minWidth: '180px',
+                        maxWidth: '250px',
                         textAlign: 'center'
                       }}
                     >
@@ -304,13 +305,14 @@ export default function SurveyInvitePage() {
                         background: '#2c2c2e',
                         border: '1px solid #48484a',
                         borderRadius: '8px',
-                        padding: '8px 12px',
-                        fontSize: '11px',
+                        padding: '12px 16px',
+                        fontSize: '12px',
                         color: '#ffffff',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        maxWidth: '200px',
+                        minWidth: '180px',
+                        maxWidth: '250px',
                         textAlign: 'center'
                       }}
                     >
@@ -368,13 +370,14 @@ export default function SurveyInvitePage() {
                         background: '#2c2c2e',
                         border: '1px solid #48484a',
                         borderRadius: '8px',
-                        padding: '8px 12px',
-                        fontSize: '11px',
+                        padding: '12px 16px',
+                        fontSize: '12px',
                         color: '#ffffff',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        maxWidth: '200px',
+                        minWidth: '180px',
+                        maxWidth: '250px',
                         textAlign: 'center'
                       }}
                     >
@@ -429,13 +432,14 @@ export default function SurveyInvitePage() {
                         background: '#2c2c2e',
                         border: '1px solid #48484a',
                         borderRadius: '8px',
-                        padding: '8px 12px',
-                        fontSize: '11px',
+                        padding: '12px 16px',
+                        fontSize: '12px',
                         color: '#ffffff',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        maxWidth: '200px',
+                        minWidth: '180px',
+                        maxWidth: '250px',
                         textAlign: 'center'
                       }}
                     >
@@ -489,36 +493,58 @@ export default function SurveyInvitePage() {
                       background: '#2c2c2e',
                       border: '1px solid #48484a',
                       borderRadius: '8px',
-                      padding: '12px',
-                      fontSize: '11px',
+                      padding: '16px',
+                      fontSize: '12px',
                       color: '#ffffff',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                       zIndex: 9999,
-                      maxWidth: '280px',
+                      minWidth: '300px',
+                      maxWidth: '350px',
                       textAlign: 'left',
-                      lineHeight: '1.4'
+                      lineHeight: '1.5'
                     }}
                   >
-                    <div style={{ marginBottom: '8px', fontWeight: '600' }}>
+                    <div style={{ marginBottom: '12px', fontWeight: '600', fontSize: '13px' }}>
                       Возможные настройки опросов:
                     </div>
-                    <div style={{ marginBottom: '4px' }}>
-                      🔒 <strong>Анонимность</strong> - ваш аккаунт будет скрыт
-                    </div>
-                    <div style={{ marginBottom: '4px' }}>
-                      🎁 <strong>Награда</strong> - вы получите подарок за участие
-                    </div>
-                    <div style={{ marginBottom: '4px' }}>
-                      🔄 <strong>Один ответ</strong> - можно участвовать только один раз
-                    </div>
-                    <div style={{ marginBottom: '0' }}>
-                      🎲 <strong>Случайный порядок</strong> - вопросы перемешаны
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: '1fr 1fr', 
+                      gap: '8px 12px',
+                      marginBottom: '12px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🔒 <span style={{ fontSize: '11px' }}>Анонимность</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
+                        Ваш аккаунт скрыт
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🎁 <span style={{ fontSize: '11px' }}>Награда</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
+                        Подарок за участие
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🔄 <span style={{ fontSize: '11px' }}>Один ответ</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
+                        Пройти можно только один раз
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🎲 <span style={{ fontSize: '11px' }}>Случайный порядок</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
+                        Вопросы перемешаны
+                      </div>
                     </div>
                     <div style={{ 
-                      marginTop: '8px', 
                       fontSize: '10px', 
-                      color: 'var(--tg-hint-color)',
-                      fontStyle: 'italic'
+                      color: '#a0a0a0',
+                      fontStyle: 'italic',
+                      textAlign: 'center',
+                      borderTop: '1px solid #48484a',
+                      paddingTop: '8px'
                     }}>
                       Если видите хэштеги - значит они включены
                     </div>
