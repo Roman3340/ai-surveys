@@ -52,6 +52,7 @@ export default function SurveyTakePage() {
   // Состояния для scale и rating вопросов
   const [scaleValues, setScaleValues] = useState<Record<string, number>>({});
   const [ratingValues, setRatingValues] = useState<Record<string, number>>({});
+  const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
     const loadSurvey = async () => {
@@ -67,6 +68,15 @@ export default function SurveyTakePage() {
         }
         
         setSurvey(response);
+        
+        // Перемешиваем вопросы один раз при загрузке
+        if (response.settings?.randomizeQuestions) {
+          const shuffled = [...response.questions].sort(() => Math.random() - 0.5);
+          setShuffledQuestions(shuffled);
+        } else {
+          const sorted = [...response.questions].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+          setShuffledQuestions(sorted);
+        }
       } catch (e: any) {
         console.error(e);
         setError(e?.response?.data?.detail || 'Не удалось загрузить опрос');
@@ -140,9 +150,7 @@ export default function SurveyTakePage() {
     hapticFeedback?.medium();
     
     try {
-      const formattedAnswers = survey.questions
-        .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
-        .map(q => {
+      const formattedAnswers = shuffledQuestions.map(q => {
         let answerValue = answers[q.id] || null;
         
         if (answerValue === 'Другое') {
@@ -921,16 +929,7 @@ export default function SurveyTakePage() {
       </div>
 
       <div style={{ padding: '0 20px 120px 20px' }}>
-        {survey.questions
-          .sort((a, b) => {
-            // Если включено перемешивание вопросов, используем случайный порядок
-            if (survey.settings?.randomizeQuestions) {
-              return Math.random() - 0.5;
-            }
-            // Иначе используем обычную сортировку по orderIndex
-            return (a.orderIndex || 0) - (b.orderIndex || 0);
-          })
-          .map((question, index) => (
+        {shuffledQuestions.map((question, index) => (
           <motion.div
             key={question.id}
             id={`question-${question.id}`}

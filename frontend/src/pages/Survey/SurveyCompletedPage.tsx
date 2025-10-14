@@ -90,40 +90,6 @@ export default function SurveyCompletedPage() {
           Организатор опроса получит их и сможет ознакомиться с результатами.
         </motion.p>
 
-        {/* Информация о награде */}
-        {hasReward && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            style={{
-              background: 'rgba(255, 165, 0, 0.1)',
-              border: '2px solid rgba(255, 165, 0, 0.3)',
-              borderRadius: '16px',
-              padding: '20px',
-              marginBottom: '24px'
-            }}
-          >
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎁</div>
-            <p style={{
-              fontSize: '15px',
-              color: 'var(--tg-text-color)',
-              marginBottom: '8px',
-              fontWeight: '500'
-            }}>
-              Не забудьте получить награду!
-            </p>
-            <p style={{
-              fontSize: '13px',
-              color: 'var(--tg-hint-color)',
-              lineHeight: '1.5'
-            }}>
-              Для получения награды свяжитесь с организатором опроса.
-              {creatorUsername && ' Нажмите кнопку ниже, чтобы открыть чат.'}
-            </p>
-          </motion.div>
-        )}
-
         {/* Кнопка связи с создателем */}
         {hasReward && creatorUsername && (
           <motion.button
@@ -135,9 +101,9 @@ export default function SurveyCompletedPage() {
               width: '100%',
               padding: '16px',
               borderRadius: '12px',
-              border: '2px solid var(--tg-button-color)',
-              backgroundColor: 'transparent',
-              color: 'var(--tg-button-color)',
+              border: '1px solid var(--tg-section-separator-color)',
+              backgroundColor: 'var(--tg-section-bg-color)',
+              color: 'var(--tg-text-color)',
               fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',

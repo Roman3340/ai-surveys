@@ -211,7 +211,9 @@ export default function SurveyInvitePage() {
                         color: 'var(--tg-text-color)',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 10
+                        zIndex: 1000,
+                        maxWidth: '200px',
+                        textAlign: 'center'
                       }}
                     >
                       Ваши ответы будут анонимными
@@ -261,7 +263,9 @@ export default function SurveyInvitePage() {
                         color: 'var(--tg-text-color)',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 10
+                        zIndex: 1000,
+                        maxWidth: '200px',
+                        textAlign: 'center'
                       }}
                     >
                       {survey.settings.motivationType === 'stars' && `⭐ ${survey.settings.motivationDetails || '50'} звёзд Telegram`}
@@ -314,7 +318,9 @@ export default function SurveyInvitePage() {
                         color: 'var(--tg-text-color)',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 10
+                        zIndex: 1000,
+                        maxWidth: '200px',
+                        textAlign: 'center'
                       }}
                     >
                       Можно участвовать только один раз
@@ -364,7 +370,9 @@ export default function SurveyInvitePage() {
                         color: 'var(--tg-text-color)',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        zIndex: 10
+                        zIndex: 1000,
+                        maxWidth: '200px',
+                        textAlign: 'center'
                       }}
                     >
                       Вопросы будут в случайном порядке
