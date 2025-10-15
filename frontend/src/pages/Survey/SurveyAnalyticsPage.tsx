@@ -181,6 +181,17 @@ const SummaryTab: React.FC<{
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
       {/* Общая статистика */}
       <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 12 }}>
         <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>Общая статистика</h3>
@@ -195,8 +206,8 @@ const SummaryTab: React.FC<{
         {/* Летающие звездочки SVG */}
         <div style={{
           position: 'absolute',
-          top: '-8px',
-          right: '-16px',
+          top: '-4px',
+          right: '8px',
           animation: 'float 2s ease-in-out infinite',
           animationDelay: '0s',
           zIndex: 1
@@ -207,8 +218,8 @@ const SummaryTab: React.FC<{
         </div>
         <div style={{
           position: 'absolute',
-          bottom: '-8px',
-          left: '-16px',
+          bottom: '-4px',
+          left: '8px',
           animation: 'float 2s ease-in-out infinite',
           animationDelay: '1s',
           zIndex: 1
