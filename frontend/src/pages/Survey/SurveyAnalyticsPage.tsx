@@ -1570,6 +1570,23 @@ export default function SurveyAnalyticsPage() {
                   {/* Мотивация */}
                   {(settings.motivationEnabled || editingSettings) && (
                     <>
+                      {/* Предупреждение */}
+                      <div style={{ 
+                        marginBottom: '16px', 
+                        padding: '12px', 
+                        backgroundColor: 'rgba(244, 109, 0, 0.1)', 
+                        borderRadius: '8px',
+                        border: '1px solid rgba(244, 109, 0, 0.3)'
+                      }}>
+                        <div style={{ 
+                          fontSize: '13px', 
+                          color: 'var(--tg-hint-color)', 
+                          lineHeight: '1.4' 
+                        }}>
+                          ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
+                        </div>
+                      </div>
+                      
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                         <span style={{ color: 'var(--tg-hint-color)' }}>Мотивация включена</span>
                         {editingSettings ? (

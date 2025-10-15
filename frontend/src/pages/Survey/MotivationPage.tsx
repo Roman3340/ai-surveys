@@ -30,6 +30,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     rewardValue: '',
     ...previousData
   } as MotivationData);
+  const [motivationValidationError, setMotivationValidationError] = useState<string>('');
 
   // Загружаем данные из черновика при монтировании
   useEffect(() => {
@@ -47,7 +48,49 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     }
   }, []);
 
+  // Валидация мотивации
+  const validateMotivation = (): boolean => {
+    if (motivationData.motivation === 'none') {
+      setMotivationValidationError('');
+      return true;
+    }
+
+    // Проверяем что описание заполнено для всех типов
+    if (!motivationData.rewardDescription || motivationData.rewardDescription.trim() === '') {
+      if (motivationData.motivation === 'stars') {
+        setMotivationValidationError('Введите количество звёзд');
+      } else {
+        setMotivationValidationError('Заполните описание награды');
+      }
+      return false;
+    }
+
+    // Для звезд дополнительно проверяем что число >= 1
+    if (motivationData.motivation === 'stars') {
+      const starsCount = parseInt(motivationData.rewardValue);
+      if (isNaN(starsCount) || starsCount < 1) {
+        setMotivationValidationError('Количество звёзд должно быть не менее 1');
+        return false;
+      }
+    }
+
+    // Для промокода нужен также промокод
+    if (motivationData.motivation === 'promo') {
+      if (!motivationData.rewardValue || motivationData.rewardValue.trim() === '') {
+        setMotivationValidationError('Введите промокод');
+        return false;
+      }
+    }
+
+    setMotivationValidationError('');
+    return true;
+  };
+
   const handleNext = () => {
+    if (!validateMotivation()) {
+      return;
+    }
+
     // Сохраняем данные мотивации в черновик (преобразуем в нужный формат)
     const dataToSave = {
       motivationEnabled: motivationData.motivation !== 'none',
@@ -89,6 +132,10 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     }
     
     setMotivationData(newData);
+    
+    // Очищаем ошибку валидации при изменении полей
+    setMotivationValidationError('');
+    
     // Автоматически сохраняем изменения (преобразуем в нужный формат)
     const dataToSave = {
       motivationEnabled: newData.motivation !== 'none',
@@ -223,9 +270,9 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
           <div style={{ 
             marginBottom: '20px', 
             padding: '12px', 
-            backgroundColor: 'rgba(255, 193, 7, 0.1)', 
+            backgroundColor: 'rgba(244, 109, 0, 0.1)', 
             borderRadius: '8px',
-            border: '1px solid rgba(255, 193, 7, 0.3)'
+            border: '1px solid rgba(244, 109, 0, 0.3)'
           }}>
             <div style={{ 
               fontSize: '13px', 
@@ -235,6 +282,25 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
               ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
             </div>
           </div>
+          
+          {/* Ошибка валидации мотивации */}
+          {motivationValidationError && (
+            <div style={{ 
+              marginBottom: '20px', 
+              padding: '12px', 
+              backgroundColor: 'rgba(255, 59, 48, 0.1)', 
+              borderRadius: '8px',
+              border: '1px solid rgba(255, 59, 48, 0.3)'
+            }}>
+              <div style={{ 
+                fontSize: '13px', 
+                color: '#FF3B30', 
+                lineHeight: '1.4' 
+              }}>
+                ⚠️ {motivationValidationError}
+              </div>
+            </div>
+          )}
           
           {/* Мотивация */}
           <div style={{ marginBottom: '20px' }}>

@@ -107,6 +107,7 @@ const SurveyCreatorPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [previewAnswers, setPreviewAnswers] = useState<Record<string, any>>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
+  const [motivationValidationError, setMotivationValidationError] = useState<string>('');
 
   // Загружаем данные из черновика при инициализации
   useEffect(() => {
@@ -247,6 +248,11 @@ const SurveyCreatorPage: React.FC = () => {
   // Обработчики изменений
   const handleSurveyDataChange = (field: keyof SurveyData, value: any) => {
     setSurveyData(prev => ({ ...prev, [field]: value }));
+    
+    // Очищаем ошибку валидации при изменении полей мотивации
+    if (field === 'motivationEnabled' || field === 'motivationType' || field === 'motivationDetails' || field === 'motivationConditions') {
+      setMotivationValidationError('');
+    }
   };
 
   // Функция для перехода к созданию опроса с ИИ
@@ -380,12 +386,63 @@ const SurveyCreatorPage: React.FC = () => {
     }
   };
 
+  // Валидация мотивации
+  const validateMotivation = (): boolean => {
+    if (!surveyData.motivationEnabled) {
+      setMotivationValidationError('');
+      return true;
+    }
+
+    // Проверяем что описание заполнено для всех типов
+    if (!surveyData.motivationDetails || surveyData.motivationDetails.trim() === '') {
+      if (surveyData.motivationType === 'stars') {
+        setMotivationValidationError('Введите количество звёзд');
+      } else {
+        setMotivationValidationError('Заполните описание награды');
+      }
+      return false;
+    }
+
+    // Для звезд дополнительно проверяем что число >= 1
+    if (surveyData.motivationType === 'stars') {
+      const starsCount = parseInt(surveyData.motivationDetails);
+      if (isNaN(starsCount) || starsCount < 1) {
+        setMotivationValidationError('Количество звёзд должно быть не менее 1');
+        return false;
+      }
+    }
+
+    // Для промокода нужен также промокод
+    if (surveyData.motivationType === 'promo') {
+      if (!surveyData.motivationConditions || surveyData.motivationConditions.trim() === '') {
+        setMotivationValidationError('Введите промокод');
+        return false;
+      }
+    }
+
+    setMotivationValidationError('');
+    return true;
+  };
+
   // Проверка готовности к публикации
-  const isReadyToPublish = surveyData.title.trim().length > 0 && questions.length > 0;
+  const isReadyToPublish = surveyData.title.trim().length > 0 && questions.length > 0 && validateMotivation();
 
   // Публикация опроса
   const handlePublish = async () => {
-    if (!isReadyToPublish) return;
+    if (!isReadyToPublish) {
+      // Если есть ошибка валидации мотивации, переключаемся на таб настроек
+      if (motivationValidationError) {
+        setActiveTab('settings');
+        // Скроллим к настройкам мотивации
+        setTimeout(() => {
+          const motivationSettings = document.getElementById('motivation-settings');
+          if (motivationSettings) {
+            motivationSettings.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      }
+      return;
+    }
     
     setIsPublishing(true);
     hapticFeedback?.success();
@@ -588,6 +645,7 @@ const SurveyCreatorPage: React.FC = () => {
             onDataChange={handleSurveyDataChange}
             showAdvancedSettings={showAdvancedSettings}
             onToggleAdvanced={() => setShowAdvancedSettings(!showAdvancedSettings)}
+            motivationValidationError={motivationValidationError}
           />
         )}
         
@@ -691,7 +749,8 @@ const SettingsTab: React.FC<{
   onDataChange: (field: keyof SurveyData, value: any) => void;
   showAdvancedSettings: boolean;
   onToggleAdvanced: () => void;
-}> = ({ surveyData, onDataChange, showAdvancedSettings, onToggleAdvanced }) => {
+  motivationValidationError: string;
+}> = ({ surveyData, onDataChange, showAdvancedSettings, onToggleAdvanced, motivationValidationError }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -851,36 +910,8 @@ const SettingsTab: React.FC<{
               </select>
             </div>
 
-            {/* Даты начала и окончания */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  marginBottom: '8px',
-                  color: 'var(--tg-text-color)'
-                }}>
-                  Дата начала
-                </label>
-                <input
-                  type="date"
-                  value={surveyData.startDate}
-                  onChange={(e) => onDataChange('startDate', e.target.value)}
-                  onFocus={() => onDataChange('isKeyboardOpen', true)}
-                  onBlur={() => onDataChange('isKeyboardOpen', false)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: 'var(--tg-section-bg-color)',
-                    color: 'var(--tg-text-color)',
-                    fontSize: '16px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
+            {/* Дата окончания */}
+            <div style={{ marginBottom: '16px' }}>
               <div style={{ flex: 1 }}>
                 <label style={{
                   display: 'block',
@@ -1286,9 +1317,9 @@ const SettingsTab: React.FC<{
                   <div style={{ 
                     marginBottom: '16px', 
                     padding: '12px', 
-                    backgroundColor: 'rgba(255, 193, 7, 0.1)', 
+                    backgroundColor: 'rgba(244, 109, 0, 0.1)', 
                     borderRadius: '8px',
-                    border: '1px solid rgba(255, 193, 7, 0.3)'
+                    border: '1px solid rgba(244, 109, 0, 0.3)'
                   }}>
                     <div style={{ 
                       fontSize: '13px', 
@@ -1298,6 +1329,25 @@ const SettingsTab: React.FC<{
                       ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
                     </div>
                   </div>
+                  
+                  {/* Ошибка валидации мотивации */}
+                  {motivationValidationError && (
+                    <div style={{ 
+                      marginBottom: '16px', 
+                      padding: '12px', 
+                      backgroundColor: 'rgba(255, 59, 48, 0.1)', 
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255, 59, 48, 0.3)'
+                    }}>
+                      <div style={{ 
+                        fontSize: '13px', 
+                        color: '#FF3B30', 
+                        lineHeight: '1.4' 
+                      }}>
+                        ⚠️ {motivationValidationError}
+                      </div>
+                    </div>
+                  )}
                   
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{
@@ -1377,8 +1427,8 @@ const SettingsTab: React.FC<{
                     />
                   </div>
 
-                  {/* Дополнительное поле для скидки и промокода */}
-                  {(surveyData.motivationType === 'discount' || surveyData.motivationType === 'promo') && (
+                  {/* Дополнительное поле только для промокода */}
+                  {surveyData.motivationType === 'promo' && (
                     <div>
                       <label style={{
                         display: 'block',
@@ -1387,16 +1437,12 @@ const SettingsTab: React.FC<{
                         marginBottom: '8px',
                         color: 'var(--tg-text-color)'
                       }}>
-                        {surveyData.motivationType === 'discount' ? 'На что скидка и при каких условиях' : 'На что промокод и при каких условиях'}
+                        На что промокод и при каких условиях
                       </label>
                       <textarea
                         value={surveyData.motivationConditions || ''}
                         onChange={(e) => onDataChange('motivationConditions', e.target.value)}
-                        placeholder={
-                          surveyData.motivationType === 'discount' ? 
-                          'Например: Скидка на товар определенной категории за прохождение опроса' :
-                          'Например: Промокод на бесплатную доставку при заказе от 1000 рублей'
-                        }
+                        placeholder="Например: Промокод на бесплатную доставку при заказе от 1000 рублей"
                         rows={3}
                         enterKeyHint="done"
                         onKeyDown={(e) => {
