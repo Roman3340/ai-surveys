@@ -282,6 +282,352 @@ const SummaryTab: React.FC<{
   );
 };
 
+// Компонент для таба "Отдельный пользователь"
+const IndividualUserTab: React.FC<{
+  questions: EditableQuestion[];
+  responses: any[] | null;
+  survey: Survey | null;
+  loading: boolean;
+}> = ({ questions, responses, survey, loading }) => {
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [currentUserIndex, setCurrentUserIndex] = useState<number>(1);
+  const [manualUserInput, setManualUserInput] = useState<string>('');
+
+  const isAnonymous = survey?.settings?.allowAnonymous || false;
+  const totalUsers = responses?.length || 0;
+
+  // Создаем список пользователей для выпадающего списка
+  const userOptions = responses?.map((response, index) => {
+    const user = response.user;
+    if (isAnonymous) {
+      return {
+        id: `respondent_${index + 1}`,
+        label: `Респондент ${index + 1}`,
+        index: index
+      };
+    } else {
+      const username = user?.username || 'Респондент';
+      return {
+        id: `user_${index}`,
+        label: `@${username}`,
+        index: index
+      };
+    }
+  }) || [];
+
+  // Получаем ответы текущего пользователя
+  const getCurrentUserResponses = () => {
+    if (!responses || responses.length === 0) return [];
+    
+    const userIndex = currentUserIndex - 1;
+    if (userIndex < 0 || userIndex >= responses.length) return [];
+    
+    const userResponse = responses[userIndex];
+    if (!userResponse) return [];
+    
+    return userResponse.answers || [];
+  };
+
+  // Обработка выбора пользователя из выпадающего списка
+  const handleUserSelect = (userId: string) => {
+    setSelectedUserId(userId);
+    const userOption = userOptions.find(option => option.id === userId);
+    if (userOption) {
+      setCurrentUserIndex(userOption.index + 1);
+      setManualUserInput((userOption.index + 1).toString());
+    }
+  };
+
+  // Обработка ручного ввода номера пользователя
+  const handleManualInputChange = (value: string) => {
+    setManualUserInput(value);
+  };
+
+  const handleManualInputBlur = () => {
+    const numValue = parseInt(manualUserInput);
+    if (isNaN(numValue) || numValue < 1) {
+      setCurrentUserIndex(1);
+      setManualUserInput('1');
+    } else if (numValue > totalUsers) {
+      setCurrentUserIndex(totalUsers);
+      setManualUserInput(totalUsers.toString());
+    } else {
+      setCurrentUserIndex(numValue);
+    }
+  };
+
+  // Навигация между пользователями
+  const goToPreviousUser = () => {
+    if (currentUserIndex > 1) {
+      const newIndex = currentUserIndex - 1;
+      setCurrentUserIndex(newIndex);
+      setManualUserInput(newIndex.toString());
+    }
+  };
+
+  const goToNextUser = () => {
+    if (currentUserIndex < totalUsers) {
+      const newIndex = currentUserIndex + 1;
+      setCurrentUserIndex(newIndex);
+      setManualUserInput(newIndex.toString());
+    }
+  };
+
+  // Получаем данные текущего пользователя
+  const currentUser = responses?.[currentUserIndex - 1];
+  const currentUserData = currentUser?.user;
+  const currentUserResponses = getCurrentUserResponses();
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: 16, 
+        padding: '40px 20px' 
+      }}>
+        <div style={{
+          width: 24,
+          height: 24,
+          border: '3px solid var(--tg-button-color)',
+          borderTop: '3px solid transparent',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
+          Загрузка аналитики...
+        </p>
+      </div>
+    );
+  }
+
+  if (!responses || responses.length === 0) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: 16, 
+        padding: '40px 20px',
+        textAlign: 'center'
+      }}>
+        <p style={{ color: 'var(--tg-hint-color)', fontSize: '16px' }}>
+          На этот опрос пока нет ответов
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Выпадающий список пользователей */}
+      <div>
+        <label style={{ 
+          display: 'block', 
+          marginBottom: 8, 
+          fontSize: '14px', 
+          fontWeight: '500',
+          color: 'var(--tg-text-color)'
+        }}>
+          Выберите пользователя
+        </label>
+        <select
+          value={selectedUserId}
+          onChange={(e) => handleUserSelect(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: 'var(--tg-section-bg-color)',
+            color: 'var(--tg-text-color)',
+            fontSize: '16px',
+            outline: 'none'
+          }}
+        >
+          <option value="">Пользователь не выбран</option>
+          {userOptions.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Навигация между пользователями */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 12,
+        padding: '16px',
+        backgroundColor: 'var(--tg-section-bg-color)',
+        borderRadius: '8px',
+        border: '1px solid var(--tg-section-separator-color)'
+      }}>
+        <button
+          onClick={goToPreviousUser}
+          disabled={currentUserIndex <= 1}
+          style={{
+            padding: '8px 12px',
+            border: 'none',
+            backgroundColor: currentUserIndex <= 1 ? 'var(--tg-hint-color)' : 'var(--tg-button-color)',
+            color: 'white',
+            borderRadius: '6px',
+            cursor: currentUserIndex <= 1 ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            opacity: currentUserIndex <= 1 ? 0.5 : 1
+          }}
+        >
+          ←
+        </button>
+        
+        <input
+          type="number"
+          value={manualUserInput}
+          onChange={(e) => handleManualInputChange(e.target.value)}
+          onBlur={handleManualInputBlur}
+          min="1"
+          max={totalUsers}
+          style={{
+            width: '60px',
+            padding: '8px 12px',
+            border: '1px solid var(--tg-section-separator-color)',
+            borderRadius: '6px',
+            backgroundColor: 'var(--tg-bg-color)',
+            color: 'var(--tg-text-color)',
+            fontSize: '14px',
+            textAlign: 'center',
+            outline: 'none'
+          }}
+        />
+        
+        <span style={{ 
+          fontSize: '14px', 
+          color: 'var(--tg-text-color)',
+          whiteSpace: 'nowrap'
+        }}>
+          из {totalUsers}
+        </span>
+        
+        <button
+          onClick={goToNextUser}
+          disabled={currentUserIndex >= totalUsers}
+          style={{
+            padding: '8px 12px',
+            border: 'none',
+            backgroundColor: currentUserIndex >= totalUsers ? 'var(--tg-hint-color)' : 'var(--tg-button-color)',
+            color: 'white',
+            borderRadius: '6px',
+            cursor: currentUserIndex >= totalUsers ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            opacity: currentUserIndex >= totalUsers ? 0.5 : 1
+          }}
+        >
+          →
+        </button>
+      </div>
+
+      {/* Информация о текущем пользователе */}
+      {currentUser && (
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '12px',
+          padding: '8px 12px',
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '6px',
+          border: '1px solid var(--tg-section-separator-color)'
+        }}>
+          {isAnonymous ? (
+            <span style={{ 
+              fontSize: '12px', 
+              color: 'var(--tg-text-color)',
+              fontWeight: '500'
+            }}>
+              Респондент {currentUserIndex}
+            </span>
+          ) : currentUserData ? (
+            <a
+              href={currentUserData.username ? `https://t.me/${currentUserData.username}` : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                fontSize: '12px', 
+                color: 'var(--tg-button-color)',
+                textDecoration: 'none',
+                cursor: currentUserData.username ? 'pointer' : 'default',
+                fontWeight: '500'
+              }}
+              onClick={(e) => {
+                if (!currentUserData.username) {
+                  e.preventDefault();
+                }
+              }}
+            >
+              @{currentUserData.username || 'Респондент'}
+            </a>
+          ) : (
+            <span style={{ 
+              fontSize: '12px', 
+              color: 'var(--tg-text-color)',
+              fontWeight: '500'
+            }}>
+              Респондент
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Ответы пользователя */}
+      {questions && questions.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {questions.map((question) => {
+            const userAnswer = currentUserResponses.find((answer: any) => 
+              answer.question_id === question.id
+            );
+
+            if (!userAnswer || userAnswer.value === null || userAnswer.value === undefined || userAnswer.value === '') {
+              return null; // Не показываем вопросы без ответов
+            }
+
+            return (
+              <div key={question.id} style={{
+                background: 'var(--tg-bg-color)',
+                borderRadius: '8px',
+                padding: '16px',
+                border: '1px solid var(--tg-section-separator-color)'
+              }}>
+                <h4 style={{ 
+                  margin: '0 0 8px 0', 
+                  fontSize: 14, 
+                  fontWeight: 600,
+                  color: 'var(--tg-text-color)'
+                }}>
+                  {question.text}
+                </h4>
+                {question.description && (
+                  <p style={{
+                    fontSize: '12px',
+                    color: 'var(--tg-hint-color)',
+                    margin: '0 0 12px 0',
+                    lineHeight: '1.4'
+                  }}>
+                    {question.description}
+                  </p>
+                )}
+                
+                <div style={{ marginTop: '12px' }}>
+                  {renderQuestionAnswer(question, userAnswer.value)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Компонент для таба "Вопрос"
 const QuestionTab: React.FC<{
   questions: EditableQuestion[];
@@ -3661,15 +4007,12 @@ export default function SurveyAnalyticsPage() {
           )}
           
           {analyticsTab === 'user' && (
-            <div style={{ 
-              background: 'var(--tg-section-bg-color)', 
-              borderRadius: 12, 
-              padding: 20, 
-              textAlign: 'center', 
-              color: 'var(--tg-hint-color)' 
-            }}>
-              Таб "Отдельный пользователь" в разработке
-            </div>
+            <IndividualUserTab 
+              questions={questions}
+              responses={responsesPage}
+              survey={survey}
+              loading={analyticsLoading}
+            />
           )}
         </div>
       )}
