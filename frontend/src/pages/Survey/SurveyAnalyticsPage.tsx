@@ -1606,27 +1606,50 @@ export default function SurveyAnalyticsPage() {
                           )}
 
                           {editedSettings?.motivationType === 'discount' && (
-                            <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                              <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                Размер скидки
-                              </label>
-                              <input
-                                type="text"
-                                value={editedSettings?.motivationDetails || ''}
-                                onChange={(e) => setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value })}
-                                placeholder="Например: 20%"
-                                style={{
-                                  width: '100%',
-                                  padding: '8px',
-                                  borderRadius: '6px',
-                                  border: '1px solid var(--tg-section-separator-color)',
-                                  backgroundColor: 'var(--tg-bg-color)',
-                                  color: 'var(--tg-text-color)',
-                                  fontSize: '13px',
-                                  outline: 'none'
-                                }}
-                              />
-                            </div>
+                            <>
+                              <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                                <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
+                                  Размер скидки
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editedSettings?.motivationDetails || ''}
+                                  onChange={(e) => setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value })}
+                                  placeholder="Например: 20%"
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid var(--tg-section-separator-color)',
+                                    backgroundColor: 'var(--tg-bg-color)',
+                                    color: 'var(--tg-text-color)',
+                                    fontSize: '13px',
+                                    outline: 'none'
+                                  }}
+                                />
+                              </div>
+                              <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                                <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
+                                  Описание скидки
+                                </label>
+                                <input
+                                  type="text"
+                                  value={editedSettings?.motivationConditions || ''}
+                                  onChange={(e) => setEditedSettings({ ...editedSettings!, motivationConditions: e.target.value })}
+                                  placeholder="Скидка на следующий заказ"
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid var(--tg-section-separator-color)',
+                                    backgroundColor: 'var(--tg-bg-color)',
+                                    color: 'var(--tg-text-color)',
+                                    fontSize: '13px',
+                                    outline: 'none'
+                                  }}
+                                />
+                              </div>
+                            </>
                           )}
 
                           {editedSettings?.motivationType === 'promo' && (
@@ -1639,7 +1662,7 @@ export default function SurveyAnalyticsPage() {
                                   type="text"
                                   value={editedSettings?.motivationDetails || ''}
                                   onChange={(e) => setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value })}
-                                  placeholder="Скидка 20% на следующий заказ"
+                                  placeholder="Бесплатная доставка за прохождение опроса"
                                   style={{
                                     width: '100%',
                                     padding: '8px',
@@ -1660,7 +1683,7 @@ export default function SurveyAnalyticsPage() {
                                   type="text"
                                   value={editedSettings?.motivationConditions || ''}
                                   onChange={(e) => setEditedSettings({ ...editedSettings!, motivationConditions: e.target.value })}
-                                  placeholder="DISCOUNT20"
+                                  placeholder="FREE_DELIVERY"
                                   style={{
                                     width: '100%',
                                     padding: '8px',
