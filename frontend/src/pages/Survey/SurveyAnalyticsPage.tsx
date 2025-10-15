@@ -480,7 +480,8 @@ const MultipleChoiceChart: React.FC<{
               display: 'flex', 
               alignItems: 'center',
               position: 'relative',
-              minWidth: '100px' // Минимальная ширина для области гистограмм
+              minWidth: '100px', // Минимальная ширина для области гистограмм
+              overflow: 'hidden' // Скрываем счетчики, которые выходят за пределы
             }}>
               <div style={{
                 width: `${widthPercent}%`,
@@ -497,7 +498,10 @@ const MultipleChoiceChart: React.FC<{
                   right: '-25px',
                   top: '50%',
                   transform: 'translateY(-50%)',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  backgroundColor: 'var(--tg-bg-color)', // Фон для читаемости
+                  padding: '2px 4px',
+                  borderRadius: '2px'
                 }}>
                   {count}
                 </span>
