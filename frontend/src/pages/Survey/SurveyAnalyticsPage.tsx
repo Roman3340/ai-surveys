@@ -26,6 +26,628 @@ interface EditableQuestion {
   image_name?: string;
 }
 
+// Компонент для таба "Сводка"
+const SummaryTab: React.FC<{
+  survey: Survey | null;
+  questions: EditableQuestion[];
+  responses: any[] | null;
+  stats: { total_responses: number } | null;
+}> = ({ survey, questions, responses, stats }) => {
+  const [showAllAnswers, setShowAllAnswers] = useState<{ [questionId: string]: boolean }>({});
+  const [showAnswersPopup, setShowAnswersPopup] = useState<{ questionId: string; answers: any[] } | null>(null);
+
+  if (!responses || responses.length === 0) {
+    return (
+      <div style={{ 
+        background: 'var(--tg-section-bg-color)', 
+        borderRadius: 12, 
+        padding: 20, 
+        textAlign: 'center', 
+        color: 'var(--tg-hint-color)' 
+      }}>
+        Пока нет ответов — аналитика будет доступна после первых прохождений
+      </div>
+    );
+  }
+
+  // Функция для получения ответов на конкретный вопрос
+  const getQuestionAnswers = (questionId: string) => {
+    return responses
+      .flatMap(r => (r.answers || [])
+        .filter((a: any) => a.question_id === questionId)
+        .map((a: any) => ({
+          value: a.value,
+          user: r.user || null
+        }))
+      );
+  };
+
+  // Функция для получения статистики по типу вопроса
+  const getQuestionStats = (question: EditableQuestion) => {
+    const answers = getQuestionAnswers(question.id);
+    
+    switch (question.type) {
+      case 'text':
+      case 'textarea':
+      case 'yes_no':
+      case 'date':
+      case 'number':
+        return {
+          type: 'text',
+          answers: answers.slice(0, showAllAnswers[question.id] ? answers.length : 5),
+          totalCount: answers.length,
+          hasMore: answers.length > 5
+        };
+      
+      case 'single_choice':
+        const singleChoiceStats = answers.reduce((acc: any, answer) => {
+          const value = answer.value;
+          acc[value] = (acc[value] || 0) + 1;
+          return acc;
+        }, {});
+        return {
+          type: 'single_choice',
+          stats: singleChoiceStats,
+          totalCount: answers.length
+        };
+      
+      case 'multiple_choice':
+        const multipleChoiceStats = answers.flatMap(a => Array.isArray(a.value) ? a.value : [a.value]).reduce((acc: any, answer) => {
+          acc[answer] = (acc[answer] || 0) + 1;
+          return acc;
+        }, {});
+        return {
+          type: 'multiple_choice',
+          stats: multipleChoiceStats,
+          totalCount: answers.length
+        };
+      
+      case 'scale':
+        const scaleStats = answers.reduce((acc: any, answer) => {
+          const value = answer.value;
+          acc[value] = (acc[value] || 0) + 1;
+          return acc;
+        }, {});
+        return {
+          type: 'scale',
+          stats: scaleStats,
+          totalCount: answers.length
+        };
+      
+      case 'rating':
+        const ratingAnswers = answers;
+        const averageRating = ratingAnswers.length > 0 
+          ? ratingAnswers.reduce((sum: number, answer) => sum + (answer.value || answer), 0) / ratingAnswers.length 
+          : 0;
+        return {
+          type: 'rating',
+          answers: ratingAnswers.slice(0, showAllAnswers[question.id] ? ratingAnswers.length : 5),
+          totalCount: ratingAnswers.length,
+          hasMore: ratingAnswers.length > 5,
+          averageRating
+        };
+      
+      default:
+        return { type: 'unknown', totalCount: 0 };
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Общая статистика */}
+      <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 12 }}>
+        <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>Общая статистика</h3>
+        <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--tg-button-color)' }}>
+          {stats?.total_responses ?? 0}
+        </div>
+        <div style={{ color: 'var(--tg-hint-color)', fontSize: 12 }}>Всего ответов</div>
+      </div>
+
+      {/* Аналитика по вопросам */}
+      {questions.map((question) => {
+        const questionStats = getQuestionStats(question);
+        
+        return (
+          <div key={question.id} style={{ 
+            background: 'var(--tg-section-bg-color)', 
+            borderRadius: 12, 
+            padding: 16 
+          }}>
+            <h4 style={{ 
+              margin: '0 0 12px 0', 
+              fontSize: 14, 
+              fontWeight: 600,
+              color: 'var(--tg-text-color)'
+            }}>
+              {question.text}
+            </h4>
+            
+            {questionStats.type === 'text' && (
+              <TextAnswersBlock 
+                answers={questionStats.answers || []}
+                totalCount={questionStats.totalCount}
+                hasMore={questionStats.hasMore || false}
+                questionId={question.id}
+                isAnonymous={survey?.settings?.allowAnonymous || false}
+                onShowAll={() => setShowAllAnswers(prev => ({ ...prev, [question.id]: true }))}
+                onShowPopup={(answers) => setShowAnswersPopup({ questionId: question.id, answers })}
+              />
+            )}
+            
+            {questionStats.type === 'single_choice' && (
+              <SingleChoiceChart 
+                stats={questionStats.stats}
+                totalCount={questionStats.totalCount}
+                options={question.options || []}
+              />
+            )}
+            
+            {questionStats.type === 'multiple_choice' && (
+              <MultipleChoiceChart 
+                stats={questionStats.stats}
+                totalCount={questionStats.totalCount}
+                options={question.options || []}
+              />
+            )}
+            
+            {questionStats.type === 'scale' && (
+              <ScaleChart 
+                stats={questionStats.stats}
+                totalCount={questionStats.totalCount}
+                minValue={question.scale_min || 1}
+                maxValue={question.scale_max || 10}
+              />
+            )}
+            
+            {questionStats.type === 'rating' && (
+              <RatingAnswersBlock 
+                answers={questionStats.answers || []}
+                totalCount={questionStats.totalCount}
+                hasMore={questionStats.hasMore || false}
+                averageRating={questionStats.averageRating || 0}
+                questionId={question.id}
+                isAnonymous={survey?.settings?.allowAnonymous || false}
+                onShowAll={() => setShowAllAnswers(prev => ({ ...prev, [question.id]: true }))}
+                onShowPopup={(answers) => setShowAnswersPopup({ questionId: question.id, answers })}
+              />
+            )}
+          </div>
+        );
+      })}
+
+      {/* Popup для показа всех ответов */}
+      {showAnswersPopup && (
+        <AnswersPopup 
+          questionId={showAnswersPopup.questionId}
+          answers={showAnswersPopup.answers}
+          onClose={() => setShowAnswersPopup(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+// Компонент для текстовых ответов
+const TextAnswersBlock: React.FC<{
+  answers: any[];
+  totalCount: number;
+  hasMore: boolean;
+  questionId: string;
+  isAnonymous: boolean;
+  onShowAll: () => void;
+  onShowPopup: (answers: any[]) => void;
+}> = ({ answers, totalCount, hasMore, isAnonymous, onShowPopup }) => {
+  const renderUserLink = (user: any) => {
+    if (!user) return null;
+    
+    const username = user.username;
+    const displayName = username ? `@${username}` : 'Респондент';
+    const link = username ? `https://t.me/${username}` : '#';
+    
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ 
+          fontSize: '11px', 
+          color: 'var(--tg-button-color)',
+          cursor: 'pointer',
+          textDecoration: 'none'
+        }}
+        onClick={(e) => {
+          if (!username) {
+            e.preventDefault();
+          }
+        }}
+      >
+        {displayName}
+      </a>
+    );
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {answers.map((answer, index) => (
+          <div key={index} style={{ 
+            padding: '8px 12px', 
+            backgroundColor: 'var(--tg-bg-color)', 
+            borderRadius: '8px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <span style={{ fontSize: '13px', color: 'var(--tg-text-color)' }}>
+              {answer.value || answer}
+            </span>
+            {!isAnonymous && renderUserLink(answer.user)}
+          </div>
+        ))}
+      </div>
+      {hasMore && (
+        <button
+          onClick={() => onShowPopup(answers)}
+          style={{
+            marginTop: '8px',
+            background: 'transparent',
+            border: '1px dashed var(--tg-section-separator-color)',
+            borderRadius: '6px',
+            padding: '8px 12px',
+            color: 'var(--tg-hint-color)',
+            fontSize: '12px',
+            cursor: 'pointer',
+            width: '100%'
+          }}
+        >
+          Посмотреть все ответы ({totalCount})
+        </button>
+      )}
+    </div>
+  );
+};
+
+// Компонент для круговой диаграммы (один из списка)
+const SingleChoiceChart: React.FC<{
+  stats: { [key: string]: number };
+  totalCount: number;
+  options: string[];
+}> = ({ stats, totalCount }) => {
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#FF9500', '#34C759', '#FF3B30', '#8E8E93', '#007AFF'];
+  
+  return (
+    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+      {/* Круговая диаграмма */}
+      <div style={{ position: 'relative', width: 120, height: 120 }}>
+        <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
+          {(() => {
+            let currentAngle = 0;
+            return Object.entries(stats).map(([option, count], index) => {
+              const percentage = (count / totalCount) * 100;
+              const angle = (percentage / 100) * 360;
+              const startAngle = currentAngle;
+              const endAngle = currentAngle + angle;
+              currentAngle += angle;
+              
+              const x1 = 60 + 50 * Math.cos((startAngle * Math.PI) / 180);
+              const y1 = 60 + 50 * Math.sin((startAngle * Math.PI) / 180);
+              const x2 = 60 + 50 * Math.cos((endAngle * Math.PI) / 180);
+              const y2 = 60 + 50 * Math.sin((endAngle * Math.PI) / 180);
+              const largeArcFlag = angle > 180 ? 1 : 0;
+              
+              const pathData = `M 60 60 L ${x1} ${y1} A 50 50 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+              
+              return (
+                <path
+                  key={option}
+                  d={pathData}
+                  fill={colors[index % colors.length]}
+                />
+              );
+            });
+          })()}
+        </svg>
+      </div>
+      
+      {/* Легенда */}
+      <div style={{ flex: 1 }}>
+        {Object.entries(stats).map(([option, count], index) => (
+          <div key={option} style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8, 
+            marginBottom: 4 
+          }}>
+            <div style={{
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              backgroundColor: colors[index % colors.length]
+            }} />
+            <span style={{ fontSize: '12px', color: 'var(--tg-text-color)' }}>
+              {option} ({count})
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Компонент для столбчатой диаграммы (несколько из списка)
+const MultipleChoiceChart: React.FC<{
+  stats: { [key: string]: number };
+  totalCount: number;
+  options: string[];
+}> = ({ stats }) => {
+  const maxCount = Math.max(...Object.values(stats));
+  
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'end', gap: 8, height: 120 }}>
+        {Object.entries(stats).map(([option, count]) => {
+          const height = (count / maxCount) * 100;
+          return (
+            <div key={option} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{
+                width: '100%',
+                height: `${height}px`,
+                backgroundColor: '#FF9500',
+                borderRadius: '4px 4px 0 0',
+                marginBottom: 4
+              }} />
+              <span style={{ fontSize: '10px', color: 'var(--tg-hint-color)', textAlign: 'center' }}>
+                {count}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+        {Object.entries(stats).map(([option]) => (
+          <div key={option} style={{ flex: 1, textAlign: 'center' }}>
+            <span style={{ fontSize: '11px', color: 'var(--tg-text-color)' }}>
+              {option}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Компонент для шкалы
+const ScaleChart: React.FC<{
+  stats: { [key: string]: number };
+  totalCount: number;
+  minValue: number;
+  maxValue: number;
+}> = ({ stats, minValue, maxValue }) => {
+  const maxCount = Math.max(...Object.values(stats));
+  
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'end', gap: 4, height: 120 }}>
+        {Array.from({ length: maxValue - minValue + 1 }, (_, i) => minValue + i).map((value) => {
+          const count = stats[value] || 0;
+          const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+          return (
+            <div key={value} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{
+                width: '100%',
+                height: `${height}px`,
+                backgroundColor: '#FF9500',
+                borderRadius: '4px 4px 0 0',
+                marginBottom: 4
+              }} />
+              <span style={{ fontSize: '10px', color: 'var(--tg-hint-color)' }}>
+                {count}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+        {Array.from({ length: maxValue - minValue + 1 }, (_, i) => minValue + i).map((value) => (
+          <div key={value} style={{ flex: 1, textAlign: 'center' }}>
+            <span style={{ fontSize: '11px', color: 'var(--tg-text-color)' }}>
+              {value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Компонент для рейтинга
+const RatingAnswersBlock: React.FC<{
+  answers: any[];
+  totalCount: number;
+  hasMore: boolean;
+  averageRating: number;
+  questionId: string;
+  isAnonymous: boolean;
+  onShowAll: () => void;
+  onShowPopup: (answers: any[]) => void;
+}> = ({ answers, totalCount, hasMore, averageRating, isAnonymous, onShowPopup }) => {
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <span key={i} style={{ 
+        color: i < rating ? '#ffd700' : 'var(--tg-hint-color)',
+        fontSize: '16px'
+      }}>
+        ★
+      </span>
+    ));
+  };
+
+  const renderUserLink = (user: any) => {
+    if (!user) return null;
+    
+    const username = user.username;
+    const displayName = username ? `@${username}` : 'Респондент';
+    const link = username ? `https://t.me/${username}` : '#';
+    
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ 
+          fontSize: '11px', 
+          color: 'var(--tg-button-color)',
+          cursor: 'pointer',
+          textDecoration: 'none'
+        }}
+        onClick={(e) => {
+          if (!username) {
+            e.preventDefault();
+          }
+        }}
+      >
+        {displayName}
+      </a>
+    );
+  };
+
+  return (
+    <div>
+      {/* Средняя оценка */}
+      <div style={{ 
+        textAlign: 'center', 
+        marginBottom: 16,
+        padding: '12px',
+        backgroundColor: 'var(--tg-bg-color)',
+        borderRadius: '8px'
+      }}>
+        <div style={{ fontSize: '12px', color: 'var(--tg-hint-color)', marginBottom: 4 }}>
+          Средняя оценка
+        </div>
+        <div style={{ fontSize: '18px', fontWeight: '600' }}>
+          {renderStars(Math.round(averageRating))}
+        </div>
+        <div style={{ fontSize: '11px', color: 'var(--tg-hint-color)' }}>
+          {averageRating.toFixed(1)} из 5
+        </div>
+      </div>
+      
+      {/* Индивидуальные ответы */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {answers.map((answer, index) => (
+          <div key={index} style={{ 
+            padding: '8px 12px', 
+            backgroundColor: 'var(--tg-bg-color)', 
+            borderRadius: '8px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: '13px', color: 'var(--tg-text-color)' }}>
+                {renderStars(answer.value || answer)}
+              </span>
+            </div>
+            {!isAnonymous && renderUserLink(answer.user)}
+          </div>
+        ))}
+      </div>
+      {hasMore && (
+        <button
+          onClick={() => onShowPopup(answers)}
+          style={{
+            marginTop: '8px',
+            background: 'transparent',
+            border: '1px dashed var(--tg-section-separator-color)',
+            borderRadius: '6px',
+            padding: '8px 12px',
+            color: 'var(--tg-hint-color)',
+            fontSize: '12px',
+            cursor: 'pointer',
+            width: '100%'
+          }}
+        >
+          Посмотреть все ответы ({totalCount})
+        </button>
+      )}
+    </div>
+  );
+};
+
+// Popup для показа всех ответов
+const AnswersPopup: React.FC<{
+  questionId: string;
+  answers: any[];
+  onClose: () => void;
+}> = ({ answers, onClose }) => {
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 9999,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      <div style={{
+        backgroundColor: 'var(--tg-section-bg-color)',
+        borderRadius: '12px',
+        padding: '20px',
+        maxWidth: '90%',
+        maxHeight: '80%',
+        overflow: 'auto',
+        color: 'var(--tg-text-color)',
+        border: '1px solid var(--tg-section-separator-color)'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '16px'
+        }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: 'var(--tg-text-color)' }}>
+            Все ответы
+          </h3>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--tg-hint-color)',
+              fontSize: '20px',
+              cursor: 'pointer',
+              padding: '4px',
+              borderRadius: '4px'
+            }}
+          >
+            ×
+          </button>
+        </div>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {answers.map((answer, index) => (
+            <div key={index} style={{ 
+              padding: '12px', 
+              backgroundColor: 'var(--tg-bg-color)', 
+              borderRadius: '8px',
+              fontSize: '13px',
+              color: 'var(--tg-text-color)',
+              border: '1px solid var(--tg-section-separator-color)'
+            }}>
+              {answer}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function SurveyAnalyticsPage() {
   const { surveyId } = useParams();
   const { hapticFeedback } = useTelegram();
@@ -37,6 +659,7 @@ export default function SurveyAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'questions' | 'analytics'>('overview');
+  const [analyticsTab, setAnalyticsTab] = useState<'summary' | 'question' | 'user'>('summary');
   const [questions, setQuestions] = useState<EditableQuestion[]>([]);
   const [responsesPage, setResponsesPage] = useState<any[] | null>(null);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
@@ -106,15 +729,19 @@ export default function SurveyAnalyticsPage() {
     loadQuestions();
   }, [activeTab, surveyId]);
 
-  const loadResponses = async () => {
-    if (!surveyId) return;
-    try {
-      const page = await surveyApi.getSurveyResponses(surveyId, 20, 0);
-      setResponsesPage(page);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  useEffect(() => {
+    const loadResponses = async () => {
+      if (activeTab !== 'analytics' || !surveyId) return;
+      try {
+        const page = await surveyApi.getSurveyResponses(surveyId, 100, 0);
+        setResponsesPage(page);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadResponses();
+  }, [activeTab, surveyId]);
+
 
   const handleStatusChange = async (newStatus: string) => {
     if (!survey || !surveyId) return;
@@ -1973,47 +2600,98 @@ export default function SurveyAnalyticsPage() {
       {/* Таб: Аналитика */}
       {activeTab === 'analytics' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 12 }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>Общая статистика</h3>
-            <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--tg-button-color)' }}>
-              {stats?.total_responses ?? 0}
-            </div>
-            <div style={{ color: 'var(--tg-hint-color)', fontSize: 12 }}>Всего ответов</div>
+          {/* Подтабы аналитики */}
+          <div style={{
+            display: 'flex',
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '4px',
+            gap: '2px'
+          }}>
+            <button
+              onClick={() => setAnalyticsTab('summary')}
+              style={{
+                flex: 1,
+                padding: '10px 8px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: analyticsTab === 'summary' ? 'var(--tg-button-color)' : 'transparent',
+                color: analyticsTab === 'summary' ? 'white' : 'var(--tg-text-color)',
+                fontSize: '12px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Сводка
+            </button>
+            <button
+              onClick={() => setAnalyticsTab('question')}
+              style={{
+                flex: 1,
+                padding: '10px 8px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: analyticsTab === 'question' ? 'var(--tg-button-color)' : 'transparent',
+                color: analyticsTab === 'question' ? 'white' : 'var(--tg-text-color)',
+                fontSize: '12px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Вопрос
+            </button>
+            <button
+              onClick={() => setAnalyticsTab('user')}
+              style={{
+                flex: 1,
+                padding: '10px 8px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: analyticsTab === 'user' ? 'var(--tg-button-color)' : 'transparent',
+                color: analyticsTab === 'user' ? 'white' : 'var(--tg-text-color)',
+                fontSize: '12px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Отдельный пользователь
+            </button>
           </div>
-          {(stats?.total_responses ?? 0) === 0 ? (
-            <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 20, textAlign: 'center', color: 'var(--tg-hint-color)' }}>
-              Пока нет ответов — аналитика будет доступна после первых прохождений
+
+          {/* Контент подтабов */}
+          {analyticsTab === 'summary' && (
+            <SummaryTab 
+              survey={survey}
+              questions={questions}
+              responses={responsesPage}
+              stats={stats}
+            />
+          )}
+          
+          {analyticsTab === 'question' && (
+            <div style={{ 
+              background: 'var(--tg-section-bg-color)', 
+              borderRadius: 12, 
+              padding: 20, 
+              textAlign: 'center', 
+              color: 'var(--tg-hint-color)' 
+            }}>
+              Таб "Вопрос" в разработке
             </div>
-          ) : (
-            <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 12 }}>
-              <button
-                onClick={loadResponses}
-                style={{
-                  background: 'var(--tg-button-color)',
-                  color: 'var(--tg-button-text-color)',
-                  border: 'none',
-                  borderRadius: 10,
-                  padding: 12,
-                  fontWeight: 600,
-                  fontSize: 13,
-                  width: '100%',
-                }}
-              >
-                Показать ответы (20)
-              </button>
-              {responsesPage && (
-                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {responsesPage.map((r) => (
-                    <div key={r.id} style={{ background: 'var(--tg-bg-color)', borderRadius: 8, padding: 10 }}>
-                      <div style={{ fontSize: 10, color: 'var(--tg-hint-color)', marginBottom: 4 }}>ID: {r.id}</div>
-                      <div style={{ fontSize: 12 }}>Анонимно: {r.is_anonymous ? 'Да' : 'Нет'}</div>
-                      <div style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
-                        Завершён: {r.completed_at ? new Date(r.completed_at).toLocaleString('ru-RU') : '—'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+          )}
+          
+          {analyticsTab === 'user' && (
+            <div style={{ 
+              background: 'var(--tg-section-bg-color)', 
+              borderRadius: 12, 
+              padding: 20, 
+              textAlign: 'center', 
+              color: 'var(--tg-hint-color)' 
+            }}>
+              Таб "Отдельный пользователь" в разработке
             </div>
           )}
         </div>
