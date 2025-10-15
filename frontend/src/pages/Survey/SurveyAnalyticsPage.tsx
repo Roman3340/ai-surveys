@@ -342,47 +342,48 @@ const QuestionTab: React.FC<{
     return responses
       .flatMap(r => {
         const answers = r.answers || [];
-        return answers
-          .filter((a: any) => a.question_id === questionId)
-          .filter((a: any) => a.value !== null && a.value !== undefined && a.value !== '')
-          .map((a: any) => {
-            // Обрабатываем случай с "Другое" - ищем дополнительный ответ
-            let processedValue = a.value;
-            
-            // Для single_choice
-            if (a.value === 'Другое') {
-              // Ищем ответ пользователя для варианта "Другое"
-              const otherAnswer = answers.find((otherA: any) => 
-                otherA.question_id === `${questionId}_other`
-              );
-              if (otherAnswer && otherAnswer.value) {
-                processedValue = {
-                  type: 'other',
-                  originalValue: 'Другое',
-                  userText: otherAnswer.value
-                };
-              }
-            }
-            
-            // Для multiple_choice - обрабатываем массив значений
-            if (Array.isArray(a.value) && a.value.includes('Другое')) {
-              const otherAnswer = answers.find((otherA: any) => 
-                otherA.question_id === `${questionId}_other`
-              );
-              if (otherAnswer && otherAnswer.value) {
-                processedValue = {
-                  type: 'other',
-                  originalValue: a.value,
-                  userText: otherAnswer.value
-                };
-              }
-            }
-            
-            return {
-              value: processedValue,
-              user: r.user || null
+        const mainAnswer = answers.find((a: any) => a.question_id === questionId);
+        
+        if (!mainAnswer || mainAnswer.value === null || mainAnswer.value === undefined || mainAnswer.value === '') {
+          return [];
+        }
+        
+        // Обрабатываем случай с "Другое" - ищем дополнительный ответ в том же ответе пользователя
+        let processedValue = mainAnswer.value;
+        
+        // Для single_choice
+        if (mainAnswer.value === 'Другое') {
+          // Ищем ответ пользователя для варианта "Другое" в том же ответе
+          const otherAnswer = answers.find((otherA: any) => 
+            otherA.question_id === `${questionId}_other`
+          );
+          if (otherAnswer && otherAnswer.value) {
+            processedValue = {
+              type: 'other',
+              originalValue: 'Другое',
+              userText: otherAnswer.value
             };
-          });
+          }
+        }
+        
+        // Для multiple_choice - обрабатываем массив значений
+        if (Array.isArray(mainAnswer.value) && mainAnswer.value.includes('Другое')) {
+          const otherAnswer = answers.find((otherA: any) => 
+            otherA.question_id === `${questionId}_other`
+          );
+          if (otherAnswer && otherAnswer.value) {
+            processedValue = {
+              type: 'other',
+              originalValue: mainAnswer.value,
+              userText: otherAnswer.value
+            };
+          }
+        }
+        
+        return [{
+          value: processedValue,
+          user: r.user || null
+        }];
       });
   };
 
@@ -409,7 +410,7 @@ const QuestionTab: React.FC<{
             padding: '12px 16px',
             borderRadius: '8px',
             border: 'none',
-            backgroundColor: 'var(--tg-bg-color)',
+            backgroundColor: 'var(--tg-section-bg-color)',
             color: 'var(--tg-text-color)',
             fontSize: '16px',
             outline: 'none'
@@ -422,15 +423,6 @@ const QuestionTab: React.FC<{
             </option>
           ))}
         </select>
-        {!selectedQuestionId && (
-          <p style={{
-            fontSize: '12px',
-            color: 'var(--tg-hint-color)',
-            margin: '8px 0 0 0'
-          }}>
-            Выберите вопрос для просмотра аналитики по нему
-          </p>
-        )}
       </div>
 
       {/* Отображение выбранного вопроса и ответов */}
@@ -1057,7 +1049,7 @@ const SingleChoiceChart: React.FC<{
   totalCount: number;
   options: string[];
 }> = ({ stats, totalCount }) => {
-  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#FF9500', '#34C759', '#FF3B30', '#8E8E93', '#007AFF'];
+  const colors = ['#FF6B6B', '#FF9500', '#34C759', '#4ECDC4', '#DDA0DD', '#45B7D1', '#96CEB4', '#FFEAA7', '#98D8C8', '#FF3B30', '#8E8E93', '#007AFF'];
   
   return (
     <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
