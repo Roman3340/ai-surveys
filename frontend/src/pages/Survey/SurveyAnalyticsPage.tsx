@@ -495,8 +495,8 @@ const MultipleChoiceChart: React.FC<{
                   color: '#000000', 
                   fontWeight: '600',
                   position: 'absolute',
-                  right: '4px',
-                  top: '2px',
+                  right: '16px',
+                  top: '3px',
                   textAlign: 'right'
                 }}>
                   {count}
