@@ -425,22 +425,24 @@ const SurveyCreatorPage: React.FC = () => {
   };
 
   // Проверка готовности к публикации
-  const isReadyToPublish = surveyData.title.trim().length > 0 && questions.length > 0 && validateMotivation();
+  const isReadyToPublish = surveyData.title.trim().length > 0 && questions.length > 0;
 
   // Публикация опроса
   const handlePublish = async () => {
     if (!isReadyToPublish) {
-      // Если есть ошибка валидации мотивации, переключаемся на таб настроек
-      if (motivationValidationError) {
-        setActiveTab('settings');
-        // Скроллим к настройкам мотивации
-        setTimeout(() => {
-          const motivationSettings = document.getElementById('motivation-settings');
-          if (motivationSettings) {
-            motivationSettings.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
-      }
+      return;
+    }
+    
+    // Проверяем валидацию мотивации перед публикацией
+    if (!validateMotivation()) {
+      setActiveTab('settings');
+      // Скроллим к настройкам мотивации
+      setTimeout(() => {
+        const motivationSettings = document.getElementById('motivation-settings');
+        if (motivationSettings) {
+          motivationSettings.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
       return;
     }
     
@@ -3189,7 +3191,13 @@ const ScaleQuestionInput: React.FC<{
   // Если есть ошибки или некорректный диапазон, используем значения по умолчанию
   const min = (hasErrors || isInvalidRange) ? 1 : minValue;
   const max = (hasErrors || isInvalidRange) ? 10 : maxValue;
-  const [scaleValue, setScaleValue] = useState(Math.floor((min + max) / 2));
+  const [scaleValue, setScaleValue] = useState(() => {
+    const currentValue = answers?.[question.id];
+    if (currentValue !== undefined) {
+      return currentValue;
+    }
+    return Math.floor((min + max) / 2);
+  });
   
   return (
     <div style={{ 
@@ -3277,7 +3285,13 @@ const RatingQuestionInput: React.FC<{
   answers?: Record<string, any>;
   onAnswerChange?: (answers: Record<string, any>) => void;
 }> = ({ question, answers, onAnswerChange }) => {
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(() => {
+    const currentValue = answers?.[question.id];
+    if (currentValue !== undefined) {
+      return currentValue;
+    }
+    return 0;
+  });
   
   return (
     <div style={{ 
