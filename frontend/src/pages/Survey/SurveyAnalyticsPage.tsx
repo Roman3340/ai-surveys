@@ -82,27 +82,15 @@ const SummaryTab: React.FC<{
 
   // Функция для получения ответов на конкретный вопрос
   const getQuestionAnswers = (questionId: string) => {
-    // Временная отладка - удалить после исправления
-    if (responses && responses.length > 0) {
-      console.log('Responses structure:', responses[0]);
-      if (responses[0].answers) {
-        console.log('Answers structure:', responses[0].answers[0]);
-      }
-    }
-    
     return responses
       .flatMap(r => {
-        // Проверяем разные возможные структуры данных
-        const answers = r.answers || r.Answers || [];
+        // Теперь answers уже загружены с бэкенда
+        const answers = r.answers || [];
         return answers
-          .filter((a: any) => {
-            // Проверяем разные возможные названия поля question_id
-            const qId = a.question_id || a.questionId || a.question_id;
-            return qId === questionId;
-          })
+          .filter((a: any) => a.question_id === questionId)
           .map((a: any) => ({
-            value: a.value || a.Value,
-            user: r.user || r.User || null
+            value: a.value,
+            user: r.user || null
           }));
       });
   };
