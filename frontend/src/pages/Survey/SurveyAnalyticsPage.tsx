@@ -458,44 +458,49 @@ const MultipleChoiceChart: React.FC<{
   const maxCount = Math.max(...Object.values(stats));
   
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'end', gap: 8, height: 120 }}>
-        {Object.entries(stats).map(([option, count]) => {
-          const height = (count / maxCount) * 100;
-          return (
-            <div key={option} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {Object.entries(stats).map(([option, count]) => {
+        const width = maxCount > 0 ? (count / maxCount) * 200 : 0; // Максимальная ширина 200px
+        return (
+          <div key={option} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ 
+              minWidth: '80px', 
+              fontSize: '11px', 
+              color: 'var(--tg-text-color)',
+              textAlign: 'right'
+            }}>
+              {option}
+            </div>
+            <div style={{ 
+              flex: 1, 
+              display: 'flex', 
+              alignItems: 'center',
+              position: 'relative'
+            }}>
               <div style={{
-                width: '100%',
-                height: `${height}px`,
+                width: `${width}px`,
+                height: '24px',
                 backgroundColor: '#FF9500',
-                borderRadius: '4px 4px 0 0',
-                position: 'relative'
+                borderRadius: '4px',
+                position: 'relative',
+                minWidth: count > 0 ? '20px' : '0px'
               }}>
                 <span style={{ 
                   fontSize: '10px', 
                   color: 'var(--tg-hint-color)', 
                   position: 'absolute',
-                  top: '-16px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
+                  right: '-25px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
                   whiteSpace: 'nowrap'
                 }}>
                   {count}
                 </span>
               </div>
             </div>
-          );
-        })}
-      </div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        {Object.entries(stats).map(([option]) => (
-          <div key={option} style={{ flex: 1, textAlign: 'center' }}>
-            <span style={{ fontSize: '11px', color: 'var(--tg-text-color)' }}>
-              {option}
-            </span>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 };
