@@ -88,6 +88,7 @@ const SummaryTab: React.FC<{
         const answers = r.answers || [];
         return answers
           .filter((a: any) => a.question_id === questionId)
+          .filter((a: any) => a.value !== null && a.value !== undefined && a.value !== '') // Фильтруем пустые ответы
           .map((a: any) => ({
             value: a.value,
             user: r.user || null
@@ -427,11 +428,20 @@ const MultipleChoiceChart: React.FC<{
                 height: `${height}px`,
                 backgroundColor: '#FF9500',
                 borderRadius: '4px 4px 0 0',
-                marginBottom: 4
-              }} />
-              <span style={{ fontSize: '10px', color: 'var(--tg-hint-color)', textAlign: 'center' }}>
-                {count}
-              </span>
+                position: 'relative'
+              }}>
+                <span style={{ 
+                  fontSize: '10px', 
+                  color: 'var(--tg-hint-color)', 
+                  position: 'absolute',
+                  top: '-16px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {count}
+                </span>
+              </div>
             </div>
           );
         })}
@@ -471,11 +481,20 @@ const ScaleChart: React.FC<{
                 height: `${height}px`,
                 backgroundColor: '#FF9500',
                 borderRadius: '4px 4px 0 0',
-                marginBottom: 4
-              }} />
-              <span style={{ fontSize: '10px', color: 'var(--tg-hint-color)' }}>
-                {count}
-              </span>
+                position: 'relative'
+              }}>
+                <span style={{ 
+                  fontSize: '10px', 
+                  color: 'var(--tg-hint-color)', 
+                  position: 'absolute',
+                  top: '-16px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {count}
+                </span>
+              </div>
             </div>
           );
         })}
@@ -505,14 +524,20 @@ const RatingAnswersBlock: React.FC<{
   onShowPopup: (answers: any[]) => void;
 }> = ({ answers, totalCount, hasMore, averageRating, isAnonymous, onShowPopup }) => {
   const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} style={{ 
-        color: i < rating ? '#ffd700' : 'var(--tg-hint-color)',
-        fontSize: '16px'
-      }}>
-        ★
-      </span>
-    ));
+    return Array.from({ length: 5 }, (_, i) => {
+      const isFull = i < Math.floor(rating);
+      const isHalf = i === Math.floor(rating) && rating % 1 >= 0.5;
+      
+      return (
+        <span key={i} style={{ 
+          color: isFull ? '#ffd700' : isHalf ? '#ffd700' : 'var(--tg-hint-color)',
+          fontSize: '20px',
+          position: 'relative'
+        }}>
+          {isHalf ? '☆' : '★'}
+        </span>
+      );
+    });
   };
 
   const renderUserLink = (user: any) => {
@@ -558,7 +583,7 @@ const RatingAnswersBlock: React.FC<{
           Средняя оценка
         </div>
         <div style={{ fontSize: '18px', fontWeight: '600' }}>
-          {renderStars(Math.round(averageRating))}
+          {renderStars(averageRating)}
         </div>
         <div style={{ fontSize: '11px', color: 'var(--tg-hint-color)' }}>
           {averageRating.toFixed(1)} из 5
