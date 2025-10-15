@@ -264,6 +264,7 @@ const SummaryTab: React.FC<{
         <AnswersPopup 
           questionId={showAnswersPopup.questionId}
           answers={showAnswersPopup.answers}
+          isAnonymous={survey?.settings?.allowAnonymous || false}
           onClose={() => setShowAnswersPopup(null)}
         />
       )}
@@ -689,8 +690,9 @@ const RatingAnswersBlock: React.FC<{
 const AnswersPopup: React.FC<{
   questionId: string;
   answers: any[];
+  isAnonymous: boolean;
   onClose: () => void;
-}> = ({ answers, onClose }) => {
+}> = ({ answers, isAnonymous, onClose }) => {
   return (
     <div 
       style={{
@@ -816,14 +818,26 @@ const AnswersPopup: React.FC<{
                     <span>{displayValue}</span>
                   )}
                 </div>
-                {answer.user && (
-                  <span style={{ 
-                    fontSize: '11px', 
-                    color: 'var(--tg-hint-color)',
-                    marginLeft: '16px'
-                  }}>
+                {!isAnonymous && answer.user && (
+                  <a
+                    href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ 
+                      fontSize: '11px', 
+                      color: 'var(--tg-button-color)',
+                      textDecoration: 'none',
+                      marginLeft: '16px',
+                      cursor: answer.user.username ? 'pointer' : 'default'
+                    }}
+                    onClick={(e) => {
+                      if (!answer.user.username) {
+                        e.preventDefault();
+                      }
+                    }}
+                  >
                     @{answer.user.username || 'Респондент'}
-                  </span>
+                  </a>
                 )}
               </div>
             );
