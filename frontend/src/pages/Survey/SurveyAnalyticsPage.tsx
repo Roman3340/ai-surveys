@@ -374,7 +374,6 @@ const SingleChoiceChart: React.FC<{
             
             // Если только один ответ, делаем полный круг
             if (entries.length === 1) {
-              const [option, count] = entries[0];
               return (
                 <circle
                   cx="60"
@@ -385,7 +384,9 @@ const SingleChoiceChart: React.FC<{
               );
             }
             
-            return entries.map(([option, count], index) => {
+            return entries.map((entry, index) => {
+              const option = entry[0];
+              const count = entry[1];
               const percentage = (count / totalCount) * 100;
               const angle = (percentage / 100) * 360;
               const startAngle = currentAngle;
