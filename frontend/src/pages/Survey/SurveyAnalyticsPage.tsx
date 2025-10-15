@@ -472,41 +472,80 @@ const QuestionTab: React.FC<{
             </p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {questionAnswers.map((answer, index) => (
-                <div key={index} style={{
-                  background: 'var(--tg-bg-color)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  border: '1px solid var(--tg-section-separator-color)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                    <div style={{ flex: 1 }}>
-                      {renderQuestionAnswer(selectedQuestion, answer.value)}
-                    </div>
-                    {!isAnonymous && answer.user && (
-                      <a
-                        href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ 
-                          fontSize: '11px', 
-                          color: 'var(--tg-button-color)',
-                          textDecoration: 'none',
-                          cursor: answer.user.username ? 'pointer' : 'default',
-                          whiteSpace: 'nowrap'
-                        }}
-                        onClick={(e) => {
-                          if (!answer.user.username) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        @{answer.user.username || 'Респондент'}
-                      </a>
+              {questionAnswers.map((answer, index) => {
+                // Определяем, нужно ли показывать username сверху
+                const showUsernameOnTop = ['single_choice', 'multiple_choice', 'scale', 'rating'].includes(selectedQuestion.type);
+                
+                return (
+                  <div key={index} style={{
+                    background: 'var(--tg-bg-color)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    border: '1px solid var(--tg-section-separator-color)'
+                  }}>
+                    {/* Username сверху для определенных типов вопросов */}
+                    {showUsernameOnTop && !isAnonymous && answer.user && (
+                      <div style={{
+                        textAlign: 'center',
+                        marginBottom: '12px',
+                        padding: '8px 12px',
+                        backgroundColor: 'var(--tg-section-bg-color)',
+                        borderRadius: '6px',
+                        border: '1px solid var(--tg-section-separator-color)'
+                      }}>
+                        <a
+                          href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ 
+                            fontSize: '12px', 
+                            color: 'var(--tg-button-color)',
+                            textDecoration: 'none',
+                            cursor: answer.user.username ? 'pointer' : 'default',
+                            fontWeight: '500'
+                          }}
+                          onClick={(e) => {
+                            if (!answer.user.username) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          @{answer.user.username || 'Респондент'}
+                        </a>
+                      </div>
                     )}
+                    
+                    {/* Ответ на вопрос */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        {renderQuestionAnswer(selectedQuestion, answer.value)}
+                      </div>
+                      {/* Username справа для остальных типов вопросов */}
+                      {!showUsernameOnTop && !isAnonymous && answer.user && (
+                        <a
+                          href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ 
+                            fontSize: '11px', 
+                            color: 'var(--tg-button-color)',
+                            textDecoration: 'none',
+                            cursor: answer.user.username ? 'pointer' : 'default',
+                            whiteSpace: 'nowrap'
+                          }}
+                          onClick={(e) => {
+                            if (!answer.user.username) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          @{answer.user.username || 'Респондент'}
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -1122,24 +1161,27 @@ const SingleChoiceChart: React.FC<{
       
       {/* Легенда */}
       <div style={{ flex: 1 }}>
-        {Object.entries(stats).map(([option, count], index) => (
-          <div key={option} style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 8, 
-            marginBottom: 4 
-          }}>
-            <div style={{
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              backgroundColor: colors[index % colors.length]
-            }} />
-            <span style={{ fontSize: '12px', color: 'var(--tg-text-color)' }}>
-              {option} ({count})
-            </span>
-          </div>
-        ))}
+        {Object.entries(stats).map(([option, count], index) => {
+          const percentage = Math.round((count / totalCount) * 100);
+          return (
+            <div key={option} style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 8, 
+              marginBottom: 4 
+            }}>
+              <div style={{
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                backgroundColor: colors[index % colors.length]
+              }} />
+              <span style={{ fontSize: '12px', color: 'var(--tg-text-color)' }}>
+                {option} ({count} | {percentage}%)
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
