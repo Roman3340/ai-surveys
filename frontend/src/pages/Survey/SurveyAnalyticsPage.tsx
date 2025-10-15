@@ -207,7 +207,7 @@ const SummaryTab: React.FC<{
         <div style={{
           position: 'absolute',
           top: '-4px',
-          right: '8px',
+          right: '12px',
           animation: 'float 2s ease-in-out infinite',
           animationDelay: '0s',
           zIndex: 1
@@ -219,7 +219,7 @@ const SummaryTab: React.FC<{
         <div style={{
           position: 'absolute',
           bottom: '-4px',
-          left: '8px',
+          left: '12px',
           animation: 'float 2s ease-in-out infinite',
           animationDelay: '1s',
           zIndex: 1
