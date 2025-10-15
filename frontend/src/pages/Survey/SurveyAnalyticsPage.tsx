@@ -454,20 +454,24 @@ const MultipleChoiceChart: React.FC<{
   stats: { [key: string]: number };
   totalCount: number;
   options: string[];
-}> = ({ stats }) => {
+}> = ({ stats, options }) => {
   const maxCount = Math.max(...Object.values(stats));
+  
+  // Находим максимальную ширину названия для выравнивания
+  const maxNameWidth = Math.max(...options.map(option => option.length * 7 + 20)); // Примерная ширина в пикселях
   
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {Object.entries(stats).map(([option, count]) => {
-        const width = maxCount > 0 ? (count / maxCount) * 200 : 0; // Максимальная ширина 200px
+      {options.map((option) => {
+        const count = stats[option] || 0; // Показываем 0 если нет ответов
+        const widthPercent = maxCount > 0 ? (count / maxCount) * 100 : 0; // Процент от доступной ширины
         return (
           <div key={option} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ 
-              minWidth: '80px', 
+              minWidth: `${maxNameWidth}px`, 
               fontSize: '11px', 
               color: 'var(--tg-text-color)',
-              textAlign: 'right'
+              textAlign: 'left'
             }}>
               {option}
             </div>
@@ -475,10 +479,11 @@ const MultipleChoiceChart: React.FC<{
               flex: 1, 
               display: 'flex', 
               alignItems: 'center',
-              position: 'relative'
+              position: 'relative',
+              minWidth: '100px' // Минимальная ширина для области гистограмм
             }}>
               <div style={{
-                width: `${width}px`,
+                width: `${widthPercent}%`,
                 height: '24px',
                 backgroundColor: '#FF9500',
                 borderRadius: '4px',
