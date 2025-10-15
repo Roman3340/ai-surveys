@@ -61,6 +61,15 @@ const SummaryTab: React.FC<{
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+          }
         `}</style>
       </div>
     );
@@ -179,6 +188,82 @@ const SummaryTab: React.FC<{
           {stats?.total_responses ?? 0}
         </div>
         <div style={{ color: 'var(--tg-hint-color)', fontSize: 12 }}>Всего ответов</div>
+      </div>
+
+      {/* Кнопка ИИ аналитики */}
+      <div style={{ position: 'relative', display: 'block' }}>
+        {/* Летающие звездочки SVG */}
+        <div style={{
+          position: 'absolute',
+          top: '-8px',
+          right: '-16px',
+          animation: 'float 2s ease-in-out infinite',
+          animationDelay: '0s',
+          zIndex: 1
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+          </svg>
+        </div>
+        <div style={{
+          position: 'absolute',
+          bottom: '-8px',
+          left: '-16px',
+          animation: 'float 2s ease-in-out infinite',
+          animationDelay: '1s',
+          zIndex: 1
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+          </svg>
+        </div>
+        
+        <button
+          onClick={() => {
+            // Заглушка - пока ничего не делает
+            console.log('ИИ аналитика - заглушка');
+          }}
+          style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            backgroundSize: '200% 200%',
+            animation: 'gradientShift 3s ease infinite',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '16px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+          }}
+        >
+          <div style={{
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
+            transform: 'rotate(45deg)',
+            transition: 'all 0.6s',
+            opacity: 0
+          }} />
+          <span style={{ position: 'relative', zIndex: 1 }}>
+            🤖 Получить ИИ аналитику
+          </span>
+        </button>
       </div>
 
       {/* Аналитика по вопросам */}
