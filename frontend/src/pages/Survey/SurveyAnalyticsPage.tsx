@@ -345,10 +345,44 @@ const QuestionTab: React.FC<{
         return answers
           .filter((a: any) => a.question_id === questionId)
           .filter((a: any) => a.value !== null && a.value !== undefined && a.value !== '')
-          .map((a: any) => ({
-            value: a.value,
-            user: r.user || null
-          }));
+          .map((a: any) => {
+            // Обрабатываем случай с "Другое" - ищем дополнительный ответ
+            let processedValue = a.value;
+            
+            // Для single_choice
+            if (a.value === 'Другое') {
+              // Ищем ответ пользователя для варианта "Другое"
+              const otherAnswer = answers.find((otherA: any) => 
+                otherA.question_id === `${questionId}_other`
+              );
+              if (otherAnswer && otherAnswer.value) {
+                processedValue = {
+                  type: 'other',
+                  originalValue: 'Другое',
+                  userText: otherAnswer.value
+                };
+              }
+            }
+            
+            // Для multiple_choice - обрабатываем массив значений
+            if (Array.isArray(a.value) && a.value.includes('Другое')) {
+              const otherAnswer = answers.find((otherA: any) => 
+                otherA.question_id === `${questionId}_other`
+              );
+              if (otherAnswer && otherAnswer.value) {
+                processedValue = {
+                  type: 'other',
+                  originalValue: a.value,
+                  userText: otherAnswer.value
+                };
+              }
+            }
+            
+            return {
+              value: processedValue,
+              user: r.user || null
+            };
+          });
       });
   };
 
@@ -535,11 +569,80 @@ const renderQuestionAnswer = (question: EditableQuestion, value: any) => {
               </span>
             </label>
           ))}
+          
+          {/* Вариант "Другое" */}
+          {question.has_other_option && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'default',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                border: '1px solid var(--tg-section-separator-color)',
+                opacity: (value && value.type === 'other') || value === 'Другое' ? 1 : 0.6
+              }}>
+                <div style={{
+                  position: 'relative',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  border: `2px solid ${(value && value.type === 'other') || value === 'Другое' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: (value && value.type === 'other') || value === 'Другое' ? 'var(--tg-button-color)' : 'transparent'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: 'white',
+                    opacity: (value && value.type === 'other') || value === 'Другое' ? 1 : 0
+                  }} />
+                </div>
+                <span style={{ 
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  flex: 1
+                }}>
+                  Другое
+                </span>
+              </label>
+              
+              {/* Показываем текст пользователя если выбрано "Другое" */}
+              {(value && value.type === 'other') && (
+                <div style={{ marginLeft: '32px' }}>
+                  <div style={{
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--tg-bg-color)',
+                    borderRadius: '6px',
+                    border: '1px solid var(--tg-section-separator-color)',
+                    fontSize: '14px',
+                    color: 'var(--tg-text-color)'
+                  }}>
+                    {value.userText}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
 
     case 'multiple_choice':
-      const selectedValues = Array.isArray(value) ? value : [];
+      // Обрабатываем случай с "Другое" для multiple_choice
+      let selectedValues = Array.isArray(value) ? value : [];
+      let otherText = null;
+      
+      if (value && value.type === 'other') {
+        selectedValues = value.originalValue;
+        otherText = value.userText;
+      }
+      
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {(question.options || []).map((option, index) => {
@@ -588,6 +691,69 @@ const renderQuestionAnswer = (question: EditableQuestion, value: any) => {
               </label>
             );
           })}
+          
+          {/* Вариант "Другое" */}
+          {question.has_other_option && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'default',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                border: '1px solid var(--tg-section-separator-color)',
+                opacity: selectedValues.includes('Другое') ? 1 : 0.6
+              }}>
+                <div style={{
+                  position: 'relative',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '4px',
+                  border: `2px solid ${selectedValues.includes('Другое') ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: selectedValues.includes('Другое') ? 'var(--tg-button-color)' : 'transparent'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -90%)',
+                    width: '12px',
+                    height: '12px',
+                    opacity: selectedValues.includes('Другое') ? 1 : 0
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                  </div>
+                </div>
+                <span style={{ 
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  flex: 1
+                }}>
+                  Другое
+                </span>
+              </label>
+              
+              {/* Показываем текст пользователя если выбрано "Другое" */}
+              {selectedValues.includes('Другое') && otherText && (
+                <div style={{ marginLeft: '32px' }}>
+                  <div style={{
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--tg-bg-color)',
+                    borderRadius: '6px',
+                    border: '1px solid var(--tg-section-separator-color)',
+                    fontSize: '14px',
+                    color: 'var(--tg-text-color)'
+                  }}>
+                    {otherText}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
 
