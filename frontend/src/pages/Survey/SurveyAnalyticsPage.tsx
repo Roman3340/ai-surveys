@@ -291,7 +291,7 @@ const IndividualUserTab: React.FC<{
 }> = ({ questions, responses, survey, loading }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [currentUserIndex, setCurrentUserIndex] = useState<number>(1);
-  const [manualUserInput, setManualUserInput] = useState<string>('');
+  const [manualUserInput, setManualUserInput] = useState<string>('1');
 
   const isAnonymous = survey?.settings?.allowAnonymous || false;
   const totalUsers = responses?.length || 0;
@@ -314,6 +314,13 @@ const IndividualUserTab: React.FC<{
       };
     }
   }) || [];
+
+  // Инициализируем первого пользователя по умолчанию
+  useEffect(() => {
+    if (userOptions.length > 0 && !selectedUserId) {
+      setSelectedUserId(userOptions[0].id);
+    }
+  }, [userOptions, selectedUserId]);
 
   // Получаем ответы текущего пользователя
   const getCurrentUserResponses = () => {
@@ -446,7 +453,6 @@ const IndividualUserTab: React.FC<{
             outline: 'none'
           }}
         >
-          <option value="">Пользователь не выбран</option>
           {userOptions.map((option) => (
             <option key={option.id} value={option.id}>
               {option.label}
@@ -590,9 +596,48 @@ const IndividualUserTab: React.FC<{
               return null; // Не показываем вопросы без ответов
             }
 
+            // Обрабатываем случай с "Другое" точно так же, как в табе "Вопрос"
+            let processedValue = userAnswer.value;
+            
+            // Определяем, есть ли вариант "Другое" в вопросе
+            const hasOtherOption = question.has_other_option;
+            const predefinedOptions = question.options || [];
+            
+            if (hasOtherOption) {
+              // Для single_choice - проверяем, не является ли ответ "другим"
+              if (!Array.isArray(userAnswer.value)) {
+                // Если ответ не входит в предопределенные варианты - это "Другое"
+                if (!predefinedOptions.includes(userAnswer.value)) {
+                  processedValue = {
+                    type: 'other',
+                    originalValue: 'Другое',
+                    userText: userAnswer.value
+                  };
+                }
+              } else {
+                // Для multiple_choice - находим "другие" ответы
+                const otherAnswers = userAnswer.value.filter((answer: string) => 
+                  !predefinedOptions.includes(answer)
+                );
+                
+                if (otherAnswers.length > 0) {
+                  // Создаем массив с предопределенными вариантами + "Другое"
+                  const predefinedSelected = userAnswer.value.filter((answer: string) => 
+                    predefinedOptions.includes(answer)
+                  );
+                  
+                  processedValue = {
+                    type: 'other',
+                    originalValue: [...predefinedSelected, 'Другое'],
+                    userText: otherAnswers.join(', ') // Объединяем все "другие" ответы
+                  };
+                }
+              }
+            }
+
             return (
               <div key={question.id} style={{
-                background: 'var(--tg-bg-color)',
+                background: 'var(--tg-section-bg-color)',
                 borderRadius: '8px',
                 padding: '16px',
                 border: '1px solid var(--tg-section-separator-color)'
@@ -616,8 +661,14 @@ const IndividualUserTab: React.FC<{
                   </p>
                 )}
                 
-                <div style={{ marginTop: '12px' }}>
-                  {renderQuestionAnswer(question, userAnswer.value)}
+                <div style={{ 
+                  marginTop: '12px',
+                  backgroundColor: 'var(--tg-bg-color)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  border: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  {renderQuestionAnswer(question, processedValue)}
                 </div>
               </div>
             );
