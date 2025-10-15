@@ -32,9 +32,39 @@ const SummaryTab: React.FC<{
   questions: EditableQuestion[];
   responses: any[] | null;
   stats: { total_responses: number } | null;
-}> = ({ survey, questions, responses, stats }) => {
+  loading: boolean;
+}> = ({ survey, questions, responses, stats, loading }) => {
   const [showAllAnswers, setShowAllAnswers] = useState<{ [questionId: string]: boolean }>({});
   const [showAnswersPopup, setShowAnswersPopup] = useState<{ questionId: string; answers: any[] } | null>(null);
+
+  if (loading) {
+    return (
+      <div style={{ 
+        background: 'var(--tg-section-bg-color)', 
+        borderRadius: 12, 
+        padding: 40, 
+        textAlign: 'center', 
+        color: 'var(--tg-hint-color)' 
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid var(--tg-section-separator-color)',
+          borderTop: '3px solid #FF9500',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 16px'
+        }} />
+        <div>Загрузка аналитики...</div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   if (!responses || responses.length === 0) {
     return (
@@ -52,14 +82,29 @@ const SummaryTab: React.FC<{
 
   // Функция для получения ответов на конкретный вопрос
   const getQuestionAnswers = (questionId: string) => {
+    // Временная отладка - удалить после исправления
+    if (responses && responses.length > 0) {
+      console.log('Responses structure:', responses[0]);
+      if (responses[0].answers) {
+        console.log('Answers structure:', responses[0].answers[0]);
+      }
+    }
+    
     return responses
-      .flatMap(r => (r.answers || [])
-        .filter((a: any) => a.question_id === questionId)
-        .map((a: any) => ({
-          value: a.value,
-          user: r.user || null
-        }))
-      );
+      .flatMap(r => {
+        // Проверяем разные возможные структуры данных
+        const answers = r.answers || r.Answers || [];
+        return answers
+          .filter((a: any) => {
+            // Проверяем разные возможные названия поля question_id
+            const qId = a.question_id || a.questionId || a.question_id;
+            return qId === questionId;
+          })
+          .map((a: any) => ({
+            value: a.value || a.Value,
+            user: r.user || r.User || null
+          }));
+      });
   };
 
   // Функция для получения статистики по типу вопроса
@@ -662,6 +707,7 @@ export default function SurveyAnalyticsPage() {
   const [analyticsTab, setAnalyticsTab] = useState<'summary' | 'question' | 'user'>('summary');
   const [questions, setQuestions] = useState<EditableQuestion[]>([]);
   const [responsesPage, setResponsesPage] = useState<any[] | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
   const [editingSettings, setEditingSettings] = useState(false);
   const [editedSettings, setEditedSettings] = useState<SurveySettings | null>(null);
@@ -733,10 +779,13 @@ export default function SurveyAnalyticsPage() {
     const loadResponses = async () => {
       if (activeTab !== 'analytics' || !surveyId) return;
       try {
+        setAnalyticsLoading(true);
         const page = await surveyApi.getSurveyResponses(surveyId, 100, 0);
         setResponsesPage(page);
       } catch (e) {
         console.error(e);
+      } finally {
+        setAnalyticsLoading(false);
       }
     };
     loadResponses();
@@ -2668,6 +2717,7 @@ export default function SurveyAnalyticsPage() {
               questions={questions}
               responses={responsesPage}
               stats={stats}
+              loading={analyticsLoading}
             />
           )}
           
