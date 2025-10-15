@@ -2798,147 +2798,10 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
       );
     
     case 'scale':
-      // Проверяем корректность значений
-      const minValue = question.scaleMin || 1;
-      const maxValue = question.scaleMax || 10;
-      
-      // Проверяем есть ли ошибки валидации или некорректные значения
-      const hasErrors = validationErrors && validationErrors[question.id] && 
-        (validationErrors[question.id].scaleMin || validationErrors[question.id].scaleMax);
-      
-      const isInvalidRange = minValue < 1 || minValue > 99 || maxValue < 2 || maxValue > 100 || minValue >= maxValue;
-      
-      // Если есть ошибки или некорректный диапазон, используем значения по умолчанию
-      const min = (hasErrors || isInvalidRange) ? 1 : minValue;
-      const max = (hasErrors || isInvalidRange) ? 10 : maxValue;
-      const [scaleValue, setScaleValue] = React.useState(Math.floor((min + max) / 2));
-      
-      return (
-        <div style={{ 
-          backgroundColor: 'var(--tg-section-bg-color)',
-          borderRadius: '12px',
-          padding: '20px',
-          border: '1px solid var(--tg-section-separator-color)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <span style={{ 
-              fontSize: '16px', 
-              fontWeight: '600',
-              color: scaleValue === min ? 'var(--tg-button-color)' : 'var(--tg-text-color)',
-              minWidth: '20px',
-              textAlign: 'center'
-            }}>
-              {min}
-            </span>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <input
-                type="range"
-                min={min}
-                max={max}
-                value={scaleValue}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value);
-                  setScaleValue(value);
-                  onAnswerChange?.({ ...answers, [question.id]: value });
-                }}
-                style={{
-                  width: '100%',
-                  height: '8px',
-                  background: '#666', // Простая серая линия
-                  borderRadius: '4px',
-                  outline: 'none',
-                  appearance: 'none'
-                }}
-              />
-            </div>
-            <span style={{ 
-              fontSize: '16px', 
-              fontWeight: '600',
-              color: scaleValue === max ? 'var(--tg-button-color)' : 'var(--tg-text-color)',
-              minWidth: '20px',
-              textAlign: 'center'
-            }}>
-              {max}
-            </span>
-          </div>
-          
-          {/* Показываем выбранное значение на отдельной строке */}
-          {scaleValue !== min && scaleValue !== max && (
-            <div style={{ 
-              textAlign: 'center',
-              marginBottom: '8px'
-            }}>
-              <span style={{
-                fontSize: '16px',
-                color: 'var(--tg-button-color)',
-                fontWeight: 'bold'
-              }}>
-                {scaleValue}
-              </span>
-            </div>
-          )}
-          
-          {(question.scaleLabels?.min || question.scaleLabels?.max) && (
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              fontSize: '12px',
-              color: 'var(--tg-hint-color)'
-            }}>
-              <span>{question.scaleLabels?.min || ''}</span>
-              <span>{question.scaleLabels?.max || ''}</span>
-            </div>
-          )}
-        </div>
-      );
+      return <ScaleQuestionInput question={question} answers={answers} onAnswerChange={onAnswerChange} validationErrors={validationErrors} />;
     
     case 'rating':
-      const [rating, setRating] = React.useState(0);
-      
-      return (
-        <div style={{ 
-          backgroundColor: 'var(--tg-section-bg-color)',
-          borderRadius: '12px',
-          padding: '20px',
-          border: '1px solid var(--tg-section-separator-color)'
-        }}>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                onClick={() => {
-                  setRating(star);
-                  onAnswerChange?.({ ...answers, [question.id]: star });
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  transition: 'transform 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                <svg 
-                  width="32" 
-                  height="32" 
-                  viewBox="0 0 24 24" 
-                  fill={star <= rating ? "#ffd700" : "none"} 
-                  stroke={star <= rating ? "#ffd700" : "var(--tg-hint-color)"} 
-                  strokeWidth="2"
-                >
-                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                </svg>
-              </button>
-            ))}
-          </div>
-        </div>
-      );
+      return <RatingQuestionInput question={question} answers={answers} onAnswerChange={onAnswerChange} />;
     
     case 'boolean':
       return (
@@ -3303,6 +3166,162 @@ const PreviewTab: React.FC<{
         )}
       </div>
     </motion.div>
+  );
+};
+
+// Компонент для шкалы
+const ScaleQuestionInput: React.FC<{
+  question: Question;
+  answers?: Record<string, any>;
+  onAnswerChange?: (answers: Record<string, any>) => void;
+  validationErrors?: Record<string, { scaleMin?: string; scaleMax?: string }>;
+}> = ({ question, answers, onAnswerChange, validationErrors }) => {
+  // Проверяем корректность значений
+  const minValue = question.scaleMin || 1;
+  const maxValue = question.scaleMax || 10;
+  
+  // Проверяем есть ли ошибки валидации или некорректные значения
+  const hasErrors = validationErrors && validationErrors[question.id] && 
+    (validationErrors[question.id].scaleMin || validationErrors[question.id].scaleMax);
+  
+  const isInvalidRange = minValue < 1 || minValue > 99 || maxValue < 2 || maxValue > 100 || minValue >= maxValue;
+  
+  // Если есть ошибки или некорректный диапазон, используем значения по умолчанию
+  const min = (hasErrors || isInvalidRange) ? 1 : minValue;
+  const max = (hasErrors || isInvalidRange) ? 10 : maxValue;
+  const [scaleValue, setScaleValue] = useState(Math.floor((min + max) / 2));
+  
+  return (
+    <div style={{ 
+      backgroundColor: 'var(--tg-section-bg-color)',
+      borderRadius: '12px',
+      padding: '20px',
+      border: '1px solid var(--tg-section-separator-color)'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+        <span style={{ 
+          fontSize: '16px', 
+          fontWeight: '600',
+          color: scaleValue === min ? 'var(--tg-button-color)' : 'var(--tg-text-color)',
+          minWidth: '20px',
+          textAlign: 'center'
+        }}>
+          {min}
+        </span>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            value={scaleValue}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              setScaleValue(value);
+              onAnswerChange?.({ ...answers, [question.id]: value });
+            }}
+            style={{
+              width: '100%',
+              height: '8px',
+              background: '#666', // Простая серая линия
+              borderRadius: '4px',
+              outline: 'none',
+              appearance: 'none'
+            }}
+          />
+        </div>
+        <span style={{ 
+          fontSize: '16px', 
+          fontWeight: '600',
+          color: scaleValue === max ? 'var(--tg-button-color)' : 'var(--tg-text-color)',
+          minWidth: '20px',
+          textAlign: 'center'
+        }}>
+          {max}
+        </span>
+      </div>
+      
+      {/* Показываем выбранное значение на отдельной строке */}
+      {scaleValue !== min && scaleValue !== max && (
+        <div style={{ 
+          textAlign: 'center',
+          marginBottom: '8px'
+        }}>
+          <span style={{
+            fontSize: '16px',
+            color: 'var(--tg-button-color)',
+            fontWeight: 'bold'
+          }}>
+            {scaleValue}
+          </span>
+        </div>
+      )}
+      
+      {(question.scaleLabels?.min || question.scaleLabels?.max) && (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          fontSize: '12px',
+          color: 'var(--tg-hint-color)'
+        }}>
+          <span>{question.scaleLabels?.min || ''}</span>
+          <span>{question.scaleLabels?.max || ''}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Компонент для рейтинга
+const RatingQuestionInput: React.FC<{
+  question: Question;
+  answers?: Record<string, any>;
+  onAnswerChange?: (answers: Record<string, any>) => void;
+}> = ({ question, answers, onAnswerChange }) => {
+  const [rating, setRating] = useState(0);
+  
+  return (
+    <div style={{ 
+      backgroundColor: 'var(--tg-section-bg-color)',
+      borderRadius: '12px',
+      padding: '20px',
+      border: '1px solid var(--tg-section-separator-color)'
+    }}>
+      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            onClick={() => {
+              setRating(star);
+              onAnswerChange?.({ ...answers, [question.id]: star });
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <svg 
+              width="32" 
+              height="32" 
+              viewBox="0 0 24 24" 
+              fill={star <= rating ? "#ffd700" : "none"} 
+              stroke={star <= rating ? "#ffd700" : "var(--tg-hint-color)"} 
+              strokeWidth="2"
+            >
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+            </svg>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 };
 
