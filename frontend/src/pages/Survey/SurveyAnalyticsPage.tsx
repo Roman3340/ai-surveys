@@ -686,29 +686,35 @@ const AnswersPopup: React.FC<{
   onClose: () => void;
 }> = ({ answers, onClose }) => {
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 9999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
-      <div style={{
-        backgroundColor: 'var(--tg-section-bg-color)',
-        borderRadius: '12px',
-        padding: '20px',
-        maxWidth: '90%',
-        maxHeight: '80%',
-        overflow: 'auto',
-        color: 'var(--tg-text-color)',
-        border: '1px solid var(--tg-section-separator-color)'
-      }}>
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}
+      onClick={onClose}
+    >
+      <div 
+        style={{
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          padding: '20px',
+          maxWidth: '90%',
+          maxHeight: '80%',
+          overflow: 'auto',
+          color: 'var(--tg-text-color)',
+          border: '1px solid var(--tg-section-separator-color)'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -735,18 +741,44 @@ const AnswersPopup: React.FC<{
         </div>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {answers.map((answer, index) => (
-            <div key={index} style={{ 
-              padding: '12px', 
-              backgroundColor: 'var(--tg-bg-color)', 
-              borderRadius: '8px',
-              fontSize: '13px',
-              color: 'var(--tg-text-color)',
-              border: '1px solid var(--tg-section-separator-color)'
-            }}>
-              {answer}
-            </div>
-          ))}
+          {answers.map((answer, index) => {
+            let displayValue = answer.value || answer;
+            
+            // Форматируем дату если это дата
+            if (typeof displayValue === 'string' && displayValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+              const date = new Date(displayValue);
+              displayValue = date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              });
+            }
+            
+            return (
+              <div key={index} style={{ 
+                padding: '12px', 
+                backgroundColor: 'var(--tg-bg-color)', 
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: 'var(--tg-text-color)',
+                border: '1px solid var(--tg-section-separator-color)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span>{displayValue}</span>
+                {answer.user && (
+                  <span style={{ 
+                    fontSize: '11px', 
+                    color: 'var(--tg-hint-color)',
+                    marginLeft: '8px'
+                  }}>
+                    @{answer.user.username || 'Респондент'}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
