@@ -47,6 +47,7 @@ export default function SurveyAnalyticsPage() {
   const [editingQuestions, setEditingQuestions] = useState(false);
   const [editedQuestions, setEditedQuestions] = useState<EditableQuestion[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
+  const [settingsValidationErrors, setSettingsValidationErrors] = useState<Record<string, string>>({});
 
   useStableBackButton({ targetRoute: '/' });
 
@@ -140,8 +141,54 @@ export default function SurveyAnalyticsPage() {
     }
   };
 
+  const validateSettings = (): boolean => {
+    const errors: Record<string, string> = {};
+    
+    // Валидация maxParticipants
+    if (editedMaxParticipants && editedMaxParticipants.trim() !== '') {
+      const num = parseInt(editedMaxParticipants);
+      if (isNaN(num) || num < 1) {
+        errors.maxParticipants = 'Количество участников должно быть не менее 1';
+      }
+    }
+    
+    // Валидация мотивации
+    if (editedSettings?.motivationEnabled) {
+      if (!editedSettings.motivationDetails || editedSettings.motivationDetails.trim() === '') {
+        errors.motivationDetails = 'Заполните описание награды';
+      }
+      
+      // Для промокода нужен также промокод
+      if (editedSettings.motivationType === 'promo') {
+        if (!editedSettings.motivationConditions || editedSettings.motivationConditions.trim() === '') {
+          errors.motivationConditions = 'Введите промокод';
+        }
+      }
+    }
+    
+    setSettingsValidationErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      // Скроллим к первому ошибочному полю
+      const firstErrorField = Object.keys(errors)[0];
+      const element = document.getElementById(`settings-${firstErrorField}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSaveSettings = async () => {
     if (!survey || !surveyId || !editedSettings) return;
+    
+    if (!validateSettings()) {
+      hapticFeedback?.error();
+      return;
+    }
+    
     try {
       const settingsToSend = {
         ...editedSettings,
@@ -152,6 +199,7 @@ export default function SurveyAnalyticsPage() {
       setEditedSettings(updated.settings);
       setEditedMaxParticipants(updated.maxParticipants?.toString() || '');
       setEditingSettings(false);
+      setSettingsValidationErrors({});
       hapticFeedback?.success();
       alert('Настройки успешно обновлены!');
     } catch (e) {
@@ -1468,24 +1516,41 @@ export default function SurveyAnalyticsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                     <span style={{ color: 'var(--tg-hint-color)' }}>Макс. участников</span>
                     {editingSettings ? (
-                      <input
-                        type="number"
-                        value={editedMaxParticipants}
-                        onChange={(e) => setEditedMaxParticipants(e.target.value)}
-                        placeholder="Без ограничений"
-                        min={1}
-                        style={{
-                          width: '120px',
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid var(--tg-section-separator-color)',
-                          backgroundColor: 'var(--tg-bg-color)',
-                          color: 'var(--tg-text-color)',
-                          fontSize: '13px',
-                          outline: 'none',
-                          textAlign: 'right'
-                        }}
-                      />
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <input
+                          id="settings-maxParticipants"
+                          type="number"
+                          value={editedMaxParticipants}
+                          onChange={(e) => {
+                            setEditedMaxParticipants(e.target.value);
+                            if (settingsValidationErrors.maxParticipants) {
+                              setSettingsValidationErrors(prev => {
+                                const newErrors = { ...prev };
+                                delete newErrors.maxParticipants;
+                                return newErrors;
+                              });
+                            }
+                          }}
+                          placeholder="Без ограничений"
+                          min={1}
+                          style={{
+                            width: '120px',
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            border: `1px solid ${settingsValidationErrors.maxParticipants ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
+                            backgroundColor: 'var(--tg-bg-color)',
+                            color: 'var(--tg-text-color)',
+                            fontSize: '13px',
+                            outline: 'none',
+                            textAlign: 'right'
+                          }}
+                        />
+                        {settingsValidationErrors.maxParticipants && (
+                          <div style={{ fontSize: '11px', color: '#FF3B30', marginTop: '4px', textAlign: 'right' }}>
+                            {settingsValidationErrors.maxParticipants}
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <span style={{ fontWeight: 500 }}>{survey.maxParticipants || 'Не указано'}</span>
                     )}
@@ -1606,50 +1671,42 @@ export default function SurveyAnalyticsPage() {
                           )}
 
                           {editedSettings?.motivationType === 'discount' && (
-                            <>
-                              <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                                <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                  Размер скидки
-                                </label>
-                                <input
-                                  type="text"
-                                  value={editedSettings?.motivationDetails || ''}
-                                  onChange={(e) => setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value })}
-                                  placeholder="Например: 20%"
-                                  style={{
-                                    width: '100%',
-                                    padding: '8px',
-                                    borderRadius: '6px',
-                                    border: '1px solid var(--tg-section-separator-color)',
-                                    backgroundColor: 'var(--tg-bg-color)',
-                                    color: 'var(--tg-text-color)',
-                                    fontSize: '13px',
-                                    outline: 'none'
-                                  }}
-                                />
-                              </div>
-                              <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                                <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                  Описание скидки
-                                </label>
-                                <input
-                                  type="text"
-                                  value={editedSettings?.motivationConditions || ''}
-                                  onChange={(e) => setEditedSettings({ ...editedSettings!, motivationConditions: e.target.value })}
-                                  placeholder="Скидка на следующий заказ"
-                                  style={{
-                                    width: '100%',
-                                    padding: '8px',
-                                    borderRadius: '6px',
-                                    border: '1px solid var(--tg-section-separator-color)',
-                                    backgroundColor: 'var(--tg-bg-color)',
-                                    color: 'var(--tg-text-color)',
-                                    fontSize: '13px',
-                                    outline: 'none'
-                                  }}
-                                />
-                              </div>
-                            </>
+                            <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                              <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
+                                Описание скидки
+                              </label>
+                              <input
+                                id="settings-motivationDetails"
+                                type="text"
+                                value={editedSettings?.motivationDetails || ''}
+                                onChange={(e) => {
+                                  setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value });
+                                  if (settingsValidationErrors.motivationDetails) {
+                                    setSettingsValidationErrors(prev => {
+                                      const newErrors = { ...prev };
+                                      delete newErrors.motivationDetails;
+                                      return newErrors;
+                                    });
+                                  }
+                                }}
+                                placeholder="20% скидка на следующий заказ"
+                                style={{
+                                  width: '100%',
+                                  padding: '8px',
+                                  borderRadius: '6px',
+                                  border: `1px solid ${settingsValidationErrors.motivationDetails ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
+                                  backgroundColor: 'var(--tg-bg-color)',
+                                  color: 'var(--tg-text-color)',
+                                  fontSize: '13px',
+                                  outline: 'none'
+                                }}
+                              />
+                              {settingsValidationErrors.motivationDetails && (
+                                <div style={{ fontSize: '11px', color: '#FF3B30', marginTop: '4px' }}>
+                                  {settingsValidationErrors.motivationDetails}
+                                </div>
+                              )}
+                            </div>
                           )}
 
                           {editedSettings?.motivationType === 'promo' && (
@@ -1659,42 +1716,72 @@ export default function SurveyAnalyticsPage() {
                                   Описание промокода
                                 </label>
                                 <input
+                                  id="settings-motivationDetails"
                                   type="text"
                                   value={editedSettings?.motivationDetails || ''}
-                                  onChange={(e) => setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value })}
+                                  onChange={(e) => {
+                                    setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value });
+                                    if (settingsValidationErrors.motivationDetails) {
+                                      setSettingsValidationErrors(prev => {
+                                        const newErrors = { ...prev };
+                                        delete newErrors.motivationDetails;
+                                        return newErrors;
+                                      });
+                                    }
+                                  }}
                                   placeholder="Бесплатная доставка за прохождение опроса"
                                   style={{
                                     width: '100%',
                                     padding: '8px',
                                     borderRadius: '6px',
-                                    border: '1px solid var(--tg-section-separator-color)',
+                                    border: `1px solid ${settingsValidationErrors.motivationDetails ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
                                     backgroundColor: 'var(--tg-bg-color)',
                                     color: 'var(--tg-text-color)',
                                     fontSize: '13px',
                                     outline: 'none'
                                   }}
                                 />
+                                {settingsValidationErrors.motivationDetails && (
+                                  <div style={{ fontSize: '11px', color: '#FF3B30', marginTop: '4px' }}>
+                                    {settingsValidationErrors.motivationDetails}
+                                  </div>
+                                )}
                               </div>
                               <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                                 <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
                                   Промокод
                                 </label>
                                 <input
+                                  id="settings-motivationConditions"
                                   type="text"
                                   value={editedSettings?.motivationConditions || ''}
-                                  onChange={(e) => setEditedSettings({ ...editedSettings!, motivationConditions: e.target.value })}
+                                  onChange={(e) => {
+                                    setEditedSettings({ ...editedSettings!, motivationConditions: e.target.value });
+                                    if (settingsValidationErrors.motivationConditions) {
+                                      setSettingsValidationErrors(prev => {
+                                        const newErrors = { ...prev };
+                                        delete newErrors.motivationConditions;
+                                        return newErrors;
+                                      });
+                                    }
+                                  }}
                                   placeholder="FREE_DELIVERY"
                                   style={{
                                     width: '100%',
                                     padding: '8px',
                                     borderRadius: '6px',
-                                    border: '1px solid var(--tg-section-separator-color)',
+                                    border: `1px solid ${settingsValidationErrors.motivationConditions ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
                                     backgroundColor: 'var(--tg-bg-color)',
                                     color: 'var(--tg-text-color)',
                                     fontSize: '13px',
                                     outline: 'none'
                                   }}
                                 />
+                                {settingsValidationErrors.motivationConditions && (
+                                  <div style={{ fontSize: '11px', color: '#FF3B30', marginTop: '4px' }}>
+                                    {settingsValidationErrors.motivationConditions}
+                                  </div>
+                                )}
                               </div>
                             </>
                           )}
@@ -1705,21 +1792,36 @@ export default function SurveyAnalyticsPage() {
                                 Описание
                               </label>
                               <input
+                                id="settings-motivationDetails"
                                 type="text"
                                 value={editedSettings?.motivationDetails || ''}
-                                onChange={(e) => setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value })}
+                                onChange={(e) => {
+                                  setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value });
+                                  if (settingsValidationErrors.motivationDetails) {
+                                    setSettingsValidationErrors(prev => {
+                                      const newErrors = { ...prev };
+                                      delete newErrors.motivationDetails;
+                                      return newErrors;
+                                    });
+                                  }
+                                }}
                                 placeholder="Опишите мотивацию..."
                                 style={{
                                   width: '100%',
                                   padding: '8px',
                                   borderRadius: '6px',
-                                  border: '1px solid var(--tg-section-separator-color)',
+                                  border: `1px solid ${settingsValidationErrors.motivationDetails ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
                                   backgroundColor: 'var(--tg-bg-color)',
                                   color: 'var(--tg-text-color)',
                                   fontSize: '13px',
                                   outline: 'none'
                                 }}
                               />
+                              {settingsValidationErrors.motivationDetails && (
+                                <div style={{ fontSize: '11px', color: '#FF3B30', marginTop: '4px' }}>
+                                  {settingsValidationErrors.motivationDetails}
+                                </div>
+                              )}
                             </div>
                           )}
                         </>
