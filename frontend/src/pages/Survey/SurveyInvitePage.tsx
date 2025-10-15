@@ -319,8 +319,9 @@ export default function SurveyInvitePage() {
                       }}
                     >
                       <div style={{ marginBottom: '8px' }}>
+                        {survey.settings.motivationType === 'discount' && `💰 ${survey.settings.motivationDetails || 'Скидка'}`}
+                        {survey.settings.motivationType === 'promo' && `🛒 ${survey.settings.motivationDetails || 'Промокод'}`}
                         {survey.settings.motivationType === 'stars' && `⭐ ${survey.settings.motivationDetails || '50'} звёзд Telegram`}
-                        {survey.settings.motivationType === 'promo_code' && `💎 ${survey.settings.motivationDetails || 'Промокод на скидку'}`}
                         {survey.settings.motivationType === 'gift' && `🎁 ${survey.settings.motivationDetails || 'Подарок'}`}
                         {survey.settings.motivationType === 'other' && survey.settings.motivationDetails}
                       </div>

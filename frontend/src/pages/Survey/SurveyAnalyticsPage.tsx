@@ -1558,7 +1558,8 @@ export default function SurveyAnalyticsPage() {
                                 outline: 'none'
                               }}
                             >
-                              <option value="promo_code">🛒 Промокод на скидку</option>
+                              <option value="discount">💰 Скидка</option>
+                              <option value="promo">🛒 Промокод</option>
                               <option value="stars">⭐ Звёзды Telegram</option>
                               <option value="gift">🎁 Подарок</option>
                               <option value="other">Другое</option>
@@ -1604,11 +1605,35 @@ export default function SurveyAnalyticsPage() {
                             </div>
                           )}
 
-                          {editedSettings?.motivationType === 'promo_code' && (
+                          {editedSettings?.motivationType === 'discount' && (
+                            <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                              <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
+                                Размер скидки
+                              </label>
+                              <input
+                                type="text"
+                                value={editedSettings?.motivationDetails || ''}
+                                onChange={(e) => setEditedSettings({ ...editedSettings!, motivationDetails: e.target.value })}
+                                placeholder="Например: 20%"
+                                style={{
+                                  width: '100%',
+                                  padding: '8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid var(--tg-section-separator-color)',
+                                  backgroundColor: 'var(--tg-bg-color)',
+                                  color: 'var(--tg-text-color)',
+                                  fontSize: '13px',
+                                  outline: 'none'
+                                }}
+                              />
+                            </div>
+                          )}
+
+                          {editedSettings?.motivationType === 'promo' && (
                             <>
                               <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                                 <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                  Описание скидки
+                                  Описание промокода
                                 </label>
                                 <input
                                   type="text"
@@ -1682,8 +1707,9 @@ export default function SurveyAnalyticsPage() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                             <span style={{ color: 'var(--tg-hint-color)' }}>Тип мотивации</span>
                             <span style={{ fontWeight: 500 }}>
+                              {settings.motivationType === 'discount' && '💰 Скидка'}
+                              {settings.motivationType === 'promo' && '🛒 Промокод'}
                               {settings.motivationType === 'stars' && '⭐ Telegram Stars'}
-                              {settings.motivationType === 'promo_code' && 'Промокод'}
                               {settings.motivationType === 'gift' && '🎁 Подарок'}
                               {settings.motivationType === 'other' && 'Другое'}
                             </span>
@@ -1691,7 +1717,9 @@ export default function SurveyAnalyticsPage() {
                           {settings.motivationDetails && (
                             <div style={{ padding: '8px 0' }}>
                               <div style={{ fontSize: '12px', color: 'var(--tg-hint-color)', marginBottom: '4px' }}>
-                                {settings.motivationType === 'stars' ? 'Количество звёзд:' : 'Описание:'}
+                                {settings.motivationType === 'stars' ? 'Количество звёзд:' : 
+                                 settings.motivationType === 'discount' ? 'Размер скидки:' :
+                                 settings.motivationType === 'promo' ? 'Описание промокода:' : 'Описание:'}
                               </div>
                               <div style={{ fontSize: '13px', fontWeight: 500 }}>{settings.motivationDetails}</div>
                             </div>
