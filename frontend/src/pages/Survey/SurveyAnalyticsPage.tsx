@@ -313,7 +313,21 @@ const TextAnswersBlock: React.FC<{
             alignItems: 'center'
           }}>
             <span style={{ fontSize: '13px', color: 'var(--tg-text-color)' }}>
-              {answer.value || answer}
+              {(() => {
+                let displayValue = answer.value || answer;
+                
+                // Форматируем дату если это дата
+                if (typeof displayValue === 'string' && displayValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                  const date = new Date(displayValue);
+                  displayValue = date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  });
+                }
+                
+                return displayValue;
+              })()}
             </span>
             {!isAnonymous && renderUserLink(answer.user)}
           </div>
@@ -356,7 +370,22 @@ const SingleChoiceChart: React.FC<{
         <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
           {(() => {
             let currentAngle = 0;
-            return Object.entries(stats).map(([option, count], index) => {
+            const entries = Object.entries(stats);
+            
+            // Если только один ответ, делаем полный круг
+            if (entries.length === 1) {
+              const [option, count] = entries[0];
+              return (
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill={colors[0]}
+                />
+              );
+            }
+            
+            return entries.map(([option, count], index) => {
               const percentage = (count / totalCount) * 100;
               const angle = (percentage / 100) * 360;
               const startAngle = currentAngle;
@@ -526,15 +555,28 @@ const RatingAnswersBlock: React.FC<{
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => {
       const isFull = i < Math.floor(rating);
-      const isHalf = i === Math.floor(rating) && rating % 1 >= 0.5;
+      const isPartial = i === Math.floor(rating) && rating % 1 > 0;
+      const partialAmount = rating % 1;
       
       return (
         <span key={i} style={{ 
-          color: isFull ? '#ffd700' : isHalf ? '#ffd700' : 'var(--tg-hint-color)',
-          fontSize: '20px',
-          position: 'relative'
+          color: isFull ? '#ffd700' : isPartial ? '#ffd700' : 'var(--tg-hint-color)',
+          fontSize: '24px',
+          position: 'relative',
+          display: 'inline-block'
         }}>
-          {isHalf ? '☆' : '★'}
+          {isPartial ? (
+            <span style={{
+              background: `linear-gradient(90deg, #ffd700 ${partialAmount * 100}%, var(--tg-hint-color) ${partialAmount * 100}%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              ★
+            </span>
+          ) : (
+            '★'
+          )}
         </span>
       );
     });
