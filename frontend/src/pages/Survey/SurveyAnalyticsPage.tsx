@@ -192,13 +192,23 @@ const SummaryTab: React.FC<{
             padding: 16 
           }}>
             <h4 style={{ 
-              margin: '0 0 12px 0', 
+              margin: '0 0 8px 0', 
               fontSize: 14, 
               fontWeight: 600,
               color: 'var(--tg-text-color)'
             }}>
               {question.text}
             </h4>
+            {question.description && (
+              <p style={{
+                fontSize: '12px',
+                color: 'var(--tg-hint-color)',
+                margin: '0 0 12px 0',
+                lineHeight: '1.4'
+              }}>
+                {question.description}
+              </p>
+            )}
             
             {questionStats.type === 'text' && (
               <TextAnswersBlock 
@@ -270,6 +280,515 @@ const SummaryTab: React.FC<{
       )}
     </div>
   );
+};
+
+// Компонент для таба "Вопрос"
+const QuestionTab: React.FC<{
+  questions: EditableQuestion[];
+  responses: any[] | null;
+  survey: Survey | null;
+  loading: boolean;
+}> = ({ questions, responses, survey, loading }) => {
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        padding: '40px 20px',
+        background: 'var(--tg-section-bg-color)', 
+        borderRadius: 12, 
+        gap: 16 
+      }}>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          border: '3px solid var(--tg-button-color)',
+          borderTop: '3px solid transparent',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <div style={{ color: 'var(--tg-text-color)', fontSize: '14px' }}>
+          Загрузка аналитики...
+        </div>
+      </div>
+    );
+  }
+
+  if (!questions || questions.length === 0) {
+    return (
+      <div style={{ 
+        background: 'var(--tg-section-bg-color)', 
+        borderRadius: 12, 
+        padding: 20, 
+        textAlign: 'center', 
+        color: 'var(--tg-hint-color)' 
+      }}>
+        Нет вопросов для анализа
+      </div>
+    );
+  }
+
+  const selectedQuestion = questions.find(q => q.id === selectedQuestionId);
+  const isAnonymous = survey?.settings?.allowAnonymous || false;
+
+  // Получаем ответы для выбранного вопроса
+  const getQuestionAnswers = (questionId: string) => {
+    if (!responses || responses.length === 0) return [];
+    
+    return responses
+      .flatMap(r => {
+        const answers = r.answers || [];
+        return answers
+          .filter((a: any) => a.question_id === questionId)
+          .filter((a: any) => a.value !== null && a.value !== undefined && a.value !== '')
+          .map((a: any) => ({
+            value: a.value,
+            user: r.user || null
+          }));
+      });
+  };
+
+  const questionAnswers = selectedQuestion ? getQuestionAnswers(selectedQuestion.id) : [];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Выпадающий список вопросов */}
+      <div>
+        <label style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: '500',
+          marginBottom: '8px',
+          color: 'var(--tg-text-color)'
+        }}>
+          Выберите вопрос
+        </label>
+        <select
+          value={selectedQuestionId}
+          onChange={(e) => setSelectedQuestionId(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: 'var(--tg-bg-color)',
+            color: 'var(--tg-text-color)',
+            fontSize: '16px',
+            outline: 'none'
+          }}
+        >
+          <option value="">Вопрос не выбран</option>
+          {questions.map((question) => (
+            <option key={question.id} value={question.id}>
+              {question.text}
+            </option>
+          ))}
+        </select>
+        {!selectedQuestionId && (
+          <p style={{
+            fontSize: '12px',
+            color: 'var(--tg-hint-color)',
+            margin: '8px 0 0 0'
+          }}>
+            Выберите вопрос для просмотра аналитики по нему
+          </p>
+        )}
+      </div>
+
+      {/* Отображение выбранного вопроса и ответов */}
+      {selectedQuestion && (
+        <div style={{ 
+          background: 'var(--tg-section-bg-color)', 
+          borderRadius: 12, 
+          padding: 16 
+        }}>
+          <h3 style={{ 
+            fontSize: '16px', 
+            fontWeight: '600', 
+            margin: '0 0 8px 0',
+            color: 'var(--tg-text-color)'
+          }}>
+            {selectedQuestion.text}
+          </h3>
+          {selectedQuestion.description && (
+            <p style={{
+              fontSize: '14px',
+              color: 'var(--tg-hint-color)',
+              margin: '0 0 16px 0',
+              lineHeight: '1.4'
+            }}>
+              {selectedQuestion.description}
+            </p>
+          )}
+
+          {questionAnswers.length === 0 ? (
+            <p style={{
+              fontSize: '14px',
+              color: 'var(--tg-hint-color)',
+              textAlign: 'center',
+              padding: '20px 0'
+            }}>
+              На этот вопрос пока нет ответов
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {questionAnswers.map((answer, index) => (
+                <div key={index} style={{
+                  background: 'var(--tg-bg-color)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  border: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      {renderQuestionAnswer(selectedQuestion, answer.value)}
+                    </div>
+                    {!isAnonymous && answer.user && (
+                      <a
+                        href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ 
+                          fontSize: '11px', 
+                          color: 'var(--tg-button-color)',
+                          textDecoration: 'none',
+                          cursor: answer.user.username ? 'pointer' : 'default',
+                          whiteSpace: 'nowrap'
+                        }}
+                        onClick={(e) => {
+                          if (!answer.user.username) {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        @{answer.user.username || 'Респондент'}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Функция для рендеринга ответа на вопрос
+const renderQuestionAnswer = (question: EditableQuestion, value: any) => {
+
+  switch (question.type) {
+    case 'text':
+    case 'textarea':
+      return (
+        <div style={{ fontSize: '14px', color: 'var(--tg-text-color)', lineHeight: '1.4' }}>
+          {value}
+        </div>
+      );
+
+    case 'single_choice':
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {(question.options || []).map((option, index) => (
+            <label key={index} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'default',
+              padding: '12px',
+              borderRadius: '8px',
+              backgroundColor: 'var(--tg-section-bg-color)',
+              border: '1px solid var(--tg-section-separator-color)',
+              opacity: value === option ? 1 : 0.6
+            }}>
+              <div style={{
+                position: 'relative',
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: `2px solid ${value === option ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: value === option ? 'var(--tg-button-color)' : 'transparent'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  opacity: value === option ? 1 : 0
+                }} />
+              </div>
+              <span style={{ 
+                color: 'var(--tg-text-color)',
+                fontSize: '16px',
+                flex: 1
+              }}>
+                {option}
+              </span>
+            </label>
+          ))}
+        </div>
+      );
+
+    case 'multiple_choice':
+      const selectedValues = Array.isArray(value) ? value : [];
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {(question.options || []).map((option, index) => {
+            const isChecked = selectedValues.includes(option);
+            return (
+              <label key={index} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'default',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                border: '1px solid var(--tg-section-separator-color)',
+                opacity: isChecked ? 1 : 0.6
+              }}>
+                <div style={{
+                  position: 'relative',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '4px',
+                  border: `2px solid ${isChecked ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: isChecked ? 'var(--tg-button-color)' : 'transparent'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -90%)',
+                    width: '12px',
+                    height: '12px',
+                    opacity: isChecked ? 1 : 0
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                  </div>
+                </div>
+                <span style={{ 
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  flex: 1
+                }}>
+                  {option}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      );
+
+    case 'scale':
+      const minValue = question.scale_min || 1;
+      const maxValue = question.scale_max || 10;
+      return (
+        <div style={{ 
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          padding: '20px',
+          border: '1px solid var(--tg-section-separator-color)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <span style={{ 
+              fontSize: '16px', 
+              fontWeight: '600',
+              color: 'var(--tg-text-color)',
+              minWidth: '20px',
+              textAlign: 'center'
+            }}>
+              {minValue}
+            </span>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <div style={{
+                width: '100%',
+                height: '8px',
+                background: '#666',
+                borderRadius: '4px',
+                position: 'relative'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  left: `${((value - minValue) / (maxValue - minValue)) * 100}%`,
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '20px',
+                  height: '20px',
+                  backgroundColor: 'var(--tg-button-color)',
+                  borderRadius: '50%',
+                  border: '2px solid white',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }} />
+              </div>
+            </div>
+            <span style={{ 
+              fontSize: '16px', 
+              fontWeight: '600',
+              color: 'var(--tg-text-color)',
+              minWidth: '20px',
+              textAlign: 'center'
+            }}>
+              {maxValue}
+            </span>
+          </div>
+          
+          <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+            <span style={{
+              fontSize: '18px',
+              color: 'var(--tg-button-color)',
+              fontWeight: 'bold'
+            }}>
+              {value}
+            </span>
+          </div>
+          
+          {(question.scale_min_label || question.scale_max_label) && (
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              fontSize: '12px',
+              color: 'var(--tg-hint-color)'
+            }}>
+              <span>{question.scale_min_label || ''}</span>
+              <span>{question.scale_max_label || ''}</span>
+            </div>
+          )}
+        </div>
+      );
+
+    case 'rating':
+      return (
+        <div style={{ 
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          padding: '20px',
+          border: '1px solid var(--tg-section-separator-color)'
+        }}>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <svg 
+                key={star}
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill={star <= value ? "#ffd700" : "none"} 
+                stroke={star <= value ? "#ffd700" : "var(--tg-hint-color)"} 
+                strokeWidth="2"
+              >
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+              </svg>
+            ))}
+          </div>
+        </div>
+      );
+
+    case 'yes_no':
+      return (
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            backgroundColor: value === 'yes' ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
+            color: value === 'yes' ? 'white' : 'var(--tg-text-color)'
+          }}>
+            <div style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              border: `2px solid ${value === 'yes' ? 'white' : 'var(--tg-hint-color)'}`,
+              backgroundColor: value === 'yes' ? 'white' : 'transparent'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                opacity: value === 'yes' ? 1 : 0
+              }} />
+            </div>
+            <span>Да</span>
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            backgroundColor: value === 'no' ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
+            color: value === 'no' ? 'white' : 'var(--tg-text-color)'
+          }}>
+            <div style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              border: `2px solid ${value === 'no' ? 'white' : 'var(--tg-hint-color)'}`,
+              backgroundColor: value === 'no' ? 'white' : 'transparent'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                opacity: value === 'no' ? 1 : 0
+              }} />
+            </div>
+            <span>Нет</span>
+          </div>
+        </div>
+      );
+
+    case 'date':
+      const dateValue = typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/) 
+        ? new Date(value).toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })
+        : value;
+      return (
+        <div style={{ fontSize: '14px', color: 'var(--tg-text-color)' }}>
+          {dateValue}
+        </div>
+      );
+
+    case 'number':
+      return (
+        <div style={{ fontSize: '14px', color: 'var(--tg-text-color)' }}>
+          {value}
+        </div>
+      );
+
+    default:
+      return (
+        <div style={{ fontSize: '14px', color: 'var(--tg-text-color)' }}>
+          {value}
+        </div>
+      );
+  }
 };
 
 // Компонент для текстовых ответов
@@ -496,7 +1015,7 @@ const MultipleChoiceChart: React.FC<{
                   fontWeight: '600',
                   position: 'absolute',
                   right: '16px',
-                  top: '3px',
+                  top: '4px',
                   textAlign: 'right'
                 }}>
                   {count}
@@ -2914,15 +3433,12 @@ export default function SurveyAnalyticsPage() {
           )}
           
           {analyticsTab === 'question' && (
-            <div style={{ 
-              background: 'var(--tg-section-bg-color)', 
-              borderRadius: 12, 
-              padding: 20, 
-              textAlign: 'center', 
-              color: 'var(--tg-hint-color)' 
-            }}>
-              Таб "Вопрос" в разработке
-            </div>
+            <QuestionTab 
+              questions={questions}
+              responses={responsesPage}
+              survey={survey}
+              loading={analyticsLoading}
+            />
           )}
           
           {analyticsTab === 'user' && (
