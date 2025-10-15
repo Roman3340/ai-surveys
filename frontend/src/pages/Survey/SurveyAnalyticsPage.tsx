@@ -37,7 +37,7 @@ const SummaryTab: React.FC<{
   const [showAllAnswers, setShowAllAnswers] = useState<{ [questionId: string]: boolean }>({});
   const [showAnswersPopup, setShowAnswersPopup] = useState<{ questionId: string; answers: any[] } | null>(null);
 
-  if (loading) {
+  if (loading || !questions || questions.length === 0) {
     return (
       <div style={{ 
         background: 'var(--tg-section-bg-color)', 
@@ -82,6 +82,10 @@ const SummaryTab: React.FC<{
 
   // Функция для получения ответов на конкретный вопрос
   const getQuestionAnswers = (questionId: string) => {
+    if (!responses || responses.length === 0) {
+      return [];
+    }
+    
     return responses
       .flatMap(r => {
         // Теперь answers уже загружены с бэкенда
@@ -178,7 +182,7 @@ const SummaryTab: React.FC<{
       </div>
 
       {/* Аналитика по вопросам */}
-      {questions.map((question) => {
+      {questions && questions.length > 0 && questions.map((question) => {
         const questionStats = getQuestionStats(question);
         
         return (
@@ -832,19 +836,46 @@ export default function SurveyAnalyticsPage() {
   }, [activeTab, surveyId]);
 
   useEffect(() => {
-    const loadResponses = async () => {
+    const loadAnalyticsData = async () => {
       if (activeTab !== 'analytics' || !surveyId) return;
+      
       try {
         setAnalyticsLoading(true);
-        const page = await surveyApi.getSurveyResponses(surveyId, 100, 0);
-        setResponsesPage(page);
+        
+        // Загружаем вопросы и ответы параллельно для аналитики
+        const [questionsList, responses] = await Promise.all([
+          questionApi.getSurveyQuestions(surveyId),
+          surveyApi.getSurveyResponses(surveyId, 100, 0)
+        ]);
+        
+        // Преобразуем вопросы в нужный формат
+        const mappedQuestions = questionsList.map((q: any) => ({
+          id: q.id,
+          type: q.type,
+          text: q.text,
+          description: q.description,
+          is_required: q.isRequired || q.is_required,
+          order_index: q.orderIndex || q.order_index,
+          options: Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []),
+          has_other_option: q.hasOtherOption || q.has_other_option,
+          scale_min: q.scaleMin || q.scale_min,
+          scale_max: q.scaleMax || q.scale_max,
+          scale_min_label: q.scaleMinLabel || q.scale_min_label,
+          scale_max_label: q.scaleMaxLabel || q.scale_max_label,
+          image_url: q.imageUrl || q.image_url,
+          image_name: q.imageName || q.image_name
+        }));
+        
+        setQuestions(mappedQuestions);
+        setResponsesPage(responses);
       } catch (e) {
-        console.error(e);
+        console.error('Error loading analytics data:', e);
       } finally {
         setAnalyticsLoading(false);
       }
     };
-    loadResponses();
+    
+    loadAnalyticsData();
   }, [activeTab, surveyId]);
 
 
@@ -2770,7 +2801,7 @@ export default function SurveyAnalyticsPage() {
           {analyticsTab === 'summary' && (
             <SummaryTab 
               survey={survey}
-              questions={questions}
+              questions={questions || []}
               responses={responsesPage}
               stats={stats}
               loading={analyticsLoading}
