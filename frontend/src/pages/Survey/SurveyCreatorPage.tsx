@@ -1282,6 +1282,23 @@ const SettingsTab: React.FC<{
               {/* Настройки мотивации */}
               {surveyData.motivationEnabled && (
                 <div id="motivation-settings" style={{ marginTop: '10px', padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderRadius: '8px' }}>
+                  {/* Предупреждение */}
+                  <div style={{ 
+                    marginBottom: '16px', 
+                    padding: '12px', 
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)', 
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 193, 7, 0.3)'
+                  }}>
+                    <div style={{ 
+                      fontSize: '13px', 
+                      color: 'var(--tg-hint-color)', 
+                      lineHeight: '1.4' 
+                    }}>
+                      ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
+                    </div>
+                  </div>
+                  
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{
                       display: 'block',
@@ -1322,7 +1339,7 @@ const SettingsTab: React.FC<{
                       marginBottom: '8px',
                       color: 'var(--tg-text-color)'
                     }}>
-                      {surveyData.motivationType === 'discount' && 'Размер скидки'}
+                      {surveyData.motivationType === 'discount' && 'Описание скидки'}
                       {surveyData.motivationType === 'promo' && 'Что за промокод'}
                       {surveyData.motivationType === 'stars' && 'Сколько звезд одному пользователю'}
                       {surveyData.motivationType === 'gift' && 'Что за подарок'}
@@ -1333,7 +1350,7 @@ const SettingsTab: React.FC<{
                       value={surveyData.motivationDetails}
                       onChange={(e) => onDataChange('motivationDetails', e.target.value)}
                       placeholder={
-                        surveyData.motivationType === 'discount' ? 'Например: 20%' :
+                        surveyData.motivationType === 'discount' ? '20% скидка на следующий заказ' :
                         surveyData.motivationType === 'promo' ? 'Например: SAVE20' :
                         surveyData.motivationType === 'stars' ? 'Например: 50' :
                         surveyData.motivationType === 'gift' ? 'Например: Футболка с логотипом' :

@@ -154,8 +154,19 @@ export default function SurveyAnalyticsPage() {
     
     // Валидация мотивации
     if (editedSettings?.motivationEnabled) {
+      // Проверяем что описание заполнено для всех типов
       if (!editedSettings.motivationDetails || editedSettings.motivationDetails.trim() === '') {
-        errors.motivationDetails = 'Заполните описание награды';
+        if (editedSettings.motivationType === 'stars') {
+          errors.motivationDetails = 'Введите количество звёзд';
+        } else {
+          errors.motivationDetails = 'Заполните описание награды';
+        }
+      } else if (editedSettings.motivationType === 'stars') {
+        // Для звезд дополнительно проверяем что число >= 1
+        const starsCount = parseInt(editedSettings.motivationDetails);
+        if (isNaN(starsCount) || starsCount < 1) {
+          errors.motivationDetails = 'Количество звёзд должно быть не менее 1';
+        }
       }
       
       // Для промокода нужен также промокод
@@ -1634,25 +1645,22 @@ export default function SurveyAnalyticsPage() {
                           {editedSettings?.motivationType === 'stars' && (
                             <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                               <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                Количество звёзд (1-100)
+                                Количество звёзд (минимум 1)
                               </label>
                               <input
+                                id="settings-motivationDetails"
                                 type="text"
                                 inputMode="numeric"
                                 value={editedSettings?.motivationDetails || ''}
                                 onChange={(e) => {
                                   const val = e.target.value.replace(/\D/g, ''); // Только цифры
-                                  if (val === '') {
-                                    setEditedSettings({ ...editedSettings!, motivationDetails: '' });
-                                  } else {
-                                    const num = parseInt(val);
-                                    if (num >= 1 && num <= 100) {
-                                      setEditedSettings({ ...editedSettings!, motivationDetails: num.toString() });
-                                    } else if (num > 100) {
-                                      setEditedSettings({ ...editedSettings!, motivationDetails: '100' });
-                                    } else {
-                                      setEditedSettings({ ...editedSettings!, motivationDetails: '1' });
-                                    }
+                                  setEditedSettings({ ...editedSettings!, motivationDetails: val });
+                                  if (settingsValidationErrors.motivationDetails) {
+                                    setSettingsValidationErrors(prev => {
+                                      const newErrors = { ...prev };
+                                      delete newErrors.motivationDetails;
+                                      return newErrors;
+                                    });
                                   }
                                 }}
                                 placeholder="50"
@@ -1660,13 +1668,18 @@ export default function SurveyAnalyticsPage() {
                                   width: '100%',
                                   padding: '8px',
                                   borderRadius: '6px',
-                                  border: '1px solid var(--tg-section-separator-color)',
+                                  border: `1px solid ${settingsValidationErrors.motivationDetails ? '#FF3B30' : 'var(--tg-section-separator-color)'}`,
                                   backgroundColor: 'var(--tg-bg-color)',
                                   color: 'var(--tg-text-color)',
                                   fontSize: '13px',
                                   outline: 'none'
                                 }}
                               />
+                              {settingsValidationErrors.motivationDetails && (
+                                <div style={{ fontSize: '11px', color: '#FF3B30', marginTop: '4px' }}>
+                                  {settingsValidationErrors.motivationDetails}
+                                </div>
+                              )}
                             </div>
                           )}
 

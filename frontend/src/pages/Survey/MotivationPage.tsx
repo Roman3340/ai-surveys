@@ -219,6 +219,23 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
           borderRadius: '12px',
           padding: '20px'
         }}>
+          {/* Предупреждение */}
+          <div style={{ 
+            marginBottom: '20px', 
+            padding: '12px', 
+            backgroundColor: 'rgba(255, 193, 7, 0.1)', 
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 193, 7, 0.3)'
+          }}>
+            <div style={{ 
+              fontSize: '13px', 
+              color: 'var(--tg-hint-color)', 
+              lineHeight: '1.4' 
+            }}>
+              ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
+            </div>
+          </div>
+          
           {/* Мотивация */}
           <div style={{ marginBottom: '20px' }}>
             <label style={{
@@ -250,7 +267,8 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
                 }}
               >
                 <option value="none">Без мотивации</option>
-                <option value="promo_code">Промокод на скидку</option>
+                <option value="discount">Скидка</option>
+                <option value="promo">Промокод</option>
                 <option value="stars">Звёзды Telegram</option>
                 <option value="gift">Подарок</option>
                 <option value="other">Другое</option>
@@ -269,8 +287,43 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
             </div>
           </div>
 
+          {/* Поле для скидки */}
+          {motivationData.motivation === 'discount' && (
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '16px',
+                fontWeight: '500',
+                marginBottom: '8px',
+                color: 'var(--tg-text-color)'
+              }}>
+                Описание скидки:
+              </label>
+              <input
+                type="text"
+                value={motivationData.rewardDescription}
+                onChange={(e) => handleMotivationChange('rewardDescription', e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                onKeyDown={handleKeyDown}
+                placeholder="20% скидка на следующий заказ"
+                enterKeyHint="done"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  fontSize: '16px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+          )}
+
           {/* Поля для промокода */}
-          {motivationData.motivation === 'promo_code' && (
+          {motivationData.motivation === 'promo' && (
             <>
               <div style={{ marginBottom: '20px' }}>
                 <label style={{
@@ -280,7 +333,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
                   marginBottom: '8px',
                   color: 'var(--tg-text-color)'
                 }}>
-                  Описание скидки:
+                  Описание промокода:
                 </label>
                 <input
                   type="text"
@@ -289,7 +342,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
                   onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
                   onKeyDown={handleKeyDown}
-                  placeholder="Скидка 20% на следующий заказ"
+                  placeholder="Бесплатная доставка за прохождение опроса"
                   enterKeyHint="done"
                   style={{
                     width: '100%',
@@ -320,7 +373,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
                   onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
                   onKeyDown={handleKeyDown}
-                  placeholder="DISCOUNT20"
+                  placeholder="FREE_DELIVERY"
                   enterKeyHint="done"
                   style={{
                     width: '100%',
