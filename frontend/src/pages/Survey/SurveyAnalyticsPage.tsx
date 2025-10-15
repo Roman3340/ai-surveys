@@ -208,7 +208,10 @@ const SummaryTab: React.FC<{
                 questionId={question.id}
                 isAnonymous={survey?.settings?.allowAnonymous || false}
                 onShowAll={() => setShowAllAnswers(prev => ({ ...prev, [question.id]: true }))}
-                onShowPopup={(answers) => setShowAnswersPopup({ questionId: question.id, answers })}
+                onShowPopup={() => {
+                  const allAnswers = getQuestionAnswers(question.id);
+                  setShowAnswersPopup({ questionId: question.id, answers: allAnswers });
+                }}
               />
             )}
             
@@ -246,7 +249,10 @@ const SummaryTab: React.FC<{
                 questionId={question.id}
                 isAnonymous={survey?.settings?.allowAnonymous || false}
                 onShowAll={() => setShowAllAnswers(prev => ({ ...prev, [question.id]: true }))}
-                onShowPopup={(answers) => setShowAnswersPopup({ questionId: question.id, answers })}
+                onShowPopup={() => {
+                  const allAnswers = getQuestionAnswers(question.id);
+                  setShowAnswersPopup({ questionId: question.id, answers: allAnswers });
+                }}
               />
             )}
           </div>
@@ -707,7 +713,8 @@ const AnswersPopup: React.FC<{
           backgroundColor: 'var(--tg-section-bg-color)',
           borderRadius: '12px',
           padding: '20px',
-          maxWidth: '90%',
+          maxWidth: '95%',
+          width: '350px',
           maxHeight: '80%',
           overflow: 'auto',
           color: 'var(--tg-text-color)',
@@ -754,6 +761,37 @@ const AnswersPopup: React.FC<{
               });
             }
             
+            // Функция для отображения звезд
+            const renderStars = (rating: number) => {
+              return Array.from({ length: 5 }, (_, i) => {
+                const isFull = i < Math.floor(rating);
+                const isPartial = i === Math.floor(rating) && rating % 1 > 0;
+                const partialAmount = rating % 1;
+                
+                return (
+                  <span key={i} style={{ 
+                    color: isFull ? '#ffd700' : isPartial ? '#ffd700' : 'var(--tg-hint-color)',
+                    fontSize: '18px',
+                    position: 'relative',
+                    display: 'inline-block'
+                  }}>
+                    {isPartial ? (
+                      <span style={{
+                        background: `linear-gradient(90deg, #ffd700 ${partialAmount * 100}%, var(--tg-hint-color) ${partialAmount * 100}%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text'
+                      }}>
+                        ★
+                      </span>
+                    ) : (
+                      '★'
+                    )}
+                  </span>
+                );
+              });
+            };
+            
             return (
               <div key={index} style={{ 
                 padding: '12px', 
@@ -766,12 +804,23 @@ const AnswersPopup: React.FC<{
                 justifyContent: 'space-between',
                 alignItems: 'center'
               }}>
-                <span>{displayValue}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {typeof displayValue === 'number' && displayValue >= 1 && displayValue <= 5 ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {renderStars(displayValue)}
+                      <span style={{ fontSize: '12px', color: 'var(--tg-hint-color)', marginLeft: '4px' }}>
+                        ({displayValue})
+                      </span>
+                    </div>
+                  ) : (
+                    <span>{displayValue}</span>
+                  )}
+                </div>
                 {answer.user && (
                   <span style={{ 
                     fontSize: '11px', 
                     color: 'var(--tg-hint-color)',
-                    marginLeft: '8px'
+                    marginLeft: '16px'
                   }}>
                     @{answer.user.username || 'Респондент'}
                   </span>
