@@ -3306,11 +3306,11 @@ export default function SurveyAnalyticsPage() {
           </div>
 
           {/* Распространение */}
-          {share && (
+          {survey && (
             <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 12 }}>
               <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>Распространение</h3>
               <div style={{ background: 'var(--tg-bg-color)', borderRadius: 8, padding: 10, marginBottom: 10, wordBreak: 'break-all', fontSize: 12, color: 'var(--tg-hint-color)' }}>
-                {share.share_url}
+                {share?.share_url || 'Ссылка будет доступна после публикации опроса'}
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
@@ -3333,7 +3333,7 @@ export default function SurveyAnalyticsPage() {
                   <Copy size={14} /> {copied ? 'Скопировано' : 'Копировать'}
                 </button>
                 <button
-                  onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(share.share_url)}`, '_blank')}
+                  onClick={() => share && window.open(`https://t.me/share/url?url=${encodeURIComponent(share.share_url)}`, '_blank')}
                   style={{
                     flex: 1,
                     background: '#0088cc',
@@ -3352,7 +3352,7 @@ export default function SurveyAnalyticsPage() {
                   <Share size={14} /> Поделиться
                 </button>
               </div>
-              {share.qr_code && (
+              {share?.qr_code && (
                 <div style={{ textAlign: 'center', marginTop: 10 }}>
                   <img src={share.qr_code} alt="QR" style={{ maxWidth: 160, borderRadius: 8, border: '1px solid var(--tg-section-separator-color)' }} />
                 </div>
@@ -3461,6 +3461,25 @@ export default function SurveyAnalyticsPage() {
                   </button>
                 )}
 
+                {/* Предупреждение о блокировке настроек при наличии ответов */}
+                {!canEdit && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    backgroundColor: '#FFF3CD',
+                    borderRadius: '8px',
+                    border: '1px solid #856404'
+                  }}>
+                    <div style={{
+                      fontSize: '13px',
+                      color: '#856404',
+                      lineHeight: '1.4'
+                    }}>
+                      ⚠️ После получения первых ответов некоторые настройки менять нельзя
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
                   {/* Показывать прогресс - закомментировано */}
                   {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
@@ -3550,17 +3569,19 @@ export default function SurveyAnalyticsPage() {
                         <input
                           type="checkbox"
                           checked={editedSettings?.allowAnonymous || false}
+                          disabled={!canEdit}
                           onChange={(e) => setEditedSettings({ ...editedSettings!, allowAnonymous: e.target.checked })}
                           style={{ opacity: 0, width: 0, height: 0 }}
                         />
                         <span style={{
                           position: 'absolute',
-                          cursor: 'pointer',
+                          cursor: canEdit ? 'pointer' : 'not-allowed',
                           top: 0,
                           left: 0,
                           right: 0,
                           bottom: 0,
                           backgroundColor: editedSettings?.allowAnonymous ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                          opacity: canEdit ? 1 : 0.5,
                           borderRadius: '22px',
                           transition: '0.3s'
                         }}>
@@ -3590,6 +3611,7 @@ export default function SurveyAnalyticsPage() {
                         <input
                           type="checkbox"
                           checked={editedSettings?.hideCreator || false}
+                          disabled={!canEdit}
                           onChange={(e) => {
                             const newSettings = { ...editedSettings!, hideCreator: e.target.checked };
                             // Если включаем скрытие создателя, отключаем мотивацию
@@ -3602,12 +3624,13 @@ export default function SurveyAnalyticsPage() {
                         />
                         <span style={{
                           position: 'absolute',
-                          cursor: 'pointer',
+                          cursor: canEdit ? 'pointer' : 'not-allowed',
                           top: 0,
                           left: 0,
                           right: 0,
                           bottom: 0,
                           backgroundColor: editedSettings?.hideCreator ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                          opacity: canEdit ? 1 : 0.5,
                           borderRadius: '22px',
                           transition: '0.3s'
                         }}>
@@ -3783,19 +3806,19 @@ export default function SurveyAnalyticsPage() {
                             <input
                               type="checkbox"
                               checked={editedSettings?.motivationEnabled || false}
-                              disabled={editedSettings?.hideCreator || false}
+                              disabled={!canEdit || editedSettings?.hideCreator || false}
                               onChange={(e) => setEditedSettings({ ...editedSettings!, motivationEnabled: e.target.checked })}
                               style={{ opacity: 0, width: 0, height: 0 }}
                             />
                             <span style={{
                               position: 'absolute',
-                              cursor: (editedSettings?.hideCreator || false) ? 'not-allowed' : 'pointer',
+                              cursor: (!canEdit || editedSettings?.hideCreator || false) ? 'not-allowed' : 'pointer',
                               top: 0,
                               left: 0,
                               right: 0,
                               bottom: 0,
                               backgroundColor: editedSettings?.motivationEnabled ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
-                              opacity: (editedSettings?.hideCreator || false) ? 0.5 : 1,
+                              opacity: (!canEdit || editedSettings?.hideCreator || false) ? 0.5 : 1,
                               borderRadius: '22px',
                               transition: '0.3s'
                             }}>
@@ -4237,21 +4260,45 @@ export default function SurveyAnalyticsPage() {
           )}
           
           {analyticsTab === 'question' && (
-            <QuestionTab 
-              questions={questions}
-              responses={responsesPage}
-              survey={survey}
-              loading={analyticsLoading}
-            />
+            (stats?.total_responses ?? 0) === 0 ? (
+              <div style={{
+                background: 'var(--tg-section-bg-color)', 
+                borderRadius: 12, 
+                padding: 20, 
+                textAlign: 'center', 
+                color: 'var(--tg-hint-color)' 
+              }}>
+                Пока нет ответов — аналитика будет доступна после первых прохождений
+              </div>
+            ) : (
+              <QuestionTab 
+                questions={questions}
+                responses={responsesPage}
+                survey={survey}
+                loading={analyticsLoading}
+              />
+            ) 
           )}
           
           {analyticsTab === 'user' && (
-            <IndividualUserTab 
-              questions={questions}
-              responses={responsesPage}
-              survey={survey}
-              loading={analyticsLoading}
-            />
+            (stats?.total_responses ?? 0) === 0 ? (
+              <div style={{
+                background: 'var(--tg-section-bg-color)', 
+                borderRadius: 12, 
+                padding: 20, 
+                textAlign: 'center', 
+                color: 'var(--tg-hint-color)' 
+              }}>
+                Пока нет ответов — аналитика будет доступна после первых прохождений
+              </div>
+            ) : (
+              <IndividualUserTab 
+                questions={questions}
+                responses={responsesPage}
+                survey={survey}
+                loading={analyticsLoading}
+              />
+            )
           )}
         </div>
       )}
