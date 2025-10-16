@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X } from 'lucide-react';
+import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { surveyApi, questionApi } from '../../services/api';
 import type { SurveyShareResponse } from '../../services/api';
@@ -2137,6 +2137,7 @@ export default function SurveyAnalyticsPage() {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [editingQuestions, setEditingQuestions] = useState(false);
   const [editedQuestions, setEditedQuestions] = useState<EditableQuestion[]>([]);
+  const [deletedQuestions, setDeletedQuestions] = useState<string[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
   const [settingsValidationErrors, setSettingsValidationErrors] = useState<Record<string, string>>({});
 
@@ -2380,20 +2381,46 @@ export default function SurveyAnalyticsPage() {
   const handleSaveQuestions = async () => {
     if (!surveyId) return;
     try {
+      // Удаляем удаленные вопросы
+      for (const questionId of deletedQuestions) {
+        await questionApi.deleteQuestion(questionId);
+      }
+      
+      // Создаем новые вопросы и получаем их реальные ID
+      const newQuestionIds: { [tempId: string]: string } = {};
       for (const q of editedQuestions) {
-        await questionApi.updateQuestion(q.id, {
-          type: q.type,
-          text: q.text,
-          description: q.description,
-          is_required: q.is_required,
-          order_index: q.order_index,
-          options: q.options,
-          has_other_option: q.has_other_option,
-          scale_min: q.scale_min,
-          scale_max: q.scale_max,
-          scale_min_label: q.scale_min_label,
-          scale_max_label: q.scale_max_label,
-        });
+        if (q.id.startsWith('temp_')) {
+          const createdQuestion = await questionApi.createQuestion({
+            survey_id: surveyId,
+            type: q.type,
+            text: q.text,
+            description: q.description,
+            is_required: q.is_required,
+            order_index: q.order_index,
+            options: q.options,
+            has_other_option: q.has_other_option,
+            scale_min: q.scale_min,
+            scale_max: q.scale_max,
+            scale_min_label: q.scale_min_label,
+            scale_max_label: q.scale_max_label,
+          });
+          newQuestionIds[q.id] = createdQuestion.id;
+        } else {
+          // Обновляем существующие вопросы
+          await questionApi.updateQuestion(q.id, {
+            type: q.type,
+            text: q.text,
+            description: q.description,
+            is_required: q.is_required,
+            order_index: q.order_index,
+            options: q.options,
+            has_other_option: q.has_other_option,
+            scale_min: q.scale_min,
+            scale_max: q.scale_max,
+            scale_min_label: q.scale_min_label,
+            scale_max_label: q.scale_max_label,
+          });
+        }
       }
       
       const list = await questionApi.getSurveyQuestions(surveyId);
@@ -2415,6 +2442,7 @@ export default function SurveyAnalyticsPage() {
       }));
       setQuestions(mapped);
       setEditedQuestions(JSON.parse(JSON.stringify(mapped)));
+      setDeletedQuestions([]);
       setEditingQuestions(false);
       hapticFeedback?.success();
       alert('Вопросы успешно обновлены!');
@@ -2488,6 +2516,14 @@ export default function SurveyAnalyticsPage() {
     updateEditedQuestion(questionIndex, { options: newOptions });
   };
 
+  const deleteQuestion = (questionId: string) => {
+    if (window.confirm('Вы уверены, что хотите удалить этот вопрос? Все ответы на этот вопрос будут удалены безвозвратно.')) {
+      setDeletedQuestions(prev => [...prev, questionId]);
+      setEditedQuestions(prev => prev.filter(q => q.id !== questionId));
+      hapticFeedback?.light();
+    }
+  };
+
   const handleCopy = async () => {
     if (!share?.share_url) return;
     try {
@@ -2544,10 +2580,14 @@ export default function SurveyAnalyticsPage() {
 
   const statusBadge = getStatusBadge();
   const canEdit = (stats?.total_responses ?? 0) === 0;
+  const canEditQuestions = true; // Всегда разрешаем редактирование вопросов
   const settings = survey.settings || {};
 
   const renderQuestionEditor = (question: EditableQuestion, index: number) => {
-    const disabled = !editingQuestions;
+    const isDeleted = deletedQuestions.includes(question.id);
+    const hasResponses = (stats?.total_responses ?? 0) > 0;
+    const isNewQuestion = question.id.startsWith('temp_');
+    const disabled = !editingQuestions || (hasResponses && !isNewQuestion);
 
     return (
       <motion.div
@@ -2563,6 +2603,8 @@ export default function SurveyAnalyticsPage() {
             padding: '16px',
             marginBottom: '12px',
             border: editingQuestions ? '2px solid var(--tg-button-color)' : '1px solid var(--tg-section-separator-color)',
+            opacity: isDeleted ? 0.5 : 1,
+            position: 'relative'
           }}
         >
           {/* Заголовок вопроса */}
@@ -2664,6 +2706,33 @@ export default function SurveyAnalyticsPage() {
                   </button>
                 )}
               </div>
+            )}
+            
+            {/* Кнопка удаления */}
+            {editingQuestions && (
+              <button
+                onClick={() => deleteQuestion(question.id)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#FF3B30',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 59, 48, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <Trash2 size={16} />
+              </button>
             )}
           </div>
 
@@ -4109,7 +4178,7 @@ export default function SurveyAnalyticsPage() {
       {/* Таб: Вопросы */}
       {activeTab === 'questions' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {canEdit && (
+          {canEditQuestions && (
             <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 13, color: 'var(--tg-hint-color)' }}>
@@ -4146,6 +4215,7 @@ export default function SurveyAnalyticsPage() {
                   onClick={() => {
                     setEditingQuestions(false);
                     setEditedQuestions(JSON.parse(JSON.stringify(questions)));
+                    setDeletedQuestions([]);
                     hapticFeedback?.light();
                   }}
                   style={{
@@ -4167,11 +4237,47 @@ export default function SurveyAnalyticsPage() {
               )}
             </div>
           )}
-          {!canEdit && (
-            <div style={{ background: '#FFF3CD', color: '#856404', borderRadius: 10, padding: 10, fontSize: 12 }}>
-              ⚠️ Редактирование невозможно — есть ответы на опрос
-            </div>
+          
+          {/* Кнопка добавления вопроса */}
+          {editingQuestions && (
+            <button
+              onClick={() => {
+                const newQuestion: EditableQuestion = {
+                  id: `temp_${Date.now()}`,
+                  type: 'text',
+                  text: 'Новый вопрос',
+                  description: '',
+                  is_required: false,
+                  order_index: editedQuestions.length,
+                  options: [],
+                  has_other_option: false,
+                  scale_min: 1,
+                  scale_max: 5,
+                  scale_min_label: 'Минимум',
+                  scale_max_label: 'Максимум'
+                };
+                setEditedQuestions([...editedQuestions, newQuestion]);
+                hapticFeedback?.light();
+              }}
+              style={{
+                background: 'var(--tg-button-color)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                padding: '10px 14px',
+                fontWeight: 600,
+                fontSize: 13,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                marginBottom: 10
+              }}
+            >
+              ➕ Добавить вопрос
+            </button>
           )}
+          
           {editedQuestions.length === 0 ? (
             <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 20, textAlign: 'center', color: 'var(--tg-hint-color)' }}>
               Вопросов нет

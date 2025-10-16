@@ -190,6 +190,10 @@ export const questionApi = {
     const res = await api.put(`/questions/${questionId}`, data);
     return res.data;
   },
+  async deleteQuestion(questionId: string) {
+    const res = await api.delete(`/questions/${questionId}`);
+    return res.data;
+  },
 
 };
 
