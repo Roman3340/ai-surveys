@@ -305,8 +305,8 @@ const SurveyCreatorPage: React.FC = () => {
       description: '',
       required: true,
       options: [],
-      scaleMin: 1, // Значение по умолчанию для "От"
-      scaleMax: 10 // Значение по умолчанию для "До"
+      scaleMin: undefined, // Только для типа "scale"
+      scaleMax: undefined // Только для типа "scale"
     };
     setQuestions(prev => [...prev, newQuestion]);
     hapticFeedback?.light();
@@ -2190,11 +2190,8 @@ const QuestionsTab: React.FC<{
                             } else {
                               const numValue = parseInt(value);
                               if (!isNaN(numValue)) {
-                                // Не позволяем вводить значения меньше 2 или больше 100
-                                if (numValue < 2) {
-                                  onQuestionChange(question.id, { scaleMax: 2 });
-                                  validateScaleValues(question.id, question.scaleMin, 2);
-                                } else if (numValue > 100) {
+                                // Применяем ограничения только для финальных значений
+                                if (numValue > 100) {
                                   onQuestionChange(question.id, { scaleMax: 100 });
                                   validateScaleValues(question.id, question.scaleMin, 100);
                                 } else {
@@ -2225,13 +2222,23 @@ const QuestionsTab: React.FC<{
                           onFocus={() => onKeyboardStateChange(true)}
                           onBlur={(e) => {
                             onKeyboardStateChange(false);
-                            // Если поле пустое при потере фокуса, устанавливаем значение по умолчанию
-                            if (e.target.value === '') {
+                            const value = e.target.value;
+                            
+                            if (value === '') {
+                              // Если поле пустое при потере фокуса, устанавливаем значение по умолчанию
                               const currentMin = question.scaleMin || 1;
-                              // Если "От" больше 9, то "До" = "От" + 1, иначе 10
                               const defaultMax = currentMin > 9 ? currentMin + 1 : 10;
                               onQuestionChange(question.id, { scaleMax: defaultMax });
                               validateScaleValues(question.id, question.scaleMin, defaultMax);
+                            } else {
+                              const numValue = parseInt(value);
+                              if (!isNaN(numValue)) {
+                                // Применяем ограничение минимума только при потере фокуса
+                                if (numValue < 2) {
+                                  onQuestionChange(question.id, { scaleMax: 2 });
+                                  validateScaleValues(question.id, question.scaleMin, 2);
+                                }
+                              }
                             }
                           }}
                           style={{

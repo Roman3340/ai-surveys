@@ -3067,10 +3067,8 @@ export default function SurveyAnalyticsPage() {
                           } else {
                             const numValue = parseInt(value);
                             if (!isNaN(numValue)) {
-                              if (numValue < 2) {
-                                updateEditedQuestion(index, { scale_max: 2 });
-                                validateScaleValues(question.id, question.scale_min, 2);
-                              } else if (numValue > 100) {
+                              // Применяем ограничения только для финальных значений
+                              if (numValue > 100) {
                                 updateEditedQuestion(index, { scale_max: 100 });
                                 validateScaleValues(question.id, question.scale_min, 100);
                               } else {
@@ -3085,6 +3083,19 @@ export default function SurveyAnalyticsPage() {
                                   updateEditedQuestion(index, { scale_max: numValue });
                                   validateScaleValues(question.id, question.scale_min, numValue);
                                 }
+                              }
+                            }
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value;
+                          if (value !== '') {
+                            const numValue = parseInt(value);
+                            if (!isNaN(numValue)) {
+                              // Применяем ограничение минимума только при потере фокуса
+                              if (numValue < 2) {
+                                updateEditedQuestion(index, { scale_max: 2 });
+                                validateScaleValues(question.id, question.scale_min, 2);
                               }
                             }
                           }
@@ -4264,10 +4275,10 @@ export default function SurveyAnalyticsPage() {
                   order_index: editedQuestions.length,
                   options: [],
                   has_other_option: false,
-                  scale_min: 1,
-                  scale_max: 5,
-                  scale_min_label: 'Минимум',
-                  scale_max_label: 'Максимум'
+                  scale_min: undefined,
+                  scale_max: undefined,
+                  scale_min_label: undefined,
+                  scale_max_label: undefined
                 };
                 setEditedQuestions([...editedQuestions, newQuestion]);
                 hapticFeedback?.light();
