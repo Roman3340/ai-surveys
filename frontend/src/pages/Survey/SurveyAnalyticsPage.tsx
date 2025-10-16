@@ -3312,46 +3312,48 @@ export default function SurveyAnalyticsPage() {
               <div style={{ background: 'var(--tg-bg-color)', borderRadius: 8, padding: 10, marginBottom: 10, wordBreak: 'break-all', fontSize: 12, color: 'var(--tg-hint-color)' }}>
                 {share?.share_url || 'Ссылка будет доступна после публикации опроса'}
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={handleCopy}
-                  style={{
-                    flex: 1,
-                    background: 'var(--tg-button-color)',
-                    color: 'var(--tg-button-text-color)',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: 10,
-                    fontWeight: 600,
-                    fontSize: 13,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <Copy size={14} /> {copied ? 'Скопировано' : 'Копировать'}
-                </button>
-                <button
-                  onClick={() => share && window.open(`https://t.me/share/url?url=${encodeURIComponent(share.share_url)}`, '_blank')}
-                  style={{
-                    flex: 1,
-                    background: '#0088cc',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 8,
-                    padding: 10,
-                    fontWeight: 600,
-                    fontSize: 13,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <Share size={14} /> Поделиться
-                </button>
-              </div>
+              {share?.share_url && (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={handleCopy}
+                    style={{
+                      flex: 1,
+                      background: 'var(--tg-button-color)',
+                      color: 'var(--tg-button-text-color)',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: 10,
+                      fontWeight: 600,
+                      fontSize: 13,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <Copy size={14} /> {copied ? 'Скопировано' : 'Копировать'}
+                  </button>
+                  <button
+                    onClick={() => share && window.open(`https://t.me/share/url?url=${encodeURIComponent(share.share_url)}`, '_blank')}
+                    style={{
+                      flex: 1,
+                      background: '#0088cc',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: 10,
+                      fontWeight: 600,
+                      fontSize: 13,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <Share size={14} /> Поделиться
+                  </button>
+                </div>
+              )}
               {share?.qr_code && (
                 <div style={{ textAlign: 'center', marginTop: 10 }}>
                   <img src={share.qr_code} alt="QR" style={{ maxWidth: 160, borderRadius: 8, border: '1px solid var(--tg-section-separator-color)' }} />
@@ -3794,7 +3796,7 @@ export default function SurveyAnalyticsPage() {
                             color: 'var(--tg-hint-color)', 
                             lineHeight: '1.4' 
                           }}>
-                            ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
+                            ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы предоставим Ваш Telegram-контакт респонденту для связи с Вами и получении награды. AI Surveys не участвует в хранении и передаче наград.
                           </div>
                         </div>
                       )}

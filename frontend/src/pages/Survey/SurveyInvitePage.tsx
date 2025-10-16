@@ -481,18 +481,18 @@ export default function SurveyInvitePage() {
                     handlePopoverClick('hidden');
                   }}
                   style={{
-                    background: 'rgba(142, 142, 147, 0.15)',
-                    border: '1px solid rgba(142, 142, 147, 0.3)',
+                    background: 'rgba(138, 43, 226, 0.15)',
+                    border: '1px solid rgba(138, 43, 226, 0.3)',
                     borderRadius: '16px',
                     padding: '6px 12px',
                     fontSize: '12px',
                     fontWeight: '500',
-                    color: '#8E8E93',
+                    color: '#8A2BE2',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  🫥 Скрытый создатель
+                  🎭 Скрытый создатель
                 </button>
                 <AnimatePresence>
                   {activePopover === 'hidden' && (
@@ -522,7 +522,7 @@ export default function SurveyInvitePage() {
                         textAlign: 'center'
                       }}
                     >
-                      Создатель опроса скрыт
+                      Создатель опроса предпочел скрыть свою личность
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -616,6 +616,12 @@ export default function SurveyInvitePage() {
                       </div>
                       <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
                         Вопросы перемешаны
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🫥 <span style={{ fontSize: '11px' }}>Скрытый создатель</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
+                        Создатель скрыл свою личность
                       </div>
                     </div>
                     <div style={{ 
