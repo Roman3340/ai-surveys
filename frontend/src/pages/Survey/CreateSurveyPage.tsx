@@ -69,9 +69,6 @@ const CreateSurveyPage: React.FC = () => {
         case 'advanced':
           navigate('/survey/create/ai/advanced-settings', { replace: true });
           break;
-        case 'motivation':
-          navigate('/survey/create/ai/motivation', { replace: true });
-          break;
         default:
           navigate('/survey/create/ai', { replace: true });
       }
