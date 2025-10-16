@@ -77,6 +77,7 @@ export interface SurveySettings {
   randomizeQuestions: boolean;
   oneResponsePerUser: boolean;
   collectTelegramData: boolean;
+  hideCreator: boolean;
   reward?: SurveyReward;
   endDate?: string;
   maxParticipants?: string;

@@ -55,6 +55,12 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
       return true;
     }
 
+    // Проверяем конфликт с настройкой "Скрыть создателя"
+    if (previousData.advancedSettings?.hideCreator) {
+      setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса');
+      return false;
+    }
+
     // Проверяем что описание заполнено для всех типов
     if (!motivationData.rewardDescription || motivationData.rewardDescription.trim() === '') {
       if (motivationData.motivation === 'stars') {
@@ -266,6 +272,25 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
           borderRadius: '12px',
           padding: '20px'
         }}>
+          {/* Предупреждение о конфликте с настройкой "Скрыть создателя" */}
+          {previousData.advancedSettings?.hideCreator && (
+            <div style={{ 
+              marginBottom: '20px', 
+              padding: '12px', 
+              backgroundColor: 'rgba(255, 59, 48, 0.1)', 
+              borderRadius: '8px',
+              border: '1px solid rgba(255, 59, 48, 0.3)'
+            }}>
+              <div style={{ 
+                fontSize: '13px', 
+                color: '#FF3B30', 
+                lineHeight: '1.4' 
+              }}>
+                ⚠️ Нельзя включить мотивацию при скрытом создателе опроса. Отключите настройку "Скрыть создателя опроса" для использования мотивации.
+              </div>
+            </div>
+          )}
+
           {/* Предупреждение */}
           <div style={{ 
             marginBottom: '20px', 

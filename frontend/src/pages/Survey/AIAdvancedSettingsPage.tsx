@@ -30,6 +30,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
     randomizeQuestions: false,
     oneResponsePerUser: true,
     collectTelegramData: false,
+    hideCreator: false,
     maxParticipants: '',
     endDate: '',
     endTime: '',
@@ -41,7 +42,10 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
   useEffect(() => {
     const draft = getAIDraft();
     if (draft?.advancedSettings) {
-      setAdvancedSettings(draft.advancedSettings);
+      setAdvancedSettings({
+        ...draft.advancedSettings,
+        hideCreator: draft.advancedSettings.hideCreator ?? false
+      });
     }
   }, []);
 
@@ -460,6 +464,43 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                       position: 'absolute',
                       top: '2px',
                       left: advancedSettings.oneResponsePerUser ? '22px' : '2px',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }} />
+                  </button>
+                </div>
+
+                {/* Скрыть создателя опроса */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ flex: 1, marginRight: '16px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
+                      Скрыть создателя опроса
+                    </div>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
+                      Скрыть информацию о создателе от участников
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => updateAdvancedSettings({ hideCreator: !advancedSettings.hideCreator })}
+                    style={{
+                      width: '48px',
+                      height: '28px',
+                      borderRadius: '14px',
+                      backgroundColor: advancedSettings.hideCreator ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
+                      border: advancedSettings.hideCreator ? 'none' : '1px solid var(--tg-hint-color)',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      backgroundColor: 'white',
+                      position: 'absolute',
+                      top: '2px',
+                      left: advancedSettings.hideCreator ? '22px' : '2px',
                       transition: 'all 0.2s ease',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }} />

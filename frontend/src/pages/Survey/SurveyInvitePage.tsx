@@ -466,6 +466,69 @@ export default function SurveyInvitePage() {
               </div>
             )}
 
+            {/* Скрытый создатель */}
+            {survey.settings?.hideCreator && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('hidden');
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handlePopoverClick('hidden');
+                  }}
+                  style={{
+                    background: 'rgba(142, 142, 147, 0.15)',
+                    border: '1px solid rgba(142, 142, 147, 0.3)',
+                    borderRadius: '16px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#8E8E93',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🫥 Скрытый создатель
+                </button>
+                <AnimatePresence>
+                  {activePopover === 'hidden' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        marginLeft: '-90px',
+                        marginBottom: '8px',
+                        background: '#2c2c2e',
+                        border: '1px solid #48484a',
+                        borderRadius: '8px',
+                        padding: '12px 16px',
+                        fontSize: '12px',
+                        color: '#ffffff',
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                        zIndex: 9999,
+                        minWidth: '180px',
+                        maxWidth: '250px',
+                        textAlign: 'center'
+                      }}
+                    >
+                      Создатель опроса скрыт
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
             {/* Информативный хэштег - всегда показывается */}
             <div style={{ position: 'relative' }}>
               <button
@@ -582,28 +645,30 @@ export default function SurveyInvitePage() {
           </p>
         </div>
 
-        {/* Организатор */}
-        <button
-          onClick={handleContactCreator}
-          style={{
-            width: '100%',
-            background: 'var(--tg-section-bg-color)',
-            border: '1px solid var(--tg-section-separator-color)',
-            borderRadius: '12px',
-            padding: '14px',
-            marginBottom: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-        >
-          <span style={{ fontSize: '14px', color: 'var(--tg-text-color)' }}>
-            👤 Организатор: {survey.creatorUsername ? `@${survey.creatorUsername}` : 'Пользователь Telegram'}
-          </span>
-        </button>
+        {/* Организатор - скрывается если включена настройка "Скрыть создателя" */}
+        {!survey.settings?.hideCreator && (
+          <button
+            onClick={handleContactCreator}
+            style={{
+              width: '100%',
+              background: 'var(--tg-section-bg-color)',
+              border: '1px solid var(--tg-section-separator-color)',
+              borderRadius: '12px',
+              padding: '14px',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span style={{ fontSize: '14px', color: 'var(--tg-text-color)' }}>
+              👤 Организатор: {survey.creatorUsername ? `@${survey.creatorUsername}` : 'Пользователь Telegram'}
+            </span>
+          </button>
+        )}
 
         {/* Кнопка участия */}
         {survey.canParticipate ? (

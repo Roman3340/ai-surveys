@@ -41,6 +41,7 @@ interface SurveyData {
   randomizeQuestions: boolean;
   oneResponsePerUser: boolean;
   collectTelegramData: boolean;
+  hideCreator: boolean;
   creationType: 'manual';
   // Мотивация
   motivationEnabled: boolean;
@@ -98,6 +99,7 @@ const SurveyCreatorPage: React.FC = () => {
     randomizeQuestions: false,
     oneResponsePerUser: true,
     collectTelegramData: false,
+    hideCreator: false,
     creationType: 'manual',
     motivationEnabled: false,
     motivationType: 'discount',
@@ -129,6 +131,7 @@ const SurveyCreatorPage: React.FC = () => {
         randomizeQuestions: settings.randomizeQuestions ?? false,
         oneResponsePerUser: settings.oneResponsePerUser ?? true,
         collectTelegramData: settings.collectTelegramData ?? false,
+        hideCreator: (settings as any).hideCreator ?? false,
         creationType: 'manual',
         motivationEnabled: settings.motivationEnabled ?? false,
         motivationType: settings.motivationType || 'discount',
@@ -393,6 +396,12 @@ const SurveyCreatorPage: React.FC = () => {
       return true;
     }
 
+    // Проверяем конфликт с настройкой "Скрыть создателя"
+    if (surveyData.hideCreator) {
+      setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса');
+      return false;
+    }
+
     // Проверяем что описание заполнено для всех типов
     if (!surveyData.motivationDetails || surveyData.motivationDetails.trim() === '') {
       if (surveyData.motivationType === 'stars') {
@@ -461,6 +470,7 @@ const SurveyCreatorPage: React.FC = () => {
           randomizeQuestions: surveyData.randomizeQuestions,
           oneResponsePerUser: surveyData.oneResponsePerUser,
           collectTelegramData: surveyData.collectTelegramData,
+          hideCreator: surveyData.hideCreator,
           creationType: 'manual',
           endDate: surveyData.endDate,
           maxParticipants: surveyData.maxParticipants,
@@ -648,6 +658,7 @@ const SurveyCreatorPage: React.FC = () => {
             showAdvancedSettings={showAdvancedSettings}
             onToggleAdvanced={() => setShowAdvancedSettings(!showAdvancedSettings)}
             motivationValidationError={motivationValidationError}
+            setMotivationValidationError={setMotivationValidationError}
           />
         )}
         
@@ -752,7 +763,8 @@ const SettingsTab: React.FC<{
   showAdvancedSettings: boolean;
   onToggleAdvanced: () => void;
   motivationValidationError: string;
-}> = ({ surveyData, onDataChange, showAdvancedSettings, onToggleAdvanced, motivationValidationError }) => {
+  setMotivationValidationError: (error: string) => void;
+}> = ({ surveyData, onDataChange, showAdvancedSettings, onToggleAdvanced, motivationValidationError, setMotivationValidationError }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1194,6 +1206,67 @@ const SettingsTab: React.FC<{
                 </label>
               </div>
 
+              {/* Скрыть создателя опроса */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 0',
+                borderBottom: '1px solid var(--tg-section-separator-color)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Скрыть создателя опроса</div>
+                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                      Скрыть информацию о создателе от участников
+                    </div>
+                  </div>
+                </div>
+                <label style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '50px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={surveyData.hideCreator}
+                    onChange={(e) => {
+                      onDataChange('hideCreator', e.target.checked);
+                      // Если включаем скрытие создателя, отключаем мотивацию
+                      if (e.target.checked && surveyData.motivationEnabled) {
+                        onDataChange('motivationEnabled', false);
+                        setMotivationValidationError('');
+                      }
+                    }}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: surveyData.hideCreator ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                    borderRadius: '24px',
+                    transition: '0.3s'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: surveyData.hideCreator ? '27px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: '0.3s'
+                    }} />
+                  </span>
+                </label>
+              </div>
+
               {/* Собирать данные Telegram - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
               {/* <div style={{
                 display: 'flex',
@@ -1272,7 +1345,14 @@ const SettingsTab: React.FC<{
           <input
             type="checkbox"
             checked={surveyData.motivationEnabled}
+            disabled={surveyData.hideCreator}
             onChange={(e) => {
+              // Проверяем конфликт с настройкой "Скрыть создателя"
+              if (surveyData.hideCreator) {
+                setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса');
+                return;
+              }
+              
               onDataChange('motivationEnabled', e.target.checked);
               if (e.target.checked) {
                 // Автоскролл к настройкам мотивации
@@ -1288,12 +1368,13 @@ const SettingsTab: React.FC<{
           />
           <span style={{
             position: 'absolute',
-            cursor: 'pointer',
+            cursor: surveyData.hideCreator ? 'not-allowed' : 'pointer',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
             backgroundColor: surveyData.motivationEnabled ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+            opacity: surveyData.hideCreator ? 0.5 : 1,
             borderRadius: '24px',
             transition: '0.3s'
           }}>
@@ -1315,6 +1396,25 @@ const SettingsTab: React.FC<{
               {/* Настройки мотивации */}
               {surveyData.motivationEnabled && (
                 <div id="motivation-settings" style={{ marginTop: '10px', padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderRadius: '8px' }}>
+                  {/* Предупреждение о конфликте с настройкой "Скрыть создателя" */}
+                  {surveyData.hideCreator && (
+                    <div style={{ 
+                      marginBottom: '16px', 
+                      padding: '12px', 
+                      backgroundColor: 'rgba(255, 59, 48, 0.1)', 
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255, 59, 48, 0.3)'
+                    }}>
+                      <div style={{ 
+                        fontSize: '13px', 
+                        color: '#FF3B30', 
+                        lineHeight: '1.4' 
+                      }}>
+                        ⚠️ Нельзя включить мотивацию при скрытом создателе опроса. Отключите настройку "Скрыть создателя опроса" для использования мотивации.
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Предупреждение */}
                   <div style={{ 
                     marginBottom: '16px', 

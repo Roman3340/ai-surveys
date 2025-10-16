@@ -3395,6 +3395,8 @@ export default function SurveyAnalyticsPage() {
                       handleSaveSettings();
                     } else {
                       setEditingSettings(true);
+                      setEditedSettings(survey.settings);
+                      setEditedMaxParticipants(survey.maxParticipants?.toString() || '');
                     }
                     hapticFeedback?.light();
                   }}
@@ -3565,6 +3567,53 @@ export default function SurveyAnalyticsPage() {
                       </label>
                     ) : (
                       <span style={{ fontWeight: 500 }}>{settings.allowAnonymous ? 'Разрешена' : 'Запрещена'}</span>
+                    )}
+                  </div>
+
+                  {/* Скрыть создателя опроса */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>Скрыть создателя опроса</span>
+                    {editingSettings ? (
+                      <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
+                        <input
+                          type="checkbox"
+                          checked={editedSettings?.hideCreator || false}
+                          onChange={(e) => {
+                            const newSettings = { ...editedSettings!, hideCreator: e.target.checked };
+                            // Если включаем скрытие создателя, отключаем мотивацию
+                            if (e.target.checked && newSettings.motivationEnabled) {
+                              newSettings.motivationEnabled = false;
+                            }
+                            setEditedSettings(newSettings);
+                          }}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute',
+                          cursor: 'pointer',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: editedSettings?.hideCreator ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                          borderRadius: '22px',
+                          transition: '0.3s'
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            content: '',
+                            height: '16px',
+                            width: '16px',
+                            left: editedSettings?.hideCreator ? '24px' : '3px',
+                            bottom: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            transition: '0.3s'
+                          }} />
+                        </span>
+                      </label>
+                    ) : (
+                      <span style={{ fontWeight: 500 }}>{settings.hideCreator ? 'Да' : 'Нет'}</span>
                     )}
                   </div>
 

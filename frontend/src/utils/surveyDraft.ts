@@ -33,6 +33,7 @@ export interface SurveyDraft {
     randomizeQuestions: boolean;
     oneResponsePerUser: boolean;
     collectTelegramData: boolean;
+    hideCreator: boolean;
     creationType: 'manual';
     motivationEnabled: boolean;
     motivationType: string;
@@ -68,6 +69,7 @@ export interface AISurveyDraft {
     randomizeQuestions: boolean;
     oneResponsePerUser: boolean;
     collectTelegramData: boolean;
+    hideCreator: boolean;
     maxParticipants: string;
     endDate: string;
     endTime: string;
@@ -143,6 +145,7 @@ export function saveSettings(settings: {
   randomizeQuestions: boolean;
   oneResponsePerUser: boolean;
   collectTelegramData: boolean;
+  hideCreator: boolean;
   creationType: 'manual';
   motivationEnabled: boolean;
   motivationType: string;
