@@ -125,7 +125,29 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
 
   // Функция для обновления настроек с автоматическим сохранением
   const updateAdvancedSettings = (updates: Partial<typeof advancedSettings>) => {
-    const newSettings = { ...advancedSettings, ...updates };
+    let newSettings = { ...advancedSettings, ...updates };
+    
+    // Если включаем скрытие создателя, отключаем мотивацию
+    if (updates.hideCreator === true) {
+      // Очищаем данные мотивации из черновика
+      const draft = getAIDraft();
+      if (draft?.motivationData) {
+        // Сохраняем очищенные данные мотивации
+        const clearedMotivationData = {
+          motivationEnabled: false,
+          motivationType: 'none',
+          motivationDetails: '',
+          motivationConditions: '',
+          rewardDescription: '',
+          rewardValue: ''
+        };
+        // Импортируем функцию сохранения мотивации
+        import('../../utils/surveyDraft').then(({ saveAIMotivationData }) => {
+          saveAIMotivationData(clearedMotivationData);
+        });
+      }
+    }
+    
     setAdvancedSettings(newSettings);
     saveAIAdvancedSettings(newSettings);
   };

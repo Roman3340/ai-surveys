@@ -3366,6 +3366,18 @@ export default function SurveyAnalyticsPage() {
               onClick={() => {
                 setSettingsExpanded(!settingsExpanded);
                 hapticFeedback?.light();
+                // Скролл к настройкам при открытии
+                if (!settingsExpanded) {
+                  setTimeout(() => {
+                    const settingsElement = document.querySelector('[data-settings-section]');
+                    if (settingsElement) {
+                      settingsElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                      });
+                    }
+                  }, 100);
+                }
               }}
               style={{
                 background: 'transparent',
@@ -3388,7 +3400,7 @@ export default function SurveyAnalyticsPage() {
             </button>
             
             {settingsExpanded && (
-              <>
+              <div data-settings-section>
                 <button
                   onClick={() => {
                     if (editingSettings) {
@@ -3744,6 +3756,25 @@ export default function SurveyAnalyticsPage() {
                   {/* Мотивация */}
                   {(settings.motivationEnabled || editingSettings) && (
                     <>
+                      {/* Предупреждение о конфликте с настройкой "Скрыть создателя" */}
+                      {editingSettings && editedSettings?.hideCreator && (
+                        <div style={{ 
+                          marginBottom: '16px', 
+                          padding: '12px', 
+                          backgroundColor: 'rgba(255, 59, 48, 0.1)', 
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255, 59, 48, 0.3)'
+                        }}>
+                          <div style={{ 
+                            fontSize: '13px', 
+                            color: '#FF3B30', 
+                            lineHeight: '1.4' 
+                          }}>
+                            ⚠️ Нельзя включить мотивацию при скрытом создателе опроса. Отключите настройку "Скрыть создателя опроса" для использования мотивации.
+                          </div>
+                        </div>
+                      )}
+                      
                       {/* Предупреждение */}
                       <div style={{ 
                         marginBottom: '16px', 
@@ -3768,17 +3799,19 @@ export default function SurveyAnalyticsPage() {
                             <input
                               type="checkbox"
                               checked={editedSettings?.motivationEnabled || false}
+                              disabled={editedSettings?.hideCreator || false}
                               onChange={(e) => setEditedSettings({ ...editedSettings!, motivationEnabled: e.target.checked })}
                               style={{ opacity: 0, width: 0, height: 0 }}
                             />
                             <span style={{
                               position: 'absolute',
-                              cursor: 'pointer',
+                              cursor: (editedSettings?.hideCreator || false) ? 'not-allowed' : 'pointer',
                               top: 0,
                               left: 0,
                               right: 0,
                               bottom: 0,
                               backgroundColor: editedSettings?.motivationEnabled ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                              opacity: (editedSettings?.hideCreator || false) ? 0.5 : 1,
                               borderRadius: '22px',
                               transition: '0.3s'
                             }}>
@@ -4058,7 +4091,7 @@ export default function SurveyAnalyticsPage() {
                     </>
                   )}
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
