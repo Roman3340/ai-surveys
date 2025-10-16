@@ -4238,7 +4238,20 @@ export default function SurveyAnalyticsPage() {
             </div>
           )}
           
-          {/* Кнопка добавления вопроса */}
+          
+          {editedQuestions.length === 0 ? (
+            <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 20, textAlign: 'center', color: 'var(--tg-hint-color)' }}>
+              Вопросов нет
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              <AnimatePresence>
+                {editedQuestions.map((q, idx) => renderQuestionEditor(q, idx))}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Кнопка добавления вопроса - внизу */}
           {editingQuestions && (
             <button
               onClick={() => {
@@ -4260,34 +4273,21 @@ export default function SurveyAnalyticsPage() {
                 hapticFeedback?.light();
               }}
               style={{
-                background: 'var(--tg-button-color)',
-                color: 'white',
+                background: 'transparent',
+                color: 'var(--tg-hint-color)',
                 border: 'none',
                 borderRadius: 8,
-                padding: '10px 14px',
-                fontWeight: 600,
-                fontSize: 13,
+                padding: '12px 16px',
+                fontSize: 14,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 6,
-                marginBottom: 10
+                gap: 8,
+                marginTop: 8
               }}
             >
-              ➕ Добавить вопрос
+              ➕ Создать вопрос
             </button>
-          )}
-          
-          {editedQuestions.length === 0 ? (
-            <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 20, textAlign: 'center', color: 'var(--tg-hint-color)' }}>
-              Вопросов нет
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              <AnimatePresence>
-                {editedQuestions.map((q, idx) => renderQuestionEditor(q, idx))}
-              </AnimatePresence>
-            </div>
           )}
         </div>
       )}
