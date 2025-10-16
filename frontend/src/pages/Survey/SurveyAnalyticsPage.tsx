@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -201,167 +201,193 @@ const SummaryTab: React.FC<{
         <div style={{ color: 'var(--tg-hint-color)', fontSize: 12 }}>Всего ответов</div>
       </div>
 
-      {/* Кнопка ИИ аналитики */}
-      <div style={{ position: 'relative', display: 'block' }}>
-        {/* Летающие звездочки SVG */}
-        <div style={{
-          position: 'absolute',
-          top: '-4px',
-          right: '1px',
-          animation: 'float 2s ease-in-out infinite',
-          animationDelay: '0s',
-          zIndex: 1
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-          </svg>
-        </div>
-        <div style={{
-          position: 'absolute',
-          bottom: '-4px',
-          left: '1px',
-          animation: 'float 2s ease-in-out infinite',
-          animationDelay: '1s',
-          zIndex: 1
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-          </svg>
-        </div>
-        
-        <button
-          onClick={() => {
-            // Заглушка - пока ничего не делает
-            console.log('ИИ аналитика - заглушка');
-          }}
-          style={{
-            width: '100%',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            backgroundSize: '200% 200%',
-            animation: 'gradientShift 3s ease infinite',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '16px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-          }}
-        >
-          <div style={{
-            position: 'absolute',
-            top: '-50%',
-            left: '-50%',
-            width: '200%',
-            height: '200%',
-            background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
-            transform: 'rotate(45deg)',
-            transition: 'all 0.6s',
-            opacity: 0
-          }} />
-          <span style={{ position: 'relative', zIndex: 1 }}>
-            🤖 Получить ИИ аналитику
-          </span>
-        </button>
-      </div>
 
       {/* Аналитика по вопросам */}
-      {questions && questions.length > 0 && questions.map((question) => {
+      {questions && questions.length > 0 && questions.map((question, index) => {
         const questionStats = getQuestionStats(question);
+        const aiButtonPosition = Math.ceil(questions.length / 3);
+        const shouldShowAIButton = index === aiButtonPosition;
         
         return (
-          <div key={question.id} style={{ 
-            background: 'var(--tg-section-bg-color)', 
-            borderRadius: 12, 
-            padding: 16 
-          }}>
-            <h4 style={{ 
-              margin: '0 0 8px 0', 
-              fontSize: 14, 
-              fontWeight: 600,
-              color: 'var(--tg-text-color)'
+          <React.Fragment key={question.id}>
+            <div style={{ 
+              background: 'var(--tg-section-bg-color)', 
+              borderRadius: 12, 
+              padding: 16 
             }}>
-              {question.text}
-            </h4>
-            {question.description && (
-              <p style={{
-                fontSize: '12px',
-                color: 'var(--tg-hint-color)',
-                margin: '0 0 12px 0',
-                lineHeight: '1.4'
+              <h4 style={{ 
+                margin: '0 0 8px 0', 
+                fontSize: 14, 
+                fontWeight: 600,
+                color: 'var(--tg-text-color)'
               }}>
-                {question.description}
-              </p>
+                {question.text}
+              </h4>
+              {question.description && (
+                <p style={{
+                  fontSize: '12px',
+                  color: 'var(--tg-hint-color)',
+                  margin: '0 0 12px 0',
+                  lineHeight: '1.4'
+                }}>
+                  {question.description}
+                </p>
+              )}
+              
+              {questionStats.type === 'text' && (
+                <TextAnswersBlock 
+                  answers={questionStats.answers || []}
+                  totalCount={questionStats.totalCount}
+                  hasMore={questionStats.hasMore || false}
+                  questionId={question.id}
+                  isAnonymous={survey?.settings?.allowAnonymous || false}
+                  onShowAll={() => setShowAllAnswers(prev => ({ ...prev, [question.id]: true }))}
+                  onShowPopup={() => {
+                    const allAnswers = getQuestionAnswers(question.id);
+                    setShowAnswersPopup({ questionId: question.id, answers: allAnswers });
+                  }}
+                />
+              )}
+              
+              {questionStats.type === 'single_choice' && (
+                <SingleChoiceChart 
+                  stats={questionStats.stats}
+                  totalCount={questionStats.totalCount}
+                  options={question.options || []}
+                />
+              )}
+              
+              {questionStats.type === 'multiple_choice' && (
+                <MultipleChoiceChart 
+                  stats={questionStats.stats}
+                  totalCount={questionStats.totalCount}
+                  options={question.options || []}
+                />
+              )}
+              
+              {questionStats.type === 'scale' && (
+                <ScaleChart 
+                  stats={questionStats.stats}
+                  totalCount={questionStats.totalCount}
+                  minValue={question.scale_min || 1}
+                  maxValue={question.scale_max || 10}
+                />
+              )}
+              
+              {questionStats.type === 'rating' && (
+                <RatingAnswersBlock 
+                  answers={questionStats.answers || []}
+                  totalCount={questionStats.totalCount}
+                  hasMore={questionStats.hasMore || false}
+                  averageRating={questionStats.averageRating || 0}
+                  questionId={question.id}
+                  isAnonymous={survey?.settings?.allowAnonymous || false}
+                  onShowAll={() => setShowAllAnswers(prev => ({ ...prev, [question.id]: true }))}
+                  onShowPopup={() => {
+                    const allAnswers = getQuestionAnswers(question.id);
+                    setShowAnswersPopup({ questionId: question.id, answers: allAnswers });
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Кнопка ИИ аналитики после 1/3 вопросов */}
+            {shouldShowAIButton && (
+              <div style={{ position: 'relative', display: 'block' }}>
+                {/* Летающие звездочки SVG */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '1px',
+                  animation: 'float 2s ease-in-out infinite',
+                  animationDelay: '0s',
+                  zIndex: 1
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                  </svg>
+                </div>
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-4px',
+                  left: '1px',
+                  animation: 'float 2s ease-in-out infinite',
+                  animationDelay: '1s',
+                  zIndex: 1
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                  </svg>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    // Заглушка - пока ничего не делает
+                    console.log('ИИ аналитика - заглушка');
+                  }}
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    backgroundSize: '200% 200%',
+                    animation: 'gradientShift 3s ease infinite',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '16px 24px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute',
+                    top: '-50%',
+                    left: '-50%',
+                    width: '200%',
+                    height: '200%',
+                    background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
+                    transform: 'rotate(45deg)',
+                    transition: 'all 0.6s',
+                    opacity: 0
+                  }} />
+                  <span style={{ position: 'relative', zIndex: 1 }}>
+                    🤖 Получить ИИ аналитику
+                  </span>
+                </button>
+
+                {/* Описание под кнопкой */}
+                <div style={{
+                  marginTop: '12px',
+                  padding: '12px 16px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <p style={{
+                    margin: 0,
+                    fontSize: '13px',
+                    color: 'var(--tg-hint-color)',
+                    lineHeight: '1.4',
+                    textAlign: 'center'
+                  }}>
+                    Проанализировать ответы с помощью искусственного интеллекта. Вы получите готовый отчёт с ключевыми выводами и тенденциями, сэкономите время на анализе полученных ответов.
+                  </p>
+                </div>
+              </div>
             )}
-            
-            {questionStats.type === 'text' && (
-              <TextAnswersBlock 
-                answers={questionStats.answers || []}
-                totalCount={questionStats.totalCount}
-                hasMore={questionStats.hasMore || false}
-                questionId={question.id}
-                isAnonymous={survey?.settings?.allowAnonymous || false}
-                onShowAll={() => setShowAllAnswers(prev => ({ ...prev, [question.id]: true }))}
-                onShowPopup={() => {
-                  const allAnswers = getQuestionAnswers(question.id);
-                  setShowAnswersPopup({ questionId: question.id, answers: allAnswers });
-                }}
-              />
-            )}
-            
-            {questionStats.type === 'single_choice' && (
-              <SingleChoiceChart 
-                stats={questionStats.stats}
-                totalCount={questionStats.totalCount}
-                options={question.options || []}
-              />
-            )}
-            
-            {questionStats.type === 'multiple_choice' && (
-              <MultipleChoiceChart 
-                stats={questionStats.stats}
-                totalCount={questionStats.totalCount}
-                options={question.options || []}
-              />
-            )}
-            
-            {questionStats.type === 'scale' && (
-              <ScaleChart 
-                stats={questionStats.stats}
-                totalCount={questionStats.totalCount}
-                minValue={question.scale_min || 1}
-                maxValue={question.scale_max || 10}
-              />
-            )}
-            
-            {questionStats.type === 'rating' && (
-              <RatingAnswersBlock 
-                answers={questionStats.answers || []}
-                totalCount={questionStats.totalCount}
-                hasMore={questionStats.hasMore || false}
-                averageRating={questionStats.averageRating || 0}
-                questionId={question.id}
-                isAnonymous={survey?.settings?.allowAnonymous || false}
-                onShowAll={() => setShowAllAnswers(prev => ({ ...prev, [question.id]: true }))}
-                onShowPopup={() => {
-                  const allAnswers = getQuestionAnswers(question.id);
-                  setShowAnswersPopup({ questionId: question.id, answers: allAnswers });
-                }}
-              />
-            )}
-          </div>
+          </React.Fragment>
         );
       })}
 
