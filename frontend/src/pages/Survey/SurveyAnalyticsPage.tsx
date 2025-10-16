@@ -4250,7 +4250,7 @@ export default function SurveyAnalyticsPage() {
           )}
 
           {/* Предупреждение о ограничениях редактирования при наличии ответов */}
-          {!canEditQuestions && (stats?.total_responses ?? 0) > 0 && (
+          {(stats?.total_responses ?? 0) > 0 && (
             <div style={{
               marginTop: '12px',
               padding: '12px',
