@@ -47,7 +47,7 @@ export interface SurveyDraft {
 // Интерфейс для ИИ-опросов
 export interface AISurveyDraft {
   mode: 'ai';
-  currentStep: 'type' | 'business' | 'personal' | 'advanced' | 'motivation';
+  currentStep: 'type' | 'business' | 'personal' | 'advanced';
   userType?: 'business' | 'personal';
   businessData?: {
     businessSphere: string;
@@ -75,6 +75,11 @@ export interface AISurveyDraft {
     endTime: string;
     surveyTitle: string;
     surveyDescription: string;
+    // Мотивация
+    motivationEnabled: boolean;
+    motivationType: string;
+    motivationDetails: string;
+    motivationConditions: string;
   };
   motivationData?: {
     motivationEnabled: boolean;
@@ -212,7 +217,7 @@ export function saveAIPersonalData(data: AISurveyDraft['personalData']) {
 }
 
 export function saveAIAdvancedSettings(settings: AISurveyDraft['advancedSettings']) {
-  saveAIDraft({ advancedSettings: settings, currentStep: 'motivation' });
+  saveAIDraft({ advancedSettings: settings });
 }
 
 export function saveAIMotivationData(data: AISurveyDraft['motivationData']) {

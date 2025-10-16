@@ -13,6 +13,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
   const location = useLocation();
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
   const [settingsType, setSettingsType] = useState<'standard' | 'advanced'>('standard');
+  const [motivationValidationError, setMotivationValidationError] = useState<string>('');
 
   // Загружаем состояние выпадающего списка из черновика
   useEffect(() => {
@@ -35,7 +36,12 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
     endDate: '',
     endTime: '',
     surveyTitle: '',
-    surveyDescription: ''
+    surveyDescription: '',
+    // Мотивация
+    motivationEnabled: false,
+    motivationType: 'discount',
+    motivationDetails: '',
+    motivationConditions: ''
   });
 
   // Загружаем данные из черновика при монтировании
@@ -44,32 +50,33 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
     if (draft?.advancedSettings) {
       const loadedSettings = {
         ...draft.advancedSettings,
-        hideCreator: draft.advancedSettings.hideCreator ?? false
+        hideCreator: draft.advancedSettings.hideCreator ?? false,
+        // Загружаем мотивацию из черновика
+        motivationEnabled: draft.advancedSettings.motivationEnabled ?? false,
+        motivationType: draft.advancedSettings.motivationType || 'discount',
+        motivationDetails: draft.advancedSettings.motivationDetails || '',
+        motivationConditions: draft.advancedSettings.motivationConditions || ''
       };
       setAdvancedSettings(loadedSettings);
-      
-      // Если включено скрытие создателя и есть данные мотивации, очищаем мотивацию
-      if (loadedSettings.hideCreator && draft?.motivationData?.motivationEnabled) {
-        const clearedMotivationData = {
-          motivationEnabled: false,
-          motivationType: 'none',
-          motivationDetails: '',
-          motivationConditions: '',
-          rewardDescription: '',
-          rewardValue: ''
-        };
-        // Импортируем функцию сохранения мотивации
-        import('../../utils/surveyDraft').then(({ saveAIMotivationData }) => {
-          saveAIMotivationData(clearedMotivationData);
-        });
-      }
     }
   }, []);
 
   const handleNext = () => {
+    // Проверяем валидацию мотивации перед переходом
+    if (settingsType === 'advanced' && !validateMotivation()) {
+      // Скроллим к настройкам мотивации
+      setTimeout(() => {
+        const motivationSettings = document.getElementById('motivation-settings');
+        if (motivationSettings) {
+          motivationSettings.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return;
+    }
+    
     // Сохраняем настройки в черновик
     saveAIAdvancedSettings(settingsType === 'advanced' ? advancedSettings : undefined);
-    navigate('/survey/create/ai/motivation', { 
+    navigate('/survey/create/ai/generate', { 
       state: { 
         ...location.state,
         advancedSettings: settingsType === 'advanced' ? advancedSettings : null
@@ -140,29 +147,66 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
     saveAIAdvancedSettings(newSettings);
   };
 
+  // Валидация мотивации
+  const validateMotivation = (): boolean => {
+    if (!advancedSettings.motivationEnabled) {
+      setMotivationValidationError('');
+      return true;
+    }
+
+    // Проверяем конфликт с настройкой "Скрыть создателя"
+    if (advancedSettings.hideCreator) {
+      setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса');
+      return false;
+    }
+
+    // Проверяем что описание заполнено для всех типов
+    if (!advancedSettings.motivationDetails || advancedSettings.motivationDetails.trim() === '') {
+      if (advancedSettings.motivationType === 'stars') {
+        setMotivationValidationError('Введите количество звёзд');
+      } else {
+        setMotivationValidationError('Заполните описание награды');
+      }
+      return false;
+    }
+
+    // Для звезд дополнительно проверяем что число >= 1
+    if (advancedSettings.motivationType === 'stars') {
+      const starsCount = parseInt(advancedSettings.motivationDetails);
+      if (isNaN(starsCount) || starsCount < 1) {
+        setMotivationValidationError('Количество звёзд должно быть не менее 1');
+        return false;
+      }
+    }
+
+    // Для промокода нужен также промокод
+    if (advancedSettings.motivationType === 'promo') {
+      if (!advancedSettings.motivationConditions || advancedSettings.motivationConditions.trim() === '') {
+        setMotivationValidationError('Введите промокод');
+        return false;
+      }
+    }
+
+    setMotivationValidationError('');
+    return true;
+  };
+
   // Функция для обновления настроек с автоматическим сохранением
   const updateAdvancedSettings = (updates: Partial<typeof advancedSettings>) => {
     let newSettings = { ...advancedSettings, ...updates };
     
     // Если включаем скрытие создателя, отключаем мотивацию
     if (updates.hideCreator === true) {
-      // Очищаем данные мотивации из черновика
-      const draft = getAIDraft();
-      if (draft?.motivationData) {
-        // Сохраняем очищенные данные мотивации
-        const clearedMotivationData = {
-          motivationEnabled: false,
-          motivationType: 'none',
-          motivationDetails: '',
-          motivationConditions: '',
-          rewardDescription: '',
-          rewardValue: ''
-        };
-        // Импортируем функцию сохранения мотивации
-        import('../../utils/surveyDraft').then(({ saveAIMotivationData }) => {
-          saveAIMotivationData(clearedMotivationData);
-        });
-      }
+      newSettings.motivationEnabled = false;
+      newSettings.motivationDetails = '';
+      newSettings.motivationConditions = '';
+      setMotivationValidationError('');
+    }
+    
+    // Очищаем ошибку валидации при изменении полей мотивации
+    if (updates.motivationEnabled !== undefined || updates.motivationType !== undefined || 
+        updates.motivationDetails !== undefined || updates.motivationConditions !== undefined) {
+      setMotivationValidationError('');
     }
     
     setAdvancedSettings(newSettings);
@@ -235,7 +279,7 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
             }}>
               <motion.div
                 initial={{ width: '0%' }}
-                animate={{ width: '75%' }}
+                animate={{ width: '90%' }}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
                 style={{
                   height: '100%',
@@ -362,40 +406,57 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {/* Анонимные ответы */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ flex: 1, marginRight: '16px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
-                      Анонимные ответы
-                    </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
-                      Разрешить участникам отвечать анонимно
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 0',
+                  borderBottom: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: '500' }}>Анонимные ответы</div>
+                      <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                        Разрешить участникам отвечать анонимно
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => updateAdvancedSettings({ allowAnonymous: !advancedSettings.allowAnonymous })}
-                    style={{
-                      width: '48px',
-                      height: '28px',
-                      borderRadius: '14px',
-                      backgroundColor: advancedSettings.allowAnonymous ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: advancedSettings.allowAnonymous ? 'none' : '1px solid var(--tg-hint-color)',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white',
+                  <label style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: '50px',
+                    height: '24px'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.allowAnonymous}
+                      onChange={(e) => updateAdvancedSettings({ allowAnonymous: e.target.checked })}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
                       position: 'absolute',
-                      top: '2px',
-                      left: advancedSettings.allowAnonymous ? '22px' : '2px',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }} />
-                  </button>
+                      cursor: 'pointer',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: advancedSettings.allowAnonymous ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                      borderRadius: '24px',
+                      transition: '0.3s'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        content: '""',
+                        height: '18px',
+                        width: '18px',
+                        left: advancedSettings.allowAnonymous ? '27px' : '3px',
+                        bottom: '3px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transition: '0.3s'
+                      }} />
+                    </span>
+                  </label>
                 </div>
 
                 {/* Показывать прогресс - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
@@ -436,114 +497,165 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                 </div> */}
 
                 {/* Перемешивать вопросы */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ flex: 1, marginRight: '16px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
-                      Перемешивать вопросы
-                    </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
-                      Случайный порядок вопросов для каждого участника
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 0',
+                  borderBottom: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: '500' }}>Перемешивать вопросы</div>
+                      <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                        Случайный порядок вопросов для каждого участника
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => updateAdvancedSettings({ randomizeQuestions: !advancedSettings.randomizeQuestions })}
-                    style={{
-                      width: '48px',
-                      height: '28px',
-                      borderRadius: '14px',
-                      backgroundColor: advancedSettings.randomizeQuestions ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: advancedSettings.randomizeQuestions ? 'none' : '1px solid var(--tg-hint-color)',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white',
+                  <label style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: '50px',
+                    height: '24px'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.randomizeQuestions}
+                      onChange={(e) => updateAdvancedSettings({ randomizeQuestions: e.target.checked })}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
                       position: 'absolute',
-                      top: '2px',
-                      left: advancedSettings.randomizeQuestions ? '22px' : '2px',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }} />
-                  </button>
+                      cursor: 'pointer',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: advancedSettings.randomizeQuestions ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                      borderRadius: '24px',
+                      transition: '0.3s'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        content: '""',
+                        height: '18px',
+                        width: '18px',
+                        left: advancedSettings.randomizeQuestions ? '27px' : '3px',
+                        bottom: '3px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transition: '0.3s'
+                      }} />
+                    </span>
+                  </label>
                 </div>
 
                 {/* Один ответ на пользователя */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ flex: 1, marginRight: '16px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
-                      Один ответ на пользователя
-                    </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
-                      Запретить повторное участие
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 0',
+                  borderBottom: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: '500' }}>Один ответ на пользователя</div>
+                      <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                        Запретить повторное участие
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => updateAdvancedSettings({ oneResponsePerUser: !advancedSettings.oneResponsePerUser })}
-                    style={{
-                      width: '48px',
-                      height: '28px',
-                      borderRadius: '14px',
-                      backgroundColor: advancedSettings.oneResponsePerUser ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: advancedSettings.oneResponsePerUser ? 'none' : '1px solid var(--tg-hint-color)',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white',
+                  <label style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: '50px',
+                    height: '24px'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.oneResponsePerUser}
+                      onChange={(e) => updateAdvancedSettings({ oneResponsePerUser: e.target.checked })}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
                       position: 'absolute',
-                      top: '2px',
-                      left: advancedSettings.oneResponsePerUser ? '22px' : '2px',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }} />
-                  </button>
+                      cursor: 'pointer',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: advancedSettings.oneResponsePerUser ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                      borderRadius: '24px',
+                      transition: '0.3s'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        content: '""',
+                        height: '18px',
+                        width: '18px',
+                        left: advancedSettings.oneResponsePerUser ? '27px' : '3px',
+                        bottom: '3px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transition: '0.3s'
+                      }} />
+                    </span>
+                  </label>
                 </div>
 
                 {/* Скрыть создателя опроса */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ flex: 1, marginRight: '16px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: '500', marginBottom: '4px' }}>
-                      Скрыть создателя опроса
-                    </div>
-                    <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.3' }}>
-                      Скрыть информацию о создателе от участников
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 0',
+                  borderBottom: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: '500' }}>Скрыть создателя опроса</div>
+                      <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                        Скрыть информацию о создателе от участников
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => updateAdvancedSettings({ hideCreator: !advancedSettings.hideCreator })}
-                    style={{
-                      width: '48px',
-                      height: '28px',
-                      borderRadius: '14px',
-                      backgroundColor: advancedSettings.hideCreator ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)',
-                      border: advancedSettings.hideCreator ? 'none' : '1px solid var(--tg-hint-color)',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      backgroundColor: 'white',
+                  <label style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: '50px',
+                    height: '24px'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.hideCreator}
+                      onChange={(e) => updateAdvancedSettings({ hideCreator: e.target.checked })}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
                       position: 'absolute',
-                      top: '2px',
-                      left: advancedSettings.hideCreator ? '22px' : '2px',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }} />
-                  </button>
+                      cursor: 'pointer',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: advancedSettings.hideCreator ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                      borderRadius: '24px',
+                      transition: '0.3s'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        content: '""',
+                        height: '18px',
+                        width: '18px',
+                        left: advancedSettings.hideCreator ? '27px' : '3px',
+                        bottom: '3px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transition: '0.3s'
+                      }} />
+                    </span>
+                  </label>
                 </div>
 
                 {/* Собирать данные Telegram - ЗАКОММЕНТИРОВАНО НА БУДУЩЕЕ */}
@@ -749,6 +861,257 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
                     }}
                   />
                 </div>
+
+                {/* Мотивация */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 0',
+                  borderBottom: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '16px', fontWeight: '500' }}>Мотивация</div>
+                      <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
+                        Добавить награду за участие в опросе
+                      </div>
+                    </div>
+                  </div>
+                  <label style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: '50px',
+                    height: '24px'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.motivationEnabled}
+                      disabled={advancedSettings.hideCreator}
+                      onChange={(e) => {
+                        // Проверяем конфликт с настройкой "Скрыть создателя"
+                        if (advancedSettings.hideCreator) {
+                          setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса');
+                          return;
+                        }
+                        
+                        updateAdvancedSettings({ motivationEnabled: e.target.checked });
+                        if (e.target.checked) {
+                          // Автоскролл к настройкам мотивации
+                          setTimeout(() => {
+                            const motivationSettings = document.getElementById('motivation-settings');
+                            if (motivationSettings) {
+                              motivationSettings.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                          }, 100);
+                        }
+                      }}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
+                      position: 'absolute',
+                      cursor: advancedSettings.hideCreator ? 'not-allowed' : 'pointer',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: advancedSettings.motivationEnabled ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                      opacity: advancedSettings.hideCreator ? 0.5 : 1,
+                      borderRadius: '24px',
+                      transition: '0.3s'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        content: '""',
+                        height: '18px',
+                        width: '18px',
+                        left: advancedSettings.motivationEnabled ? '27px' : '3px',
+                        bottom: '3px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transition: '0.3s'
+                      }} />
+                    </span>
+                  </label>
+                </div>
+
+                {/* Настройки мотивации */}
+                {advancedSettings.motivationEnabled && (
+                  <div id="motivation-settings" style={{ marginTop: '10px', padding: '16px', backgroundColor: 'var(--tg-bg-color)', borderRadius: '8px' }}>
+                    {/* Предупреждение о конфликте с настройкой "Скрыть создателя" */}
+                    {advancedSettings.hideCreator && (
+                      <div style={{ 
+                        marginBottom: '16px', 
+                        padding: '12px', 
+                        backgroundColor: 'rgba(255, 59, 48, 0.1)', 
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 59, 48, 0.3)'
+                      }}>
+                        <div style={{ 
+                          fontSize: '13px', 
+                          color: '#FF3B30', 
+                          lineHeight: '1.4' 
+                        }}>
+                          ⚠️ Нельзя включить мотивацию при скрытом создателе опроса. Отключите настройку "Скрыть создателя опроса" для использования мотивации.
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Предупреждение */}
+                    <div style={{ 
+                      marginBottom: '16px', 
+                      padding: '12px', 
+                      backgroundColor: 'rgba(244, 109, 0, 0.1)', 
+                      borderRadius: '8px',
+                      border: '1px solid rgba(244, 109, 0, 0.3)'
+                    }}>
+                      <div style={{ 
+                        fontSize: '13px', 
+                        color: 'var(--tg-hint-color)', 
+                        lineHeight: '1.4' 
+                      }}>
+                        ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
+                      </div>
+                    </div>
+                    
+                    {/* Ошибка валидации мотивации */}
+                    {motivationValidationError && (
+                      <div style={{ 
+                        marginBottom: '16px', 
+                        padding: '12px', 
+                        backgroundColor: 'rgba(255, 59, 48, 0.1)', 
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 59, 48, 0.3)'
+                      }}>
+                        <div style={{ 
+                          fontSize: '13px', 
+                          color: '#FF3B30', 
+                          lineHeight: '1.4' 
+                        }}>
+                          ⚠️ {motivationValidationError}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        marginBottom: '8px',
+                        color: 'var(--tg-text-color)'
+                      }}>
+                        Тип награды
+                      </label>
+                      <select
+                        value={advancedSettings.motivationType}
+                        onChange={(e) => updateAdvancedSettings({ motivationType: e.target.value })}
+                        style={{
+                          width: '100%',
+                          padding: '16px 16px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'var(--tg-section-bg-color)',
+                          color: 'var(--tg-text-color)',
+                          fontSize: '16px',
+                          outline: 'none'
+                        }}
+                      >
+                        <option value="discount">Скидка</option>
+                        <option value="promo">Промокод</option>
+                        <option value="stars">Звезды Telegram</option>
+                        <option value="gift">Подарок</option>
+                        <option value="other">Другое</option>
+                      </select>
+                    </div>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        marginBottom: '8px',
+                        color: 'var(--tg-text-color)'
+                      }}>
+                        {advancedSettings.motivationType === 'discount' && 'Описание скидки'}
+                        {advancedSettings.motivationType === 'promo' && 'Что за промокод'}
+                        {advancedSettings.motivationType === 'stars' && 'Сколько звезд одному пользователю'}
+                        {advancedSettings.motivationType === 'gift' && 'Что за подарок'}
+                        {advancedSettings.motivationType === 'other' && 'Пояснение к другому награждению'}
+                      </label>
+                      <input
+                        type="text"
+                        value={advancedSettings.motivationDetails}
+                        onChange={(e) => updateAdvancedSettings({ motivationDetails: e.target.value })}
+                        placeholder={
+                          advancedSettings.motivationType === 'discount' ? '20% скидка на следующий заказ' :
+                          advancedSettings.motivationType === 'promo' ? 'Например: SAVE20' :
+                          advancedSettings.motivationType === 'stars' ? 'Например: 50' :
+                          advancedSettings.motivationType === 'gift' ? 'Например: Футболка с логотипом' :
+                          'Например: Бесплатная консультация'
+                        }
+                        enterKeyHint="done"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                          }
+                        }}
+                        onFocus={handleInputFocus}
+                        onBlur={handleInputBlur}
+                        style={{
+                          width: '100%',
+                          padding: '16px 16px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'var(--tg-section-bg-color)',
+                          color: 'var(--tg-text-color)',
+                          fontSize: '16px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Дополнительное поле только для промокода */}
+                    {advancedSettings.motivationType === 'promo' && (
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          marginBottom: '8px',
+                          color: 'var(--tg-text-color)'
+                        }}>
+                          На что промокод и при каких условиях
+                        </label>
+                        <textarea
+                          value={advancedSettings.motivationConditions}
+                          onChange={(e) => updateAdvancedSettings({ motivationConditions: e.target.value })}
+                          placeholder="Например: Промокод на бесплатную доставку при заказе от 1000 рублей"
+                          rows={3}
+                          enterKeyHint="done"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.ctrlKey) {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          onFocus={handleInputFocus}
+                          onBlur={handleInputBlur}
+                          style={{
+                            width: '100%',
+                            padding: '16px 16px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            backgroundColor: 'var(--tg-section-bg-color)',
+                            color: 'var(--tg-text-color)',
+                            fontSize: '16px',
+                            resize: 'vertical',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
