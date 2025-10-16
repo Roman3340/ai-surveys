@@ -4248,7 +4248,25 @@ export default function SurveyAnalyticsPage() {
               )}
             </div>
           )}
-          
+
+          {/* Предупреждение о ограничениях редактирования при наличии ответов */}
+          {!canEditQuestions && (stats?.total_responses ?? 0) > 0 && (
+            <div style={{
+              marginTop: '12px',
+              padding: '12px',
+              backgroundColor: '#FFF3CD',
+              borderRadius: '8px',
+              border: '1px solid #856404'
+            }}>
+              <div style={{
+                fontSize: '13px',
+                color: '#856404',
+                lineHeight: '1.4'
+              }}>
+                ⚠️ Редактирование ограничено, так как есть ответы на опрос. Вы можете создавать новые вопросы и удалять старые.
+              </div>
+            </div>
+          )}
           
           {editedQuestions.length === 0 ? (
             <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 20, textAlign: 'center', color: 'var(--tg-hint-color)' }}>
