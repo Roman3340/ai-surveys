@@ -167,16 +167,6 @@ export const HomePage = () => {
           }}>
             <span style={{ fontSize: '14px' }}>💎</span>
             <span style={{ fontSize: '12px', fontWeight: '500' }}>Повысить статус</span>
-            <div style={{
-              fontSize: '10px',
-              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-              color: 'white',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              fontWeight: '500'
-            }}>
-              NEW
-            </div>
           </div>
         </div>
 
