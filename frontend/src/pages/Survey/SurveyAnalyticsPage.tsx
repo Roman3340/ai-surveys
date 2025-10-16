@@ -4270,7 +4270,7 @@ export default function SurveyAnalyticsPage() {
                   id: `temp_${Date.now()}`,
                   type: 'text',
                   text: 'Новый вопрос',
-                  description: '',
+                  description: undefined,
                   is_required: false,
                   order_index: editedQuestions.length,
                   options: [],

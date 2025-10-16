@@ -302,7 +302,7 @@ const SurveyCreatorPage: React.FC = () => {
       id: `q_${Date.now()}`,
       type: 'text',
       title: '',
-      description: '',
+      description: undefined,
       required: true,
       options: [],
       scaleMin: undefined, // Только для типа "scale"
