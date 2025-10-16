@@ -4252,7 +4252,7 @@ export default function SurveyAnalyticsPage() {
           {/* Предупреждение о ограничениях редактирования при наличии ответов */}
           {(stats?.total_responses ?? 0) > 0 && (
             <div style={{
-              marginTop: '12px',
+              marginTop: '5px',
               padding: '12px',
               backgroundColor: '#FFF3CD',
               borderRadius: '8px',

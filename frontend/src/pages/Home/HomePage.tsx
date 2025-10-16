@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, HelpCircle, BarChart3, Users } from 'lucide-react';
+import { Settings, HelpCircle, BarChart3, Users, Trash2 } from 'lucide-react';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useAppStore } from '../../store/useAppStore';
@@ -11,6 +11,8 @@ export const HomePage = () => {
   const { user: telegramUser, hapticFeedback } = useTelegram();
   const { user, userSurveys, participatedSurveys, setUser, loadUserSurveys, loadParticipatedSurveys, isLoading, error } = useAppStore();
   const [activeTab, setActiveTab] = useState<'created' | 'participated'>('created');
+  const [showAllSurveys, setShowAllSurveys] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ survey: Survey | null; show: boolean }>({ survey: null, show: false });
 
   // Создание пользователя из Telegram данных
   useEffect(() => {
@@ -59,6 +61,39 @@ export const HomePage = () => {
   const handleViewTopSurveys = () => {
     hapticFeedback?.light();
     console.log('Топ опросов');
+  };
+
+  const handleDeleteSurvey = (survey: Survey) => {
+    hapticFeedback?.light();
+    setDeleteConfirm({ survey, show: true });
+  };
+
+  const confirmDeleteSurvey = async () => {
+    if (!deleteConfirm.survey) return;
+    
+    try {
+      const { surveyApi } = await import('../../services/api');
+      await surveyApi.deleteSurvey(deleteConfirm.survey.id);
+      
+      // Перезагружаем список опросов
+      await loadUserSurveys();
+      
+      setDeleteConfirm({ survey: null, show: false });
+      hapticFeedback?.success();
+    } catch (error) {
+      console.error('Ошибка при удалении опроса:', error);
+      hapticFeedback?.error();
+    }
+  };
+
+  const cancelDeleteSurvey = () => {
+    setDeleteConfirm({ survey: null, show: false });
+    hapticFeedback?.light();
+  };
+
+  const handleShowAllSurveys = () => {
+    hapticFeedback?.light();
+    setShowAllSurveys(true);
   };
 
   const displayedSurveys = activeTab === 'created' ? userSurveys : participatedSurveys;
@@ -276,14 +311,16 @@ export const HomePage = () => {
           }}>
             📊 Опросы
           </h2>
-          <button style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--tg-link-color)',
-            fontSize: '16px',
-            cursor: 'pointer',
-            fontWeight: '500'
-          }}>
+          <button 
+            onClick={handleShowAllSurveys}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--tg-link-color)',
+              fontSize: '16px',
+              cursor: 'pointer',
+              fontWeight: '500'
+            }}>
             Все
           </button>
         </div>
@@ -378,11 +415,38 @@ export const HomePage = () => {
                     }}>
                       {survey.title}
                     </h3>
+                    {activeTab === 'created' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSurvey(survey);
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#FF3B30',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          marginLeft: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px'
+                  }}>
                     <div style={{
                       fontSize: '14px',
-                      color: 'var(--tg-hint-color)',
-                      marginLeft: '12px',
-                      whiteSpace: 'nowrap'
+                      color: 'var(--tg-hint-color)'
                     }}>
                       {activeTab === 'created' 
                         ? formatDate(survey.publishedAt || survey.createdAt)
@@ -571,6 +635,276 @@ export const HomePage = () => {
           Поддержка
         </button>
       </div>
+
+      {/* Popup подтверждения удаления */}
+      {deleteConfirm.show && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--tg-bg-color)',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '320px',
+            width: '100%'
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              margin: '0 0 12px 0',
+              color: 'var(--tg-text-color)'
+            }}>
+              Удалить опрос?
+            </h3>
+            <p style={{
+              fontSize: '14px',
+              color: 'var(--tg-hint-color)',
+              margin: '0 0 20px 0',
+              lineHeight: '1.4'
+            }}>
+              Вы уверены, что хотите удалить опрос "{deleteConfirm.survey?.title}"? 
+              Все ответы участников, вопросы и связанные данные будут удалены безвозвратно.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '12px'
+            }}>
+              <button
+                onClick={cancelDeleteSurvey}
+                style={{
+                  flex: 1,
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  color: 'var(--tg-text-color)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={confirmDeleteSurvey}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#FF3B30',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup всех опросов */}
+      {showAllSurveys && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--tg-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            maxWidth: '400px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: 0,
+                color: 'var(--tg-text-color)'
+              }}>
+                {activeTab === 'created' ? 'Все созданные опросы' : 'Все опросы участия'}
+              </h3>
+              <button
+                onClick={() => setShowAllSurveys(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--tg-hint-color)',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {displayedSurveys.map((survey) => (
+                <div
+                  key={survey.id}
+                  onClick={activeTab === 'created' ? () => {
+                    setShowAllSurveys(false);
+                    handleViewAnalytics(survey);
+                  } : undefined}
+                  style={{
+                    backgroundColor: 'var(--tg-section-bg-color)',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    cursor: activeTab === 'created' ? 'pointer' : 'default',
+                    transition: 'transform 0.1s ease'
+                  }}
+                  onMouseDown={activeTab === 'created' ? (e) => e.currentTarget.style.transform = 'scale(0.98)' : undefined}
+                  onMouseUp={activeTab === 'created' ? (e) => e.currentTarget.style.transform = 'scale(1)' : undefined}
+                  onMouseLeave={activeTab === 'created' ? (e) => e.currentTarget.style.transform = 'scale(1)' : undefined}
+                >
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '8px'
+                  }}>
+                    <h4 style={{
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      margin: 0,
+                      flex: 1,
+                      lineHeight: '1.3'
+                    }}>
+                      {survey.title}
+                    </h4>
+                    {activeTab === 'created' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSurvey(survey);
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#FF3B30',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          marginLeft: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div style={{
+                    fontSize: '14px',
+                    color: 'var(--tg-hint-color)',
+                    marginBottom: '8px'
+                  }}>
+                    {activeTab === 'created' 
+                      ? formatDate(survey.publishedAt || survey.createdAt)
+                      : formatDate((survey as any).completed_at)
+                    }
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px'
+                  }}>
+                    {activeTab === 'created' ? (
+                      <>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '14px',
+                          color: 'var(--tg-hint-color)'
+                        }}>
+                          <Users size={14} />
+                          {survey.responsesCount ?? survey.responses?.length ?? 0}
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '14px',
+                          color: 'var(--tg-hint-color)'
+                        }}>
+                          <BarChart3 size={14} />
+                          {survey.questions.length} вопр.
+                        </div>
+                        {(() => {
+                          const statusMap: Record<string, { text: string; color: string }> = {
+                            active: { text: 'Активен', color: '#34C759' },
+                            draft: { text: 'Черновик', color: '#8E8E93' },
+                            completed: { text: 'Завершён', color: '#FF6B6B' },
+                            archived: { text: 'Архив', color: '#FF9500' }
+                          };
+                          const statusInfo = statusMap[survey.status] || { text: survey.status, color: '#8E8E93' };
+                          return (
+                            <div style={{
+                              backgroundColor: statusInfo.color,
+                              color: 'white',
+                              fontSize: '12px',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontWeight: '500'
+                            }}>
+                              {statusInfo.text}
+                            </div>
+                          );
+                        })()}
+                      </>
+                    ) : (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '14px',
+                        color: 'var(--tg-hint-color)'
+                      }}>
+                        <BarChart3 size={14} />
+                        {(survey as any).questions_count || survey.questions?.length || 0} вопр.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

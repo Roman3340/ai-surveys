@@ -87,12 +87,6 @@ export const surveyApi = {
     return response.data;
   },
 
-  /**
-   * Удалить опрос
-   */
-  async deleteSurvey(surveyId: string): Promise<void> {
-    await api.delete(`/surveys/${surveyId}`);
-  },
 
   /**
    * Опубликовать опрос
@@ -165,6 +159,14 @@ export const surveyApi = {
   async submitSurveyAnswers(surveyId: string, answers: Array<{ question_id: string; answer_value: any }>, userTelegramId?: number): Promise<any> {
     const params = userTelegramId ? { user_telegram_id: userTelegramId } : {};
     const response = await api.post(`/surveys/${surveyId}/submit`, { answers }, { params });
+    return response.data;
+  },
+
+  /**
+   * Удалить опрос
+   */
+  async deleteSurvey(surveyId: string): Promise<any> {
+    const response = await api.delete(`/surveys/${surveyId}`);
     return response.data;
   },
 
