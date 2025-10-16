@@ -3756,44 +3756,28 @@ export default function SurveyAnalyticsPage() {
                   {/* Мотивация */}
                   {(settings.motivationEnabled || editingSettings) && (
                     <>
-                      {/* Предупреждение о конфликте с настройкой "Скрыть создателя" */}
-                      {editingSettings && editedSettings?.hideCreator && (
+                      
+                      {/* Предупреждение - показываем только при включенной мотивации */}
+                      {editedSettings?.motivationEnabled && (
                         <div style={{ 
                           marginBottom: '16px', 
                           padding: '12px', 
-                          backgroundColor: 'rgba(255, 59, 48, 0.1)', 
+                          backgroundColor: 'rgba(244, 109, 0, 0.1)', 
                           borderRadius: '8px',
-                          border: '1px solid rgba(255, 59, 48, 0.3)'
+                          border: '1px solid rgba(244, 109, 0, 0.3)'
                         }}>
                           <div style={{ 
                             fontSize: '13px', 
-                            color: '#FF3B30', 
+                            color: 'var(--tg-hint-color)', 
                             lineHeight: '1.4' 
                           }}>
-                            ⚠️ Нельзя включить мотивацию при скрытом создателе опроса. Отключите настройку "Скрыть создателя опроса" для использования мотивации.
+                            ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
                           </div>
                         </div>
                       )}
                       
-                      {/* Предупреждение */}
-                      <div style={{ 
-                        marginBottom: '16px', 
-                        padding: '12px', 
-                        backgroundColor: 'rgba(244, 109, 0, 0.1)', 
-                        borderRadius: '8px',
-                        border: '1px solid rgba(244, 109, 0, 0.3)'
-                      }}>
-                        <div style={{ 
-                          fontSize: '13px', 
-                          color: 'var(--tg-hint-color)', 
-                          lineHeight: '1.4' 
-                        }}>
-                          ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
-                        </div>
-                      </div>
-                      
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                        <span style={{ color: 'var(--tg-hint-color)' }}>Мотивация включена</span>
+                        <span style={{ color: 'var(--tg-hint-color)' }}>Мотивация</span>
                         {editingSettings ? (
                           <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
                             <input

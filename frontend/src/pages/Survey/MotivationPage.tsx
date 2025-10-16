@@ -37,14 +37,20 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
     const draft = getAIDraft();
     if (draft?.motivationData) {
       // Преобразуем данные из черновика в формат MotivationData
-      setMotivationData({
+      const loadedData = {
         motivation: draft.motivationData.motivationType || 'none',
         rewardDescription: draft.motivationData.rewardDescription || '',
         rewardValue: draft.motivationData.rewardValue || '',
         motivationDetails: draft.motivationData.motivationDetails || '',
         motivationConditions: draft.motivationData.motivationConditions || '',
         ...previousData
-      });
+      };
+      setMotivationData(loadedData);
+      
+      // Проверяем конфликт с настройкой "Скрыть создателя" при загрузке
+      if (loadedData.motivation !== 'none' && previousData.advancedSettings?.hideCreator) {
+        setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса. Для включения мотивации вернитесь на шаг назад и отключите данную настройку');
+      }
     }
   }, []);
 
@@ -57,7 +63,7 @@ const MotivationPage: React.FC<MotivationPageProps> = () => {
 
     // Проверяем конфликт с настройкой "Скрыть создателя"
     if (previousData.advancedSettings?.hideCreator) {
-      setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса');
+      setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса. Для включения мотивации вернитесь на шаг назад и отключите данную настройку');
       // Плавный скролл к ошибке
       setTimeout(() => {
         const errorElement = document.querySelector('[data-validation-error]');

@@ -42,10 +42,27 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
   useEffect(() => {
     const draft = getAIDraft();
     if (draft?.advancedSettings) {
-      setAdvancedSettings({
+      const loadedSettings = {
         ...draft.advancedSettings,
         hideCreator: draft.advancedSettings.hideCreator ?? false
-      });
+      };
+      setAdvancedSettings(loadedSettings);
+      
+      // Если включено скрытие создателя и есть данные мотивации, очищаем мотивацию
+      if (loadedSettings.hideCreator && draft?.motivationData?.motivationEnabled) {
+        const clearedMotivationData = {
+          motivationEnabled: false,
+          motivationType: 'none',
+          motivationDetails: '',
+          motivationConditions: '',
+          rewardDescription: '',
+          rewardValue: ''
+        };
+        // Импортируем функцию сохранения мотивации
+        import('../../utils/surveyDraft').then(({ saveAIMotivationData }) => {
+          saveAIMotivationData(clearedMotivationData);
+        });
+      }
     }
   }, []);
 
