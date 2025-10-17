@@ -1591,6 +1591,13 @@ const TextAnswersBlock: React.FC<{
                   });
                 }
                 
+                // Форматируем yes/no для отображения
+                if (displayValue === 'yes') {
+                  displayValue = 'Да';
+                } else if (displayValue === 'no') {
+                  displayValue = 'Нет';
+                }
+                
                 return displayValue;
               })()}
             </span>
