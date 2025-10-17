@@ -115,12 +115,25 @@ export const HomePage = () => {
   };
 
   return (
-    <div style={{
-      backgroundColor: 'var(--tg-bg-color)',
-      color: 'var(--tg-text-color)',
-      minHeight: '100vh',
-      padding: '0'
-    }}>
+    <>
+      <style>
+        {`
+          @keyframes lightray {
+            0% {
+              left: -100%;
+            }
+            100% {
+              left: 200%;
+            }
+          }
+        `}
+      </style>
+      <div style={{
+        backgroundColor: 'var(--tg-bg-color)',
+        color: 'var(--tg-text-color)',
+        minHeight: '100vh',
+        padding: '0'
+      }}>
       {/* Шапка с приветствием */}
       <div style={{
         padding: '24px 16px 16px 16px'
@@ -167,6 +180,16 @@ export const HomePage = () => {
           }}>
             <span style={{ fontSize: '14px' }}>💎</span>
             <span style={{ fontSize: '12px', fontWeight: '500' }}>Повысить статус</span>
+            <div style={{
+              fontSize: '10px',
+              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontWeight: '500'
+            }}>
+              NEW
+            </div>
           </div>
         </div>
 
@@ -189,12 +212,25 @@ export const HomePage = () => {
             gap: '8px',
             marginTop: '30px',
             transition: 'transform 0.1s ease',
-            marginBottom: '24px'
+            marginBottom: '24px',
+            position: 'relative',
+            overflow: 'hidden'
           }}
           onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
           onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '50%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, hsla(0, 0%, 100%, 0.3), transparent)',
+              animation: 'lightray 1.5s infinite'
+            }}
+          />
           ⚡ Новый опрос
         </button>
       </div>
@@ -895,6 +931,7 @@ export const HomePage = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
