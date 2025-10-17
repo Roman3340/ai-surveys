@@ -1724,9 +1724,9 @@ const MultipleChoiceChart: React.FC<{
         
         const widthPercent = maxCount > 0 ? (count / maxCount) * 100 : 0;
         return (
-          <div key={option} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div key={option} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{ 
-              width: '180px', // Фиксированная ширина
+              width: '160px', // Фиксированная ширина
               fontSize: '11px', 
               color: 'var(--tg-text-color)',
               textAlign: 'left',
@@ -2032,6 +2032,13 @@ const AnswersPopup: React.FC<{
                 month: '2-digit',
                 year: 'numeric'
               });
+            }
+            
+            // Форматируем yes/no для отображения
+            if (displayValue === 'yes') {
+              displayValue = 'Да';
+            } else if (displayValue === 'no') {
+              displayValue = 'Нет';
             }
             
             // Функция для отображения звезд
