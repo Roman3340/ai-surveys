@@ -205,7 +205,7 @@ const SummaryTab: React.FC<{
       {/* Аналитика по вопросам */}
       {questions && questions.length > 0 && questions.map((question, index) => {
         const questionStats = getQuestionStats(question);
-        const aiButtonPosition = Math.ceil(questions.length / 3);
+        const aiButtonPosition = Math.floor(questions.length / 3);
         const shouldShowAIButton = index === aiButtonPosition;
         
         return (
@@ -1438,15 +1438,15 @@ const renderQuestionAnswer = (question: EditableQuestion, value: any) => {
             gap: '8px',
             padding: '8px 16px',
             borderRadius: '8px',
-            backgroundColor: value === 'yes' ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
-            color: value === 'yes' ? 'white' : 'var(--tg-text-color)'
+            backgroundColor: value === 'yes' || value === 'Да' ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
+            color: value === 'yes' || value === 'Да' ? 'white' : 'var(--tg-text-color)'
           }}>
             <div style={{
               width: '16px',
               height: '16px',
               borderRadius: '50%',
-              border: `2px solid ${value === 'yes' ? 'white' : 'var(--tg-hint-color)'}`,
-              backgroundColor: value === 'yes' ? 'white' : 'transparent'
+              border: `2px solid ${value === 'yes' || value === 'Да' ? 'white' : 'var(--tg-hint-color)'}`,
+              backgroundColor: value === 'yes' || value === 'Да' ? 'white' : 'transparent'
             }}>
               <div style={{
                 position: 'absolute',
@@ -1457,7 +1457,7 @@ const renderQuestionAnswer = (question: EditableQuestion, value: any) => {
                 height: '6px',
                 borderRadius: '50%',
                 backgroundColor: 'white',
-                opacity: value === 'yes' ? 1 : 0
+                opacity: value === 'yes' || value === 'Да' ? 1 : 0
               }} />
             </div>
             <span>Да</span>
@@ -1469,15 +1469,15 @@ const renderQuestionAnswer = (question: EditableQuestion, value: any) => {
             gap: '8px',
             padding: '8px 16px',
             borderRadius: '8px',
-            backgroundColor: value === 'no' ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
-            color: value === 'no' ? 'white' : 'var(--tg-text-color)'
+            backgroundColor: value === 'no' || value === 'Нет' ? 'var(--tg-button-color)' : 'var(--tg-section-bg-color)',
+            color: value === 'no' || value === 'Нет' ? 'white' : 'var(--tg-text-color)'
           }}>
             <div style={{
               width: '16px',
               height: '16px',
               borderRadius: '50%',
-              border: `2px solid ${value === 'no' ? 'white' : 'var(--tg-hint-color)'}`,
-              backgroundColor: value === 'no' ? 'white' : 'transparent'
+              border: `2px solid ${value === 'no' || value === 'Нет' ? 'white' : 'var(--tg-hint-color)'}`,
+              backgroundColor: value === 'no' || value === 'Нет' ? 'white' : 'transparent'
             }}>
               <div style={{
                 position: 'absolute',
@@ -1488,7 +1488,7 @@ const renderQuestionAnswer = (question: EditableQuestion, value: any) => {
                 height: '6px',
                 borderRadius: '50%',
                 backgroundColor: 'white',
-                opacity: value === 'no' ? 1 : 0
+                opacity: value === 'no' || value === 'Нет' ? 1 : 0
               }} />
             </div>
             <span>Нет</span>
@@ -1631,7 +1631,7 @@ const SingleChoiceChart: React.FC<{
   return (
     <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
       {/* Круговая диаграмма */}
-      <div style={{ position: 'relative', width: 120, height: 120 }}>
+      <div style={{ position: 'relative', width: 120, height: 120, flexShrink: 0 }}>
         <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
           {(() => {
             let currentAngle = 0;
@@ -1693,7 +1693,8 @@ const SingleChoiceChart: React.FC<{
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                backgroundColor: colors[index % colors.length]
+                backgroundColor: colors[index % colors.length],
+                flexShrink: 0
               }} />
               <span style={{ fontSize: '12px', color: 'var(--tg-text-color)' }}>
                 {option} ({count} | {percentage}%)
@@ -1720,15 +1721,21 @@ const MultipleChoiceChart: React.FC<{
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {options.map((option) => {
-        const count = stats[option] || 0; // Показываем 0 если нет ответов
-        const widthPercent = maxCount > 0 ? (count / maxCount) * 100 : 0; // Процент от доступной ширины
+        const count = stats[option] || 0;
+        // Не показываем варианты с 0 ответов
+        if (count === 0) return null;
+        
+        const widthPercent = maxCount > 0 ? (count / maxCount) * 100 : 0;
         return (
           <div key={option} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ 
-              minWidth: `${maxNameWidth}px`, 
+              width: '180px', // Фиксированная ширина
               fontSize: '11px', 
               color: 'var(--tg-text-color)',
-              textAlign: 'left'
+              textAlign: 'left',
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              lineHeight: '1.2'
             }}>
               {option}
             </div>
