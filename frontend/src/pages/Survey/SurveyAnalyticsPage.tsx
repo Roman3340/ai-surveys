@@ -1715,9 +1715,6 @@ const MultipleChoiceChart: React.FC<{
 }> = ({ stats, options }) => {
   const maxCount = Math.max(...Object.values(stats));
   
-  // Находим максимальную ширину названия для выравнивания
-  const maxNameWidth = Math.max(...options.map(option => option.length * 7 + 20)); // Примерная ширина в пикселях
-  
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {options.map((option) => {
