@@ -1,9 +1,9 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, Clock, Users, CheckCircle, ArrowRight, Play } from 'lucide-react';
+import { Star, CheckCircle, Play } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
-import { saveDraft, saveSettings, saveQuestions } from '../../utils/surveyDraft';
+import { saveDraft } from '../../utils/surveyDraft';
 
 interface TemplateQuestion {
   id: string;
