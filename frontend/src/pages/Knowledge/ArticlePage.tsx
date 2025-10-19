@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Target, Star, BookOpen, CheckCircle, AlertCircle, Lightbulb, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Clock, Target, Star, CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 
 interface ArticleContent {
@@ -323,7 +323,7 @@ const articles: ArticleContent[] = [
 export const ArticlePage = () => {
   const { articleId } = useParams<{ articleId: string }>();
   const navigate = useNavigate();
-  const { hapticFeedback } = useTelegram();
+  const { } = useTelegram();
 
   const article = articles.find(a => a.id === articleId);
 
