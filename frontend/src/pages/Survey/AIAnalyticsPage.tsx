@@ -63,7 +63,7 @@ interface AnalyticsData {
       negative: number;
       neutral: number;
     };
-    response_timeline: Array<{
+    response_timeline?: Array<{
       date: string;
       count: number;
     }>;
@@ -82,6 +82,10 @@ interface AnalyticsData {
     negative: number;
     neutral: number;
   };
+  response_timeline?: Array<{
+    date: string;
+    count: number;
+  }>;
   question_analysis?: Array<{
     question_id: string;
     question_text: string;
@@ -157,12 +161,13 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .survey-title {
-      font-size: 14px;
+      font-size: 12px;
       color: var(--tg-hint-color);
       margin: 4px 0 0 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      max-width: 120px;
     }
 
     .header-actions {
@@ -401,7 +406,7 @@ const AIAnalyticsPage: React.FC = () => {
 
     /* Content */
     .analytics-content {
-      padding: 20px;
+      padding: 16px;
     }
 
     /* Metrics */
@@ -642,6 +647,7 @@ const AIAnalyticsPage: React.FC = () => {
       border-radius: 4px 4px 0 0;
       position: relative;
       min-height: 20px;
+      max-height: 100px;
     }
 
     .chart-bar.positive {
@@ -724,6 +730,60 @@ const AIAnalyticsPage: React.FC = () => {
       font-weight: 500;
     }
 
+    /* Timeline Chart */
+    .timeline-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .timeline-point {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--tg-theme-secondary-bg-color);
+      border-radius: 8px;
+    }
+
+    .timeline-date {
+      font-size: 12px;
+      color: var(--tg-hint-color);
+    }
+
+    .timeline-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--tg-text-color);
+    }
+
+    /* Question Types Stats */
+    .question-types-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .type-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--tg-theme-secondary-bg-color);
+      border-radius: 8px;
+    }
+
+    .type-label {
+      font-size: 12px;
+      color: var(--tg-hint-color);
+    }
+
+    .type-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--tg-text-color);
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .page-header {
@@ -752,6 +812,25 @@ const AIAnalyticsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, hapticFeedback } = useTelegram();
   const [activeTab, setActiveTab] = useState<'metrics' | 'insights' | 'visualizations'>('metrics');
+  const tabsRef = useRef<HTMLDivElement>(null);
+  
+  const handleTabChange = (tab: 'metrics' | 'insights' | 'visualizations') => {
+    setActiveTab(tab);
+    // Прокручиваем к активному табу
+    if (tabsRef.current) {
+      const tabButtons = tabsRef.current.querySelectorAll('.tab-button');
+      const activeButton = Array.from(tabButtons).find(button => 
+        button.classList.contains('active')
+      ) as HTMLElement;
+      if (activeButton) {
+        activeButton.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+  };
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -844,8 +923,14 @@ const AIAnalyticsPage: React.FC = () => {
           setGenerating(false);
           setLoading(true);
           // Небольшая задержка перед перезагрузкой, чтобы данные успели сохраниться
-          setTimeout(() => {
-            loadAnalytics();
+          setTimeout(async () => {
+            await loadAnalytics();
+            setLoading(false);
+            // Принудительно обновляем состояние для отображения данных
+            setAnalyticsData(null);
+            setTimeout(() => {
+              loadAnalytics();
+            }, 100);
           }, 1000);
           if (wsRef.current) {
             wsRef.current.close();
@@ -878,10 +963,11 @@ const AIAnalyticsPage: React.FC = () => {
       setError(null);
       hapticFeedback?.medium?.();
 
-      await aiAnalytics.generateAnalytics(surveyId);
-      
-      // Подключаемся к WebSocket для отслеживания прогресса
+      // Сначала подключаемся к WebSocket
       connectWebSocket();
+      
+      // Затем запускаем генерацию
+      await aiAnalytics.generateAnalytics(surveyId);
     } catch (err) {
       console.error('Ошибка запуска генерации:', err);
       setError('Не удалось запустить генерацию аналитики');
@@ -921,10 +1007,6 @@ const AIAnalyticsPage: React.FC = () => {
               <span className="metric-label">Всего ответов:</span>
               <span className="metric-value">{metrics.total_responses || (visualizations.sentiment_chart?.positive || 0) + (visualizations.sentiment_chart?.negative || 0) + (visualizations.sentiment_chart?.neutral || 0) || 0}</span>
             </div>
-            <div className="metric-item">
-              <span className="metric-label">Завершенность:</span>
-              <span className="metric-value">{metrics.completion_rate ? (metrics.completion_rate * 100).toFixed(1) : '0.0'}%</span>
-            </div>
           </div>
 
           {/* Анализ тональности */}
@@ -953,21 +1035,23 @@ const AIAnalyticsPage: React.FC = () => {
           </div>
 
           {/* Ключевые метрики */}
-          <div className="metric-card">
-            <h3>Ключевые показатели</h3>
-            {metrics.key_metrics?.average_rating && (
-              <div className="metric-item">
-                <span className="metric-label">Средняя оценка:</span>
-                <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}</span>
-              </div>
-            )}
-            {metrics.key_metrics?.satisfaction_score && (
-              <div className="metric-item">
-                <span className="metric-label">Удовлетворенность:</span>
-                <span className="metric-value">{metrics.key_metrics.satisfaction_score}/10</span>
-              </div>
-            )}
-          </div>
+          {(metrics.key_metrics?.average_rating || metrics.key_metrics?.satisfaction_score) && (
+            <div className="metric-card">
+              <h3>Ключевые показатели</h3>
+              {metrics.key_metrics?.average_rating && (
+                <div className="metric-item">
+                  <span className="metric-label">Средняя оценка:</span>
+                  <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}</span>
+                </div>
+              )}
+              {metrics.key_metrics?.satisfaction_score && (
+                <div className="metric-item">
+                  <span className="metric-label">Удовлетворенность:</span>
+                  <span className="metric-value">{metrics.key_metrics.satisfaction_score}/10</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Частые проблемы */}
           {metrics.key_metrics?.most_common_issues && metrics.key_metrics.most_common_issues.length > 0 && (
@@ -1155,6 +1239,40 @@ const AIAnalyticsPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Временная шкала ответов */}
+        {visualizations.response_timeline && visualizations.response_timeline.length > 0 && (
+          <div className="visualization-card">
+            <h3>Временная шкала ответов</h3>
+            <div className="timeline-chart">
+              {visualizations.response_timeline.map((point: { date: string; count: number }, index: number) => (
+                <div key={index} className="timeline-point">
+                  <div className="timeline-date">{point.date}</div>
+                  <div className="timeline-count">{point.count} ответов</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Статистика по типам вопросов */}
+        <div className="visualization-card">
+          <h3>Статистика по типам вопросов</h3>
+          <div className="question-types-stats">
+            <div className="type-stat">
+              <span className="type-label">Короткие ответы:</span>
+              <span className="type-count">{analyticsData?.total_responses || 0}</span>
+            </div>
+            <div className="type-stat">
+              <span className="type-label">Развернутые ответы:</span>
+              <span className="type-count">{analyticsData?.total_responses || 0}</span>
+            </div>
+            <div className="type-stat">
+              <span className="type-label">Выбор из списка:</span>
+              <span className="type-count">{analyticsData?.total_responses || 0}</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
@@ -1271,24 +1389,24 @@ const AIAnalyticsPage: React.FC = () => {
       ) : (
         <>
           {/* Табы */}
-          <div className="analytics-tabs">
+          <div className="analytics-tabs" ref={tabsRef}>
             <button
               className={`tab-button ${activeTab === 'metrics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('metrics')}
+              onClick={() => handleTabChange('metrics')}
             >
               <TrendingUp className="icon" />
               Основные показатели
             </button>
             <button
               className={`tab-button ${activeTab === 'insights' ? 'active' : ''}`}
-              onClick={() => setActiveTab('insights')}
+              onClick={() => handleTabChange('insights')}
             >
               <Lightbulb className="icon" />
               Ценные инсайты
             </button>
             <button
               className={`tab-button ${activeTab === 'visualizations' ? 'active' : ''}`}
-              onClick={() => setActiveTab('visualizations')}
+              onClick={() => handleTabChange('visualizations')}
             >
               <BarChart3 className="icon" />
               Визуализация
