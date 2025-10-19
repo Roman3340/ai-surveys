@@ -1049,7 +1049,11 @@ const AIAnalyticsPage: React.FC = () => {
       const response = await fetch(healthUrl, {
         method: 'GET',
         mode: 'cors',
-        credentials: 'omit'
+        credentials: 'omit',
+        // Для SSL сертификатов добавляем ignore certificate errors
+        headers: {
+          'Accept': 'application/json'
+        }
       });
       
       if (response.ok) {
