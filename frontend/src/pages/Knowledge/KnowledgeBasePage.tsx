@@ -39,7 +39,7 @@ const articles: Article[] = [
     readTime: '4 мин',
     difficulty: 'beginner',
     popularity: 88,
-    color: '#E91E63',
+    color: '#FF9800',
     tags: ['шаблоны', 'быстрый старт', 'эффективность']
   },
   {
@@ -51,7 +51,7 @@ const articles: Article[] = [
     readTime: '7 мин',
     difficulty: 'intermediate',
     popularity: 92,
-    color: '#FFEB3B',
+    color: '#2196F3',
     tags: ['типы', 'выбор', 'эффективность']
   },
   {
@@ -63,7 +63,7 @@ const articles: Article[] = [
     readTime: '6 мин',
     difficulty: 'intermediate',
     popularity: 88,
-    color: '#FF9800',
+    color: '#E91E63',
     tags: ['отклик', 'мотивация', 'стимулы']
   },
   {
@@ -75,7 +75,7 @@ const articles: Article[] = [
     readTime: '8 мин',
     difficulty: 'intermediate',
     popularity: 85,
-    color: '#E91E63',
+    color: '#9C27B0',
     tags: ['анализ', 'данные', 'интерпретация']
   },
   {
@@ -87,7 +87,7 @@ const articles: Article[] = [
     readTime: '4 мин',
     difficulty: 'beginner',
     popularity: 82,
-    color: '#9C27B0',
+    color: '#F44336',
     tags: ['мобильные', 'адаптивность', 'UX']
   },
   {
@@ -99,7 +99,7 @@ const articles: Article[] = [
     readTime: '6 мин',
     difficulty: 'advanced',
     popularity: 78,
-    color: '#F44336',
+    color: '#FF9800',
     tags: ['предвзятость', 'ошибки', 'качество']
   },
   {
@@ -111,7 +111,7 @@ const articles: Article[] = [
     readTime: '5 мин',
     difficulty: 'intermediate',
     popularity: 80,
-    color: '#795548',
+    color: '#607D8B',
     tags: ['сегментация', 'аудитория', 'таргетинг']
   },
   {
@@ -123,7 +123,7 @@ const articles: Article[] = [
     readTime: '3 мин',
     difficulty: 'beginner',
     popularity: 75,
-    color: '#607D8B',
+    color: '#795548',
     tags: ['время', 'планирование', 'эффективность']
   }
 ];
