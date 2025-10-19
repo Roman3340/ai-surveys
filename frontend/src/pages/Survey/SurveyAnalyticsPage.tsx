@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X, Trash2 } from 'lucide-react';
+import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X, Trash2, Download, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { surveyApi, questionApi, aiAnalytics } from '../../services/api';
 import type { SurveyShareResponse } from '../../services/api';
@@ -2195,6 +2195,7 @@ export default function SurveyAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'questions' | 'analytics'>('overview');
   const [analyticsTab, setAnalyticsTab] = useState<'summary' | 'question' | 'user'>('summary');
   const [questions, setQuestions] = useState<EditableQuestion[]>([]);
@@ -2626,6 +2627,60 @@ export default function SurveyAnalyticsPage() {
       hapticFeedback?.light();
       setTimeout(() => setCopied(false), 1500);
     } catch {}
+  };
+
+  const handleDownloadQR = async () => {
+    if (!share?.qr_code || !survey) return;
+    
+    setDownloading(true);
+    hapticFeedback?.light();
+    
+    try {
+      // Создаем canvas для конвертации QR-кода в PNG
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx?.drawImage(img, 0, 0);
+        
+        // Конвертируем в blob и скачиваем
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `survey-qr-${survey.title || 'code'}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }
+        }, 'image/png');
+      };
+      
+      img.src = share.qr_code;
+    } catch (error) {
+      console.error('Ошибка скачивания QR-кода:', error);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleShareTelegram = () => {
+    if (!share?.share_url || !survey) return;
+    
+    hapticFeedback?.light();
+    
+    // Создаем красивое сообщение
+    const shareText = `📊 Пройдите пожалуйста мой опрос: "${survey.title}"\n\n💭 Ваше мнение очень важно для нас! ✨\n\n🔗 Поделиться мнением: ${share.share_url}`;
+    
+    // Открываем Telegram для шаринга
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(share.share_url)}&text=${encodeURIComponent(shareText)}`;
+    window.open(telegramUrl, '_blank');
   };
 
   const getStatusBadge = () => {
@@ -3481,59 +3536,162 @@ export default function SurveyAnalyticsPage() {
 
           {/* Распространение */}
           {survey && (
-            <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 12 }}>
-              <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>Распространение</h3>
-              <div style={{ background: 'var(--tg-bg-color)', borderRadius: 8, padding: 10, marginBottom: 10, wordBreak: 'break-all', fontSize: 12, color: 'var(--tg-hint-color)' }}>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              style={{ 
+                background: 'var(--tg-section-bg-color)', 
+                borderRadius: 16, 
+                padding: 20,
+                border: '1px solid var(--tg-section-separator-color)',
+                marginBottom: 16
+              }}
+            >
+              <h3 style={{ 
+                margin: '0 0 16px 0', 
+                fontSize: 18, 
+                fontWeight: 600,
+                color: 'var(--tg-text-color)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🔗 Распространение
+              </h3>
+              
+              <div style={{ 
+                background: 'var(--tg-bg-color)', 
+                borderRadius: 12, 
+                padding: 12, 
+                marginBottom: 16, 
+                wordBreak: 'break-all', 
+                fontSize: 14, 
+                color: 'var(--tg-hint-color)',
+                fontFamily: 'monospace',
+                border: '1px solid var(--tg-section-separator-color)'
+              }}>
                 {share?.share_url || 'Ссылка будет доступна после публикации опроса'}
               </div>
+              
               {share?.share_url && (
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
                   <button
                     onClick={handleCopy}
                     style={{
                       flex: 1,
-                      background: 'var(--tg-button-color)',
+                      background: copied ? '#34C759' : 'var(--tg-button-color)',
                       color: 'var(--tg-button-text-color)',
                       border: 'none',
-                      borderRadius: 8,
-                      padding: 10,
+                      borderRadius: 12,
+                      padding: 12,
                       fontWeight: 600,
-                      fontSize: 13,
+                      fontSize: 14,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: 6,
+                      gap: 8,
+                      transition: 'all 0.2s ease',
+                      boxShadow: copied ? '0 4px 12px rgba(52, 199, 89, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)'
                     }}
                   >
-                    <Copy size={14} /> {copied ? 'Скопировано' : 'Копировать'}
+                    <Copy size={16} /> {copied ? 'Скопировано!' : 'Копировать'}
                   </button>
                   <button
-                    onClick={() => share && window.open(`https://t.me/share/url?url=${encodeURIComponent(share.share_url)}`, '_blank')}
+                    onClick={handleShareTelegram}
                     style={{
                       flex: 1,
-                      background: '#0088cc',
+                      background: 'linear-gradient(135deg, #0088cc, #0066aa)',
                       color: 'white',
                       border: 'none',
-                      borderRadius: 8,
-                      padding: 10,
+                      borderRadius: 12,
+                      padding: 12,
                       fontWeight: 600,
-                      fontSize: 13,
+                      fontSize: 14,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: 6,
+                      gap: 8,
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 4px 12px rgba(0, 136, 204, 0.3)'
                     }}
                   >
-                    <Share size={14} /> Поделиться
+                    <Share size={16} /> Поделиться
                   </button>
                 </div>
               )}
+              
               {share?.qr_code && (
-                <div style={{ textAlign: 'center', marginTop: 10 }}>
-                  <img src={share.qr_code} alt="QR" style={{ maxWidth: 160, borderRadius: 8, border: '1px solid var(--tg-section-separator-color)' }} />
+                <div style={{ 
+                  textAlign: 'center',
+                  background: 'var(--tg-bg-color)',
+                  borderRadius: 12,
+                  padding: 16,
+                  border: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginBottom: '12px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: 'var(--tg-text-color)'
+                  }}>
+                    <QrCode size={18} />
+                    QR-код
+                  </div>
+                  
+                  <div style={{ marginBottom: '12px' }}>
+                    <img 
+                      src={share.qr_code} 
+                      alt="QR код для опроса" 
+                      style={{ 
+                        maxWidth: 160, 
+                        maxHeight: 160,
+                        borderRadius: 12, 
+                        border: '2px solid var(--tg-section-separator-color)'
+                      }} 
+                    />
+                  </div>
+                  
+                  <p style={{
+                    fontSize: '12px',
+                    color: 'var(--tg-hint-color)',
+                    margin: '0 0 12px 0',
+                    lineHeight: '1.4'
+                  }}>
+                    Отсканируйте QR-код для быстрого доступа
+                  </p>
+                  
+                  <button
+                    onClick={handleDownloadQR}
+                    disabled={downloading}
+                    style={{
+                      width: '100%',
+                      backgroundColor: downloading ? 'var(--tg-hint-color)' : 'var(--tg-button-color)',
+                      color: 'var(--tg-button-text-color)',
+                      border: 'none',
+                      borderRadius: 10,
+                      padding: '10px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: downloading ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    <Download size={14} />
+                    {downloading ? 'Скачивание...' : 'Скачать QR-код'}
+                  </button>
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Настройки опроса */}
