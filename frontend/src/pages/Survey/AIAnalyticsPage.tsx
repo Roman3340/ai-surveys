@@ -63,7 +63,7 @@ interface AnalyticsData {
       negative: number;
       neutral: number;
     };
-    response_timeline?: Array<{
+    response_timeline: Array<{
       date: string;
       count: number;
     }>;
@@ -82,10 +82,6 @@ interface AnalyticsData {
     negative: number;
     neutral: number;
   };
-  response_timeline?: Array<{
-    date: string;
-    count: number;
-  }>;
   question_analysis?: Array<{
     question_id: string;
     question_text: string;
@@ -167,7 +163,7 @@ const AIAnalyticsPage: React.FC = () => {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      max-width: 120px;
+      max-width: 200px;
     }
 
     .header-actions {
@@ -647,7 +643,6 @@ const AIAnalyticsPage: React.FC = () => {
       border-radius: 4px 4px 0 0;
       position: relative;
       min-height: 20px;
-      max-height: 100px;
     }
 
     .chart-bar.positive {
@@ -730,60 +725,6 @@ const AIAnalyticsPage: React.FC = () => {
       font-weight: 500;
     }
 
-    /* Timeline Chart */
-    .timeline-chart {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .timeline-point {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      background: var(--tg-theme-secondary-bg-color);
-      border-radius: 8px;
-    }
-
-    .timeline-date {
-      font-size: 12px;
-      color: var(--tg-hint-color);
-    }
-
-    .timeline-count {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--tg-text-color);
-    }
-
-    /* Question Types Stats */
-    .question-types-stats {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .type-stat {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      background: var(--tg-theme-secondary-bg-color);
-      border-radius: 8px;
-    }
-
-    .type-label {
-      font-size: 12px;
-      color: var(--tg-hint-color);
-    }
-
-    .type-count {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--tg-text-color);
-    }
-
     /* Responsive */
     @media (max-width: 480px) {
       .page-header {
@@ -814,19 +755,17 @@ const AIAnalyticsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'metrics' | 'insights' | 'visualizations'>('metrics');
   const tabsRef = useRef<HTMLDivElement>(null);
   
-  const handleTabChange = (tab: 'metrics' | 'insights' | 'visualizations') => {
+  const handleTabClick = (tab: 'metrics' | 'insights' | 'visualizations') => {
     setActiveTab(tab);
-    // Прокручиваем к активному табу
+    
+    // Прокручиваем табы
     if (tabsRef.current) {
-      const tabButtons = tabsRef.current.querySelectorAll('.tab-button');
-      const tabIndex = tab === 'metrics' ? 0 : tab === 'insights' ? 1 : 2;
-      const targetButton = tabButtons[tabIndex] as HTMLElement;
-      if (targetButton) {
-        targetButton.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'nearest',
-          inline: 'center'
-        });
+      if (tab === 'metrics') {
+        // Прокручиваем влево для первого таба
+        tabsRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+      } else if (tab === 'visualizations') {
+        // Прокручиваем вправо для последнего таба
+        tabsRef.current.scrollTo({ left: tabsRef.current.scrollWidth, behavior: 'smooth' });
       }
     }
   };
@@ -922,14 +861,8 @@ const AIAnalyticsPage: React.FC = () => {
           setGenerating(false);
           setLoading(true);
           // Небольшая задержка перед перезагрузкой, чтобы данные успели сохраниться
-          setTimeout(async () => {
-            await loadAnalytics();
-            setLoading(false);
-            // Принудительно обновляем состояние для отображения данных
-            setAnalyticsData(null);
-            setTimeout(() => {
-              loadAnalytics();
-            }, 100);
+          setTimeout(() => {
+            loadAnalytics();
           }, 1000);
           if (wsRef.current) {
             wsRef.current.close();
@@ -962,11 +895,10 @@ const AIAnalyticsPage: React.FC = () => {
       setError(null);
       hapticFeedback?.medium?.();
 
-      // Сначала подключаемся к WebSocket
-      connectWebSocket();
-      
-      // Затем запускаем генерацию
       await aiAnalytics.generateAnalytics(surveyId);
+      
+      // Подключаемся к WebSocket для отслеживания прогресса
+      connectWebSocket();
     } catch (err) {
       console.error('Ошибка запуска генерации:', err);
       setError('Не удалось запустить генерацию аналитики');
@@ -1004,7 +936,7 @@ const AIAnalyticsPage: React.FC = () => {
             <h3>Общая статистика</h3>
             <div className="metric-item">
               <span className="metric-label">Всего ответов:</span>
-              <span className="metric-value">{metrics.total_responses || 0}</span>
+              <span className="metric-value">{metrics.total_responses || (visualizations.sentiment_chart?.positive || 0) + (visualizations.sentiment_chart?.negative || 0) + (visualizations.sentiment_chart?.neutral || 0) || 0}</span>
             </div>
           </div>
 
@@ -1040,13 +972,13 @@ const AIAnalyticsPage: React.FC = () => {
               {metrics.key_metrics?.average_rating && (
                 <div className="metric-item">
                   <span className="metric-label">Средняя оценка:</span>
-                  <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}</span>
+                  <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}/5</span>
                 </div>
               )}
               {metrics.key_metrics?.satisfaction_score && (
                 <div className="metric-item">
                   <span className="metric-label">Удовлетворенность:</span>
-                  <span className="metric-value">{metrics.key_metrics.satisfaction_score}/10</span>
+                  <span className="metric-value">{metrics.key_metrics.satisfaction_score}%</span>
                 </div>
               )}
             </div>
@@ -1193,15 +1125,15 @@ const AIAnalyticsPage: React.FC = () => {
         <div className="visualization-card">
           <h3>Распределение тональности</h3>
           <div className="sentiment-chart">
-            <div className="chart-bar positive" style={{ height: `${sentimentChart.positive || 0}%` }}>
+            <div className="chart-bar positive" style={{ height: `${Math.max(sentimentChart.positive || 0, 5)}%` }}>
               <span className="bar-label">Позитивные</span>
               <span className="bar-value">{sentimentChart.positive || 0}%</span>
             </div>
-            <div className="chart-bar neutral" style={{ height: `${sentimentChart.neutral || 0}%` }}>
+            <div className="chart-bar neutral" style={{ height: `${Math.max(sentimentChart.neutral || 0, 5)}%` }}>
               <span className="bar-label">Нейтральные</span>
               <span className="bar-value">{sentimentChart.neutral || 0}%</span>
             </div>
-            <div className="chart-bar negative" style={{ height: `${sentimentChart.negative || 0}%` }}>
+            <div className="chart-bar negative" style={{ height: `${Math.max(sentimentChart.negative || 0, 5)}%` }}>
               <span className="bar-label">Негативные</span>
               <span className="bar-value">{sentimentChart.negative || 0}%</span>
             </div>
@@ -1238,7 +1170,6 @@ const AIAnalyticsPage: React.FC = () => {
             </div>
           </div>
         )}
-
       </div>
     );
   };
@@ -1358,21 +1289,21 @@ const AIAnalyticsPage: React.FC = () => {
           <div className="analytics-tabs" ref={tabsRef}>
             <button
               className={`tab-button ${activeTab === 'metrics' ? 'active' : ''}`}
-              onClick={() => handleTabChange('metrics')}
+              onClick={() => handleTabClick('metrics')}
             >
               <TrendingUp className="icon" />
               Основные показатели
             </button>
             <button
               className={`tab-button ${activeTab === 'insights' ? 'active' : ''}`}
-              onClick={() => handleTabChange('insights')}
+              onClick={() => handleTabClick('insights')}
             >
               <Lightbulb className="icon" />
               Ценные инсайты
             </button>
             <button
               className={`tab-button ${activeTab === 'visualizations' ? 'active' : ''}`}
-              onClick={() => handleTabChange('visualizations')}
+              onClick={() => handleTabClick('visualizations')}
             >
               <BarChart3 className="icon" />
               Визуализация
