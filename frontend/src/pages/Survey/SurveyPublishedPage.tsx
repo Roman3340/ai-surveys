@@ -38,6 +38,11 @@ export const SurveyPublishedPage = () => {
     }
   }, [surveyId]);
 
+  // Скроллим наверх при загрузке страницы
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const loadData = async () => {
     if (!surveyId) return;
     
@@ -73,12 +78,26 @@ export const SurveyPublishedPage = () => {
     
     hapticFeedback?.light();
     
-    // Создаем красивое сообщение с текстом-ссылкой вместо обычной ссылки
-    const shareText = `📊 Пройдите пожалуйста мой опрос: "${surveyData.title}"\n\n💭 Ваше мнение очень важно для нас! ✨\n\n[Поделиться мнением](${shareData.share_url})`;
+    // Создаем красивое сообщение без лишней ссылки
+    const shareText = `📊 Пройдите пожалуйста мой опрос: "${surveyData.title}"\n\n💭 Ваше мнение очень важно для нас! ✨\n\n🔗 Поделиться мнением: ${shareData.share_url}`;
     
-    // Открываем Telegram для шаринга
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareData.share_url)}&text=${encodeURIComponent(shareText)}`;
-    window.open(telegramUrl, '_blank');
+    // Используем Web Share API если доступен (не закрывает мини-апп)
+    if (navigator.share) {
+      navigator.share({
+        title: `Опрос: ${surveyData.title}`,
+        text: shareText,
+        url: shareData.share_url
+      }).catch(console.error);
+    } else {
+      // Fallback: копируем в буфер обмена
+      navigator.clipboard.writeText(shareText).then(() => {
+        alert('Текст скопирован в буфер обмена! Теперь можете вставить его в Telegram.');
+      }).catch(() => {
+        // Если не работает, открываем Telegram
+        const telegramUrl = `https://t.me/share/url?text=${encodeURIComponent(shareText)}`;
+        window.open(telegramUrl, '_blank');
+      });
+    }
   };
 
   const handleDownloadQR = async () => {
