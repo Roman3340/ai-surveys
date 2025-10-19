@@ -845,7 +845,10 @@ const AIAnalyticsPage: React.FC = () => {
       wsRef.current.close();
     }
 
-    const wsUrl = `ws://localhost:8000/ws/analytics-progress/${surveyId}?telegram_id=${user?.id}`;
+    // Получаем базовый URL из переменных окружения или используем localhost
+    const baseUrl = window.location.hostname === 'localhost' ? 'ws://localhost:8000' : `wss://${window.location.hostname}`;
+    const wsUrl = `${baseUrl}/ws/analytics-progress/${surveyId}?telegram_id=${user?.id}`;
+    console.log('Подключаемся к WebSocket:', wsUrl);
     wsRef.current = new WebSocket(wsUrl);
 
     wsRef.current.onopen = () => {
@@ -854,25 +857,31 @@ const AIAnalyticsPage: React.FC = () => {
 
     wsRef.current.onmessage = (event) => {
       try {
+        console.log('WebSocket сообщение получено:', event.data);
         const progressData: ProgressData = JSON.parse(event.data);
+        console.log('Обработанные данные прогресса:', progressData);
         setProgress(progressData);
 
         if (progressData.status === 'completed') {
+          console.log('Генерация завершена, перезагружаем аналитику');
           setGenerating(false);
           setLoading(true);
           // Небольшая задержка перед перезагрузкой, чтобы данные успели сохраниться
           setTimeout(() => {
             loadAnalytics();
-          }, 1000);
+          }, 2000);
           if (wsRef.current) {
             wsRef.current.close();
           }
         } else if (progressData.status === 'error') {
+          console.log('Ошибка генерации:', progressData.error);
           setGenerating(false);
           setError(progressData.error || 'Ошибка генерации');
           if (wsRef.current) {
             wsRef.current.close();
           }
+        } else {
+          console.log('Обновление прогресса:', progressData.progress + '%', progressData.message);
         }
       } catch (err) {
         console.error('Ошибка парсинга WebSocket сообщения:', err);
@@ -881,10 +890,15 @@ const AIAnalyticsPage: React.FC = () => {
 
     wsRef.current.onerror = (error) => {
       console.error('WebSocket ошибка:', error);
+      setError('Ошибка подключения к серверу');
     };
 
-    wsRef.current.onclose = () => {
-      console.log('WebSocket отключен');
+    wsRef.current.onclose = (event) => {
+      console.log('WebSocket отключен:', event.code, event.reason);
+      if (event.code !== 1000 && event.code !== 1001) {
+        // Если это не нормальное закрытие, показываем ошибку
+        setError('Соединение с сервером потеряно');
+      }
     };
   };
 
@@ -935,8 +949,8 @@ const AIAnalyticsPage: React.FC = () => {
           <div className="metric-card">
             <h3>Общая статистика</h3>
             <div className="metric-item">
-              <span className="metric-label">Всего ответов:</span>
-              <span className="metric-value">{metrics.total_responses || (visualizations.sentiment_chart?.positive || 0) + (visualizations.sentiment_chart?.negative || 0) + (visualizations.sentiment_chart?.neutral || 0) || 0}</span>
+              <span className="metric-label">Прохождений опроса:</span>
+              <span className="metric-value">{metrics.total_responses || 0}</span>
             </div>
           </div>
 
@@ -947,19 +961,19 @@ const AIAnalyticsPage: React.FC = () => {
               <div className="sentiment-bar positive">
                 <div className="sentiment-label">Позитивные</div>
                 <div className="sentiment-value">
-                  {visualizations.sentiment_chart?.positive || metrics.sentiment_analysis?.positive_percentage || 0}%
+                  {metrics.sentiment_analysis?.positive_percentage || visualizations.sentiment_chart?.positive || 0}%
                 </div>
               </div>
               <div className="sentiment-bar neutral">
                 <div className="sentiment-label">Нейтральные</div>
                 <div className="sentiment-value">
-                  {visualizations.sentiment_chart?.neutral || metrics.sentiment_analysis?.neutral_percentage || 0}%
+                  {metrics.sentiment_analysis?.neutral_percentage || visualizations.sentiment_chart?.neutral || 0}%
                 </div>
               </div>
               <div className="sentiment-bar negative">
                 <div className="sentiment-label">Негативные</div>
                 <div className="sentiment-value">
-                  {visualizations.sentiment_chart?.negative || metrics.sentiment_analysis?.negative_percentage || 0}%
+                  {metrics.sentiment_analysis?.negative_percentage || visualizations.sentiment_chart?.negative || 0}%
                 </div>
               </div>
             </div>
