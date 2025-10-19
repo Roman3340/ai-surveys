@@ -1046,16 +1046,24 @@ const AIAnalyticsPage: React.FC = () => {
       console.log('Проверяем доступность сервера:', healthUrl);
       console.log('Протокол страницы:', window.location.protocol);
       
-      const response = await fetch(healthUrl);
+      const response = await fetch(healthUrl, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      
       if (response.ok) {
         console.log('Сервер доступен, подключаемся к WebSocket...');
         connectWebSocket();
       } else {
-        setError('Сервер недоступен (HTTP ' + response.status + '). Запустите бэкенд: cd backend && python run_api.py');
+        console.error('Health check failed:', response.status, response.statusText);
+        setError(`Сервер недоступен (HTTP ${response.status}). Проверьте, что бэкенд запущен с SSL сертификатами.`);
       }
     } catch (err) {
       console.error('Ошибка проверки сервера:', err);
-      setError('Не удается подключиться к серверу. Убедитесь, что бэкенд запущен на порту 8000. Команда: cd backend && python run_api.py');
+      // Попробуем подключиться к WebSocket напрямую, если health check не работает
+      console.log('Health check не работает, пробуем подключиться к WebSocket напрямую...');
+      connectWebSocket();
     }
   };
 
@@ -1123,19 +1131,31 @@ const AIAnalyticsPage: React.FC = () => {
               <div className="sentiment-bar positive">
                 <div className="sentiment-label">Позитивные</div>
                 <div className="sentiment-value">
-                  {metrics.sentiment_analysis?.positive_percentage || visualizations.sentiment_chart?.positive || 0}%
+                  {metrics.sentiment_analysis?.positive_percentage !== null && metrics.sentiment_analysis?.positive_percentage !== undefined 
+                    ? `${metrics.sentiment_analysis.positive_percentage}%`
+                    : visualizations.sentiment_chart?.positive !== null && visualizations.sentiment_chart?.positive !== undefined
+                    ? `${visualizations.sentiment_chart.positive}%`
+                    : 'Н/Д'}
                 </div>
               </div>
               <div className="sentiment-bar neutral">
                 <div className="sentiment-label">Нейтральные</div>
                 <div className="sentiment-value">
-                  {metrics.sentiment_analysis?.neutral_percentage || visualizations.sentiment_chart?.neutral || 0}%
+                  {metrics.sentiment_analysis?.neutral_percentage !== null && metrics.sentiment_analysis?.neutral_percentage !== undefined 
+                    ? `${metrics.sentiment_analysis.neutral_percentage}%`
+                    : visualizations.sentiment_chart?.neutral !== null && visualizations.sentiment_chart?.neutral !== undefined
+                    ? `${visualizations.sentiment_chart.neutral}%`
+                    : 'Н/Д'}
                 </div>
               </div>
               <div className="sentiment-bar negative">
                 <div className="sentiment-label">Негативные</div>
                 <div className="sentiment-value">
-                  {metrics.sentiment_analysis?.negative_percentage || visualizations.sentiment_chart?.negative || 0}%
+                  {metrics.sentiment_analysis?.negative_percentage !== null && metrics.sentiment_analysis?.negative_percentage !== undefined 
+                    ? `${metrics.sentiment_analysis.negative_percentage}%`
+                    : visualizations.sentiment_chart?.negative !== null && visualizations.sentiment_chart?.negative !== undefined
+                    ? `${visualizations.sentiment_chart.negative}%`
+                    : 'Н/Д'}
                 </div>
               </div>
             </div>
@@ -1307,15 +1327,15 @@ const AIAnalyticsPage: React.FC = () => {
           <div className="sentiment-chart">
             <div className="chart-bar positive" style={{ height: `${Math.max(sentimentChart.positive || 0, 5)}%` }}>
               <span className="bar-label">Позитивные</span>
-              <span className="bar-value">{sentimentChart.positive || 0}%</span>
+              <span className="bar-value">{sentimentChart.positive !== null && sentimentChart.positive !== undefined ? `${sentimentChart.positive}%` : 'Н/Д'}</span>
             </div>
             <div className="chart-bar neutral" style={{ height: `${Math.max(sentimentChart.neutral || 0, 5)}%` }}>
               <span className="bar-label">Нейтральные</span>
-              <span className="bar-value">{sentimentChart.neutral || 0}%</span>
+              <span className="bar-value">{sentimentChart.neutral !== null && sentimentChart.neutral !== undefined ? `${sentimentChart.neutral}%` : 'Н/Д'}</span>
             </div>
             <div className="chart-bar negative" style={{ height: `${Math.max(sentimentChart.negative || 0, 5)}%` }}>
               <span className="bar-label">Негативные</span>
-              <span className="bar-value">{sentimentChart.negative || 0}%</span>
+              <span className="bar-value">{sentimentChart.negative !== null && sentimentChart.negative !== undefined ? `${sentimentChart.negative}%` : 'Н/Д'}</span>
             </div>
           </div>
         </div>
