@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { surveyApi, questionApi } from '../../services/api';
+import { surveyApi, questionApi, aiAnalytics } from '../../services/api';
 import type { SurveyShareResponse } from '../../services/api';
 import type { Survey, SurveySettings, QuestionType } from '../../types';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -322,33 +322,47 @@ const SummaryTab: React.FC<{
                 
                 <button
                   onClick={() => {
-                    // Заглушка - пока ничего не делает
-                    console.log('ИИ аналитика - заглушка');
+                    hapticFeedback?.impactOccurred?.('medium');
+                    if (aiAnalyticsStatus === 'generating') {
+                      // Если генерируется, показываем уведомление
+                      return;
+                    }
+                    navigate(`/survey/${surveyId}/ai-analytics`);
                   }}
+                  disabled={aiAnalyticsStatus === 'generating'}
                   style={{
                     width: '100%',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: aiAnalyticsStatus === 'generating' 
+                      ? 'linear-gradient(135deg, #6c757d 0%, #495057 100%)'
+                      : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     backgroundSize: '200% 200%',
-                    animation: 'gradientShift 3s ease infinite',
+                    animation: aiAnalyticsStatus === 'generating' ? 'none' : 'gradientShift 3s ease infinite',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
                     padding: '16px 24px',
                     fontSize: '16px',
                     fontWeight: '600',
-                    cursor: 'pointer',
+                    cursor: aiAnalyticsStatus === 'generating' ? 'not-allowed' : 'pointer',
                     position: 'relative',
                     overflow: 'hidden',
-                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                    transition: 'all 0.3s ease'
+                    boxShadow: aiAnalyticsStatus === 'generating' 
+                      ? '0 2px 8px rgba(108, 117, 125, 0.3)'
+                      : '0 4px 15px rgba(102, 126, 234, 0.4)',
+                    transition: 'all 0.3s ease',
+                    opacity: aiAnalyticsStatus === 'generating' ? 0.7 : 1
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                    if (aiAnalyticsStatus !== 'generating') {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                    if (aiAnalyticsStatus !== 'generating') {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                    }
                   }}
                 >
                   <div style={{
@@ -363,7 +377,9 @@ const SummaryTab: React.FC<{
                     opacity: 0
                   }} />
                   <span style={{ position: 'relative', zIndex: 1 }}>
-                    🤖 Получить ИИ аналитику
+                    {aiAnalyticsStatus === 'exists' ? '👁️ Посмотреть ИИ аналитику' : 
+                     aiAnalyticsStatus === 'generating' ? '⏳ Генерируется...' :
+                     '🤖 Получить ИИ аналитику'}
                   </span>
                 </button>
 
@@ -2135,6 +2151,7 @@ const AnswersPopup: React.FC<{
 
 export default function SurveyAnalyticsPage() {
   const { surveyId } = useParams();
+  const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
 
   const [survey, setSurvey] = useState<Survey | null>(null);
@@ -2158,8 +2175,28 @@ export default function SurveyAnalyticsPage() {
   const [deletedQuestions, setDeletedQuestions] = useState<string[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
   const [settingsValidationErrors, setSettingsValidationErrors] = useState<Record<string, string>>({});
+  const [aiAnalyticsStatus, setAiAnalyticsStatus] = useState<'not_found' | 'exists' | 'generating' | 'loading'>('loading');
 
   useStableBackButton({ targetRoute: '/' });
+
+  // Проверяем статус ИИ аналитики
+  const checkAiAnalyticsStatus = async () => {
+    if (!surveyId) return;
+    
+    try {
+      const response = await aiAnalytics.getAnalyticsStatus(surveyId);
+      if (response.status === 'completed') {
+        setAiAnalyticsStatus('exists');
+      } else if (response.status === 'generating' || response.status === 'in_progress') {
+        setAiAnalyticsStatus('generating');
+      } else {
+        setAiAnalyticsStatus('not_found');
+      }
+    } catch (error) {
+      console.error('Ошибка проверки статуса ИИ аналитики:', error);
+      setAiAnalyticsStatus('not_found');
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -2176,6 +2213,10 @@ export default function SurveyAnalyticsPage() {
         setStats(st as any);
         setEditedSettings(s.settings);
         setEditedMaxParticipants(s.maxParticipants?.toString() || '');
+        
+        // Проверяем статус ИИ аналитики
+        await checkAiAnalyticsStatus();
+        
         setLoading(false);
       } catch (e) {
         console.error(e);

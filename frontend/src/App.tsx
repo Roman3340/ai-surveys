@@ -15,6 +15,7 @@ import SurveyAnalyticsPage from './pages/Survey/SurveyAnalyticsPage';
 import SurveyInvitePage from './pages/Survey/SurveyInvitePage';
 import SurveyTakePage from './pages/Survey/SurveyTakePage';
 import SurveyCompletedPage from './pages/Survey/SurveyCompletedPage';
+import AIAnalyticsPage from './pages/Survey/AIAnalyticsPage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
@@ -43,6 +44,7 @@ function AppRoutes() {
       <Route path="/survey/create/ai/advanced-settings" element={<AIAdvancedSettingsPage />} />
       <Route path="/survey/published" element={<SurveyPublishedPage />} />
       <Route path="/survey/:surveyId" element={<SurveyAnalyticsPage />} />
+      <Route path="/survey/:surveyId/ai-analytics" element={<AIAnalyticsPage />} />
       <Route path="/survey/:surveyId/invite" element={<SurveyInvitePage />} />
       <Route path="/survey/:surveyId/take" element={<SurveyTakePage />} />
       <Route path="/survey/:surveyId/completed" element={<SurveyCompletedPage />} />

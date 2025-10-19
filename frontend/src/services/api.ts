@@ -199,5 +199,28 @@ export const questionApi = {
 
 };
 
+// ИИ Аналитика
+export const aiAnalytics = {
+  async getAnalytics(surveyId: string) {
+    return api.get(`/surveys/${surveyId}/ai-analytics`);
+  },
+
+  async generateAnalytics(surveyId: string) {
+    return api.post(`/surveys/${surveyId}/ai-analytics/generate`);
+  },
+
+  async deleteAnalytics(surveyId: string) {
+    return api.delete(`/surveys/${surveyId}/ai-analytics`);
+  },
+
+  async getAnalyticsStatus(surveyId: string) {
+    return api.get(`/surveys/${surveyId}/ai-analytics/status`);
+  },
+
+  async exportAnalytics(surveyId: string, format: string = 'json') {
+    return api.get(`/surveys/${surveyId}/ai-analytics/export?format=${format}`);
+  }
+};
+
 // Обработка ошибок
 export default api;
