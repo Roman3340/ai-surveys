@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -128,6 +129,7 @@ const categories = [
 ];
 
 export const SurveyTemplatesPage = () => {
+  const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -167,9 +169,7 @@ export const SurveyTemplatesPage = () => {
 
   const handleTemplateSelect = (template: SurveyTemplate) => {
     hapticFeedback?.light();
-    // TODO: Реализовать создание опроса из шаблона
-    console.log('Выбран шаблон:', template.title);
-    // navigate(`/survey/create?template=${template.id}`);
+    navigate(`/templates/${template.id}`);
   };
 
   const getDifficultyColor = (difficulty: string) => {
