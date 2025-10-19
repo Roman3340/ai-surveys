@@ -1590,55 +1590,64 @@ const TextAnswersBlock: React.FC<{
   return (
     <div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {answers.map((answer, index) => (
-          <div key={index} style={{ 
-            padding: '12px', 
-            backgroundColor: 'var(--tg-bg-color)', 
-            borderRadius: '8px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}>
-            <div style={{ 
-              fontSize: '13px', 
-              color: 'var(--tg-text-color)',
-              lineHeight: '1.4',
-              wordBreak: 'break-word'
+        {answers.map((answer, index) => {
+          // Определяем, нужно ли показывать username в одной строке с ответом
+          const showUsernameInline = questionType && ['yes_no', 'date', 'number'].includes(questionType);
+          
+          return (
+            <div key={index} style={{ 
+              padding: '12px', 
+              backgroundColor: 'var(--tg-bg-color)', 
+              borderRadius: '8px',
+              display: 'flex',
+              flexDirection: showUsernameInline ? 'row' : 'column',
+              justifyContent: showUsernameInline ? 'space-between' : 'flex-start',
+              alignItems: showUsernameInline ? 'center' : 'stretch',
+              gap: showUsernameInline ? '8px' : '8px'
             }}>
-              {(() => {
-                let displayValue = answer.value || answer;
-                
-                // Форматируем дату если это дата
-                if (typeof displayValue === 'string' && displayValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                  const date = new Date(displayValue);
-                  displayValue = date.toLocaleDateString('ru-RU', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                  });
-                }
-                
-                // Форматируем yes/no для отображения
-                if (displayValue === 'yes') {
-                  displayValue = 'Да';
-                } else if (displayValue === 'no') {
-                  displayValue = 'Нет';
-                }
-                
-                return displayValue;
-              })()}
-            </div>
-            {!isAnonymous && (
               <div style={{ 
-                display: 'flex', 
-                justifyContent: (questionType && ['yes_no', 'date', 'number'].includes(questionType)) ? 'flex-end' : 'center',
-                alignItems: 'center'
+                fontSize: '13px', 
+                color: 'var(--tg-text-color)',
+                lineHeight: '1.4',
+                wordBreak: 'break-word',
+                flex: showUsernameInline ? 1 : 'none'
               }}>
-                {renderUserLink(answer.user)}
+                {(() => {
+                  let displayValue = answer.value || answer;
+                  
+                  // Форматируем дату если это дата
+                  if (typeof displayValue === 'string' && displayValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    const date = new Date(displayValue);
+                    displayValue = date.toLocaleDateString('ru-RU', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric'
+                    });
+                  }
+                  
+                  // Форматируем yes/no для отображения
+                  if (displayValue === 'yes') {
+                    displayValue = 'Да';
+                  } else if (displayValue === 'no') {
+                    displayValue = 'Нет';
+                  }
+                  
+                  return displayValue;
+                })()}
               </div>
-            )}
-          </div>
-        ))}
+              {!isAnonymous && (
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: showUsernameInline ? 'flex-end' : 'center',
+                  alignItems: 'center',
+                  flexShrink: 0
+                }}>
+                  {renderUserLink(answer.user)}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       {hasMore && (
         <button
