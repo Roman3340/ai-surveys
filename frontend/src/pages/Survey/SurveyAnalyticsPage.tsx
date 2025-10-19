@@ -2675,11 +2675,11 @@ export default function SurveyAnalyticsPage() {
     
     hapticFeedback?.light();
     
-    // Создаем красивое сообщение
-    const shareText = `📊 Пройдите пожалуйста мой опрос: "${survey.title}"\n\n💭 Ваше мнение очень важно для нас! ✨\n\n🔗 Поделиться мнением: ${share.share_url}`;
+    // Создаем красивое сообщение без ссылки в тексте
+    const shareText = `📊 Пройдите пожалуйста мой опрос: "${survey.title}"\n\n💭 Ваше мнение очень важно для нас! ✨`;
     
-    // Открываем Telegram для шаринга (убираем url параметр, чтобы не дублировать ссылку)
-    const telegramUrl = `https://t.me/share/url?text=${encodeURIComponent(shareText)}`;
+    // Открываем Telegram для шаринга (ссылка будет добавлена автоматически)
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(share.share_url)}&text=${encodeURIComponent(shareText)}`;
     window.open(telegramUrl, '_blank');
   };
 
