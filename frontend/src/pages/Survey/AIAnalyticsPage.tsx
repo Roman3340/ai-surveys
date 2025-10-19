@@ -819,11 +819,10 @@ const AIAnalyticsPage: React.FC = () => {
     // Прокручиваем к активному табу
     if (tabsRef.current) {
       const tabButtons = tabsRef.current.querySelectorAll('.tab-button');
-      const activeButton = Array.from(tabButtons).find(button => 
-        button.classList.contains('active')
-      ) as HTMLElement;
-      if (activeButton) {
-        activeButton.scrollIntoView({ 
+      const tabIndex = tab === 'metrics' ? 0 : tab === 'insights' ? 1 : 2;
+      const targetButton = tabButtons[tabIndex] as HTMLElement;
+      if (targetButton) {
+        targetButton.scrollIntoView({ 
           behavior: 'smooth', 
           block: 'nearest',
           inline: 'center'
@@ -1005,7 +1004,7 @@ const AIAnalyticsPage: React.FC = () => {
             <h3>Общая статистика</h3>
             <div className="metric-item">
               <span className="metric-label">Всего ответов:</span>
-              <span className="metric-value">{metrics.total_responses || (visualizations.sentiment_chart?.positive || 0) + (visualizations.sentiment_chart?.negative || 0) + (visualizations.sentiment_chart?.neutral || 0) || 0}</span>
+              <span className="metric-value">{metrics.total_responses || 0}</span>
             </div>
           </div>
 
@@ -1240,39 +1239,6 @@ const AIAnalyticsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Временная шкала ответов */}
-        {visualizations.response_timeline && visualizations.response_timeline.length > 0 && (
-          <div className="visualization-card">
-            <h3>Временная шкала ответов</h3>
-            <div className="timeline-chart">
-              {visualizations.response_timeline.map((point: { date: string; count: number }, index: number) => (
-                <div key={index} className="timeline-point">
-                  <div className="timeline-date">{point.date}</div>
-                  <div className="timeline-count">{point.count} ответов</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Статистика по типам вопросов */}
-        <div className="visualization-card">
-          <h3>Статистика по типам вопросов</h3>
-          <div className="question-types-stats">
-            <div className="type-stat">
-              <span className="type-label">Короткие ответы:</span>
-              <span className="type-count">{analyticsData?.total_responses || 0}</span>
-            </div>
-            <div className="type-stat">
-              <span className="type-label">Развернутые ответы:</span>
-              <span className="type-count">{analyticsData?.total_responses || 0}</span>
-            </div>
-            <div className="type-stat">
-              <span className="type-label">Выбор из списка:</span>
-              <span className="type-count">{analyticsData?.total_responses || 0}</span>
-            </div>
-          </div>
-        </div>
       </div>
     );
   };
