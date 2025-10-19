@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
+import { Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 
 interface SurveyTemplate {
@@ -128,7 +128,6 @@ const categories = [
 ];
 
 export const SurveyTemplatesPage = () => {
-  const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');

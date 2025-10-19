@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { ArrowLeft, Clock, Target, Star, CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
+import { Clock, Target, Star, CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 
 interface ArticleContent {
