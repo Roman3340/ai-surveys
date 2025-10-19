@@ -18,20 +18,21 @@ import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { surveyApi, aiAnalytics } from '../../services/api';
 
 interface AnalyticsData {
-  metrics?: {
-    total_responses: number;
-    completion_rate: number;
-    sentiment_analysis: {
-      positive_percentage: number;
-      negative_percentage: number;
-      neutral_percentage: number;
-    };
-    key_metrics: {
-      average_rating: number | null;
-      most_common_issues: string[];
-      satisfaction_score: number;
-    };
+  // Основные метрики
+  total_responses?: number;
+  completion_rate?: number;
+  sentiment_analysis?: {
+    positive_percentage: number;
+    negative_percentage: number;
+    neutral_percentage: number;
   };
+  key_metrics?: {
+    average_rating: number | null;
+    most_common_issues: string[];
+    satisfaction_score: number;
+  };
+  
+  // Инсайты
   insights?: Array<{
     type: string;
     title: string;
@@ -40,6 +41,22 @@ interface AnalyticsData {
     confidence: number;
     data: any;
   }>;
+  
+  // Критические проблемы и возможности
+  critical_problem?: {
+    title: string;
+    description: string;
+    priority: string;
+    confidence: number;
+  };
+  opportunity?: {
+    title: string;
+    description: string;
+    priority: string;
+    confidence: number;
+  };
+  
+  // Визуализации
   visualizations?: {
     sentiment_chart: {
       positive: number;
@@ -58,6 +75,20 @@ interface AnalyticsData {
       key_themes: string[];
     }>;
   };
+  
+  // Прямые данные для визуализаций
+  sentiment_chart?: {
+    positive: number;
+    negative: number;
+    neutral: number;
+  };
+  question_analysis?: Array<{
+    question_id: string;
+    question_text: string;
+    response_rate: number;
+    sentiment: string;
+    key_themes: string[];
+  }>;
 }
 
 interface ProgressData {
@@ -74,8 +105,8 @@ const AIAnalyticsPage: React.FC = () => {
     /* AI Analytics Page Styles */
     .ai-analytics-page {
       min-height: 100vh;
-      background: var(--tg-theme-bg-color);
-      color: var(--tg-theme-text-color);
+      background: var(--tg-bg-color);
+      color: var(--tg-text-color);
     }
 
     /* Header */
@@ -83,8 +114,8 @@ const AIAnalyticsPage: React.FC = () => {
       display: flex;
       align-items: center;
       padding: 16px;
-      background: var(--tg-theme-secondary-bg-color);
-      border-bottom: 1px solid var(--tg-theme-section-separator-color);
+      background: var(--tg-section-bg-color);
+      border-bottom: 1px solid var(--tg-section-separator-color);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -104,13 +135,13 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .back-button:hover {
-      background: var(--tg-theme-hint-color);
+      background: var(--tg-hint-color);
     }
 
     .back-button .icon {
       width: 20px;
       height: 20px;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     .header-content {
@@ -122,12 +153,12 @@ const AIAnalyticsPage: React.FC = () => {
       font-size: 18px;
       font-weight: 600;
       margin: 0;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     .survey-title {
       font-size: 14px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
       margin: 4px 0 0 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -146,8 +177,8 @@ const AIAnalyticsPage: React.FC = () => {
       width: 40px;
       height: 40px;
       border: none;
-      background: var(--tg-theme-button-color);
-      color: var(--tg-theme-button-text-color);
+      background: var(--tg-button-color);
+      color: var(--tg-button-text-color);
       border-radius: 8px;
       cursor: pointer;
       transition: opacity 0.2s;
@@ -209,7 +240,7 @@ const AIAnalyticsPage: React.FC = () => {
 
     .loading-text {
       font-size: 16px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
     }
 
     /* Generating State */
@@ -229,7 +260,7 @@ const AIAnalyticsPage: React.FC = () => {
     .generating-spinner .spinner-icon {
       width: 48px;
       height: 48px;
-      color: var(--tg-theme-button-color);
+      color: var(--tg-button-color);
       animation: pulse 2s ease-in-out infinite;
     }
 
@@ -240,14 +271,14 @@ const AIAnalyticsPage: React.FC = () => {
 
     .generating-text {
       font-size: 16px;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
       margin-bottom: 16px;
     }
 
     .progress-bar {
       width: 200px;
       height: 4px;
-      background: var(--tg-theme-hint-color);
+      background: var(--tg-hint-color);
       border-radius: 2px;
       overflow: hidden;
       margin-bottom: 16px;
@@ -255,14 +286,14 @@ const AIAnalyticsPage: React.FC = () => {
 
     .progress-fill {
       height: 100%;
-      background: var(--tg-theme-button-color);
+      background: var(--tg-button-color);
       border-radius: 2px;
       transition: width 0.3s ease;
     }
 
     .generating-note {
       font-size: 14px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
     }
 
     /* Empty State */
@@ -278,7 +309,7 @@ const AIAnalyticsPage: React.FC = () => {
     .empty-icon {
       width: 64px;
       height: 64px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
       margin-bottom: 16px;
     }
 
@@ -286,12 +317,12 @@ const AIAnalyticsPage: React.FC = () => {
       font-size: 18px;
       font-weight: 600;
       margin: 0 0 8px 0;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     .empty-state p {
       font-size: 14px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
       margin: 0 0 24px 0;
     }
 
@@ -300,8 +331,8 @@ const AIAnalyticsPage: React.FC = () => {
       align-items: center;
       gap: 8px;
       padding: 12px 24px;
-      background: var(--tg-theme-button-color);
-      color: var(--tg-theme-button-text-color);
+      background: var(--tg-button-color);
+      color: var(--tg-button-text-color);
       border: none;
       border-radius: 8px;
       font-size: 16px;
@@ -327,8 +358,8 @@ const AIAnalyticsPage: React.FC = () => {
     /* Tabs */
     .analytics-tabs {
       display: flex;
-      background: var(--tg-theme-secondary-bg-color);
-      border-bottom: 1px solid var(--tg-theme-section-separator-color);
+      background: var(--tg-section-bg-color);
+      border-bottom: 1px solid var(--tg-section-separator-color);
       overflow-x: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
@@ -345,7 +376,7 @@ const AIAnalyticsPage: React.FC = () => {
       padding: 12px 16px;
       border: none;
       background: transparent;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
@@ -355,12 +386,12 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .tab-button:hover {
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     .tab-button.active {
-      color: var(--tg-theme-button-color);
-      border-bottom-color: var(--tg-theme-button-color);
+      color: var(--tg-button-color);
+      border-bottom-color: var(--tg-button-color);
     }
 
     .tab-button .icon {
@@ -380,17 +411,17 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .metric-card {
-      background: var(--tg-theme-section-bg-color);
+      background: var(--tg-section-bg-color);
       border-radius: 12px;
       padding: 16px;
-      border: 1px solid var(--tg-theme-section-separator-color);
+      border: 1px solid var(--tg-section-separator-color);
     }
 
     .metric-card h3 {
       font-size: 16px;
       font-weight: 600;
       margin: 0 0 12px 0;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     .metric-item {
@@ -398,7 +429,7 @@ const AIAnalyticsPage: React.FC = () => {
       justify-content: space-between;
       align-items: center;
       padding: 8px 0;
-      border-bottom: 1px solid var(--tg-theme-section-separator-color);
+      border-bottom: 1px solid var(--tg-section-separator-color);
     }
 
     .metric-item:last-child {
@@ -407,13 +438,13 @@ const AIAnalyticsPage: React.FC = () => {
 
     .metric-label {
       font-size: 14px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
     }
 
     .metric-value {
       font-size: 14px;
       font-weight: 600;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     /* Sentiment Bars */
@@ -465,8 +496,8 @@ const AIAnalyticsPage: React.FC = () => {
     .issue-item {
       padding: 6px 0;
       font-size: 14px;
-      color: var(--tg-theme-text-color);
-      border-bottom: 1px solid var(--tg-theme-section-separator-color);
+      color: var(--tg-text-color);
+      border-bottom: 1px solid var(--tg-section-separator-color);
     }
 
     .issue-item:last-child {
@@ -481,10 +512,10 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .insight-card {
-      background: var(--tg-theme-section-bg-color);
+      background: var(--tg-section-bg-color);
       border-radius: 12px;
       padding: 16px;
-      border: 1px solid var(--tg-theme-section-separator-color);
+      border: 1px solid var(--tg-section-separator-color);
     }
 
     .insight-card.critical_problem {
@@ -492,7 +523,7 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .insight-card.opportunity {
-      border-left: 4px solid #28a745;
+      border-left: 4px solid #ffc107;
     }
 
     .insight-card.trend {
@@ -526,7 +557,7 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .insight-type .icon.opportunity {
-      color: #28a745;
+      color: #ffc107;
     }
 
     .insight-type .icon.trend {
@@ -540,7 +571,7 @@ const AIAnalyticsPage: React.FC = () => {
     .type-label {
       font-size: 16px;
       font-weight: 600;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     .priority-badge {
@@ -567,22 +598,22 @@ const AIAnalyticsPage: React.FC = () => {
 
     .insight-description {
       font-size: 14px;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
       line-height: 1.5;
       margin-bottom: 8px;
     }
 
     .insight-confidence {
       font-size: 12px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
     }
 
     /* Visualizations */
     .visualization-card {
-      background: var(--tg-theme-section-bg-color);
+      background: var(--tg-section-bg-color);
       border-radius: 12px;
       padding: 16px;
-      border: 1px solid var(--tg-theme-section-separator-color);
+      border: 1px solid var(--tg-section-separator-color);
       margin-bottom: 16px;
     }
 
@@ -590,7 +621,7 @@ const AIAnalyticsPage: React.FC = () => {
       font-size: 16px;
       font-weight: 600;
       margin: 0 0 16px 0;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     /* Sentiment Chart */
@@ -629,7 +660,7 @@ const AIAnalyticsPage: React.FC = () => {
       position: absolute;
       bottom: -20px;
       font-size: 12px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
       white-space: nowrap;
     }
 
@@ -638,7 +669,7 @@ const AIAnalyticsPage: React.FC = () => {
       top: -20px;
       font-size: 12px;
       font-weight: 600;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
     }
 
     /* Question Analysis */
@@ -649,16 +680,16 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .question-item {
-      background: var(--tg-theme-bg-color);
+      background: var(--tg-bg-color);
       border-radius: 8px;
       padding: 12px;
-      border: 1px solid var(--tg-theme-section-separator-color);
+      border: 1px solid var(--tg-section-separator-color);
     }
 
     .question-text {
       font-size: 14px;
       font-weight: 500;
-      color: var(--tg-theme-text-color);
+      color: var(--tg-text-color);
       margin-bottom: 8px;
     }
 
@@ -675,7 +706,7 @@ const AIAnalyticsPage: React.FC = () => {
 
     .response-rate {
       font-size: 12px;
-      color: var(--tg-theme-hint-color);
+      color: var(--tg-hint-color);
     }
 
     .question-themes {
@@ -686,8 +717,8 @@ const AIAnalyticsPage: React.FC = () => {
 
     .theme-tag {
       padding: 2px 6px;
-      background: var(--tg-theme-button-color);
-      color: var(--tg-theme-button-text-color);
+      background: var(--tg-button-color);
+      color: var(--tg-button-text-color);
       border-radius: 4px;
       font-size: 11px;
       font-weight: 500;
@@ -811,7 +842,11 @@ const AIAnalyticsPage: React.FC = () => {
 
         if (progressData.status === 'completed') {
           setGenerating(false);
-          loadAnalytics(); // Перезагружаем аналитику
+          setLoading(true);
+          // Небольшая задержка перед перезагрузкой, чтобы данные успели сохраниться
+          setTimeout(() => {
+            loadAnalytics();
+          }, 1000);
           if (wsRef.current) {
             wsRef.current.close();
           }
@@ -870,9 +905,11 @@ const AIAnalyticsPage: React.FC = () => {
   };
 
   const renderMetrics = () => {
-    if (!analyticsData?.metrics) return null;
+    if (!analyticsData) return null;
 
-    const { metrics } = analyticsData;
+    // Извлекаем данные из правильной структуры
+    const metrics = analyticsData;
+    const visualizations = analyticsData.visualizations || analyticsData;
 
     return (
       <div className="analytics-content">
@@ -882,11 +919,11 @@ const AIAnalyticsPage: React.FC = () => {
             <h3>Общая статистика</h3>
             <div className="metric-item">
               <span className="metric-label">Всего ответов:</span>
-              <span className="metric-value">{metrics.total_responses}</span>
+              <span className="metric-value">{metrics.total_responses || (visualizations.sentiment_chart?.positive || 0) + (visualizations.sentiment_chart?.negative || 0) + (visualizations.sentiment_chart?.neutral || 0) || 0}</span>
             </div>
             <div className="metric-item">
               <span className="metric-label">Завершенность:</span>
-              <span className="metric-value">{(metrics.completion_rate * 100).toFixed(1)}%</span>
+              <span className="metric-value">{metrics.completion_rate ? (metrics.completion_rate * 100).toFixed(1) : '0.0'}%</span>
             </div>
           </div>
 
@@ -896,15 +933,21 @@ const AIAnalyticsPage: React.FC = () => {
             <div className="sentiment-bars">
               <div className="sentiment-bar positive">
                 <div className="sentiment-label">Позитивные</div>
-                <div className="sentiment-value">{metrics.sentiment_analysis.positive_percentage}%</div>
+                <div className="sentiment-value">
+                  {visualizations.sentiment_chart?.positive || metrics.sentiment_analysis?.positive_percentage || 0}%
+                </div>
               </div>
               <div className="sentiment-bar neutral">
                 <div className="sentiment-label">Нейтральные</div>
-                <div className="sentiment-value">{metrics.sentiment_analysis.neutral_percentage}%</div>
+                <div className="sentiment-value">
+                  {visualizations.sentiment_chart?.neutral || metrics.sentiment_analysis?.neutral_percentage || 0}%
+                </div>
               </div>
               <div className="sentiment-bar negative">
                 <div className="sentiment-label">Негативные</div>
-                <div className="sentiment-value">{metrics.sentiment_analysis.negative_percentage}%</div>
+                <div className="sentiment-value">
+                  {visualizations.sentiment_chart?.negative || metrics.sentiment_analysis?.negative_percentage || 0}%
+                </div>
               </div>
             </div>
           </div>
@@ -912,24 +955,26 @@ const AIAnalyticsPage: React.FC = () => {
           {/* Ключевые метрики */}
           <div className="metric-card">
             <h3>Ключевые показатели</h3>
-            {metrics.key_metrics.average_rating && (
+            {metrics.key_metrics?.average_rating && (
               <div className="metric-item">
                 <span className="metric-label">Средняя оценка:</span>
                 <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}</span>
               </div>
             )}
-            <div className="metric-item">
-              <span className="metric-label">Удовлетворенность:</span>
-              <span className="metric-value">{metrics.key_metrics.satisfaction_score}/10</span>
-            </div>
+            {metrics.key_metrics?.satisfaction_score && (
+              <div className="metric-item">
+                <span className="metric-label">Удовлетворенность:</span>
+                <span className="metric-value">{metrics.key_metrics.satisfaction_score}/10</span>
+              </div>
+            )}
           </div>
 
           {/* Частые проблемы */}
-          {metrics.key_metrics.most_common_issues.length > 0 && (
+          {metrics.key_metrics?.most_common_issues && metrics.key_metrics.most_common_issues.length > 0 && (
             <div className="metric-card">
               <h3>Частые проблемы</h3>
               <ul className="issues-list">
-                {metrics.key_metrics.most_common_issues.map((issue, index) => (
+                {metrics.key_metrics.most_common_issues.map((issue: string, index: number) => (
                   <li key={index} className="issue-item">{issue}</li>
                 ))}
               </ul>
@@ -941,9 +986,77 @@ const AIAnalyticsPage: React.FC = () => {
   };
 
   const renderInsights = () => {
-    if (!analyticsData?.insights) return null;
+    if (!analyticsData) return null;
 
-    const { insights } = analyticsData;
+    // Извлекаем инсайты из правильной структуры
+    const insights = analyticsData.insights || [];
+    
+    // Если инсайтов нет в стандартной структуре, попробуем найти их в других местах
+    if (insights.length === 0) {
+      // Ищем инсайты в других частях данных
+      const allInsights = [];
+      
+      // Проверяем, есть ли критические проблемы
+      if (analyticsData.critical_problem) {
+        allInsights.push({
+          type: 'critical_problem',
+          title: analyticsData.critical_problem.title || 'Критическая проблема',
+          description: analyticsData.critical_problem.description || '',
+          priority: analyticsData.critical_problem.priority || 'high',
+          confidence: analyticsData.critical_problem.confidence || 0.8
+        });
+      }
+      
+      // Проверяем, есть ли возможности
+      if (analyticsData.opportunity) {
+        allInsights.push({
+          type: 'opportunity',
+          title: analyticsData.opportunity.title || 'Возможность',
+          description: analyticsData.opportunity.description || '',
+          priority: analyticsData.opportunity.priority || 'medium',
+          confidence: analyticsData.opportunity.confidence || 0.7
+        });
+      }
+      
+      if (allInsights.length === 0) return null;
+      
+      return (
+        <div className="analytics-content">
+          <div className="insights-list">
+            {allInsights.map((insight, index) => (
+              <motion.div
+                key={index}
+                className={`insight-card ${insight.type}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="insight-header">
+                  <div className="insight-type">
+                    {insight.type === 'critical_problem' && <AlertCircle className="icon critical" />}
+                    {insight.type === 'opportunity' && <Lightbulb className="icon opportunity" />}
+                    {insight.type === 'trend' && <TrendingUp className="icon trend" />}
+                    {insight.type === 'recommendation' && <CheckCircle className="icon recommendation" />}
+                    <span className="type-label">{insight.title}</span>
+                  </div>
+                  <div className={`priority-badge ${insight.priority}`}>
+                    {insight.priority === 'high' && 'Высокий'}
+                    {insight.priority === 'medium' && 'Средний'}
+                    {insight.priority === 'low' && 'Низкий'}
+                  </div>
+                </div>
+                <div className="insight-description">
+                  {insight.description}
+                </div>
+                <div className="insight-confidence">
+                  Уверенность: {(insight.confidence * 100).toFixed(0)}%
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="analytics-content">
@@ -984,9 +1097,12 @@ const AIAnalyticsPage: React.FC = () => {
   };
 
   const renderVisualizations = () => {
-    if (!analyticsData?.visualizations) return null;
+    if (!analyticsData) return null;
 
-    const { visualizations } = analyticsData;
+    // Извлекаем данные из правильной структуры
+    const visualizations = analyticsData.visualizations || analyticsData;
+    const sentimentChart = visualizations.sentiment_chart || analyticsData.sentiment_chart || { positive: 0, negative: 0, neutral: 0 };
+    const questionAnalysis = visualizations.question_analysis || analyticsData.question_analysis || [];
 
     return (
       <div className="analytics-content">
@@ -994,27 +1110,27 @@ const AIAnalyticsPage: React.FC = () => {
         <div className="visualization-card">
           <h3>Распределение тональности</h3>
           <div className="sentiment-chart">
-            <div className="chart-bar positive" style={{ height: `${visualizations.sentiment_chart.positive}%` }}>
+            <div className="chart-bar positive" style={{ height: `${sentimentChart.positive || 0}%` }}>
               <span className="bar-label">Позитивные</span>
-              <span className="bar-value">{visualizations.sentiment_chart.positive}%</span>
+              <span className="bar-value">{sentimentChart.positive || 0}%</span>
             </div>
-            <div className="chart-bar neutral" style={{ height: `${visualizations.sentiment_chart.neutral}%` }}>
+            <div className="chart-bar neutral" style={{ height: `${sentimentChart.neutral || 0}%` }}>
               <span className="bar-label">Нейтральные</span>
-              <span className="bar-value">{visualizations.sentiment_chart.neutral}%</span>
+              <span className="bar-value">{sentimentChart.neutral || 0}%</span>
             </div>
-            <div className="chart-bar negative" style={{ height: `${visualizations.sentiment_chart.negative}%` }}>
+            <div className="chart-bar negative" style={{ height: `${sentimentChart.negative || 0}%` }}>
               <span className="bar-label">Негативные</span>
-              <span className="bar-value">{visualizations.sentiment_chart.negative}%</span>
+              <span className="bar-value">{sentimentChart.negative || 0}%</span>
             </div>
           </div>
         </div>
 
         {/* Анализ по вопросам */}
-        {visualizations.question_analysis.length > 0 && (
+        {questionAnalysis.length > 0 && (
           <div className="visualization-card">
             <h3>Анализ по вопросам</h3>
             <div className="question-analysis">
-              {visualizations.question_analysis.map((question, index) => (
+              {questionAnalysis.map((question: any, index: number) => (
                 <div key={index} className="question-item">
                   <div className="question-text">{question.question_text}</div>
                   <div className="question-metrics">
@@ -1024,12 +1140,12 @@ const AIAnalyticsPage: React.FC = () => {
                       {question.sentiment === 'neutral' && '😐'}
                     </span>
                     <span className="response-rate">
-                      Ответов: {(question.response_rate * 100).toFixed(0)}%
+                      Ответов: {question.response_rate ? (question.response_rate * 100).toFixed(0) : 0}%
                     </span>
                   </div>
-                  {question.key_themes.length > 0 && (
+                  {question.key_themes && question.key_themes.length > 0 && (
                     <div className="question-themes">
-                      {question.key_themes.map((theme, themeIndex) => (
+                      {question.key_themes.map((theme: string, themeIndex: number) => (
                         <span key={themeIndex} className="theme-tag">{theme}</span>
                       ))}
                     </div>
