@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, CheckCircle, Play } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -67,7 +67,7 @@ const templates: SurveyTemplate[] = [
         id: 'q1',
         type: 'rating',
         title: 'Как бы вы оценили общее качество нашего продукта/услуги?',
-        description: 'Оцените по 5-балльной шкале',
+        description: 'Оцените по 5-балльной шкале, где 1 — очень плохо, 5 — отлично',
         required: true
       },
       {
@@ -81,7 +81,7 @@ const templates: SurveyTemplate[] = [
         id: 'q3',
         type: 'scale',
         title: 'Насколько вы довольны скоростью обслуживания?',
-        description: 'Оцените от 1 до 10',
+        description: 'Оцените от 1 до 10, где 1 — очень медленно, 10 — очень быстро',
         required: true,
         scaleMin: 1,
         scaleMax: 10,
@@ -100,7 +100,7 @@ const templates: SurveyTemplate[] = [
         id: 'q5',
         type: 'textarea',
         title: 'Что бы вы хотели улучшить в нашем сервисе?',
-        description: 'Ваши предложения помогут нам стать лучше',
+        description: 'Ваши предложения помогут нам стать лучше. Опишите конкретные аспекты, которые можно улучшить',
         required: false
       },
       {
@@ -247,8 +247,524 @@ const templates: SurveyTemplate[] = [
       oneResponsePerUser: true,
       hideCreator: false
     }
+  },
+  {
+    id: 'market-research',
+    title: 'Маркетинговое исследование',
+    description: 'Изучите предпочтения потребителей, узнайте о новых трендах и потребностях рынка.',
+    category: 'Маркетинг',
+    icon: '📊',
+    questions: 15,
+    estimatedTime: '8-10 мин',
+    difficulty: 'hard',
+    popularity: 92,
+    color: '#FF9800',
+    fullDescription: 'Этот шаблон поможет провести комплексное маркетинговое исследование для понимания целевой аудитории, их потребностей и предпочтений.',
+    useCases: [
+      'Исследование новых рынков',
+      'Анализ конкурентной среды',
+      'Изучение потребительских предпочтений',
+      'Планирование продуктовой стратегии'
+    ],
+    questionsData: [
+      {
+        id: 'q1',
+        type: 'single_choice',
+        title: 'Какой у вас возраст?',
+        description: 'Эта информация поможет нам лучше понять нашу аудиторию',
+        required: true,
+        options: ['18-24 года', '25-34 года', '35-44 года', '45-54 года', '55+ лет']
+      },
+      {
+        id: 'q2',
+        type: 'single_choice',
+        title: 'Какой у вас уровень дохода?',
+        description: 'Укажите примерный месячный доход',
+        required: false,
+        options: ['До 30,000 руб', '30,000-50,000 руб', '50,000-80,000 руб', '80,000-120,000 руб', 'Свыше 120,000 руб', 'Предпочитаю не указывать']
+      },
+      {
+        id: 'q3',
+        type: 'multiple_choice',
+        title: 'Какие товары/услуги вас интересуют?',
+        description: 'Выберите все подходящие категории',
+        required: true,
+        options: ['Электроника', 'Одежда и обувь', 'Красота и здоровье', 'Дом и сад', 'Спорт и отдых', 'Автомобили', 'Образование', 'Финансовые услуги'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q4',
+        type: 'single_choice',
+        title: 'Как часто вы совершаете покупки онлайн?',
+        required: true,
+        options: ['Ежедневно', 'Несколько раз в неделю', 'Раз в неделю', 'Раз в месяц', 'Реже']
+      },
+      {
+        id: 'q5',
+        type: 'scale',
+        title: 'Насколько важна для вас цена при выборе товара?',
+        description: 'Оцените от 1 до 10, где 1 — не важна, 10 — очень важна',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Не важна', max: 'Очень важна' }
+      },
+      {
+        id: 'q6',
+        type: 'scale',
+        title: 'Насколько важно для вас качество товара?',
+        description: 'Оцените от 1 до 10, где 1 — не важно, 10 — очень важно',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Не важно', max: 'Очень важно' }
+      },
+      {
+        id: 'q7',
+        type: 'multiple_choice',
+        title: 'Что влияет на ваш выбор при покупке?',
+        description: 'Выберите все важные факторы',
+        required: true,
+        options: ['Цена', 'Качество', 'Бренд', 'Отзывы других покупателей', 'Реклама', 'Рекомендации друзей', 'Удобство покупки', 'Доставка'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q8',
+        type: 'single_choice',
+        title: 'Где вы обычно ищете информацию о товарах?',
+        required: true,
+        options: ['Поисковые системы (Google, Yandex)', 'Социальные сети', 'Сайты магазинов', 'Отзывы и форумы', 'Реклама', 'Рекомендации знакомых']
+      },
+      {
+        id: 'q9',
+        type: 'boolean',
+        title: 'Покупаете ли вы товары по рекомендациям блогеров?',
+        required: true
+      },
+      {
+        id: 'q10',
+        type: 'textarea',
+        title: 'Какие проблемы вы чаще всего испытываете при покупке товаров?',
+        description: 'Опишите основные сложности, с которыми сталкиваетесь',
+        required: false
+      },
+      {
+        id: 'q11',
+        type: 'single_choice',
+        title: 'Какой способ доставки предпочитаете?',
+        required: true,
+        options: ['Курьерская доставка', 'Пункты выдачи', 'Почта России', 'Самовывоз', 'Не важно']
+      },
+      {
+        id: 'q12',
+        type: 'scale',
+        title: 'Насколько важна для вас экологичность товаров?',
+        description: 'Оцените от 1 до 10, где 1 — не важна, 10 — очень важна',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Не важна', max: 'Очень важна' }
+      },
+      {
+        id: 'q13',
+        type: 'multiple_choice',
+        title: 'Какие социальные сети вы используете?',
+        description: 'Выберите все подходящие варианты',
+        required: false,
+        options: ['ВКонтакте', 'Instagram', 'Telegram', 'YouTube', 'TikTok', 'Facebook', 'Одноклассники', 'Не использую'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q14',
+        type: 'textarea',
+        title: 'Какие новые товары или услуги вы хотели бы видеть на рынке?',
+        description: 'Опишите ваши пожелания и потребности',
+        required: false
+      },
+      {
+        id: 'q15',
+        type: 'textarea',
+        title: 'Дополнительные комментарии',
+        description: 'Поделитесь любыми дополнительными мыслями',
+        required: false
+      }
+    ],
+    settings: {
+      title: 'Маркетинговое исследование',
+      description: 'Помогите нам лучше понять потребности рынка и создать продукты, которые вам действительно нужны',
+      allowAnonymous: true,
+      showProgress: true,
+      randomizeQuestions: false,
+      oneResponsePerUser: true,
+      hideCreator: false
+    }
+  },
+  {
+    id: 'event-feedback',
+    title: 'Оценка мероприятия',
+    description: 'Соберите отзывы участников о проведенном событии, организации и содержании.',
+    category: 'События',
+    icon: '🎉',
+    questions: 6,
+    estimatedTime: '2-3 мин',
+    difficulty: 'easy',
+    popularity: 85,
+    color: '#E91E63',
+    fullDescription: 'Этот шаблон поможет собрать обратную связь от участников мероприятия для оценки его успешности и планирования будущих событий.',
+    useCases: [
+      'Оценка корпоративных мероприятий',
+      'Анализ конференций и семинаров',
+      'Сбор отзывов о вечеринках и праздниках',
+      'Оценка образовательных мероприятий'
+    ],
+    questionsData: [
+      {
+        id: 'q1',
+        type: 'rating',
+        title: 'Как бы вы оценили общую организацию мероприятия?',
+        description: 'Оцените по 5-балльной шкале',
+        required: true
+      },
+      {
+        id: 'q2',
+        type: 'scale',
+        title: 'Насколько полезным было для вас это мероприятие?',
+        description: 'Оцените от 1 до 10, где 1 — совсем не полезно, 10 — очень полезно',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Не полезно', max: 'Очень полезно' }
+      },
+      {
+        id: 'q3',
+        type: 'multiple_choice',
+        title: 'Что вам больше всего понравилось?',
+        description: 'Выберите все подходящие варианты',
+        required: false,
+        options: ['Содержание программы', 'Организация', 'Место проведения', 'Питание', 'Общение с участниками', 'Спикеры'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q4',
+        type: 'single_choice',
+        title: 'Рекомендовали бы вы это мероприятие другим?',
+        required: true,
+        options: ['Определенно да', 'Скорее да', 'Затрудняюсь ответить', 'Скорее нет', 'Определенно нет']
+      },
+      {
+        id: 'q5',
+        type: 'textarea',
+        title: 'Что можно улучшить в следующий раз?',
+        description: 'Ваши предложения помогут сделать будущие мероприятия лучше',
+        required: false
+      },
+      {
+        id: 'q6',
+        type: 'textarea',
+        title: 'Дополнительные комментарии',
+        description: 'Поделитесь любыми дополнительными мыслями о мероприятии',
+        required: false
+      }
+    ],
+    settings: {
+      title: 'Оценка мероприятия',
+      description: 'Ваше мнение важно для нас. Помогите улучшить качество будущих мероприятий',
+      allowAnonymous: true,
+      showProgress: true,
+      randomizeQuestions: false,
+      oneResponsePerUser: true,
+      hideCreator: false
+    }
+  },
+  {
+    id: 'product-feedback',
+    title: 'Отзыв о продукте',
+    description: 'Получите детальную оценку вашего товара или услуги от покупателей.',
+    category: 'Продукт',
+    icon: '🛍️',
+    questions: 10,
+    estimatedTime: '4-6 мин',
+    difficulty: 'medium',
+    popularity: 90,
+    color: '#9C27B0',
+    fullDescription: 'Этот шаблон поможет собрать детальную обратную связь о вашем продукте или услуге для улучшения качества и повышения удовлетворенности клиентов.',
+    useCases: [
+      'Оценка нового продукта',
+      'Анализ качества товара',
+      'Сбор отзывов о услуге',
+      'Исследование пользовательского опыта'
+    ],
+    questionsData: [
+      {
+        id: 'q1',
+        type: 'rating',
+        title: 'Как бы вы оценили качество продукта?',
+        description: 'Оцените по 5-балльной шкале',
+        required: true
+      },
+      {
+        id: 'q2',
+        type: 'single_choice',
+        title: 'Как долго вы пользуетесь этим продуктом?',
+        required: true,
+        options: ['Менее недели', '1-4 недели', '1-3 месяца', '3-6 месяцев', 'Более 6 месяцев']
+      },
+      {
+        id: 'q3',
+        type: 'scale',
+        title: 'Насколько продукт соответствует вашим ожиданиям?',
+        description: 'Оцените от 1 до 10, где 1 — совсем не соответствует, 10 — полностью соответствует',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Не соответствует', max: 'Полностью соответствует' }
+      },
+      {
+        id: 'q4',
+        type: 'multiple_choice',
+        title: 'Какие аспекты продукта вам нравятся?',
+        description: 'Выберите все подходящие варианты',
+        required: false,
+        options: ['Качество', 'Дизайн', 'Функциональность', 'Цена', 'Удобство использования', 'Надежность', 'Скорость работы'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q5',
+        type: 'multiple_choice',
+        title: 'Что можно улучшить в продукте?',
+        description: 'Выберите все аспекты, которые требуют улучшения',
+        required: false,
+        options: ['Качество', 'Дизайн', 'Функциональность', 'Цена', 'Удобство использования', 'Надежность', 'Скорость работы'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q6',
+        type: 'single_choice',
+        title: 'Как часто вы сталкиваетесь с проблемами при использовании?',
+        required: true,
+        options: ['Никогда', 'Очень редко', 'Иногда', 'Часто', 'Постоянно']
+      },
+      {
+        id: 'q7',
+        type: 'boolean',
+        title: 'Рекомендовали бы вы этот продукт друзьям?',
+        required: true
+      },
+      {
+        id: 'q8',
+        type: 'single_choice',
+        title: 'Как вы узнали о продукте?',
+        required: false,
+        options: ['Реклама', 'Социальные сети', 'Рекомендации друзей', 'Поиск в интернете', 'Магазин', 'Другое']
+      },
+      {
+        id: 'q9',
+        type: 'textarea',
+        title: 'Опишите ваш опыт использования продукта',
+        description: 'Поделитесь подробностями о том, как вы используете продукт и какие у вас впечатления',
+        required: false
+      },
+      {
+        id: 'q10',
+        type: 'textarea',
+        title: 'Дополнительные предложения',
+        description: 'Есть ли у вас идеи по улучшению продукта?',
+        required: false
+      }
+    ],
+    settings: {
+      title: 'Отзыв о продукте',
+      description: 'Ваше мнение поможет нам улучшить продукт и сделать его еще лучше',
+      allowAnonymous: true,
+      showProgress: true,
+      randomizeQuestions: false,
+      oneResponsePerUser: true,
+      hideCreator: false
+    }
+  },
+  {
+    id: 'education-assessment',
+    title: 'Оценка обучения',
+    description: 'Проанализируйте эффективность образовательного процесса и качество преподавания.',
+    category: 'Образование',
+    icon: '🎓',
+    questions: 9,
+    estimatedTime: '3-4 мин',
+    difficulty: 'easy',
+    popularity: 82,
+    color: '#607D8B',
+    fullDescription: 'Этот шаблон поможет оценить качество образовательного процесса, эффективность преподавания и общую удовлетворенность обучением.',
+    useCases: [
+      'Оценка курсов и тренингов',
+      'Анализ качества преподавания',
+      'Сбор отзывов о образовательных программах',
+      'Оценка онлайн-обучения'
+    ],
+    questionsData: [
+      {
+        id: 'q1',
+        type: 'rating',
+        title: 'Как бы вы оценили качество обучения?',
+        description: 'Оцените по 5-балльной шкале',
+        required: true
+      },
+      {
+        id: 'q2',
+        type: 'scale',
+        title: 'Насколько полезными были полученные знания?',
+        description: 'Оцените от 1 до 10, где 1 — совсем не полезны, 10 — очень полезны',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Не полезны', max: 'Очень полезны' }
+      },
+      {
+        id: 'q3',
+        type: 'single_choice',
+        title: 'Как вы оцениваете уровень преподавателя?',
+        required: true,
+        options: ['Отличный', 'Хороший', 'Удовлетворительный', 'Плохой', 'Очень плохой']
+      },
+      {
+        id: 'q4',
+        type: 'multiple_choice',
+        title: 'Что вам больше всего понравилось в обучении?',
+        description: 'Выберите все подходящие варианты',
+        required: false,
+        options: ['Содержание программы', 'Методы преподавания', 'Практические задания', 'Общение с преподавателем', 'Групповая работа', 'Материалы'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q5',
+        type: 'single_choice',
+        title: 'Была ли программа обучения слишком сложной?',
+        required: true,
+        options: ['Слишком простая', 'Подходящая сложность', 'Слегка сложная', 'Очень сложная']
+      },
+      {
+        id: 'q6',
+        type: 'scale',
+        title: 'Насколько хорошо была организована программа?',
+        description: 'Оцените от 1 до 10, где 1 — плохо организована, 10 — отлично организована',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Плохо', max: 'Отлично' }
+      },
+      {
+        id: 'q7',
+        type: 'boolean',
+        title: 'Рекомендовали бы вы эту программу другим?',
+        required: true
+      },
+      {
+        id: 'q8',
+        type: 'textarea',
+        title: 'Что можно улучшить в программе обучения?',
+        description: 'Ваши предложения помогут сделать обучение более эффективным',
+        required: false
+      },
+      {
+        id: 'q9',
+        type: 'textarea',
+        title: 'Дополнительные комментарии',
+        description: 'Поделитесь любыми дополнительными мыслями об обучении',
+        required: false
+      }
+    ],
+    settings: {
+      title: 'Оценка обучения',
+      description: 'Ваше мнение поможет улучшить качество образовательного процесса',
+      allowAnonymous: true,
+      showProgress: true,
+      randomizeQuestions: false,
+      oneResponsePerUser: true,
+      hideCreator: false
+    }
+  },
+  {
+    id: 'health-survey',
+    title: 'Медицинский опрос',
+    description: 'Соберите информацию о здоровье, симптомах или качестве медицинского обслуживания.',
+    category: 'Здоровье',
+    icon: '🏥',
+    questions: 7,
+    estimatedTime: '3-5 мин',
+    difficulty: 'medium',
+    popularity: 87,
+    color: '#4CAF50',
+    fullDescription: 'Этот шаблон поможет собрать информацию о здоровье пациентов, их симптомах и качестве медицинского обслуживания для улучшения медицинских услуг.',
+    useCases: [
+      'Сбор анамнеза пациентов',
+      'Оценка качества медицинских услуг',
+      'Исследование симптомов заболеваний',
+      'Анализ эффективности лечения'
+    ],
+    questionsData: [
+      {
+        id: 'q1',
+        type: 'single_choice',
+        title: 'Как вы оцениваете свое общее самочувствие?',
+        required: true,
+        options: ['Отличное', 'Хорошее', 'Удовлетворительное', 'Плохое', 'Очень плохое']
+      },
+      {
+        id: 'q2',
+        type: 'multiple_choice',
+        title: 'Какие симптомы вас беспокоят?',
+        description: 'Выберите все подходящие варианты',
+        required: false,
+        options: ['Головная боль', 'Усталость', 'Бессонница', 'Боль в спине', 'Проблемы с пищеварением', 'Стресс', 'Тревожность'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q3',
+        type: 'single_choice',
+        title: 'Как часто вы обращаетесь к врачу?',
+        required: true,
+        options: ['Раз в год', 'Раз в полгода', 'Раз в 3 месяца', 'Ежемесячно', 'По необходимости']
+      },
+      {
+        id: 'q4',
+        type: 'rating',
+        title: 'Как бы вы оценили качество медицинского обслуживания?',
+        description: 'Оцените по 5-балльной шкале',
+        required: true
+      },
+      {
+        id: 'q5',
+        type: 'scale',
+        title: 'Насколько вы довольны временем ожидания приема?',
+        description: 'Оцените от 1 до 10, где 1 — очень долго, 10 — очень быстро',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Очень долго', max: 'Очень быстро' }
+      },
+      {
+        id: 'q6',
+        type: 'boolean',
+        title: 'Рекомендовали бы вы эту клинику другим?',
+        required: true
+      },
+      {
+        id: 'q7',
+        type: 'textarea',
+        title: 'Дополнительные комментарии о здоровье',
+        description: 'Поделитесь любой дополнительной информацией о своем здоровье',
+        required: false
+      }
+    ],
+    settings: {
+      title: 'Медицинский опрос',
+      description: 'Ваша информация поможет улучшить качество медицинского обслуживания',
+      allowAnonymous: true,
+      showProgress: true,
+      randomizeQuestions: false,
+      oneResponsePerUser: true,
+      hideCreator: false
+    }
   }
-  // Добавим остальные шаблоны позже
 ];
 
 const TemplateDetailPage: React.FC = () => {
@@ -260,6 +776,11 @@ const TemplateDetailPage: React.FC = () => {
   useStableBackButton({
     targetRoute: '/templates'
   });
+
+  // Скролл к верху при загрузке страницы
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [templateId]);
 
   const template = templates.find(t => t.id === templateId);
 
@@ -329,8 +850,8 @@ const TemplateDetailPage: React.FC = () => {
       updatedAt: Date.now()
     });
 
-    // Переходим на страницу создания опроса
-    navigate('/survey/create');
+    // Переходим на страницу создания опроса (прямо к SurveyCreatorPage)
+    navigate('/survey/create/manual');
   };
 
   const getDifficultyText = (difficulty: string) => {

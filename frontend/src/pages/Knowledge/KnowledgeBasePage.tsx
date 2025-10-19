@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { BookOpen, Clock, Target, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -130,6 +130,7 @@ const categories = [
 
 export const KnowledgeBasePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { hapticFeedback } = useTelegram();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -139,6 +140,13 @@ export const KnowledgeBasePage = () => {
   useStableBackButton({
     targetRoute: '/'
   });
+
+  // Скролл к верху при возврате со статьи
+  useEffect(() => {
+    if (location.pathname === '/knowledge') {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   const filteredArticles = articles.filter(article => {
     const matchesCategory = selectedCategory === 'all' || 
