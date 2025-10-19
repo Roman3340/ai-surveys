@@ -33,7 +33,9 @@ const SummaryTab: React.FC<{
   responses: any[] | null;
   stats: { total_responses: number } | null;
   loading: boolean;
-}> = ({ survey, questions, responses, stats, loading }) => {
+  aiAnalyticsStatus: 'not_found' | 'exists' | 'generating' | 'loading';
+  onNavigateToAI: () => void;
+}> = ({ survey, questions, responses, stats, loading, aiAnalyticsStatus, onNavigateToAI }) => {
   const [showAllAnswers, setShowAllAnswers] = useState<{ [questionId: string]: boolean }>({});
   const [showAnswersPopup, setShowAnswersPopup] = useState<{ questionId: string; answers: any[] } | null>(null);
 
@@ -322,12 +324,11 @@ const SummaryTab: React.FC<{
                 
                 <button
                   onClick={() => {
-                    hapticFeedback?.impactOccurred?.('medium');
                     if (aiAnalyticsStatus === 'generating') {
                       // Если генерируется, показываем уведомление
                       return;
                     }
-                    navigate(`/survey/${surveyId}/ai-analytics`);
+                    onNavigateToAI();
                   }}
                   disabled={aiAnalyticsStatus === 'generating'}
                   style={{
@@ -2185,9 +2186,9 @@ export default function SurveyAnalyticsPage() {
     
     try {
       const response = await aiAnalytics.getAnalyticsStatus(surveyId);
-      if (response.status === 'completed') {
+      if (response.data.status === 'completed') {
         setAiAnalyticsStatus('exists');
-      } else if (response.status === 'generating' || response.status === 'in_progress') {
+      } else if (response.data.status === 'generating' || response.data.status === 'in_progress') {
         setAiAnalyticsStatus('generating');
       } else {
         setAiAnalyticsStatus('not_found');
@@ -4452,6 +4453,8 @@ export default function SurveyAnalyticsPage() {
               responses={responsesPage}
               stats={stats}
               loading={analyticsLoading}
+              aiAnalyticsStatus={aiAnalyticsStatus}
+              onNavigateToAI={() => navigate(`/survey/${surveyId}/ai-analytics`)}
             />
           )}
           
