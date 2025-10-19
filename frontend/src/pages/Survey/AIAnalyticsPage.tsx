@@ -19,17 +19,19 @@ import { surveyApi, aiAnalytics } from '../../services/api';
 
 interface AnalyticsData {
   // Основные метрики
-  total_responses?: number;
-  completion_rate?: number;
-  sentiment_analysis?: {
-    positive_percentage: number;
-    negative_percentage: number;
-    neutral_percentage: number;
-  };
-  key_metrics?: {
-    average_rating: number | null;
-    most_common_issues: string[];
-    satisfaction_score: number;
+  metrics?: {
+    total_responses?: number;
+    completion_rate?: number;
+    sentiment_analysis?: {
+      positive_percentage: number;
+      negative_percentage: number;
+      neutral_percentage: number;
+    };
+    key_metrics?: {
+      average_rating: number | null;
+      most_common_issues: string[];
+      satisfaction_score: number;
+    };
   };
   
   // Инсайты
@@ -58,16 +60,16 @@ interface AnalyticsData {
   
   // Визуализации
   visualizations?: {
-    sentiment_chart: {
+    sentiment_chart?: {
       positive: number;
       negative: number;
       neutral: number;
     };
-    response_timeline: Array<{
+    response_timeline?: Array<{
       date: string;
       count: number;
     }>;
-    question_analysis: Array<{
+    question_analysis?: Array<{
       question_id: string;
       question_text: string;
       response_rate: number;
@@ -76,7 +78,7 @@ interface AnalyticsData {
     }>;
   };
   
-  // Прямые данные для визуализаций
+  // Прямые данные для визуализаций (для обратной совместимости)
   sentiment_chart?: {
     positive: number;
     negative: number;
@@ -535,6 +537,14 @@ const AIAnalyticsPage: React.FC = () => {
       border-left: 4px solid #ffc107;
     }
 
+    .insight-card.positive_feedback {
+      border-left: 4px solid #28a745;
+    }
+
+    .insight-card.success {
+      border-left: 4px solid #28a745;
+    }
+
     .insight-header {
       display: flex;
       justify-content: space-between;
@@ -567,6 +577,14 @@ const AIAnalyticsPage: React.FC = () => {
 
     .insight-type .icon.recommendation {
       color: #ffc107;
+    }
+
+    .insight-type .icon.positive_feedback {
+      color: #28a745;
+    }
+
+    .insight-type .icon.success {
+      color: #28a745;
     }
 
     .type-label {
@@ -845,10 +863,23 @@ const AIAnalyticsPage: React.FC = () => {
       wsRef.current.close();
     }
 
+    // Проверяем, что у нас есть необходимые данные
+    if (!surveyId) {
+      console.error('SurveyId не найден для WebSocket');
+      return;
+    }
+    
+    if (!user?.id) {
+      console.error('User ID не найден для WebSocket');
+      return;
+    }
+
     // Получаем базовый URL из переменных окружения или используем localhost
     const baseUrl = window.location.hostname === 'localhost' ? 'ws://localhost:8000' : `wss://${window.location.hostname}`;
-    const wsUrl = `${baseUrl}/ws/analytics-progress/${surveyId}?telegram_id=${user?.id}`;
+    const wsUrl = `${baseUrl}/ws/analytics-progress/${surveyId}?telegram_id=${user.id}`;
     console.log('Подключаемся к WebSocket:', wsUrl);
+    console.log('SurveyId:', surveyId);
+    console.log('User ID:', user.id);
     wsRef.current = new WebSocket(wsUrl);
 
     wsRef.current.onopen = () => {
@@ -890,16 +921,29 @@ const AIAnalyticsPage: React.FC = () => {
 
     wsRef.current.onerror = (error) => {
       console.error('WebSocket ошибка:', error);
-      setError('Ошибка подключения к серверу');
+      console.error('WebSocket URL был:', wsUrl);
+      setError('Ошибка подключения к серверу. Проверьте, что бэкенд запущен на порту 8000');
     };
 
     wsRef.current.onclose = (event) => {
       console.log('WebSocket отключен:', event.code, event.reason);
-      if (event.code !== 1000 && event.code !== 1001) {
-        // Если это не нормальное закрытие, показываем ошибку
-        setError('Соединение с сервером потеряно');
+      console.log('Коды закрытия: 1000=нормальное, 1001=уход со страницы, 4000=отсутствует telegram_id, 4001=пользователь не найден, 4002=внутренняя ошибка');
+      
+      if (event.code === 4000) {
+        setError('Ошибка: отсутствует telegram_id');
+      } else if (event.code === 4001) {
+        setError('Ошибка: пользователь не найден');
+      } else if (event.code === 4002) {
+        setError('Ошибка сервера');
+      } else if (event.code !== 1000 && event.code !== 1001) {
+        setError(`Соединение потеряно (код: ${event.code})`);
       }
     };
+  };
+
+  const testWebSocket = () => {
+    console.log('Тестируем WebSocket подключение...');
+    connectWebSocket();
   };
 
   const generateAnalytics = async () => {
@@ -939,8 +983,13 @@ const AIAnalyticsPage: React.FC = () => {
     if (!analyticsData) return null;
 
     // Извлекаем данные из правильной структуры
-    const metrics = analyticsData;
-    const visualizations = analyticsData.visualizations || analyticsData;
+    const metrics = analyticsData.metrics || {};
+    const visualizations = analyticsData.visualizations || {};
+    
+    // Отладочная информация
+    console.log('AnalyticsData:', analyticsData);
+    console.log('Metrics:', metrics);
+    console.log('Total responses:', metrics.total_responses);
 
     return (
       <div className="analytics-content">
@@ -1066,6 +1115,8 @@ const AIAnalyticsPage: React.FC = () => {
                     {insight.type === 'opportunity' && <Lightbulb className="icon opportunity" />}
                     {insight.type === 'trend' && <TrendingUp className="icon trend" />}
                     {insight.type === 'recommendation' && <CheckCircle className="icon recommendation" />}
+                    {insight.type === 'positive_feedback' && <CheckCircle className="icon positive_feedback" />}
+                    {insight.type === 'success' && <CheckCircle className="icon success" />}
                     <span className="type-label">{insight.title}</span>
                   </div>
                   <div className={`priority-badge ${insight.priority}`}>
@@ -1104,6 +1155,8 @@ const AIAnalyticsPage: React.FC = () => {
                   {insight.type === 'opportunity' && <Lightbulb className="icon opportunity" />}
                   {insight.type === 'trend' && <TrendingUp className="icon trend" />}
                   {insight.type === 'recommendation' && <CheckCircle className="icon recommendation" />}
+                  {insight.type === 'positive_feedback' && <CheckCircle className="icon positive_feedback" />}
+                  {insight.type === 'success' && <CheckCircle className="icon success" />}
                   <span className="type-label">{insight.title}</span>
                 </div>
                 <div className={`priority-badge ${insight.priority}`}>
@@ -1129,7 +1182,7 @@ const AIAnalyticsPage: React.FC = () => {
     if (!analyticsData) return null;
 
     // Извлекаем данные из правильной структуры
-    const visualizations = analyticsData.visualizations || analyticsData;
+    const visualizations = analyticsData.visualizations || {};
     const sentimentChart = visualizations.sentiment_chart || analyticsData.sentiment_chart || { positive: 0, negative: 0, neutral: 0 };
     const questionAnalysis = visualizations.question_analysis || analyticsData.question_analysis || [];
 
@@ -1269,6 +1322,13 @@ const AIAnalyticsPage: React.FC = () => {
           <p className="survey-title">{surveyTitle}</p>
         </div>
         <div className="header-actions">
+          <button 
+            className="action-button"
+            onClick={testWebSocket}
+            title="Тест WebSocket"
+          >
+            <Brain className="icon" />
+          </button>
           <button 
             className="action-button"
             onClick={refreshAnalytics}
