@@ -356,35 +356,14 @@ export const SurveyTemplatesPage = () => {
                     {template.icon}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '4px'
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      margin: '0 0 4px 0',
+                      color: 'var(--tg-text-color)'
                     }}>
-                      <h3 style={{
-                        fontSize: '18px',
-                        fontWeight: '600',
-                        margin: '0',
-                        color: 'var(--tg-text-color)'
-                      }}>
-                        {template.title}
-                      </h3>
-                      {/* Индикатор анонимности для медицинских опросов */}
-                      {template.id === 'health-survey' && (
-                        <div style={{
-                          backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                          color: '#4CAF50',
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          border: '1px solid rgba(76, 175, 80, 0.3)'
-                        }}>
-                          🔒 Анонимно
-                        </div>
-                      )}
-                    </div>
+                      {template.title}
+                    </h3>
                     <div style={{
                       fontSize: '14px',
                       color: 'var(--tg-hint-color)',

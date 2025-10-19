@@ -126,7 +126,7 @@ const templates: SurveyTemplate[] = [
     settings: {
       title: 'Оценка удовлетворенности клиентов',
       description: 'Помогите нам улучшить качество обслуживания, поделившись своим мнением',
-      allowAnonymous: true,
+      allowAnonymous: false,
       showProgress: true,
       randomizeQuestions: false,
       oneResponsePerUser: true,
@@ -241,7 +241,7 @@ const templates: SurveyTemplate[] = [
     settings: {
       title: 'Обратная связь сотрудников',
       description: 'Ваше мнение важно для нас. Помогите улучшить рабочую атмосферу в компании',
-      allowAnonymous: true,
+      allowAnonymous: false,
       showProgress: true,
       randomizeQuestions: false,
       oneResponsePerUser: true,
@@ -392,7 +392,7 @@ const templates: SurveyTemplate[] = [
     settings: {
       title: 'Маркетинговое исследование',
       description: 'Помогите нам лучше понять потребности рынка и создать продукты, которые вам действительно нужны',
-      allowAnonymous: true,
+      allowAnonymous: false,
       showProgress: true,
       randomizeQuestions: false,
       oneResponsePerUser: true,
@@ -469,7 +469,7 @@ const templates: SurveyTemplate[] = [
     settings: {
       title: 'Оценка мероприятия',
       description: 'Ваше мнение важно для нас. Помогите улучшить качество будущих мероприятий',
-      allowAnonymous: true,
+      allowAnonymous: false,
       showProgress: true,
       randomizeQuestions: false,
       oneResponsePerUser: true,
@@ -575,7 +575,7 @@ const templates: SurveyTemplate[] = [
     settings: {
       title: 'Отзыв о продукте',
       description: 'Ваше мнение поможет нам улучшить продукт и сделать его еще лучше',
-      allowAnonymous: true,
+      allowAnonymous: false,
       showProgress: true,
       randomizeQuestions: false,
       oneResponsePerUser: true,
@@ -675,7 +675,7 @@ const templates: SurveyTemplate[] = [
     settings: {
       title: 'Оценка обучения',
       description: 'Ваше мнение поможет улучшить качество образовательного процесса',
-      allowAnonymous: true,
+      allowAnonymous: false,
       showProgress: true,
       randomizeQuestions: false,
       oneResponsePerUser: true,
@@ -758,6 +758,128 @@ const templates: SurveyTemplate[] = [
     settings: {
       title: 'Медицинский опрос',
       description: 'Ваша информация поможет улучшить качество медицинского обслуживания',
+      allowAnonymous: true,
+      showProgress: true,
+      randomizeQuestions: false,
+      oneResponsePerUser: true,
+      hideCreator: false
+    }
+  },
+  {
+    id: 'social-research',
+    title: 'Социальное исследование',
+    description: 'Изучите общественное мнение, социальные тенденции и поведение различных групп населения.',
+    category: 'Социология',
+    icon: '🌍',
+    questions: 12,
+    estimatedTime: '6-8 мин',
+    difficulty: 'hard',
+    popularity: 79,
+    color: '#795548',
+    fullDescription: 'Этот шаблон поможет провести комплексное социальное исследование для изучения общественного мнения, социальных тенденций и поведения различных групп населения.',
+    useCases: [
+      'Изучение общественного мнения',
+      'Анализ социальных тенденций',
+      'Исследование поведения молодежи',
+      'Оценка социальных программ'
+    ],
+    questionsData: [
+      {
+        id: 'q1',
+        type: 'single_choice',
+        title: 'Какой у вас возраст?',
+        description: 'Эта информация поможет нам лучше понять нашу аудиторию',
+        required: true,
+        options: ['18-24 года', '25-34 года', '35-44 года', '45-54 года', '55-64 года', '65+ лет']
+      },
+      {
+        id: 'q2',
+        type: 'single_choice',
+        title: 'В каком городе вы проживаете?',
+        description: 'Укажите тип населенного пункта',
+        required: true,
+        options: ['Москва', 'Санкт-Петербург', 'Город-миллионник', 'Город 100-500 тыс. жителей', 'Город до 100 тыс. жителей', 'Поселок/село']
+      },
+      {
+        id: 'q3',
+        type: 'single_choice',
+        title: 'Какой у вас уровень образования?',
+        required: true,
+        options: ['Среднее', 'Среднее специальное', 'Неполное высшее', 'Высшее', 'Ученая степень']
+      },
+      {
+        id: 'q4',
+        type: 'single_choice',
+        title: 'Как вы оцениваете свое материальное положение?',
+        required: true,
+        options: ['Очень хорошее', 'Хорошее', 'Среднее', 'Плохое', 'Очень плохое']
+      },
+      {
+        id: 'q5',
+        type: 'multiple_choice',
+        title: 'Какие социальные проблемы вас больше всего беспокоят?',
+        description: 'Выберите все подходящие варианты',
+        required: true,
+        options: ['Безработица', 'Инфляция', 'Коррупция', 'Здравоохранение', 'Образование', 'ЖКХ', 'Пенсии', 'Экология'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q6',
+        type: 'scale',
+        title: 'Насколько вы доверяете государственным институтам?',
+        description: 'Оцените от 1 до 10, где 1 — совсем не доверяю, 10 — полностью доверяю',
+        required: true,
+        scaleMin: 1,
+        scaleMax: 10,
+        scaleLabels: { min: 'Не доверяю', max: 'Полностью доверяю' }
+      },
+      {
+        id: 'q7',
+        type: 'single_choice',
+        title: 'Как часто вы участвуете в общественной жизни?',
+        required: true,
+        options: ['Активно участвую', 'Иногда участвую', 'Редко участвую', 'Не участвую']
+      },
+      {
+        id: 'q8',
+        type: 'multiple_choice',
+        title: 'Откуда вы получаете новости?',
+        description: 'Выберите все источники, которые используете',
+        required: true,
+        options: ['Телевидение', 'Интернет-сайты', 'Социальные сети', 'Радио', 'Газеты', 'Мессенджеры'],
+        hasOtherOption: true
+      },
+      {
+        id: 'q9',
+        type: 'single_choice',
+        title: 'Как вы относитесь к современным технологиям?',
+        required: true,
+        options: ['Очень положительно', 'Скорее положительно', 'Нейтрально', 'Скорее отрицательно', 'Очень отрицательно']
+      },
+      {
+        id: 'q10',
+        type: 'boolean',
+        title: 'Считаете ли вы, что ваше мнение учитывается в обществе?',
+        required: true
+      },
+      {
+        id: 'q11',
+        type: 'textarea',
+        title: 'Какие изменения в обществе вы хотели бы видеть?',
+        description: 'Поделитесь своими мыслями о том, что можно улучшить в нашем обществе',
+        required: false
+      },
+      {
+        id: 'q12',
+        type: 'textarea',
+        title: 'Дополнительные комментарии',
+        description: 'Поделитесь любыми дополнительными мыслями',
+        required: false
+      }
+    ],
+    settings: {
+      title: 'Социальное исследование',
+      description: 'Ваше мнение важно для понимания общественных процессов и улучшения жизни общества',
       allowAnonymous: true,
       showProgress: true,
       randomizeQuestions: false,
@@ -984,6 +1106,30 @@ const TemplateDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Блок анонимности для медицинских и социальных опросов */}
+        {(template.id === 'health-survey' || template.id === 'social-research') && (
+          <div style={{
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{ fontSize: '20px' }}>🔒</div>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
+                Анонимный опрос
+              </div>
+              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.4' }}>
+                Анонимность обеспечивает честные ответы на деликатные вопросы. 
+                В настройках опроса вы сможете отключить анонимность при необходимости.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Дополнительная информация */}
         <div style={{
