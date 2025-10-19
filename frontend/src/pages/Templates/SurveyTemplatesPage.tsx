@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 
