@@ -226,13 +226,57 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .loading-spinner {
-      margin-bottom: 16px;
+      margin-bottom: 24px;
+      position: relative;
     }
 
+    /* Красивый оранжевый лоадер */
+    .orange-loader {
+      width: 60px;
+      height: 60px;
+      position: relative;
+    }
+
+    .orange-loader::before,
+    .orange-loader::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .orange-loader::before {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(45deg, #ff6b35, #f7931e);
+      animation-delay: 0s;
+    }
+
+    .orange-loader::after {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(45deg, #ff8c42, #ffa726);
+      top: 10px;
+      left: 10px;
+      animation-delay: 0.3s;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(0.8);
+        opacity: 0.7;
+      }
+    }
+
+    /* Альтернативный лоадер с вращением */
     .spinner-icon {
       width: 48px;
       height: 48px;
-      color: var(--tg-theme-button-color);
+      color: #ff6b35;
       animation: spin 1s linear infinite;
     }
 
@@ -244,6 +288,7 @@ const AIAnalyticsPage: React.FC = () => {
     .loading-text {
       font-size: 16px;
       color: var(--tg-hint-color);
+      margin-top: 8px;
     }
 
     /* Generating State */
@@ -263,13 +308,21 @@ const AIAnalyticsPage: React.FC = () => {
     .generating-spinner .spinner-icon {
       width: 48px;
       height: 48px;
-      color: var(--tg-button-color);
-      animation: pulse 2s ease-in-out infinite;
+      color: #ff6b35;
+      animation: brainPulse 2s ease-in-out infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.7; transform: scale(1.05); }
+    @keyframes brainPulse {
+      0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+        color: #ff6b35;
+      }
+      50% { 
+        opacity: 0.8; 
+        transform: scale(1.1);
+        color: #ff8c42;
+      }
     }
 
     .generating-text {
@@ -280,18 +333,20 @@ const AIAnalyticsPage: React.FC = () => {
 
     .progress-bar {
       width: 200px;
-      height: 4px;
-      background: var(--tg-hint-color);
-      border-radius: 2px;
+      height: 6px;
+      background: rgba(255, 107, 53, 0.2);
+      border-radius: 3px;
       overflow: hidden;
       margin-bottom: 16px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .progress-fill {
       height: 100%;
-      background: var(--tg-button-color);
-      border-radius: 2px;
+      background: linear-gradient(90deg, #ff6b35, #ff8c42, #ffa726);
+      border-radius: 3px;
       transition: width 0.3s ease;
+      box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
     }
 
     .generating-note {
@@ -312,8 +367,20 @@ const AIAnalyticsPage: React.FC = () => {
     .empty-icon {
       width: 64px;
       height: 64px;
-      color: var(--tg-hint-color);
+      color: #ff6b35;
       margin-bottom: 16px;
+      animation: gentlePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes gentlePulse {
+      0%, 100% {
+        opacity: 0.7;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
     }
 
     .empty-state h3 {
@@ -334,23 +401,27 @@ const AIAnalyticsPage: React.FC = () => {
       align-items: center;
       gap: 8px;
       padding: 12px 24px;
-      background: var(--tg-button-color);
-      color: var(--tg-button-text-color);
+      background: linear-gradient(135deg, #ff6b35, #ff8c42);
+      color: white;
       border: none;
       border-radius: 8px;
       font-size: 16px;
       font-weight: 500;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
     }
 
     .generate-button:hover {
-      opacity: 0.8;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
     }
 
     .generate-button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
     }
 
     .generate-button .button-icon {
@@ -858,7 +929,7 @@ const AIAnalyticsPage: React.FC = () => {
     }
   };
 
-  const connectWebSocket = () => {
+  const connectWebSocket = (retryCount = 0) => {
     if (wsRef.current) {
       wsRef.current.close();
     }
@@ -874,13 +945,25 @@ const AIAnalyticsPage: React.FC = () => {
       return;
     }
 
-    // Получаем базовый URL из переменных окружения или используем localhost
-    const baseUrl = window.location.hostname === 'localhost' ? 'ws://localhost:8000' : `wss://${window.location.hostname}`;
+    // Получаем базовый URL - если страница загружена по HTTPS, используем wss://
+    const isHttps = window.location.protocol === 'https:';
+    const baseUrl = window.location.hostname === 'localhost' 
+      ? (isHttps ? 'wss://localhost:8000' : 'ws://localhost:8000')
+      : (isHttps ? `wss://${window.location.hostname}` : `ws://${window.location.hostname}`);
     const wsUrl = `${baseUrl}/ws/analytics-progress/${surveyId}?telegram_id=${user.id}`;
-    console.log('Подключаемся к WebSocket:', wsUrl);
+    console.log(`Подключаемся к WebSocket (попытка ${retryCount + 1}):`, wsUrl);
+    console.log('Протокол страницы:', window.location.protocol);
+    console.log('Используем HTTPS:', isHttps);
     console.log('SurveyId:', surveyId);
     console.log('User ID:', user.id);
-    wsRef.current = new WebSocket(wsUrl);
+    
+    try {
+      wsRef.current = new WebSocket(wsUrl);
+    } catch (err) {
+      console.error('Ошибка создания WebSocket:', err);
+      setError('Не удается создать WebSocket соединение');
+      return;
+    }
 
     wsRef.current.onopen = () => {
       console.log('WebSocket подключен');
@@ -927,9 +1010,18 @@ const AIAnalyticsPage: React.FC = () => {
 
     wsRef.current.onclose = (event) => {
       console.log('WebSocket отключен:', event.code, event.reason);
-      console.log('Коды закрытия: 1000=нормальное, 1001=уход со страницы, 4000=отсутствует telegram_id, 4001=пользователь не найден, 4002=внутренняя ошибка');
+      console.log('Коды закрытия: 1000=нормальное, 1001=уход со страницы, 1006=неожиданное закрытие, 4000=отсутствует telegram_id, 4001=пользователь не найден, 4002=внутренняя ошибка');
       
-      if (event.code === 4000) {
+      if (event.code === 1006) {
+        if (retryCount < 3) {
+          console.log(`Попытка переподключения ${retryCount + 1}/3 через 2 секунды...`);
+          setTimeout(() => {
+            connectWebSocket(retryCount + 1);
+          }, 2000);
+        } else {
+          setError('WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на порту 8000, 2) Правильный ли URL, 3) Нет ли проблем с сетью');
+        }
+      } else if (event.code === 4000) {
         setError('Ошибка: отсутствует telegram_id');
       } else if (event.code === 4001) {
         setError('Ошибка: пользователь не найден');
@@ -941,9 +1033,30 @@ const AIAnalyticsPage: React.FC = () => {
     };
   };
 
-  const testWebSocket = () => {
+  const testWebSocket = async () => {
     console.log('Тестируем WebSocket подключение...');
-    connectWebSocket();
+    
+    // Сначала проверяем, доступен ли сервер
+    try {
+      const isHttps = window.location.protocol === 'https:';
+      const baseUrl = window.location.hostname === 'localhost' 
+        ? (isHttps ? 'https://localhost:8000' : 'http://localhost:8000')
+        : (isHttps ? `https://${window.location.hostname}` : `http://${window.location.hostname}`);
+      const healthUrl = `${baseUrl}/health`;
+      console.log('Проверяем доступность сервера:', healthUrl);
+      console.log('Протокол страницы:', window.location.protocol);
+      
+      const response = await fetch(healthUrl);
+      if (response.ok) {
+        console.log('Сервер доступен, подключаемся к WebSocket...');
+        connectWebSocket();
+      } else {
+        setError('Сервер недоступен (HTTP ' + response.status + '). Запустите бэкенд: cd backend && python run_api.py');
+      }
+    } catch (err) {
+      console.error('Ошибка проверки сервера:', err);
+      setError('Не удается подключиться к серверу. Убедитесь, что бэкенд запущен на порту 8000. Команда: cd backend && python run_api.py');
+    }
   };
 
   const generateAnalytics = async () => {
@@ -1244,7 +1357,7 @@ const AIAnalyticsPage: React.FC = () => {
   const renderLoadingState = () => (
     <div className="loading-container">
       <div className="loading-spinner">
-        <Loader2 className="spinner-icon" />
+        <div className="orange-loader"></div>
       </div>
       <div className="loading-text">Загружаем аналитику...</div>
     </div>
