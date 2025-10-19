@@ -946,14 +946,12 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     // Получаем базовый URL - если страница загружена по HTTPS, используем wss://
-    const isHttps = window.location.protocol === 'https:';
-    const baseUrl = window.location.hostname === 'localhost' 
-      ? (isHttps ? 'wss://localhost:8000' : 'ws://localhost:8000')
-      : (isHttps ? `wss://${window.location.hostname}` : `ws://${window.location.hostname}`);
+    // Для разработки всегда используем localhost:8000 с SSL
+    const baseUrl = 'wss://localhost:8000';
     const wsUrl = `${baseUrl}/ws/analytics-progress/${surveyId}?telegram_id=${user.id}`;
     console.log(`Подключаемся к WebSocket (попытка ${retryCount + 1}):`, wsUrl);
     console.log('Протокол страницы:', window.location.protocol);
-    console.log('Используем HTTPS:', isHttps);
+    console.log('Используем WSS для SSL сервера');
     console.log('SurveyId:', surveyId);
     console.log('User ID:', user.id);
     
@@ -1038,10 +1036,8 @@ const AIAnalyticsPage: React.FC = () => {
     
     // Сначала проверяем, доступен ли сервер
     try {
-      const isHttps = window.location.protocol === 'https:';
-      const baseUrl = window.location.hostname === 'localhost' 
-        ? (isHttps ? 'https://localhost:8000' : 'http://localhost:8000')
-        : (isHttps ? `https://${window.location.hostname}` : `http://${window.location.hostname}`);
+      // Для разработки всегда используем localhost:8000
+      const baseUrl = 'https://localhost:8000';
       const healthUrl = `${baseUrl}/health`;
       console.log('Проверяем доступность сервера:', healthUrl);
       console.log('Протокол страницы:', window.location.protocol);
