@@ -16,6 +16,8 @@ import SurveyInvitePage from './pages/Survey/SurveyInvitePage';
 import SurveyTakePage from './pages/Survey/SurveyTakePage';
 import SurveyCompletedPage from './pages/Survey/SurveyCompletedPage';
 import AIAnalyticsPage from './pages/Survey/AIAnalyticsPage';
+import { SurveyTemplatesPage } from './pages/Templates/SurveyTemplatesPage';
+import { KnowledgeBasePage } from './pages/Knowledge/KnowledgeBasePage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
@@ -51,6 +53,8 @@ function AppRoutes() {
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/settings/theme" element={<ThemeSettingsPage />} />
       <Route path="/settings/language" element={<LanguageSettingsPage />} />
+      <Route path="/templates" element={<SurveyTemplatesPage />} />
+      <Route path="/knowledge" element={<KnowledgeBasePage />} />
     </Routes>
   );
 }

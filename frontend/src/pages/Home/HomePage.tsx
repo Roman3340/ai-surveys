@@ -58,9 +58,14 @@ export const HomePage = () => {
     navigate(`/survey/${survey.id}`);
   };
 
-  const handleViewTopSurveys = () => {
+  const handleViewTemplates = () => {
     hapticFeedback?.light();
-    console.log('Топ опросов');
+    navigate('/templates');
+  };
+
+  const handleViewKnowledgeBase = () => {
+    hapticFeedback?.light();
+    navigate('/knowledge');
   };
 
   const handleDeleteSurvey = (survey: Survey) => {
@@ -96,7 +101,20 @@ export const HomePage = () => {
     setShowAllSurveys(true);
   };
 
-  const displayedSurveys = activeTab === 'created' ? userSurveys : participatedSurveys;
+  // Для таба "Где участвую" показываем только уникальные опросы
+  const getUniqueParticipatedSurveys = (surveys: any[]) => {
+    const uniqueSurveys = new Map();
+    surveys.forEach(survey => {
+      if (!uniqueSurveys.has(survey.id)) {
+        uniqueSurveys.set(survey.id, survey);
+      }
+    });
+    return Array.from(uniqueSurveys.values());
+  };
+
+  const displayedSurveys = activeTab === 'created' 
+    ? userSurveys 
+    : getUniqueParticipatedSurveys(participatedSurveys);
 
   const tabs = [
     { id: 'created' as const, label: 'Созданные' },
@@ -243,7 +261,7 @@ export const HomePage = () => {
         gap: '12px',
         marginBottom: '24px'
       }}>
-        {/* Топ опросов */}
+        {/* Шаблоны опросов */}
         <div style={{
           backgroundColor: 'var(--tg-section-bg-color)',
           borderRadius: '12px',
@@ -253,7 +271,7 @@ export const HomePage = () => {
           gap: '12px',
           cursor: 'pointer'
         }}
-        onClick={handleViewTopSurveys}>
+        onClick={handleViewTemplates}>
           <div style={{
             fontSize: '24px',
             width: '40px',
@@ -262,7 +280,7 @@ export const HomePage = () => {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            ⚡
+            📋
           </div>
           <div style={{ flex: 1 }}>
             <div style={{
@@ -270,13 +288,13 @@ export const HomePage = () => {
               fontWeight: '600',
               marginBottom: '2px'
             }}>
-              Топ опросов
+              Шаблоны опросов
             </div>
             <div style={{
               fontSize: '14px',
               color: 'var(--tg-hint-color)'
             }}>
-              Популярные опросы сообщества
+              Готовые шаблоны для быстрого старта
             </div>
           </div>
         </div>
@@ -290,7 +308,8 @@ export const HomePage = () => {
           alignItems: 'center',
           gap: '12px',
           cursor: 'pointer'
-        }}>
+        }}
+        onClick={handleViewKnowledgeBase}>
           <div style={{
             fontSize: '24px',
             width: '40px',
@@ -592,8 +611,8 @@ export const HomePage = () => {
       </div>
 
 
-      {/* Подробнее */}
-      {displayedSurveys.length > 3 && (
+      {/* Подробнее - только для созданных опросов */}
+      {activeTab === 'created' && displayedSurveys.length > 3 && (
         <div style={{
           padding: '16px',
           textAlign: 'center'

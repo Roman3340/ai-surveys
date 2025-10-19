@@ -1587,14 +1587,19 @@ const TextAnswersBlock: React.FC<{
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {answers.map((answer, index) => (
           <div key={index} style={{ 
-            padding: '8px 12px', 
+            padding: '12px', 
             backgroundColor: 'var(--tg-bg-color)', 
             borderRadius: '8px',
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
+            flexDirection: 'column',
+            gap: '8px'
           }}>
-            <span style={{ fontSize: '13px', color: 'var(--tg-text-color)' }}>
+            <div style={{ 
+              fontSize: '13px', 
+              color: 'var(--tg-text-color)',
+              lineHeight: '1.4',
+              wordBreak: 'break-word'
+            }}>
               {(() => {
                 let displayValue = answer.value || answer;
                 
@@ -1617,8 +1622,16 @@ const TextAnswersBlock: React.FC<{
                 
                 return displayValue;
               })()}
-            </span>
-            {!isAnonymous && renderUserLink(answer.user)}
+            </div>
+            {!isAnonymous && (
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                {renderUserLink(answer.user)}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -1999,50 +2012,63 @@ const AnswersPopup: React.FC<{
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         zIndex: 9999,
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        flexDirection: 'column',
         padding: '20px'
       }}
       onClick={onClose}
     >
+      {/* Заголовок с крестиком - всегда видимый */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '16px',
+        flexShrink: 0
+      }}>
+        <h3 style={{ 
+          margin: 0, 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: 'var(--tg-text-color)',
+          flex: 1
+        }}>
+          Все ответы
+        </h3>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'var(--tg-button-color)',
+            border: 'none',
+            color: 'white',
+            fontSize: '18px',
+            cursor: 'pointer',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            fontWeight: 'bold',
+            minWidth: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          ×
+        </button>
+      </div>
+      
+      {/* Контент с прокруткой */}
       <div 
         style={{
           backgroundColor: 'var(--tg-section-bg-color)',
           borderRadius: '12px',
           padding: '20px',
-          maxWidth: '95%',
-          width: '350px',
-          maxHeight: '80%',
+          flex: 1,
           overflow: 'auto',
           color: 'var(--tg-text-color)',
           border: '1px solid var(--tg-section-separator-color)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: '16px'
-        }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: 'var(--tg-text-color)' }}>
-            Все ответы
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--tg-hint-color)',
-              fontSize: '20px',
-              cursor: 'pointer',
-              padding: '4px',
-              borderRadius: '4px'
-            }}
-          >
-            ×
-          </button>
-        </div>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {answers.map((answer, index) => {
@@ -2105,10 +2131,13 @@ const AnswersPopup: React.FC<{
                 color: 'var(--tg-text-color)',
                 border: '1px solid var(--tg-section-separator-color)',
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                flexDirection: 'column',
+                gap: '8px'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ 
+                  lineHeight: '1.4',
+                  wordBreak: 'break-word'
+                }}>
                   {typeof displayValue === 'number' && displayValue >= 1 && displayValue <= 5 ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       {renderStars(displayValue)}
@@ -2121,25 +2150,30 @@ const AnswersPopup: React.FC<{
                   )}
                 </div>
                 {!isAnonymous && answer.user && (
-                  <a
-                    href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ 
-                      fontSize: '11px', 
-                      color: 'var(--tg-button-color)',
-                      textDecoration: 'none',
-                      marginLeft: '16px',
-                      cursor: answer.user.username ? 'pointer' : 'default'
-                    }}
-                    onClick={(e) => {
-                      if (!answer.user.username) {
-                        e.preventDefault();
-                      }
-                    }}
-                  >
-                    @{answer.user.username || 'Респондент'}
-                  </a>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <a
+                      href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ 
+                        fontSize: '11px', 
+                        color: 'var(--tg-button-color)',
+                        textDecoration: 'none',
+                        cursor: answer.user.username ? 'pointer' : 'default'
+                      }}
+                      onClick={(e) => {
+                        if (!answer.user.username) {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      @{answer.user.username || 'Респондент'}
+                    </a>
+                  </div>
                 )}
               </div>
             );
