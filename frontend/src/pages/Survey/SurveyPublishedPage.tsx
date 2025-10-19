@@ -78,8 +78,8 @@ export const SurveyPublishedPage = () => {
     
     hapticFeedback?.light();
     
-    // Создаем красивое сообщение без ссылки в тексте
-    const shareText = `📊 Пройдите пожалуйста мой опрос: "${surveyData.title}"\n\n💭 Ваше мнение очень важно для нас! ✨`;
+    // Создаем красивое сообщение без ссылки в тексте (с отступом после ссылки)
+    const shareText = `\n📊 Пройдите пожалуйста мой опрос: "${surveyData.title}"\n\n💭 Ваше мнение очень важно для нас! ✨`;
     
     // Открываем Telegram для шаринга (ссылка будет добавлена автоматически)
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareData.share_url)}&text=${encodeURIComponent(shareText)}`;

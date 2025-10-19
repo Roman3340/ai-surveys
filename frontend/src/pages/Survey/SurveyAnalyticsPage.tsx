@@ -248,6 +248,7 @@ const SummaryTab: React.FC<{
                     const allAnswers = getQuestionAnswers(question.id);
                     setShowAnswersPopup({ questionId: question.id, answers: allAnswers });
                   }}
+                  questionType={question.type}
                 />
               )}
               
@@ -1012,6 +1013,9 @@ const QuestionTab: React.FC<{
                 // Определяем, нужно ли показывать username сверху
                 const showUsernameOnTop = ['single_choice', 'multiple_choice', 'scale', 'rating'].includes(selectedQuestion.type);
                 
+                // Определяем, нужно ли показывать username справа (как у rating)
+                const showUsernameRight = ['rating', 'yes_no', 'date', 'number'].includes(selectedQuestion.type);
+                
                 return (
                   <div key={index} style={{
                     background: 'var(--tg-bg-color)',
@@ -1056,8 +1060,8 @@ const QuestionTab: React.FC<{
                       <div style={{ flex: 1 }}>
                         {renderQuestionAnswer(selectedQuestion, answer.value)}
                       </div>
-                      {/* Username справа для остальных типов вопросов */}
-                      {!showUsernameOnTop && !isAnonymous && answer.user && (
+                      {/* Username справа для определенных типов вопросов */}
+                      {showUsernameRight && !isAnonymous && answer.user && (
                         <a
                           href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
                           target="_blank"
@@ -1552,7 +1556,8 @@ const TextAnswersBlock: React.FC<{
   isAnonymous: boolean;
   onShowAll: () => void;
   onShowPopup: (answers: any[]) => void;
-}> = ({ answers, totalCount, hasMore, isAnonymous, onShowPopup }) => {
+  questionType?: string;
+}> = ({ answers, totalCount, hasMore, isAnonymous, onShowPopup, questionType }) => {
   const renderUserLink = (user: any) => {
     if (!user) return null;
     
@@ -1626,7 +1631,7 @@ const TextAnswersBlock: React.FC<{
             {!isAnonymous && (
               <div style={{ 
                 display: 'flex', 
-                justifyContent: 'center',
+                justifyContent: (questionType && ['yes_no', 'date', 'number'].includes(questionType)) ? 'flex-end' : 'center',
                 alignItems: 'center'
               }}>
                 {renderUserLink(answer.user)}
@@ -2675,8 +2680,8 @@ export default function SurveyAnalyticsPage() {
     
     hapticFeedback?.light();
     
-    // Создаем красивое сообщение без ссылки в тексте
-    const shareText = `📊 Пройдите пожалуйста мой опрос: "${survey.title}"\n\n💭 Ваше мнение очень важно для нас! ✨`;
+    // Создаем красивое сообщение без ссылки в тексте (с отступом после ссылки)
+    const shareText = `\n📊 Пройдите пожалуйста мой опрос: "${survey.title}"\n\n💭 Ваше мнение очень важно для нас! ✨`;
     
     // Открываем Telegram для шаринга (ссылка будет добавлена автоматически)
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(share.share_url)}&text=${encodeURIComponent(shareText)}`;
