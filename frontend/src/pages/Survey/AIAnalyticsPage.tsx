@@ -1190,7 +1190,7 @@ const AIAnalyticsPage: React.FC = () => {
               {metrics.key_metrics?.average_rating && (
                 <div className="metric-item">
                   <span className="metric-label">Средняя оценка:</span>
-                  <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}/5</span>
+                  <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}</span>
                 </div>
               )}
               {metrics.key_metrics?.satisfaction_score && (
