@@ -34,12 +34,12 @@ const articles: Article[] = [
     id: 'survey-templates-guide',
     title: 'Шаблоны опросов: Быстрый старт для любого исследования',
     description: 'Узнайте, как использовать готовые шаблоны опросов для быстрого создания профессиональных исследований без лишних усилий.',
-    category: 'Основы',
+    category: 'Шаблоны',
     icon: '📋',
     readTime: '4 мин',
     difficulty: 'beginner',
     popularity: 88,
-    color: '#2196F3',
+    color: '#FF5722',
     tags: ['шаблоны', 'быстрый старт', 'эффективность']
   },
   {
@@ -137,7 +137,8 @@ const categories = [
   { id: 'Стратегия', name: 'Стратегия', icon: '🎯' },
   { id: 'Технологии', name: 'Технологии', icon: '📱' },
   { id: 'Методология', name: 'Методология', icon: '⚖️' },
-  { id: 'Планирование', name: 'Планирование', icon: '⏰' }
+  { id: 'Планирование', name: 'Планирование', icon: '⏰' },
+  { id: 'Шаблоны', name: 'Шаблоны', icon: '📋' }
 ];
 
 export const KnowledgeBasePage = () => {
