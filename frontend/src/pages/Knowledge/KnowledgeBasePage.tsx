@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Clock, Target, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -129,21 +129,39 @@ export const KnowledgeBasePage = () => {
   const { hapticFeedback } = useTelegram();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   const filteredArticles = articles.filter(article => {
     const matchesCategory = selectedCategory === 'all' || 
-      article.category.toLowerCase().includes(selectedCategory.toLowerCase());
+      article.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
+  const handleCategorySelect = (categoryId: string) => {
+    hapticFeedback?.light();
+    setSelectedCategory(categoryId);
+    
+    // Прокручиваем к выбранной категории
+    setTimeout(() => {
+      if (categoriesRef.current) {
+        const selectedButton = categoriesRef.current.querySelector(`[data-category="${categoryId}"]`) as HTMLElement;
+        if (selectedButton) {
+          selectedButton.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      }
+    }, 100);
+  };
+
   const handleArticleClick = (article: Article) => {
     hapticFeedback?.light();
-    // TODO: Реализовать открытие статьи
-    console.log('Открыта статья:', article.title);
-    // navigate(`/knowledge/article/${article.id}`);
+    navigate(`/knowledge/article/${article.id}`);
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -238,16 +256,20 @@ export const KnowledgeBasePage = () => {
         </div>
 
         {/* Категории */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          overflowX: 'auto',
-          paddingBottom: '4px'
-        }}>
+        <div 
+          ref={categoriesRef}
+          style={{
+            display: 'flex',
+            gap: '8px',
+            overflowX: 'auto',
+            paddingBottom: '4px'
+          }}
+        >
           {categories.map(category => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
+              data-category={category.id}
+              onClick={() => handleCategorySelect(category.id)}
               style={{
                 background: selectedCategory === category.id 
                   ? 'var(--tg-button-color)' 
@@ -265,7 +287,8 @@ export const KnowledgeBasePage = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                flexShrink: 0
               }}
             >
               <span>{category.icon}</span>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -129,14 +129,34 @@ export const SurveyTemplatesPage = () => {
   const { hapticFeedback } = useTelegram();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   const filteredTemplates = templates.filter(template => {
     const matchesCategory = selectedCategory === 'all' || 
-      template.category.toLowerCase().includes(selectedCategory.toLowerCase());
+      template.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       template.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const handleCategorySelect = (categoryId: string) => {
+    hapticFeedback?.light();
+    setSelectedCategory(categoryId);
+    
+    // Прокручиваем к выбранной категории
+    setTimeout(() => {
+      if (categoriesRef.current) {
+        const selectedButton = categoriesRef.current.querySelector(`[data-category="${categoryId}"]`) as HTMLElement;
+        if (selectedButton) {
+          selectedButton.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      }
+    }, 100);
+  };
 
   const handleTemplateSelect = (template: SurveyTemplate) => {
     hapticFeedback?.light();
@@ -237,16 +257,20 @@ export const SurveyTemplatesPage = () => {
         </div>
 
         {/* Категории */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          overflowX: 'auto',
-          paddingBottom: '4px'
-        }}>
+        <div 
+          ref={categoriesRef}
+          style={{
+            display: 'flex',
+            gap: '8px',
+            overflowX: 'auto',
+            paddingBottom: '4px'
+          }}
+        >
           {categories.map(category => (
             <button
               key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
+              data-category={category.id}
+              onClick={() => handleCategorySelect(category.id)}
               style={{
                 background: selectedCategory === category.id 
                   ? 'var(--tg-button-color)' 
@@ -264,7 +288,8 @@ export const SurveyTemplatesPage = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                flexShrink: 0
               }}
             >
               <span>{category.icon}</span>
