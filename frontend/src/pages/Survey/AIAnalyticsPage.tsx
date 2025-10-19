@@ -1088,41 +1088,6 @@ const AIAnalyticsPage: React.FC = () => {
     };
   };
 
-  const testWebSocket = async () => {
-    console.log('Тестируем WebSocket подключение...');
-    
-    // Сначала проверяем, доступен ли сервер
-    try {
-      // Для разработки всегда используем localhost:8000
-      const baseUrl = 'https://localhost:8000';
-      const healthUrl = `${baseUrl}/health`;
-      console.log('Проверяем доступность сервера:', healthUrl);
-      console.log('Протокол страницы:', window.location.protocol);
-      
-      const response = await fetch(healthUrl, {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'omit',
-        // Для SSL сертификатов добавляем ignore certificate errors
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        console.log('Сервер доступен, подключаемся к WebSocket...');
-        connectWebSocket();
-      } else {
-        console.error('Health check failed:', response.status, response.statusText);
-        setError(`Сервер недоступен (HTTP ${response.status}). Проверьте, что бэкенд запущен с SSL сертификатами.`);
-      }
-    } catch (err) {
-      console.error('Ошибка проверки сервера:', err);
-      // Попробуем подключиться к WebSocket напрямую, если health check не работает
-      console.log('Health check не работает, пробуем подключиться к WebSocket напрямую...');
-      connectWebSocket();
-    }
-  };
 
   const generateAnalytics = async () => {
     if (!surveyId) return;
@@ -1524,13 +1489,6 @@ const AIAnalyticsPage: React.FC = () => {
           <p className="survey-title">{surveyTitle}</p>
         </div>
         <div className="header-actions">
-          <button 
-            className="action-button"
-            onClick={testWebSocket}
-            title="Тест WebSocket"
-          >
-            <Brain className="icon" />
-          </button>
           <button 
             className="action-button"
             onClick={refreshAnalytics}
