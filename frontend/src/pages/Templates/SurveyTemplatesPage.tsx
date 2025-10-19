@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 
 interface SurveyTemplate {
   id: string;
@@ -131,6 +132,11 @@ export const SurveyTemplatesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const categoriesRef = useRef<HTMLDivElement>(null);
+
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    targetRoute: '/'
+  });
 
   const filteredTemplates = templates.filter(template => {
     const matchesCategory = selectedCategory === 'all' || 

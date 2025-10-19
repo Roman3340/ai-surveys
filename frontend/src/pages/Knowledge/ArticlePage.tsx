@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Clock, Target, Star, CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 
 interface ArticleContent {
   id: string;
@@ -512,6 +513,11 @@ export const ArticlePage = () => {
   const { } = useTelegram();
 
   const article = articles.find(a => a.id === articleId);
+
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    targetRoute: '/knowledge'
+  });
 
   // Прокручиваем к началу статьи при открытии
   useEffect(() => {

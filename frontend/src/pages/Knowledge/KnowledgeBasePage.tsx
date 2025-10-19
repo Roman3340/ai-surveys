@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Clock, Target, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
+import { useStableBackButton } from '../../hooks/useStableBackButton';
 
 interface Article {
   id: string;
@@ -133,6 +134,11 @@ export const KnowledgeBasePage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const categoriesRef = useRef<HTMLDivElement>(null);
+
+  // Используем стабильный хук для кнопки назад
+  useStableBackButton({
+    targetRoute: '/'
+  });
 
   const filteredArticles = articles.filter(article => {
     const matchesCategory = selectedCategory === 'all' || 
