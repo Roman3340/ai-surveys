@@ -39,7 +39,7 @@ const articles: Article[] = [
     readTime: '4 мин',
     difficulty: 'beginner',
     popularity: 88,
-    color: '#FF5722',
+    color: '#E91E63',
     tags: ['шаблоны', 'быстрый старт', 'эффективность']
   },
   {
@@ -51,7 +51,7 @@ const articles: Article[] = [
     readTime: '7 мин',
     difficulty: 'intermediate',
     popularity: 92,
-    color: '#2196F3',
+    color: '#FFEB3B',
     tags: ['типы', 'выбор', 'эффективность']
   },
   {
@@ -75,7 +75,7 @@ const articles: Article[] = [
     readTime: '8 мин',
     difficulty: 'intermediate',
     popularity: 85,
-    color: '#9C27B0',
+    color: '#E91E63',
     tags: ['анализ', 'данные', 'интерпретация']
   },
   {
@@ -87,7 +87,7 @@ const articles: Article[] = [
     readTime: '4 мин',
     difficulty: 'beginner',
     popularity: 82,
-    color: '#607D8B',
+    color: '#9C27B0',
     tags: ['мобильные', 'адаптивность', 'UX']
   },
   {
@@ -123,7 +123,7 @@ const articles: Article[] = [
     readTime: '3 мин',
     difficulty: 'beginner',
     popularity: 75,
-    color: '#FF5722',
+    color: '#607D8B',
     tags: ['время', 'планирование', 'эффективность']
   }
 ];
@@ -131,14 +131,14 @@ const articles: Article[] = [
 const categories = [
   { id: 'all', name: 'Все', icon: '📚' },
   { id: 'Основы', name: 'Основы', icon: '📝' },
+  { id: 'Шаблоны', name: 'Шаблоны', icon: '📋' },
   { id: 'Вопросы', name: 'Вопросы', icon: '❓' },
   { id: 'Анализ', name: 'Анализ', icon: '📊' },
   { id: 'Маркетинг', name: 'Маркетинг', icon: '📈' },
   { id: 'Стратегия', name: 'Стратегия', icon: '🎯' },
   { id: 'Технологии', name: 'Технологии', icon: '📱' },
   { id: 'Методология', name: 'Методология', icon: '⚖️' },
-  { id: 'Планирование', name: 'Планирование', icon: '⏰' },
-  { id: 'Шаблоны', name: 'Шаблоны', icon: '📋' }
+  { id: 'Планирование', name: 'Планирование', icon: '⏰' }
 ];
 
 export const KnowledgeBasePage = () => {

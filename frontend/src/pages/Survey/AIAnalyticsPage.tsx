@@ -20,17 +20,17 @@ import { surveyApi, aiAnalytics } from '../../services/api';
 interface AnalyticsData {
   // Основные метрики
   metrics?: {
-    total_responses?: number;
-    completion_rate?: number;
-    sentiment_analysis?: {
-      positive_percentage: number;
-      negative_percentage: number;
-      neutral_percentage: number;
-    };
-    key_metrics?: {
-      average_rating: number | null;
-      most_common_issues: string[];
-      satisfaction_score: number;
+  total_responses?: number;
+  completion_rate?: number;
+  sentiment_analysis?: {
+    positive_percentage: number;
+    negative_percentage: number;
+    neutral_percentage: number;
+  };
+  key_metrics?: {
+    average_rating: number | null;
+    most_common_issues: string[];
+    satisfaction_score: number;
     };
   };
   
@@ -1013,7 +1013,7 @@ const AIAnalyticsPage: React.FC = () => {
     console.log('User ID:', user.id);
     
     try {
-      wsRef.current = new WebSocket(wsUrl);
+    wsRef.current = new WebSocket(wsUrl);
     } catch (err) {
       console.error('Ошибка создания WebSocket:', err);
       setError('Не удается создать WebSocket соединение');
@@ -1403,10 +1403,10 @@ const AIAnalyticsPage: React.FC = () => {
   const renderLoadingState = () => (
     <div className="loading-container">
       <div className="loading-content">
-        <div className="loading-spinner">
+      <div className="loading-spinner">
           <div className="orange-loader"></div>
-        </div>
-        <div className="loading-text">Загружаем аналитику...</div>
+      </div>
+      <div className="loading-text">Загружаем аналитику...</div>
         <div className="loading-subtitle">Подготавливаем данные для анализа</div>
         <div className="loading-dots">
           <span></span>
