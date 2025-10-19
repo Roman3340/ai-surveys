@@ -221,20 +221,71 @@ const AIAnalyticsPage: React.FC = () => {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 60px 20px;
+      min-height: 60vh;
+      padding: 40px 20px;
+    }
+
+    .loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
       text-align: center;
     }
 
     .loading-spinner {
-      margin-bottom: 24px;
       position: relative;
+      width: 80px;
+      height: 80px;
     }
 
     /* Красивый оранжевый лоадер */
     .orange-loader {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       position: relative;
+    }
+
+    .loading-text {
+      font-size: 20px;
+      color: var(--tg-theme-text-color);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .loading-subtitle {
+      font-size: 14px;
+      color: var(--tg-theme-hint-color);
+      opacity: 0.8;
+    }
+
+    .loading-dots {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      background: #ff6b35;
+      border-radius: 50%;
+      animation: loadingDots 1.4s ease-in-out infinite both;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+    @keyframes loadingDots {
+      0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
     }
 
     .orange-loader::before,
@@ -732,6 +783,12 @@ const AIAnalyticsPage: React.FC = () => {
       border-radius: 4px 4px 0 0;
       position: relative;
       min-height: 20px;
+      transition: height 0.3s ease;
+    }
+
+    .chart-bar[style*="height: 0%"] {
+      min-height: 0;
+      opacity: 0.3;
     }
 
     .chart-bar.positive {
@@ -1329,15 +1386,15 @@ const AIAnalyticsPage: React.FC = () => {
         <div className="visualization-card">
           <h3>Распределение тональности</h3>
           <div className="sentiment-chart">
-            <div className="chart-bar positive" style={{ height: `${Math.max(sentimentChart.positive || 0, 5)}%` }}>
+            <div className="chart-bar positive" style={{ height: `${sentimentChart.positive > 0 ? Math.max(sentimentChart.positive, 8) : 0}%` }}>
               <span className="bar-label">Позитивные</span>
               <span className="bar-value">{sentimentChart.positive !== null && sentimentChart.positive !== undefined ? `${sentimentChart.positive}%` : 'Н/Д'}</span>
             </div>
-            <div className="chart-bar neutral" style={{ height: `${Math.max(sentimentChart.neutral || 0, 5)}%` }}>
+            <div className="chart-bar neutral" style={{ height: `${sentimentChart.neutral > 0 ? Math.max(sentimentChart.neutral, 8) : 0}%` }}>
               <span className="bar-label">Нейтральные</span>
               <span className="bar-value">{sentimentChart.neutral !== null && sentimentChart.neutral !== undefined ? `${sentimentChart.neutral}%` : 'Н/Д'}</span>
             </div>
-            <div className="chart-bar negative" style={{ height: `${Math.max(sentimentChart.negative || 0, 5)}%` }}>
+            <div className="chart-bar negative" style={{ height: `${sentimentChart.negative > 0 ? Math.max(sentimentChart.negative, 8) : 0}%` }}>
               <span className="bar-label">Негативные</span>
               <span className="bar-value">{sentimentChart.negative !== null && sentimentChart.negative !== undefined ? `${sentimentChart.negative}%` : 'Н/Д'}</span>
             </div>
@@ -1380,10 +1437,18 @@ const AIAnalyticsPage: React.FC = () => {
 
   const renderLoadingState = () => (
     <div className="loading-container">
-      <div className="loading-spinner">
-        <div className="orange-loader"></div>
+      <div className="loading-content">
+        <div className="loading-spinner">
+          <div className="orange-loader"></div>
+        </div>
+        <div className="loading-text">Загружаем аналитику...</div>
+        <div className="loading-subtitle">Подготавливаем данные для анализа</div>
+        <div className="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-      <div className="loading-text">Загружаем аналитику...</div>
     </div>
   );
 
