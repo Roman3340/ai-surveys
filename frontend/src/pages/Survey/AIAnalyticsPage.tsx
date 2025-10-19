@@ -1180,17 +1180,6 @@ const AIAnalyticsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Частые проблемы */}
-          {metrics.key_metrics?.most_common_issues && metrics.key_metrics.most_common_issues.length > 0 && (
-            <div className="metric-card">
-              <h3>Частые проблемы</h3>
-              <ul className="issues-list">
-                {metrics.key_metrics.most_common_issues.map((issue: string, index: number) => (
-                  <li key={index} className="issue-item">{issue}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -1316,7 +1305,22 @@ const AIAnalyticsPage: React.FC = () => {
 
     // Извлекаем данные из правильной структуры
     const visualizations = analyticsData.visualizations || {};
-    const sentimentChart = visualizations.sentiment_chart || analyticsData.sentiment_chart || { positive: 0, negative: 0, neutral: 0 };
+    const metrics = analyticsData.metrics || {};
+    const sentimentAnalysis = metrics.sentiment_analysis || {};
+    
+    // Используем данные из sentiment_analysis вместо sentiment_chart
+    const sentimentChart = {
+      positive: (sentimentAnalysis as any).positive_percentage || 0,
+      negative: (sentimentAnalysis as any).negative_percentage || 0,
+      neutral: (sentimentAnalysis as any).neutral_percentage || 0
+    };
+    
+    // Отладочная информация
+    console.log('Данные тональности для визуализации:', {
+      sentimentAnalysis,
+      sentimentChart,
+      metrics
+    });
     const questionAnalysis = visualizations.question_analysis || analyticsData.question_analysis || [];
 
     return (
