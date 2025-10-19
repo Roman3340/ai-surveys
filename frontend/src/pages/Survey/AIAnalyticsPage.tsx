@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, 
@@ -719,7 +719,6 @@ const AIAnalyticsPage: React.FC = () => {
     }
   `;
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, hapticFeedback } = useTelegram();
   const [activeTab, setActiveTab] = useState<'metrics' | 'insights' | 'visualizations'>('metrics');
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
@@ -730,13 +729,15 @@ const AIAnalyticsPage: React.FC = () => {
   const [surveyTitle, setSurveyTitle] = useState<string>('');
   
   const wsRef = useRef<WebSocket | null>(null);
-  const surveyId = location.state?.surveyId;
+  const { surveyId } = useParams();
 
   // Настраиваем кнопку "Назад"
   useStableBackButton({ targetRoute: '/' });
 
   useEffect(() => {
+    console.log('AIAnalyticsPage mounted, surveyId:', surveyId);
     if (!surveyId) {
+      console.error('SurveyId is undefined in AIAnalyticsPage');
       navigate('/');
       return;
     }
@@ -752,6 +753,7 @@ const AIAnalyticsPage: React.FC = () => {
   }, [surveyId]);
 
   const loadSurveyInfo = async () => {
+    if (!surveyId) return;
     try {
       const response = await surveyApi.getSurvey(surveyId);
       setSurveyTitle(response.title);
@@ -761,6 +763,7 @@ const AIAnalyticsPage: React.FC = () => {
   };
 
   const loadAnalytics = async () => {
+    if (!surveyId) return;
     try {
       setLoading(true);
       setError(null);
@@ -832,6 +835,7 @@ const AIAnalyticsPage: React.FC = () => {
   };
 
   const generateAnalytics = async () => {
+    if (!surveyId) return;
     try {
       setGenerating(true);
       setError(null);

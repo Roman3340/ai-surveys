@@ -4454,7 +4454,13 @@ export default function SurveyAnalyticsPage() {
               stats={stats}
               loading={analyticsLoading}
               aiAnalyticsStatus={aiAnalyticsStatus}
-              onNavigateToAI={() => navigate(`/survey/${surveyId}/ai-analytics`)}
+              onNavigateToAI={() => {
+                if (!surveyId) {
+                  console.error('SurveyId is undefined!');
+                  return;
+                }
+                navigate(`/survey/${surveyId}/ai-analytics`);
+              }}
             />
           )}
           
