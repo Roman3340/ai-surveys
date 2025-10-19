@@ -692,7 +692,7 @@ const templates: SurveyTemplate[] = [
     estimatedTime: '3-5 мин',
     difficulty: 'medium',
     popularity: 87,
-    color: '#4CAF50',
+    color: '#F44336',
     fullDescription: 'Этот шаблон поможет собрать информацию о здоровье пациентов, их симптомах и качестве медицинского обслуживания для улучшения медицинских услуг.',
     useCases: [
       'Сбор анамнеза пациентов',
