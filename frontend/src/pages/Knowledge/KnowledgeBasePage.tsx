@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Clock, User, TrendingUp, Target, Lightbulb, CheckCircle, AlertCircle, Star } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, TrendingUp, Target, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 
 interface Article {

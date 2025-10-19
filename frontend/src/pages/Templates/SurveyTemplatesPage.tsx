@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Star, Users, Clock, TrendingUp, Heart, Briefcase, GraduationCap, ShoppingCart, Home, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 
 interface SurveyTemplate {
