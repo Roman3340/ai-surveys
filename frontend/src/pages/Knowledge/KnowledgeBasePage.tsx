@@ -117,11 +117,14 @@ const articles: Article[] = [
 
 const categories = [
   { id: 'all', name: 'Все', icon: '📚' },
-  { id: 'basics', name: 'Основы', icon: '📝' },
-  { id: 'questions', name: 'Вопросы', icon: '❓' },
-  { id: 'analysis', name: 'Анализ', icon: '📊' },
-  { id: 'marketing', name: 'Маркетинг', icon: '📈' },
-  { id: 'strategy', name: 'Стратегия', icon: '🎯' }
+  { id: 'Основы', name: 'Основы', icon: '📝' },
+  { id: 'Вопросы', name: 'Вопросы', icon: '❓' },
+  { id: 'Анализ', name: 'Анализ', icon: '📊' },
+  { id: 'Маркетинг', name: 'Маркетинг', icon: '📈' },
+  { id: 'Стратегия', name: 'Стратегия', icon: '🎯' },
+  { id: 'Технологии', name: 'Технологии', icon: '📱' },
+  { id: 'Методология', name: 'Методология', icon: '⚖️' },
+  { id: 'Планирование', name: 'Планирование', icon: '⏰' }
 ];
 
 export const KnowledgeBasePage = () => {
@@ -199,27 +202,8 @@ export const KnowledgeBasePage = () => {
         zIndex: 10
       }}>
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
           marginBottom: '16px'
         }}>
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--tg-text-color)',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <ArrowLeft size={20} />
-          </button>
           <h1 style={{
             fontSize: '24px',
             fontWeight: '600',

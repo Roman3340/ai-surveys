@@ -117,11 +117,14 @@ const templates: SurveyTemplate[] = [
 
 const categories = [
   { id: 'all', name: 'Все', icon: '📋' },
-  { id: 'business', name: 'Бизнес', icon: '💼' },
-  { id: 'marketing', name: 'Маркетинг', icon: '📊' },
-  { id: 'education', name: 'Образование', icon: '🎓' },
-  { id: 'events', name: 'События', icon: '🎉' },
-  { id: 'health', name: 'Здоровье', icon: '🏥' }
+  { id: 'Бизнес', name: 'Бизнес', icon: '💼' },
+  { id: 'HR', name: 'HR', icon: '👥' },
+  { id: 'Маркетинг', name: 'Маркетинг', icon: '📊' },
+  { id: 'События', name: 'События', icon: '🎉' },
+  { id: 'Продукт', name: 'Продукт', icon: '🛍️' },
+  { id: 'Образование', name: 'Образование', icon: '🎓' },
+  { id: 'Здоровье', name: 'Здоровье', icon: '🏥' },
+  { id: 'Социология', name: 'Социология', icon: '🌍' }
 ];
 
 export const SurveyTemplatesPage = () => {
@@ -200,27 +203,8 @@ export const SurveyTemplatesPage = () => {
         zIndex: 10
       }}>
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
           marginBottom: '16px'
         }}>
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--tg-text-color)',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <ArrowLeft size={20} />
-          </button>
           <h1 style={{
             fontSize: '24px',
             fontWeight: '600',
