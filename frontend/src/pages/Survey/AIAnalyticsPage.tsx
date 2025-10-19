@@ -74,8 +74,8 @@ const AIAnalyticsPage: React.FC = () => {
     /* AI Analytics Page Styles */
     .ai-analytics-page {
       min-height: 100vh;
-      background: var(--tg-theme-bg-color, #ffffff);
-      color: var(--tg-theme-text-color, #000000);
+      background: var(--tg-theme-bg-color);
+      color: var(--tg-theme-text-color);
     }
 
     /* Header */
@@ -83,8 +83,8 @@ const AIAnalyticsPage: React.FC = () => {
       display: flex;
       align-items: center;
       padding: 16px;
-      background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-      border-bottom: 1px solid var(--tg-theme-hint-color, #e9ecef);
+      background: var(--tg-theme-secondary-bg-color);
+      border-bottom: 1px solid var(--tg-theme-section-separator-color);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -104,13 +104,13 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .back-button:hover {
-      background: var(--tg-theme-hint-color, #e9ecef);
+      background: var(--tg-theme-hint-color);
     }
 
     .back-button .icon {
       width: 20px;
       height: 20px;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     .header-content {
@@ -122,12 +122,12 @@ const AIAnalyticsPage: React.FC = () => {
       font-size: 18px;
       font-weight: 600;
       margin: 0;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     .survey-title {
       font-size: 14px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
       margin: 4px 0 0 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -146,8 +146,8 @@ const AIAnalyticsPage: React.FC = () => {
       width: 40px;
       height: 40px;
       border: none;
-      background: var(--tg-theme-button-color, #007bff);
-      color: var(--tg-theme-button-text-color, #ffffff);
+      background: var(--tg-theme-button-color);
+      color: var(--tg-theme-button-text-color);
       border-radius: 8px;
       cursor: pointer;
       transition: opacity 0.2s;
@@ -198,7 +198,7 @@ const AIAnalyticsPage: React.FC = () => {
     .spinner-icon {
       width: 48px;
       height: 48px;
-      color: var(--tg-theme-button-color, #007bff);
+      color: var(--tg-theme-button-color);
       animation: spin 1s linear infinite;
     }
 
@@ -209,7 +209,7 @@ const AIAnalyticsPage: React.FC = () => {
 
     .loading-text {
       font-size: 16px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
     }
 
     /* Generating State */
@@ -229,7 +229,7 @@ const AIAnalyticsPage: React.FC = () => {
     .generating-spinner .spinner-icon {
       width: 48px;
       height: 48px;
-      color: var(--tg-theme-button-color, #007bff);
+      color: var(--tg-theme-button-color);
       animation: pulse 2s ease-in-out infinite;
     }
 
@@ -240,14 +240,14 @@ const AIAnalyticsPage: React.FC = () => {
 
     .generating-text {
       font-size: 16px;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
       margin-bottom: 16px;
     }
 
     .progress-bar {
       width: 200px;
       height: 4px;
-      background: var(--tg-theme-hint-color, #e9ecef);
+      background: var(--tg-theme-hint-color);
       border-radius: 2px;
       overflow: hidden;
       margin-bottom: 16px;
@@ -255,14 +255,14 @@ const AIAnalyticsPage: React.FC = () => {
 
     .progress-fill {
       height: 100%;
-      background: var(--tg-theme-button-color, #007bff);
+      background: var(--tg-theme-button-color);
       border-radius: 2px;
       transition: width 0.3s ease;
     }
 
     .generating-note {
       font-size: 14px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
     }
 
     /* Empty State */
@@ -278,7 +278,7 @@ const AIAnalyticsPage: React.FC = () => {
     .empty-icon {
       width: 64px;
       height: 64px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
       margin-bottom: 16px;
     }
 
@@ -286,12 +286,12 @@ const AIAnalyticsPage: React.FC = () => {
       font-size: 18px;
       font-weight: 600;
       margin: 0 0 8px 0;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     .empty-state p {
       font-size: 14px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
       margin: 0 0 24px 0;
     }
 
@@ -300,8 +300,8 @@ const AIAnalyticsPage: React.FC = () => {
       align-items: center;
       gap: 8px;
       padding: 12px 24px;
-      background: var(--tg-theme-button-color, #007bff);
-      color: var(--tg-theme-button-text-color, #ffffff);
+      background: var(--tg-theme-button-color);
+      color: var(--tg-theme-button-text-color);
       border: none;
       border-radius: 8px;
       font-size: 16px;
@@ -327,8 +327,8 @@ const AIAnalyticsPage: React.FC = () => {
     /* Tabs */
     .analytics-tabs {
       display: flex;
-      background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-      border-bottom: 1px solid var(--tg-theme-hint-color, #e9ecef);
+      background: var(--tg-theme-secondary-bg-color);
+      border-bottom: 1px solid var(--tg-theme-section-separator-color);
       overflow-x: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
@@ -345,7 +345,7 @@ const AIAnalyticsPage: React.FC = () => {
       padding: 12px 16px;
       border: none;
       background: transparent;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
@@ -355,12 +355,12 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .tab-button:hover {
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     .tab-button.active {
-      color: var(--tg-theme-button-color, #007bff);
-      border-bottom-color: var(--tg-theme-button-color, #007bff);
+      color: var(--tg-theme-button-color);
+      border-bottom-color: var(--tg-theme-button-color);
     }
 
     .tab-button .icon {
@@ -380,17 +380,17 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .metric-card {
-      background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+      background: var(--tg-theme-section-bg-color);
       border-radius: 12px;
       padding: 16px;
-      border: 1px solid var(--tg-theme-hint-color, #e9ecef);
+      border: 1px solid var(--tg-theme-section-separator-color);
     }
 
     .metric-card h3 {
       font-size: 16px;
       font-weight: 600;
       margin: 0 0 12px 0;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     .metric-item {
@@ -398,7 +398,7 @@ const AIAnalyticsPage: React.FC = () => {
       justify-content: space-between;
       align-items: center;
       padding: 8px 0;
-      border-bottom: 1px solid var(--tg-theme-hint-color, #e9ecef);
+      border-bottom: 1px solid var(--tg-theme-section-separator-color);
     }
 
     .metric-item:last-child {
@@ -407,13 +407,13 @@ const AIAnalyticsPage: React.FC = () => {
 
     .metric-label {
       font-size: 14px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
     }
 
     .metric-value {
       font-size: 14px;
       font-weight: 600;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     /* Sentiment Bars */
@@ -465,8 +465,8 @@ const AIAnalyticsPage: React.FC = () => {
     .issue-item {
       padding: 6px 0;
       font-size: 14px;
-      color: var(--tg-theme-text-color, #000000);
-      border-bottom: 1px solid var(--tg-theme-hint-color, #e9ecef);
+      color: var(--tg-theme-text-color);
+      border-bottom: 1px solid var(--tg-theme-section-separator-color);
     }
 
     .issue-item:last-child {
@@ -481,10 +481,10 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .insight-card {
-      background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+      background: var(--tg-theme-section-bg-color);
       border-radius: 12px;
       padding: 16px;
-      border: 1px solid var(--tg-theme-hint-color, #e9ecef);
+      border: 1px solid var(--tg-theme-section-separator-color);
     }
 
     .insight-card.critical_problem {
@@ -540,7 +540,7 @@ const AIAnalyticsPage: React.FC = () => {
     .type-label {
       font-size: 16px;
       font-weight: 600;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     .priority-badge {
@@ -567,22 +567,22 @@ const AIAnalyticsPage: React.FC = () => {
 
     .insight-description {
       font-size: 14px;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
       line-height: 1.5;
       margin-bottom: 8px;
     }
 
     .insight-confidence {
       font-size: 12px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
     }
 
     /* Visualizations */
     .visualization-card {
-      background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+      background: var(--tg-theme-section-bg-color);
       border-radius: 12px;
       padding: 16px;
-      border: 1px solid var(--tg-theme-hint-color, #e9ecef);
+      border: 1px solid var(--tg-theme-section-separator-color);
       margin-bottom: 16px;
     }
 
@@ -590,7 +590,7 @@ const AIAnalyticsPage: React.FC = () => {
       font-size: 16px;
       font-weight: 600;
       margin: 0 0 16px 0;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     /* Sentiment Chart */
@@ -629,7 +629,7 @@ const AIAnalyticsPage: React.FC = () => {
       position: absolute;
       bottom: -20px;
       font-size: 12px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
       white-space: nowrap;
     }
 
@@ -638,7 +638,7 @@ const AIAnalyticsPage: React.FC = () => {
       top: -20px;
       font-size: 12px;
       font-weight: 600;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
     }
 
     /* Question Analysis */
@@ -649,16 +649,16 @@ const AIAnalyticsPage: React.FC = () => {
     }
 
     .question-item {
-      background: var(--tg-theme-bg-color, #ffffff);
+      background: var(--tg-theme-bg-color);
       border-radius: 8px;
       padding: 12px;
-      border: 1px solid var(--tg-theme-hint-color, #e9ecef);
+      border: 1px solid var(--tg-theme-section-separator-color);
     }
 
     .question-text {
       font-size: 14px;
       font-weight: 500;
-      color: var(--tg-theme-text-color, #000000);
+      color: var(--tg-theme-text-color);
       margin-bottom: 8px;
     }
 
@@ -675,7 +675,7 @@ const AIAnalyticsPage: React.FC = () => {
 
     .response-rate {
       font-size: 12px;
-      color: var(--tg-theme-hint-color, #6c757d);
+      color: var(--tg-theme-hint-color);
     }
 
     .question-themes {
@@ -686,8 +686,8 @@ const AIAnalyticsPage: React.FC = () => {
 
     .theme-tag {
       padding: 2px 6px;
-      background: var(--tg-theme-button-color, #007bff);
-      color: var(--tg-theme-button-text-color, #ffffff);
+      background: var(--tg-theme-button-color);
+      color: var(--tg-theme-button-text-color);
       border-radius: 4px;
       font-size: 11px;
       font-weight: 500;
@@ -769,10 +769,12 @@ const AIAnalyticsPage: React.FC = () => {
       setError(null);
 
       const response = await aiAnalytics.getAnalytics(surveyId);
+      console.log('Analytics response:', response.data);
       
       if (response.data.status === 'cached' || response.data.status === 'completed') {
         setAnalyticsData(response.data.data);
         setGenerating(false);
+        setLoading(false);
       } else if (response.data.status === 'generating') {
         setGenerating(true);
         setProgress(response.data.progress);
@@ -781,11 +783,11 @@ const AIAnalyticsPage: React.FC = () => {
         // Аналитика не найдена
         setAnalyticsData(null);
         setGenerating(false);
+        setLoading(false);
       }
     } catch (err) {
       console.error('Ошибка загрузки аналитики:', err);
       setError('Не удалось загрузить аналитику');
-    } finally {
       setLoading(false);
     }
   };
