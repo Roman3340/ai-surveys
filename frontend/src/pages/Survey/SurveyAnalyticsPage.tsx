@@ -2678,8 +2678,8 @@ export default function SurveyAnalyticsPage() {
     // Создаем красивое сообщение
     const shareText = `📊 Пройдите пожалуйста мой опрос: "${survey.title}"\n\n💭 Ваше мнение очень важно для нас! ✨\n\n🔗 Поделиться мнением: ${share.share_url}`;
     
-    // Открываем Telegram для шаринга
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(share.share_url)}&text=${encodeURIComponent(shareText)}`;
+    // Открываем Telegram для шаринга (убираем url параметр, чтобы не дублировать ссылку)
+    const telegramUrl = `https://t.me/share/url?text=${encodeURIComponent(shareText)}`;
     window.open(telegramUrl, '_blank');
   };
 
