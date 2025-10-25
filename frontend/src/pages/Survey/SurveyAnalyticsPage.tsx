@@ -2842,16 +2842,13 @@ export default function SurveyAnalyticsPage() {
   };
 
   const handleShareTelegram = () => {
-    if (!share?.share_url || !survey) return;
+    if (!surveyId) return;
     
     hapticFeedback?.light();
     
-    // Создаем красивое сообщение без ссылки в тексте (с отступом после ссылки)
-    const shareText = `\n📊 Пройдите пожалуйста мой опрос: "${survey.title}"\n\n💭 Ваше мнение очень важно для нас! ✨`;
-    
-    // Открываем Telegram для шаринга (ссылка будет добавлена автоматически)
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(share.share_url)}&text=${encodeURIComponent(shareText)}`;
-    window.open(telegramUrl, '_blank');
+    // Открываем бота с deep link для получения сообщения с кнопкой
+    const botUrl = `https://t.me/insighto_bot?start=share_${surveyId}`;
+    window.open(botUrl, '_blank');
   };
 
   const getStatusBadge = () => {
@@ -4810,7 +4807,7 @@ export default function SurveyAnalyticsPage() {
 
           {/* Кнопки экспорта */}
           {(stats?.total_responses ?? 0) > 0 && (
-            <div style={{ marginTop: '10px' }}>
+            <div style={{ marginTop: '7px' }}>
               {analyticsTab === 'summary' && (
                 <button
                   onClick={exportAllAnswers}
