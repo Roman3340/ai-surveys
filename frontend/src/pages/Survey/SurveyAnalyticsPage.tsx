@@ -118,7 +118,6 @@ const SummaryTab: React.FC<{
     switch (question.type) {
       case 'text':
       case 'textarea':
-      case 'yes_no':
       case 'date':
       case 'number':
         return {
@@ -126,6 +125,18 @@ const SummaryTab: React.FC<{
           answers: answers.slice(0, showAllAnswers[question.id] ? answers.length : 5),
           totalCount: answers.length,
           hasMore: answers.length > 5
+        };
+      
+      case 'yes_no':
+        const yesNoStats = answers.reduce((acc: any, answer) => {
+          const value = answer.value === 'yes' ? 'Да' : answer.value === 'no' ? 'Нет' : answer.value;
+          acc[value] = (acc[value] || 0) + 1;
+          return acc;
+        }, {});
+        return {
+          type: 'single_choice',
+          stats: yesNoStats,
+          totalCount: answers.length
         };
       
       case 'single_choice':
@@ -428,8 +439,9 @@ const IndividualUserTab: React.FC<{
   responses: any[] | null;
   survey: Survey | null;
   loading: boolean;
-}> = ({ questions, responses, survey, loading }) => {
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  selectedUserId: string;
+  onUserSelect: (userId: string) => void;
+}> = ({ questions, responses, survey, loading, selectedUserId, onUserSelect }) => {
   const [currentUserIndex, setCurrentUserIndex] = useState<number>(1);
   const [manualUserInput, setManualUserInput] = useState<string>('1');
 
@@ -458,9 +470,9 @@ const IndividualUserTab: React.FC<{
   // Инициализируем первого пользователя по умолчанию
   useEffect(() => {
     if (userOptions.length > 0 && !selectedUserId) {
-      setSelectedUserId(userOptions[0].id);
+      onUserSelect(userOptions[0].id);
     }
-  }, [userOptions, selectedUserId]);
+  }, [userOptions, selectedUserId, onUserSelect]);
 
   // Получаем ответы текущего пользователя
   const getCurrentUserResponses = () => {
@@ -477,7 +489,7 @@ const IndividualUserTab: React.FC<{
 
   // Обработка выбора пользователя из выпадающего списка
   const handleUserSelect = (userId: string) => {
-    setSelectedUserId(userId);
+    onUserSelect(userId);
     const userOption = userOptions.find(option => option.id === userId);
     if (userOption) {
       setCurrentUserIndex(userOption.index + 1);
@@ -825,8 +837,9 @@ const QuestionTab: React.FC<{
   responses: any[] | null;
   survey: Survey | null;
   loading: boolean;
-}> = ({ questions, responses, survey, loading }) => {
-  const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
+  selectedQuestionId: string;
+  onQuestionSelect: (questionId: string) => void;
+}> = ({ questions, responses, survey, loading, selectedQuestionId, onQuestionSelect }) => {
 
   if (loading) {
     return (
@@ -951,7 +964,7 @@ const QuestionTab: React.FC<{
         </label>
         <select
           value={selectedQuestionId}
-          onChange={(e) => setSelectedQuestionId(e.target.value)}
+          onChange={(e) => onQuestionSelect(e.target.value)}
           style={{
             width: '100%',
             padding: '12px 16px',
@@ -1014,7 +1027,10 @@ const QuestionTab: React.FC<{
                 const showUsernameOnTop = ['single_choice', 'multiple_choice', 'scale', 'rating'].includes(selectedQuestion.type);
                 
                 // Определяем, нужно ли показывать username справа (как у rating)
-                const showUsernameRight = ['rating', 'yes_no', 'date', 'number'].includes(selectedQuestion.type);
+                const showUsernameRight = ['yes_no', 'date', 'number'].includes(selectedQuestion.type);
+                
+                // Определяем, нужно ли показывать username под ответом (для текстовых вопросов)
+                const showUsernameBelow = ['text', 'textarea'].includes(selectedQuestion.type);
                 
                 return (
                   <div key={index} style={{
@@ -1083,6 +1099,38 @@ const QuestionTab: React.FC<{
                         </a>
                       )}
                     </div>
+                    
+                    {/* Username под ответом для текстовых вопросов */}
+                    {showUsernameBelow && !isAnonymous && answer.user && (
+                      <div style={{
+                        textAlign: 'center',
+                        marginTop: '8px',
+                        padding: '6px 12px',
+                        backgroundColor: 'var(--tg-section-bg-color)',
+                        borderRadius: '6px',
+                        border: '1px solid var(--tg-section-separator-color)'
+                      }}>
+                        <a
+                          href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ 
+                            fontSize: '11px', 
+                            color: 'var(--tg-button-color)',
+                            textDecoration: 'none',
+                            cursor: answer.user.username ? 'pointer' : 'default',
+                            fontWeight: '500'
+                          }}
+                          onClick={(e) => {
+                            if (!answer.user.username) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          @{answer.user.username || 'Респондент'}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -2226,8 +2274,109 @@ export default function SurveyAnalyticsPage() {
   const [validationErrors, setValidationErrors] = useState<Record<string, { scaleMin?: string; scaleMax?: string }>>({});
   const [settingsValidationErrors, setSettingsValidationErrors] = useState<Record<string, string>>({});
   const [aiAnalyticsStatus, setAiAnalyticsStatus] = useState<'not_found' | 'exists' | 'generating' | 'loading'>('loading');
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   useStableBackButton({ targetRoute: '/' });
+
+  // Функции для экспорта CSV
+  const exportToCSV = (data: any[], filename: string) => {
+    if (!data || data.length === 0) return;
+    
+    // Создаем заголовки
+    const headers = Object.keys(data[0]);
+    
+    // Создаем CSV контент
+    const csvContent = [
+      headers.join(';'),
+      ...data.map(row => 
+        headers.map(header => {
+          const value = row[header];
+          // Экранируем значения, содержащие точку с запятой или кавычки
+          if (typeof value === 'string' && (value.includes(';') || value.includes('"') || value.includes('\n'))) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return value || '';
+        }).join(';')
+      )
+    ].join('\n');
+    
+    // Создаем и скачиваем файл
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportAllAnswers = () => {
+    if (!responsesPage || !questions) return;
+    
+    const csvData: any[] = [];
+    
+    questions.forEach((question) => {
+      const questionAnswers = responsesPage.flatMap((response: any) => {
+        const answers = response.answers || [];
+        return answers
+          .filter((a: any) => a.question_id === question.id)
+          .map((a: any) => ({
+            question_text: question.text,
+            question_type: question.type,
+            answer_value: a.value,
+            respondent: response.user?.username ? `@${response.user.username}` : `Респондент ${responsesPage.indexOf(response) + 1}`
+          }));
+      });
+      
+      csvData.push(...questionAnswers);
+    });
+    
+    exportToCSV(csvData, `survey_${surveyId}_all_answers.csv`);
+  };
+
+  const exportQuestionAnswers = () => {
+    if (!responsesPage || !questions || !selectedQuestionId) return;
+    
+    const selectedQuestion = questions.find(q => q.id === selectedQuestionId);
+    if (!selectedQuestion) return;
+    
+    const questionAnswers = responsesPage.flatMap((response: any) => {
+      const answers = response.answers || [];
+      return answers
+        .filter((a: any) => a.question_id === selectedQuestionId)
+        .map((a: any) => ({
+          question_text: selectedQuestion.text,
+          question_type: selectedQuestion.type,
+          answer_value: a.value,
+          respondent: response.user?.username ? `@${response.user.username}` : `Респондент ${responsesPage.indexOf(response) + 1}`
+        }));
+    });
+    
+    exportToCSV(questionAnswers, `survey_${surveyId}_question_${selectedQuestionId}.csv`);
+  };
+
+  const exportUserAnswers = () => {
+    if (!responsesPage || !questions || !selectedUserId) return;
+    
+    const userIndex = parseInt(selectedUserId.split('_')[1]);
+    const userResponse = responsesPage[userIndex];
+    if (!userResponse) return;
+    
+    const userAnswers = questions.map((question) => {
+      const answer = userResponse.answers?.find((a: any) => a.question_id === question.id);
+      return {
+        question_text: question.text,
+        question_type: question.type,
+        answer_value: answer?.value || '',
+        respondent: userResponse.user?.username ? `@${userResponse.user.username}` : `Респондент ${userIndex + 1}`
+      };
+    });
+    
+    exportToCSV(userAnswers, `survey_${surveyId}_user_${userIndex + 1}.csv`);
+  };
 
   // Проверяем статус ИИ аналитики
   const checkAiAnalyticsStatus = async () => {
@@ -4651,6 +4800,107 @@ export default function SurveyAnalyticsPage() {
             </button>
           </div>
 
+          {/* Кнопки экспорта */}
+          {(stats?.total_responses ?? 0) > 0 && (
+            <div style={{ marginTop: '16px' }}>
+              {analyticsTab === 'summary' && (
+                <button
+                  onClick={exportAllAnswers}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    backgroundColor: 'var(--tg-button-color)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7,10 12,15 17,10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Экспорт всех ответов
+                </button>
+              )}
+              
+              {analyticsTab === 'question' && selectedQuestionId && (
+                <button
+                  onClick={exportQuestionAnswers}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    backgroundColor: 'var(--tg-button-color)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7,10 12,15 17,10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Экспорт ответов на вопрос
+                </button>
+              )}
+              
+              {analyticsTab === 'user' && selectedUserId && (
+                <button
+                  onClick={exportUserAnswers}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    backgroundColor: 'var(--tg-button-color)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7,10 12,15 17,10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Экспорт ответов пользователя
+                </button>
+              )}
+              
+              <div style={{
+                textAlign: 'center',
+                marginTop: '8px',
+                fontSize: '11px',
+                color: 'var(--tg-hint-color)'
+              }}>
+                Экспорт в CSV формате
+              </div>
+            </div>
+          )}
+
           {/* Контент подтабов */}
           {analyticsTab === 'summary' && (
             <SummaryTab 
@@ -4687,6 +4937,8 @@ export default function SurveyAnalyticsPage() {
                 responses={responsesPage}
                 survey={survey}
                 loading={analyticsLoading}
+                selectedQuestionId={selectedQuestionId}
+                onQuestionSelect={setSelectedQuestionId}
               />
             ) 
           )}
@@ -4708,6 +4960,8 @@ export default function SurveyAnalyticsPage() {
                 responses={responsesPage}
                 survey={survey}
                 loading={analyticsLoading}
+                selectedUserId={selectedUserId}
+                onUserSelect={setSelectedUserId}
               />
             )
           )}
