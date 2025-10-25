@@ -1725,7 +1725,7 @@ const SingleChoiceChart: React.FC<{
   totalCount: number;
   options: string[];
 }> = ({ stats, totalCount }) => {
-  const colors = ['#FF6B6B', '#34C759', '#4ECDC4', '#DDA0DD', '#45B7D1', '#96CEB4', '#FFEAA7', '#98D8C8', '#FF3B30', '#8E8E93', '#007AFF', '#FF9500'];
+  const colors = ['#34C759', '#FF6B6B', '#4ECDC4', '#DDA0DD', '#45B7D1', '#96CEB4', '#FFEAA7', '#98D8C8', '#FF3B30', '#8E8E93', '#007AFF', '#FF9500'];
   
   return (
     <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
@@ -1801,6 +1801,13 @@ const SingleChoiceChart: React.FC<{
             </div>
           );
         })}
+        <div style={{ 
+          fontSize: '10px', 
+          color: 'var(--tg-hint-color)', 
+          marginTop: '8px' 
+        }}>
+          Всего ответов: {totalCount}
+        </div>
       </div>
     </div>
   );
@@ -2301,8 +2308,9 @@ export default function SurveyAnalyticsPage() {
       )
     ].join('\n');
     
-    // Создаем и скачиваем файл
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Создаем и скачиваем файл с правильной кодировкой
+    const BOM = '\uFEFF'; // Byte Order Mark для UTF-8
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
@@ -2326,7 +2334,7 @@ export default function SurveyAnalyticsPage() {
           .map((a: any) => ({
             question_text: question.text,
             question_type: question.type,
-            answer_value: a.value,
+            answer_value: a.value === 'yes' ? 'Да' : a.value === 'no' ? 'Нет' : a.value,
             respondent: response.user?.username ? `@${response.user.username}` : `Респондент ${responsesPage.indexOf(response) + 1}`
           }));
       });
@@ -2350,7 +2358,7 @@ export default function SurveyAnalyticsPage() {
         .map((a: any) => ({
           question_text: selectedQuestion.text,
           question_type: selectedQuestion.type,
-          answer_value: a.value,
+          answer_value: a.value === 'yes' ? 'Да' : a.value === 'no' ? 'Нет' : a.value,
           respondent: response.user?.username ? `@${response.user.username}` : `Респондент ${responsesPage.indexOf(response) + 1}`
         }));
     });
@@ -2370,7 +2378,7 @@ export default function SurveyAnalyticsPage() {
       return {
         question_text: question.text,
         question_type: question.type,
-        answer_value: answer?.value || '',
+        answer_value: answer?.value === 'yes' ? 'Да' : answer?.value === 'no' ? 'Нет' : (answer?.value || ''),
         respondent: userResponse.user?.username ? `@${userResponse.user.username}` : `Респондент ${userIndex + 1}`
       };
     });
@@ -4802,7 +4810,7 @@ export default function SurveyAnalyticsPage() {
 
           {/* Кнопки экспорта */}
           {(stats?.total_responses ?? 0) > 0 && (
-            <div style={{ marginTop: '16px' }}>
+            <div style={{ marginTop: '10px' }}>
               {analyticsTab === 'summary' && (
                 <button
                   onClick={exportAllAnswers}
@@ -4812,8 +4820,8 @@ export default function SurveyAnalyticsPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    padding: '12px 16px',
-                    backgroundColor: 'var(--tg-button-color)',
+                    padding: '16px 16px',
+                    backgroundColor: '#34C759',
                     color: 'white',
                     border: 'none',
                     borderRadius: '12px',
@@ -4841,8 +4849,8 @@ export default function SurveyAnalyticsPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    padding: '12px 16px',
-                    backgroundColor: 'var(--tg-button-color)',
+                    padding: '16px 16px',
+                    backgroundColor: '#34C759',
                     color: 'white',
                     border: 'none',
                     borderRadius: '12px',
@@ -4870,8 +4878,8 @@ export default function SurveyAnalyticsPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '8px',
-                    padding: '12px 16px',
-                    backgroundColor: 'var(--tg-button-color)',
+                    padding: '16px 16px',
+                    backgroundColor: '#34C759',
                     color: 'white',
                     border: 'none',
                     borderRadius: '12px',
@@ -4890,14 +4898,19 @@ export default function SurveyAnalyticsPage() {
                 </button>
               )}
               
-              <div style={{
-                textAlign: 'center',
-                marginTop: '8px',
-                fontSize: '11px',
-                color: 'var(--tg-hint-color)'
-              }}>
-                Экспорт в CSV формате
-              </div>
+              {/* Показываем подпись только если есть хотя бы одна кнопка */}
+              {((analyticsTab === 'summary') || 
+                (analyticsTab === 'question' && selectedQuestionId) || 
+                (analyticsTab === 'user' && selectedUserId)) && (
+                <div style={{
+                  textAlign: 'center',
+                  marginTop: '8px',
+                  fontSize: '11px',
+                  color: 'var(--tg-hint-color)'
+                }}>
+                  Экспорт в CSV формате
+                </div>
+              )}
             </div>
           )}
 
