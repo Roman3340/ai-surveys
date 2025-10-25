@@ -1217,7 +1217,7 @@ const TemplateDetailPage: React.FC = () => {
                 gap: '8px',
                 padding: '8px 0'
               }}>
-                <CheckCircle size={16} color="var(--tg-button-color)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <CheckCircle size={16} color={template.color} style={{ marginTop: '2px', flexShrink: 0 }} />
                 <span style={{
                   fontSize: '14px',
                   color: 'var(--tg-text-color)',

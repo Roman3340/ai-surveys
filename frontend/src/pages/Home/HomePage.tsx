@@ -61,6 +61,10 @@ export const HomePage = () => {
   const handleViewTemplates = () => {
     hapticFeedback?.light();
     navigate('/templates');
+    // Прокручиваем к верху при переходе
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const handleViewKnowledgeBase = () => {
