@@ -37,15 +37,25 @@ export { api };
 
 // Проверяем доступность основного API при загрузке
 if (typeof window !== 'undefined') {
-  checkApiHealth(PRIMARY_API).then(isHealthy => {
-    if (!isHealthy) {
-      console.warn('[API] Primary API недоступен, переключаемся на fallback');
+  // Сначала пробуем основной API
+  console.info('[API] Пробуем основной API:', PRIMARY_API);
+  
+  // Проверяем доступность с задержкой
+  setTimeout(() => {
+    checkApiHealth(PRIMARY_API).then(isHealthy => {
+      if (!isHealthy) {
+        console.warn('[API] Primary API недоступен, переключаемся на fallback');
+        activeApiBase = FALLBACK_API;
+        api.defaults.baseURL = FALLBACK_API;
+      } else {
+        console.info('[API] Основной API работает, остаемся на нем');
+      }
+    }).catch(() => {
+      console.warn('[API] Ошибка проверки Primary API, переключаемся на fallback');
       activeApiBase = FALLBACK_API;
       api.defaults.baseURL = FALLBACK_API;
-    } else {
-      console.info('[API] Используем основной API:', PRIMARY_API);
-    }
-  });
+    });
+  }, 1000);
 }
 
 // Диагностика: выводим базовый URL
