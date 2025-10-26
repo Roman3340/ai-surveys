@@ -1,19 +1,48 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
-// Диагностика: выводим базовый URL и проверяем доступность /health в проде
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line no-console
-  console.info('[API] base URL:', API_BASE);
-  // health лежит на корне (а не под /api)
-  const originBase = API_BASE.replace(/\/?api\/?$/, '');
-  const healthUrl = `${originBase.replace(/\/$/, '')}/health`;
-  if (import.meta.env.PROD) {
-    fetch(healthUrl, { method: 'GET' }).catch(() => {
-      // eslint-disable-next-line no-console
-      console.warn('[API] health check failed:', healthUrl);
+// API Configuration with fallback
+const PRIMARY_API = import.meta.env.VITE_API_BASE || 'https://ai-surveys.ru/api';
+const FALLBACK_API = import.meta.env.VITE_API_FALLBACK || 'http://localhost:8000/api';
+
+// Функция для проверки доступности API
+async function checkApiHealth(apiUrl: string): Promise<boolean> {
+  try {
+    const healthUrl = apiUrl.replace('/api', '/health');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(healthUrl, { 
+      method: 'GET',
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
+    return response.ok;
+  } catch {
+    return false;
   }
+}
+
+// Определяем активный API
+let activeApiBase = PRIMARY_API;
+
+// Проверяем доступность основного API при загрузке
+if (typeof window !== 'undefined') {
+  checkApiHealth(PRIMARY_API).then(isHealthy => {
+    if (!isHealthy) {
+      console.warn('[API] Primary API недоступен, переключаемся на fallback');
+      activeApiBase = FALLBACK_API;
+    } else {
+      console.info('[API] Используем основной API:', PRIMARY_API);
+    }
+  });
+}
+
+const API_BASE = activeApiBase;
+
+// Диагностика: выводим базовый URL
+if (typeof window !== 'undefined') {
+  console.info('[API] base URL:', API_BASE);
 }
 
 let accessToken: string | null = null;
@@ -46,6 +75,40 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    // Если ошибка сети и мы используем основной API, переключаемся на fallback
+    if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNREFUSED' || !error.response) {
+      if (activeApiBase === PRIMARY_API) {
+        console.warn('[API] Сетевая ошибка, переключаемся на fallback');
+        switchToFallbackApi();
+        // Повторяем запрос с fallback API
+        return api.request(error.config);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Функция для переключения API
+export function switchToFallbackApi() {
+  activeApiBase = FALLBACK_API;
+  api.defaults.baseURL = FALLBACK_API;
+  console.warn('[API] Переключились на fallback API:', FALLBACK_API);
+}
+
+export function switchToPrimaryApi() {
+  activeApiBase = PRIMARY_API;
+  api.defaults.baseURL = PRIMARY_API;
+  console.info('[API] Переключились на основной API:', PRIMARY_API);
+}
+
+// Функция для получения текущего API
+export function getCurrentApiBase() {
+  return activeApiBase;
+}
 
 export async function authWithTelegramInitData(initData: string) {
   const res = await api.post('/auth/telegram', { init_data: initData });
