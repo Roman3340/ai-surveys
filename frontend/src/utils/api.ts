@@ -4,6 +4,12 @@ import axios from 'axios';
 const PRIMARY_API = import.meta.env.VITE_API_BASE || 'https://ai-surveys.ru/api';
 const FALLBACK_API = import.meta.env.VITE_API_FALLBACK || 'http://localhost:8000/api';
 
+// Отладочная информация
+console.log('[DEBUG] VITE_API_BASE:', import.meta.env.VITE_API_BASE);
+console.log('[DEBUG] VITE_API_FALLBACK:', import.meta.env.VITE_API_FALLBACK);
+console.log('[DEBUG] PRIMARY_API:', PRIMARY_API);
+console.log('[DEBUG] FALLBACK_API:', FALLBACK_API);
+
 // Функция для проверки доступности API
 async function checkApiHealth(apiUrl: string): Promise<boolean> {
   try {
