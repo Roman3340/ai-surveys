@@ -26,23 +26,31 @@ async function checkApiHealth(apiUrl: string): Promise<boolean> {
 // Определяем активный API
 let activeApiBase = PRIMARY_API;
 
+// Создаем API instance с начальным URL
+const api = axios.create({
+  baseURL: PRIMARY_API,
+  timeout: 30000,
+});
+
+// Экспортируем api
+export { api };
+
 // Проверяем доступность основного API при загрузке
 if (typeof window !== 'undefined') {
   checkApiHealth(PRIMARY_API).then(isHealthy => {
     if (!isHealthy) {
       console.warn('[API] Primary API недоступен, переключаемся на fallback');
       activeApiBase = FALLBACK_API;
+      api.defaults.baseURL = FALLBACK_API;
     } else {
       console.info('[API] Используем основной API:', PRIMARY_API);
     }
   });
 }
 
-const API_BASE = activeApiBase;
-
 // Диагностика: выводим базовый URL
 if (typeof window !== 'undefined') {
-  console.info('[API] base URL:', API_BASE);
+  console.info('[API] base URL:', api.defaults.baseURL);
 }
 
 let accessToken: string | null = null;
@@ -56,11 +64,6 @@ export function setAccessToken(token: string | null) {
 export function getAccessToken() {
   return accessToken || localStorage.getItem('access_token');
 }
-
-export const api = axios.create({
-  baseURL: API_BASE,
-  timeout: 30000,
-});
 
 api.interceptors.request.use((config) => {
   const token = getAccessToken();
