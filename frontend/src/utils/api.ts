@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // API Configuration with fallback
-const PRIMARY_API = import.meta.env.VITE_API_BASE || 'https://ai-surveys.ru/api';
-const FALLBACK_API = import.meta.env.VITE_API_FALLBACK || 'http://localhost:8000/api';
+const PRIMARY_API = 'https://ai-surveys.ru/api';
+const FALLBACK_API = 'http://localhost:8000/api';
 
 // Отладочная информация
 console.log('[DEBUG] VITE_API_BASE:', import.meta.env.VITE_API_BASE);
