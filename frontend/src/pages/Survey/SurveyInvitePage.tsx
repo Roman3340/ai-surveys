@@ -83,7 +83,8 @@ export default function SurveyInvitePage() {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        background: 'var(--tg-bg-color)'
+        background: 'var(--tg-bg-color)',
+        marginTop: '-125px' // Компенсируем padding-top у body
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ 
@@ -109,7 +110,8 @@ export default function SurveyInvitePage() {
         alignItems: 'center', 
         justifyContent: 'center',
         background: 'var(--tg-bg-color)',
-        padding: '20px'
+        padding: '20px',
+        marginTop: '-125px' // Компенсируем padding-top у body
       }}>
         <div style={{ textAlign: 'center', maxWidth: '400px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
@@ -161,7 +163,8 @@ export default function SurveyInvitePage() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginTop: '-125px' // Компенсируем padding-top у body
       }}
     >
       <motion.div
