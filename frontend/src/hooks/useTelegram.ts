@@ -146,11 +146,6 @@ export const useTelegram = () => {
     
     window.addEventListener('resize', handleResize);
     
-    // Очистка слушателя при размонтировании
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-    
     // Получение данных пользователя
     if (tg.initDataUnsafe.user) {
       setUser(tg.initDataUnsafe.user);
@@ -166,6 +161,11 @@ export const useTelegram = () => {
     // Логирование для отладки
     console.log('Telegram environment:', isTelegramEnvironment());
     console.log('User data:', tg.initDataUnsafe.user);
+    
+    // Очистка слушателя при размонтировании
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const showAlert = (message: string) => {
