@@ -244,15 +244,14 @@ export default function SurveyInvitePage() {
                         background: '#2c2c2e',
                         border: '1px solid #48484a',
                         borderRadius: '8px',
-                        padding: '12px 16px',
+                        padding: '8px 12px',
                         fontSize: '12px',
                         color: '#ffffff',
-                        whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        minWidth: '180px',
-                        maxWidth: '250px',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        lineHeight: '1.3',
+                        maxWidth: '200px'
                       }}
                     >
                       Ваши ответы будут анонимными
@@ -307,15 +306,14 @@ export default function SurveyInvitePage() {
                         background: '#2c2c2e',
                         border: '1px solid #48484a',
                         borderRadius: '8px',
-                        padding: '12px 16px',
+                        padding: '8px 12px',
                         fontSize: '12px',
                         color: '#ffffff',
-                        whiteSpace: 'normal',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        minWidth: '200px',
-                        maxWidth: '280px',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        lineHeight: '1.3',
+                        maxWidth: '200px'
                       }}
                     >
                       <div style={{ marginBottom: '8px' }}>
@@ -385,15 +383,14 @@ export default function SurveyInvitePage() {
                         background: '#2c2c2e',
                         border: '1px solid #48484a',
                         borderRadius: '8px',
-                        padding: '12px 16px',
+                        padding: '8px 12px',
                         fontSize: '12px',
                         color: '#ffffff',
-                        whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        minWidth: '180px',
-                        maxWidth: '250px',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        lineHeight: '1.3',
+                        maxWidth: '200px'
                       }}
                     >
                       Можно участвовать только один раз
@@ -448,15 +445,14 @@ export default function SurveyInvitePage() {
                         background: '#2c2c2e',
                         border: '1px solid #48484a',
                         borderRadius: '8px',
-                        padding: '12px 16px',
+                        padding: '8px 12px',
                         fontSize: '12px',
                         color: '#ffffff',
-                        whiteSpace: 'nowrap',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                         zIndex: 9999,
-                        minWidth: '180px',
-                        maxWidth: '250px',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        lineHeight: '1.3',
+                        maxWidth: '200px'
                       }}
                     >
                       Вопросы будут в случайном порядке

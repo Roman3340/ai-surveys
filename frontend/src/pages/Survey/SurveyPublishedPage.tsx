@@ -74,16 +74,13 @@ export const SurveyPublishedPage = () => {
   };
 
   const handleShareTelegram = () => {
-    if (!shareData?.share_url || !surveyData) return;
+    if (!surveyId) return;
     
     hapticFeedback?.light();
     
-    // Создаем красивое сообщение без ссылки в тексте (с отступом после ссылки)
-    const shareText = `\n📊 Пройдите пожалуйста мой опрос: "${surveyData.title}"\n\n💭 Ваше мнение очень важно для нас! ✨`;
-    
-    // Открываем Telegram для шаринга (ссылка будет добавлена автоматически)
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareData.share_url)}&text=${encodeURIComponent(shareText)}`;
-    window.open(telegramUrl, '_blank');
+    // Открываем бота с deep link для получения сообщения с кнопкой
+    const botUrl = `https://t.me/insighto_bot?start=share_${surveyId}`;
+    window.open(botUrl, '_blank');
   };
 
   const handleDownloadQR = async () => {
@@ -93,33 +90,83 @@ export const SurveyPublishedPage = () => {
     hapticFeedback?.light();
     
     try {
-      // Создаем canvas для конвертации QR-кода в PNG
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
+      // Для мобильных устройств используем более простой подход
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx?.drawImage(img, 0, 0);
+      if (isMobile) {
+        // На мобильных устройствах открываем изображение в новой вкладке для сохранения
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>QR-код опроса</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                  body { 
+                    margin: 0; 
+                    padding: 20px; 
+                    background: white; 
+                    display: flex; 
+                    flex-direction: column; 
+                    align-items: center; 
+                    justify-content: center; 
+                    min-height: 100vh;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                  }
+                  img { 
+                    max-width: 100%; 
+                    height: auto; 
+                    border: 2px solid #ddd; 
+                    border-radius: 12px;
+                    margin-bottom: 20px;
+                  }
+                  .instructions {
+                    text-align: center;
+                    color: #666;
+                    font-size: 16px;
+                    line-height: 1.5;
+                  }
+                </style>
+              </head>
+              <body>
+                <img src="${shareData.qr_code}" alt="QR-код опроса" />
+                <div class="instructions">
+                  Нажмите и удерживайте изображение,<br>
+                  затем выберите "Сохранить в галерею"
+                </div>
+              </body>
+            </html>
+          `);
+        }
+      } else {
+        // Для десктопа используем старый метод
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
         
-        // Конвертируем в blob и скачиваем
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `survey-qr-${surveyData?.title || 'code'}.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }
-        }, 'image/png');
-      };
-      
-      img.src = shareData.qr_code;
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx?.drawImage(img, 0, 0);
+          
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `survey-qr-${surveyData?.title || 'code'}.png`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }
+          }, 'image/png');
+        };
+        
+        img.src = shareData.qr_code;
+      }
     } catch (error) {
       console.error('Ошибка скачивания QR-кода:', error);
     } finally {

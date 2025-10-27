@@ -3,6 +3,8 @@
 # Backend (локальная разработка)
 backend/
 
+deploy/
+
 # Python (Backend)
 __pycache__/
 *.py[cod]

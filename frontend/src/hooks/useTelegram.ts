@@ -129,6 +129,15 @@ export const useTelegram = () => {
     tg.ready();
     tg.expand();
     
+    // Принудительное расширение для полного экрана
+    // Это помогает решить проблему с кнопкой "Открыть"
+    setTimeout(() => {
+      tg.expand();
+      // Дополнительные попытки расширения
+      setTimeout(() => tg.expand(), 100);
+      setTimeout(() => tg.expand(), 500);
+    }, 100);
+    
     // Получение данных пользователя
     if (tg.initDataUnsafe.user) {
       setUser(tg.initDataUnsafe.user);
@@ -216,6 +225,13 @@ export const useTelegram = () => {
     tg.close();
   };
 
+  const forceExpand = () => {
+    // Принудительное расширение приложения
+    tg.expand();
+    setTimeout(() => tg.expand(), 50);
+    setTimeout(() => tg.expand(), 200);
+  };
+
   const backButton = {
     show: () => {
       try {
@@ -274,5 +290,6 @@ export const useTelegram = () => {
     hapticFeedback,
     backButton,
     close,
+    forceExpand,
   };
 };

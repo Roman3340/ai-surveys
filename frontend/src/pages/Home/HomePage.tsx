@@ -158,7 +158,7 @@ export const HomePage = () => {
       }}>
       {/* Шапка с приветствием */}
       <div style={{
-        padding: '24px 16px 16px 16px'
+        padding: '4px 16px 16px 16px'
       }}>
         <h1 style={{
           fontSize: '24px',

@@ -64,13 +64,16 @@ function AppRoutes() {
 }
 
 function App() {
-  const { isReady, theme: telegramTheme } = useTelegram();
+  const { isReady, theme: telegramTheme, forceExpand } = useTelegram();
   const { theme: appTheme } = useAppStore();
   const isInitialized = useRef(false);
 
-  // Синхронизация темы
+  // Синхронизация темы и принудительное расширение
   useEffect(() => {
     if (isReady) {
+      // Принудительное расширение для полного экрана
+      forceExpand();
+      
       // Определяем финальную тему
       let finalTheme = appTheme;
       
@@ -87,7 +90,7 @@ function App() {
         isInitialized.current = true;
       }
     }
-  }, [isReady, telegramTheme, appTheme]);
+  }, [isReady, telegramTheme, appTheme, forceExpand]);
 
   // Дополнительный эффект для принудительного применения темы при изменении appTheme
   useEffect(() => {
