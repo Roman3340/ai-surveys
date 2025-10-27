@@ -961,7 +961,7 @@ export default function SurveyTakePage() {
       backgroundColor: 'var(--tg-bg-color)',
       color: 'var(--tg-text-color)',
     }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--tg-section-separator-color)', marginTop: '-150px' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
         <h1 style={{ fontSize: '20px', fontWeight: '700', margin: '0 0 8px 0' }}>{survey.title}</h1>
         {survey.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, whiteSpace: 'pre-wrap', textAlign: 'justify' }}>{survey.description}</p>}
       </div>

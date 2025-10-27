@@ -1733,8 +1733,8 @@ const SingleChoiceChart: React.FC<{
       // Для вопросов "Да/Нет" используем фиксированные цвета
       return ['#34C759', '#FF6B6B']; // Зеленый для "Да", красный для "Нет"
     }
-    // Для остальных вопросов используем стандартную палитру
-    return ['#34C759', '#FF6B6B', '#4ECDC4', '#DDA0DD', '#45B7D1', '#96CEB4', '#FFEAA7', '#98D8C8', '#FF3B30', '#8E8E93', '#007AFF', '#FF9500'];
+    // Для остальных вопросов используем палитру, которая не начинается с зеленого и красного
+    return ['#4ECDC4', '#DDA0DD', '#45B7D1', '#96CEB4', '#FFEAA7', '#98D8C8', '#FF3B30', '#8E8E93', '#007AFF', '#FF9500', '#34C759', '#FF6B6B'];
   };
   
   const colors = getColors();
@@ -2344,100 +2344,18 @@ export default function SurveyAnalyticsPage() {
       )
     ].join('\n');
     
-    // Определяем, мобильное ли устройство
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-      // Для мобильных устройств открываем CSV в новой вкладке
-      const BOM = '\uFEFF'; // Byte Order Mark для UTF-8
-      const fullContent = BOM + csvContent;
-      
-      const newWindow = window.open();
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>${filename}</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <meta charset="utf-8">
-              <style>
-                body { 
-                  margin: 0; 
-                  padding: 20px; 
-                  background: white; 
-                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                }
-                .instructions {
-                  background: #f0f0f0;
-                  padding: 16px;
-                  border-radius: 8px;
-                  margin-bottom: 20px;
-                  font-size: 14px;
-                  line-height: 1.5;
-                }
-                .csv-content {
-                  background: #f8f8f8;
-                  padding: 16px;
-                  border-radius: 8px;
-                  font-family: monospace;
-                  font-size: 12px;
-                  white-space: pre-wrap;
-                  word-break: break-all;
-                  max-height: 400px;
-                  overflow-y: auto;
-                  border: 1px solid #ddd;
-                }
-                .download-btn {
-                  background: #007AFF;
-                  color: white;
-                  border: none;
-                  padding: 12px 24px;
-                  border-radius: 8px;
-                  font-size: 16px;
-                  cursor: pointer;
-                  margin-top: 16px;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="instructions">
-                <strong>Инструкция по сохранению файла:</strong><br>
-                1. Нажмите и удерживайте текст ниже<br>
-                2. Выберите "Выделить все"<br>
-                3. Скопируйте текст<br>
-                4. Откройте приложение "Заметки" или любой текстовый редактор<br>
-                5. Вставьте текст и сохраните как ${filename}
-              </div>
-              <div class="csv-content">${fullContent}</div>
-              <button class="download-btn" onclick="copyToClipboard()">Скопировать в буфер обмена</button>
-              <script>
-                function copyToClipboard() {
-                  const text = document.querySelector('.csv-content').textContent;
-                  navigator.clipboard.writeText(text).then(() => {
-                    alert('Текст скопирован в буфер обмена!');
-                  }).catch(() => {
-                    alert('Не удалось скопировать. Выделите текст вручную.');
-                  });
-                }
-              </script>
-            </body>
-          </html>
-        `);
-      }
-    } else {
-      // Для десктопа используем стандартный метод
-      const BOM = '\uFEFF'; // Byte Order Mark для UTF-8
-      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
+    // Используем стандартный метод скачивания для всех устройств
+    const BOM = '\uFEFF'; // Byte Order Mark для UTF-8
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const exportAllAnswers = () => {
@@ -2926,83 +2844,14 @@ export default function SurveyAnalyticsPage() {
     hapticFeedback?.light();
     
     try {
-      // Для мобильных устройств используем более простой подход
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      if (isMobile) {
-        // На мобильных устройствах открываем изображение в новой вкладке для сохранения
-        const newWindow = window.open();
-        if (newWindow) {
-          newWindow.document.write(`
-            <html>
-              <head>
-                <title>QR-код опроса</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                  body { 
-                    margin: 0; 
-                    padding: 20px; 
-                    background: white; 
-                    display: flex; 
-                    flex-direction: column; 
-                    align-items: center; 
-                    justify-content: center; 
-                    min-height: 100vh;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                  }
-                  img { 
-                    max-width: 100%; 
-                    height: auto; 
-                    border: 2px solid #ddd; 
-                    border-radius: 12px;
-                    margin-bottom: 20px;
-                  }
-                  .instructions {
-                    text-align: center;
-                    color: #666;
-                    font-size: 16px;
-                    line-height: 1.5;
-                  }
-                </style>
-              </head>
-              <body>
-                <img src="${share.qr_code}" alt="QR-код опроса" />
-                <div class="instructions">
-                  Нажмите и удерживайте изображение,<br>
-                  затем выберите "Сохранить в галерею"
-                </div>
-              </body>
-            </html>
-          `);
-        }
-      } else {
-        // Для десктопа используем старый метод
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx?.drawImage(img, 0, 0);
-          
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `survey-qr-${survey.title || 'code'}.png`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }
-          }, 'image/png');
-        };
-        
-        img.src = share.qr_code;
-      }
+      // Используем стандартный метод скачивания для всех устройств
+      const link = document.createElement('a');
+      link.href = share.qr_code;
+      link.download = `qr-code-survey-${survey.id}.png`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Ошибка скачивания QR-кода:', error);
     } finally {

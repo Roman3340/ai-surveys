@@ -1,5 +1,20 @@
 /* Глобальные стили в стиле Telegram */
 
+/* Принудительный полноэкранный режим для Telegram Mini Apps */
+html, body {
+  height: 100vh !important;
+  height: 100dvh !important; /* Для мобильных браузеров */
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  height: 100vh !important;
+  height: 100dvh !important;
+  overflow: auto;
+}
+
 :root {
   /* Светлая тема */
   --tg-bg-color: #efeff3;

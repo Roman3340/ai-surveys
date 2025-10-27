@@ -90,83 +90,14 @@ export const SurveyPublishedPage = () => {
     hapticFeedback?.light();
     
     try {
-      // Для мобильных устройств используем более простой подход
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      if (isMobile) {
-        // На мобильных устройствах открываем изображение в новой вкладке для сохранения
-        const newWindow = window.open();
-        if (newWindow) {
-          newWindow.document.write(`
-            <html>
-              <head>
-                <title>QR-код опроса</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                  body { 
-                    margin: 0; 
-                    padding: 20px; 
-                    background: white; 
-                    display: flex; 
-                    flex-direction: column; 
-                    align-items: center; 
-                    justify-content: center; 
-                    min-height: 100vh;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                  }
-                  img { 
-                    max-width: 100%; 
-                    height: auto; 
-                    border: 2px solid #ddd; 
-                    border-radius: 12px;
-                    margin-bottom: 20px;
-                  }
-                  .instructions {
-                    text-align: center;
-                    color: #666;
-                    font-size: 16px;
-                    line-height: 1.5;
-                  }
-                </style>
-              </head>
-              <body>
-                <img src="${shareData.qr_code}" alt="QR-код опроса" />
-                <div class="instructions">
-                  Нажмите и удерживайте изображение,<br>
-                  затем выберите "Сохранить в галерею"
-                </div>
-              </body>
-            </html>
-          `);
-        }
-      } else {
-        // Для десктопа используем старый метод
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx?.drawImage(img, 0, 0);
-          
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `survey-qr-${surveyData?.title || 'code'}.png`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }
-          }, 'image/png');
-        };
-        
-        img.src = shareData.qr_code;
-      }
+      // Используем стандартный метод скачивания для всех устройств
+      const link = document.createElement('a');
+      link.href = shareData.qr_code;
+      link.download = `qr-code-survey-${surveyId}.png`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Ошибка скачивания QR-кода:', error);
     } finally {

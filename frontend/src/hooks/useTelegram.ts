@@ -136,7 +136,20 @@ export const useTelegram = () => {
       // Дополнительные попытки расширения
       setTimeout(() => tg.expand(), 100);
       setTimeout(() => tg.expand(), 500);
+      setTimeout(() => tg.expand(), 1000);
     }, 100);
+    
+    // Дополнительное расширение при изменении размера окна
+    const handleResize = () => {
+      tg.expand();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Очистка слушателя при размонтировании
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
     
     // Получение данных пользователя
     if (tg.initDataUnsafe.user) {
@@ -227,9 +240,25 @@ export const useTelegram = () => {
 
   const forceExpand = () => {
     // Принудительное расширение приложения
+    const tg = isTelegramEnvironment() 
+      ? (WebApp as unknown as TelegramWebApp)
+      : getTelegramWebApp();
+    
     tg.expand();
     setTimeout(() => tg.expand(), 50);
     setTimeout(() => tg.expand(), 200);
+    setTimeout(() => tg.expand(), 500);
+    
+    // Дополнительные попытки для надежности
+    setTimeout(() => {
+      tg.expand();
+      // Попытка через viewport API если доступен
+      if ('visualViewport' in window) {
+        (window as any).visualViewport?.addEventListener('resize', () => {
+          tg.expand();
+        });
+      }
+    }, 1000);
   };
 
   const backButton = {

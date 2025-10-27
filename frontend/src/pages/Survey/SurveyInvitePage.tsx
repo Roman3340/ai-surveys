@@ -157,7 +157,7 @@ export default function SurveyInvitePage() {
       style={{ 
         minHeight: '100vh', 
         background: 'var(--tg-bg-color)',
-        padding: '40px 20px',
+        padding: '10px 20px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

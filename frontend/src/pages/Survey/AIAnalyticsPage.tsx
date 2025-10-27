@@ -1002,9 +1002,8 @@ const AIAnalyticsPage: React.FC = () => {
       return;
     }
 
-    // Получаем базовый URL - если страница загружена по HTTPS, используем wss://
-    // Для разработки всегда используем localhost:8001 с SSL
-    const baseUrl = 'wss://localhost:8001';
+    // Получаем базовый URL - используем удаленный сервер
+    const baseUrl = 'wss://ai-surveys.ru';
     const wsUrl = `${baseUrl}/ws/analytics-progress/${surveyId}?telegram_id=${user.id}`;
     console.log(`Подключаемся к WebSocket (попытка ${retryCount + 1}):`, wsUrl);
     console.log('Протокол страницы:', window.location.protocol);
@@ -1060,7 +1059,7 @@ const AIAnalyticsPage: React.FC = () => {
     wsRef.current.onerror = (error) => {
       console.error('WebSocket ошибка:', error);
       console.error('WebSocket URL был:', wsUrl);
-      setError('Ошибка подключения к серверу. Проверьте, что бэкенд запущен на порту 8001');
+        setError('Ошибка подключения к серверу. Проверьте, что бэкенд запущен на ai-surveys.ru');
     };
 
     wsRef.current.onclose = (event) => {
@@ -1074,7 +1073,7 @@ const AIAnalyticsPage: React.FC = () => {
             connectWebSocket(retryCount + 1);
           }, 2000);
         } else {
-          setError('WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на порту 8001, 2) Правильный ли URL, 3) Нет ли проблем с сетью');
+          setError('WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на ai-surveys.ru, 2) Правильный ли URL, 3) Нет ли проблем с сетью');
         }
       } else if (event.code === 4000) {
         setError('Ошибка: отсутствует telegram_id');
