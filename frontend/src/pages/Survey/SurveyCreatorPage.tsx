@@ -7,6 +7,7 @@ import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveSettings, saveQuestions, clearDraft } from '../../utils/surveyDraft';
 import { useAppStore } from '../../store/useAppStore';
 import { questionApi } from '../../services/api';
+import { ConditionalLogicEditor } from '../../components/ConditionalLogicEditor';
 
 // Типы для вопросов
 interface Question {
@@ -23,6 +24,7 @@ interface Question {
   scaleMax?: number; // Для scale
   scaleLabels?: { min: string; max: string }; // Для scale
   hasOtherOption?: boolean; // Для варианта "Другое"
+  conditionalLogic?: any; // Условная логика для показа других вопросов
 }
 
 // Типы для настроек
@@ -504,6 +506,7 @@ const SurveyCreatorPage: React.FC = () => {
             image_url: q.imageUrl,
             image_name: q.imageName,
             has_other_option: q.hasOtherOption || false,
+            conditional_logic: q.conditionalLogic || undefined,
           } as const;
         });
         // Последовательно или параллельно; используем последовательный сдержанный параллелизм
@@ -2451,6 +2454,17 @@ const QuestionsTab: React.FC<{
                     Обязательный вопрос
                   </label>
                 </div>
+
+                {/* Условная логика (только для поддерживаемых типов вопросов) */}
+                {question.type !== 'text' && question.type !== 'textarea' && (
+                  <ConditionalLogicEditor
+                    question={question}
+                    allQuestions={questions}
+                    onConditionChange={(conditionalLogic) => {
+                      onQuestionChange(question.id, { conditionalLogic: conditionalLogic || undefined });
+                    }}
+                  />
+                )}
               </div>
             ))}
             

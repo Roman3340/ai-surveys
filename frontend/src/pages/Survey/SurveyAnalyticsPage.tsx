@@ -4,10 +4,11 @@ import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X, Trash2, Downloa
 import { motion, AnimatePresence } from 'framer-motion';
 import { surveyApi, questionApi, aiAnalytics } from '../../services/api';
 import type { SurveyShareResponse } from '../../services/api';
-import type { Survey, SurveySettings, QuestionType } from '../../types';
+import type { Survey, SurveySettings, QuestionType, ConditionalLogic } from '../../types';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
+import { ConditionalLogicEditor } from '../../components/ConditionalLogicEditor';
 
 interface EditableQuestion {
   id: string;
@@ -24,6 +25,7 @@ interface EditableQuestion {
   scale_max_label?: string;
   image_url?: string;
   image_name?: string;
+  conditionalLogic?: ConditionalLogic | null;
 }
 
 // Компонент для таба "Сводка"
@@ -2490,7 +2492,8 @@ export default function SurveyAnalyticsPage() {
           scale_min_label: q.scaleMinLabel || q.scale_min_label,
           scale_max_label: q.scaleMaxLabel || q.scale_max_label,
           image_url: q.imageUrl || q.image_url,
-          image_name: q.imageName || q.image_name
+          image_name: q.imageName || q.image_name,
+          conditionalLogic: q.conditionalLogic || q.conditional_logic || null
         }));
         setQuestions(mapped);
         setEditedQuestions(JSON.parse(JSON.stringify(mapped)));
@@ -2529,7 +2532,8 @@ export default function SurveyAnalyticsPage() {
           scale_min_label: q.scaleMinLabel || q.scale_min_label,
           scale_max_label: q.scaleMaxLabel || q.scale_max_label,
           image_url: q.imageUrl || q.image_url,
-          image_name: q.imageName || q.image_name
+          image_name: q.imageName || q.image_name,
+          conditionalLogic: q.conditionalLogic || q.conditional_logic || null
         }));
         
         setQuestions(mappedQuestions);
@@ -2706,6 +2710,7 @@ export default function SurveyAnalyticsPage() {
             scale_max: q.scale_max,
             scale_min_label: q.scale_min_label,
             scale_max_label: q.scale_max_label,
+            conditional_logic: q.conditionalLogic || undefined,
           });
           newQuestionIds[q.id] = createdQuestion.id;
         } else {
@@ -2722,6 +2727,7 @@ export default function SurveyAnalyticsPage() {
             scale_max: q.scale_max,
             scale_min_label: q.scale_min_label,
             scale_max_label: q.scale_max_label,
+            conditional_logic: q.conditionalLogic || undefined,
           });
         }
       }
@@ -2740,11 +2746,12 @@ export default function SurveyAnalyticsPage() {
         scale_max: q.scaleMax || q.scale_max,
         scale_min_label: q.scaleMinLabel || q.scale_min_label,
         scale_max_label: q.scaleMaxLabel || q.scale_max_label,
-        image_url: q.imageUrl || q.image_url,
-        image_name: q.imageName || q.image_name
-      }));
-      setQuestions(mapped);
-      setEditedQuestions(JSON.parse(JSON.stringify(mapped)));
+          image_url: q.imageUrl || q.image_url,
+          image_name: q.imageName || q.image_name,
+          conditionalLogic: q.conditionalLogic || q.conditional_logic || null
+        }));
+        setQuestions(mapped);
+        setEditedQuestions(JSON.parse(JSON.stringify(mapped)));
       setDeletedQuestions([]);
       setEditingQuestions(false);
       hapticFeedback?.success();
@@ -3558,6 +3565,65 @@ export default function SurveyAnalyticsPage() {
               Обязательный вопрос
             </label>
           </div>
+
+          {/* Условная логика (только для поддерживаемых типов вопросов и если можно редактировать) */}
+          {question.type !== 'text' && question.type !== 'textarea' && editingQuestions && (
+            <>
+              {/* Показываем редактор условной логики только если: нет ответов на опрос ИЛИ это новый вопрос */}
+              {(canEdit || isNewQuestion) ? (
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--tg-section-separator-color)' }}>
+                  <ConditionalLogicEditor
+                    question={{
+                      id: question.id,
+                      type: question.type,
+                      title: question.text,
+                      text: question.text,
+                      required: question.is_required,
+                      order: question.order_index,
+                      orderIndex: question.order_index,
+                      options: question.options || [],
+                      conditionalLogic: question.conditionalLogic || null
+                    }}
+                    allQuestions={editedQuestions.map(q => ({
+                      id: q.id,
+                      type: q.type,
+                      title: q.text,
+                      text: q.text,
+                      required: q.is_required,
+                      order: q.order_index,
+                      orderIndex: q.order_index,
+                      options: q.options || []
+                    }))}
+                    onConditionChange={(conditionalLogic) => {
+                      updateEditedQuestion(index, { conditionalLogic: conditionalLogic || null });
+                    }}
+                  />
+                </div>
+              ) : (
+                // Показываем информацию, что условная логика недоступна для редактирования
+                question.conditionalLogic && (
+                  <div style={{ 
+                    marginTop: '16px', 
+                    paddingTop: '16px', 
+                    borderTop: '1px solid var(--tg-section-separator-color)',
+                    padding: '12px',
+                    backgroundColor: 'var(--tg-bg-color)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--tg-section-separator-color)'
+                  }}>
+                    <div style={{
+                      fontSize: '13px',
+                      color: 'var(--tg-hint-color)',
+                      textAlign: 'center',
+                      lineHeight: '1.4'
+                    }}>
+                      ⚙️ Условная логика настроена, но недоступна для редактирования, так как на опрос уже есть ответы
+                    </div>
+                  </div>
+                )
+              )}
+            </>
+          )}
         </div>
       </motion.div>
     );
@@ -4734,7 +4800,8 @@ export default function SurveyAnalyticsPage() {
                   scale_min: undefined,
                   scale_max: undefined,
                   scale_min_label: undefined,
-                  scale_max_label: undefined
+                  scale_max_label: undefined,
+                  conditionalLogic: null
                 };
                 setEditedQuestions([...editedQuestions, newQuestion]);
                 hapticFeedback?.light();

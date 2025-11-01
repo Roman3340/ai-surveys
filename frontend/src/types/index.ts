@@ -44,6 +44,46 @@ export interface Question {
   imageUrl?: string;
   imageName?: string;
   hasOtherOption?: boolean;
+  conditionalLogic?: ConditionalLogic;
+}
+
+// Условная логика для вопросов
+export interface ConditionalLogic {
+  // Для single_choice, yes_no - условия по конкретным ответам
+  conditions?: ConditionalCondition[];
+  
+  // Для multiple_choice - тип условия
+  conditionType?: 'any' | 'all' | 'count';
+  options?: string[];
+  minCount?: number;
+  
+  // Для scale, rating, number - условия по значениям
+  valueConditions?: ValueCondition[];
+  
+  // Для date - условия по датам
+  dateConditions?: DateCondition[];
+}
+
+export interface ConditionalCondition {
+  optionValue?: string; // Для single_choice
+  answer?: 'yes' | 'no'; // Для yes_no
+  showQuestions: string[]; // IDs вопросов для показа
+}
+
+export interface ValueCondition {
+  operator: 'less_than' | 'less_or_equal' | 'equal' | 'greater_or_equal' | 'greater_than' | 'range';
+  value?: number; // Для одного значения
+  min?: number; // Для range
+  max?: number; // Для range
+  showQuestions: string[];
+}
+
+export interface DateCondition {
+  operator: 'before' | 'before_or_equal' | 'equal' | 'after_or_equal' | 'after' | 'range';
+  date?: string;
+  startDate?: string; // Для range
+  endDate?: string; // Для range
+  showQuestions: string[];
 }
 
 export type QuestionType = 
