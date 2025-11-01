@@ -281,6 +281,11 @@ const SurveyCreatorPage: React.FC = () => {
             }
           }
           
+          // Очищаем conditionalLogic при изменении типа на неподдерживаемый
+          if (updates.type && (updates.type === 'text' || updates.type === 'textarea')) {
+            updatedQuestion.conditionalLogic = undefined;
+          }
+          
           // Валидация для шкалы: "От" не должно быть больше или равно "До"
           if (updatedQuestion.type === 'scale') {
             const scaleMin = updatedQuestion.scaleMin;

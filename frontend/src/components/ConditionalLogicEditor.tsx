@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ConditionalLogic, ConditionalCondition, ValueCondition, DateCondition } from '../types';
 
@@ -27,21 +27,47 @@ export const ConditionalLogicEditor: React.FC<ConditionalLogicEditorProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [logic, setLogic] = useState<ConditionalLogic | null>(question.conditionalLogic || null);
+  const prevPropLogicRef = useRef<ConditionalLogic | null>(question.conditionalLogic || null);
+  const prevLogicRef = useRef<ConditionalLogic | null>(question.conditionalLogic || null);
+  const isInitialMount = useRef(true);
 
   // Вопросы, которые можно показывать (только те, что идут после текущего)
   const currentOrder = question.order || question.orderIndex || 0;
-  const availableQuestions = allQuestions.filter(q => {
-    const qOrder = q.order || q.orderIndex || 0;
-    return qOrder > currentOrder && q.id !== question.id;
-  });
+  const availableQuestions = useMemo(() => {
+    return allQuestions.filter(q => {
+      const qOrder = q.order || q.orderIndex || 0;
+      return qOrder > currentOrder && q.id !== question.id;
+    });
+  }, [allQuestions, currentOrder, question.id]);
 
+  // Обновляем логику при изменении извне (из пропсов)
   useEffect(() => {
-    setLogic(question.conditionalLogic || null);
+    const newLogic = question.conditionalLogic || null;
+    // Проверяем, что значение действительно изменилось снаружи
+    const propChanged = JSON.stringify(prevPropLogicRef.current) !== JSON.stringify(newLogic);
+    if (propChanged) {
+      prevPropLogicRef.current = newLogic;
+      prevLogicRef.current = newLogic;
+      setLogic(newLogic);
+    }
   }, [question.conditionalLogic]);
 
+  // Вызываем onConditionChange только когда логика реально изменилась пользователем (не из пропсов)
   useEffect(() => {
-    onConditionChange(logic);
-  }, [logic, onConditionChange]);
+    // Пропускаем первый рендер при монтировании
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevLogicRef.current = logic;
+      return;
+    }
+    
+    // Проверяем, что логика действительно изменилась
+    const logicChanged = JSON.stringify(prevLogicRef.current) !== JSON.stringify(logic);
+    if (logicChanged) {
+      prevLogicRef.current = logic;
+      onConditionChange(logic);
+    }
+  }, [logic]); // Убрали onConditionChange из зависимостей
 
   // Инициализация логики при первом открытии
   const handleEnable = () => {
