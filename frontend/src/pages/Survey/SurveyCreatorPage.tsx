@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, HelpCircle, Eye, Plus, Trash2, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -2634,14 +2634,25 @@ const ConditionalLogicEditor: React.FC<{
     if (question.conditionalLogic?.enabled) {
       onConditionChange(undefined);
     } else {
+      // Правильно инициализируем условие с корректным значением
+      const firstQuestion = availableQuestions[0];
+      if (!firstQuestion) return;
+      
+      const operators = getAvailableOperators(firstQuestion.type);
+      const defaultValue = firstQuestion.type === 'scale' || firstQuestion.type === 'rating' || firstQuestion.type === 'number'
+        ? (firstQuestion.scaleMin || 1)
+        : firstQuestion.type === 'boolean'
+        ? 'yes'
+        : (firstQuestion.options?.[0] || '');
+      
       onConditionChange({
         enabled: true,
-        dependsOn: availableQuestions[0]?.id || '',
+        dependsOn: firstQuestion.id,
         conditions: [{
-          operator: availableQuestions[0] ? getAvailableOperators(availableQuestions[0].type)[0]?.value || 'equals' : 'equals',
-          value: ''
+          operator: operators[0]?.value || 'equals',
+          value: defaultValue
         }],
-        logicOperator: 'AND'
+        logicOperator: firstQuestion.type === 'multiple_choice' ? 'OR' : 'AND'
       });
     }
   };
@@ -3683,57 +3694,35 @@ const PreviewTab: React.FC<{
             </div>
             
             {/* Вопросы */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {questions.map((question, index) => {
-                const isConditional = question.conditionalLogic?.enabled;
-                const isVisible = shouldShowQuestion(question, currentAnswers);
-                const dependsOnQuestion = isConditional ? questions.find(q => q.id === question.conditionalLogic?.dependsOn) : null;
-                
-                // Формируем текст условия для подсказки
-                let conditionText = '';
-                if (isConditional && dependsOnQuestion && question.conditionalLogic) {
-                  const condition = question.conditionalLogic.conditions[0];
-                  if (condition) {
-                    const operatorLabels: Record<string, string> = {
-                      'equals': 'равно',
-                      'not_equals': 'не равно',
-                      'contains': 'содержит',
-                      'not_contains': 'не содержит',
-                      'greater_than': 'больше',
-                      'less_than': 'меньше',
-                      'greater_or_equal': 'больше или равно',
-                      'less_or_equal': 'меньше или равно',
-                      'date_after': 'после',
-                      'date_before': 'до',
-                      'date_on': 'равно дате'
-                    };
-                    conditionText = `${operatorLabels[condition.operator] || condition.operator} "${condition.value}"`;
+            <AnimatePresence>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {questions.map((question, index) => {
+                  const isConditional = question.conditionalLogic?.enabled;
+                  const isVisible = shouldShowQuestion(question, currentAnswers);
+                  
+                  // Скрываем условные вопросы, которые не должны показываться
+                  if (isConditional && !isVisible) {
+                    return null;
                   }
-                }
-                
-                return (
-                <div key={question.id} style={{ 
-                  marginBottom: '20px',
-                  marginLeft: isConditional ? '20px' : '0',
-                  paddingLeft: isConditional ? '16px' : '0',
-                  borderLeft: isConditional ? '3px solid var(--tg-button-color)' : 'none',
-                  opacity: isConditional && !isVisible ? 0.4 : 1,
-                  transition: 'opacity 0.3s ease',
-                  display: isConditional && !isVisible ? 'none' : 'block'
-                }}>
-                  {isConditional && (
-                    <div style={{
-                      fontSize: '12px',
-                      color: isVisible ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
-                      marginBottom: '8px',
-                      fontStyle: 'italic',
-                      padding: '6px 8px',
-                      backgroundColor: isVisible ? 'rgba(88, 101, 242, 0.1)' : 'rgba(128, 128, 128, 0.1)',
-                      borderRadius: '6px'
-                    }}>
-                      🔀 Условный: {isVisible ? '✅ Показывается' : '❌ Скрыт'} {dependsOnQuestion && conditionText ? `(если "${dependsOnQuestion.title}" ${conditionText})` : ''}
-                    </div>
-                  )}
+                  
+                  // Правильная нумерация видимых вопросов
+                  const visibleIndex = questions.slice(0, index + 1).filter((q, i) => {
+                    if (i === index) return true; // Текущий вопрос
+                    const qIsConditional = q.conditionalLogic?.enabled;
+                    return !qIsConditional || shouldShowQuestion(q, currentAnswers);
+                  }).length - 1;
+                  
+                  return (
+                  <motion.div
+                    key={question.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    style={{ 
+                      marginBottom: '20px'
+                    }}
+                  >
                   <label style={{
                     display: 'block',
                     fontSize: '16px',
@@ -3741,7 +3730,7 @@ const PreviewTab: React.FC<{
                     marginBottom: '8px',
                     color: 'var(--tg-text-color)'
                   }}>
-                    {index + 1}. {question.title || 'Вопрос без названия'}
+                    {visibleIndex + 1}. {question.title || 'Вопрос без названия'}
                     {question.required && <span style={{ color: 'red' }}> *</span>}
                   </label>
                   
@@ -3772,10 +3761,11 @@ const PreviewTab: React.FC<{
                   )}
                   
                   {renderQuestionInput(question, validationErrors, onAnswerChange, answers)}
-                </div>
-                );
-              })}
-            </div>
+                  </motion.div>
+                  );
+                })}
+              </div>
+            </AnimatePresence>
             
             {/* Кнопка отправки */}
             <div style={{ marginTop: '32px', textAlign: 'center' }}>
