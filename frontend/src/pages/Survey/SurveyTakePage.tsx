@@ -1254,13 +1254,11 @@ export default function SurveyTakePage() {
                 id={`question-${question.id}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20, height: 0 }}
                 transition={{ duration: 0.3 }}
                 style={{ 
                   paddingTop: '24px', 
                   borderBottom: index < shuffledQuestions.length - 1 ? '1px solid var(--tg-section-separator-color)' : 'none', 
-                  paddingBottom: '24px',
-                  overflow: 'hidden'
+                  paddingBottom: '24px'
                 }}
               >
             {question.imageUrl && (
