@@ -291,7 +291,6 @@ export default function SurveyTakePage() {
     }
 
     // Если условие выполнено, проверяем приоритет для числовых типов
-    // Находим родительский вопрос
     // parentQuestion уже найден выше
     if (!parentQuestion || !['scale', 'rating', 'number'].includes(parentQuestion.type)) {
       // Для нечисловых типов или если родительский вопрос не найден - показываем без проверки приоритета
@@ -299,7 +298,7 @@ export default function SurveyTakePage() {
     }
 
     // Находим все вопросы, зависящие от того же вопроса
-    const competingQuestions = allQuestions.filter(q => {
+    const competingQuestions = shuffledQuestions.filter((q: Question) => {
       const qConditionalLogic = q.validation?.conditionalLogic || 
                                 (q.validation && typeof q.validation === 'object' && 'conditionalLogic' in q.validation ? (q.validation as any).conditionalLogic : null);
       return q.id !== question.id && 
@@ -352,7 +351,7 @@ export default function SurveyTakePage() {
     const currentPriority = getConditionPriority(question);
     const maxPriority = Math.max(
       currentPriority,
-      ...competingQuestions.map(q => getConditionPriority(q))
+      ...competingQuestions.map((q: Question) => getConditionPriority(q))
     );
 
     // Показываем только если у этого вопроса наивысший приоритет
