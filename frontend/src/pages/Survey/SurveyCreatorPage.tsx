@@ -3629,8 +3629,18 @@ const checkCondition = (
 ): boolean => {
   switch (condition.operator) {
     case 'equals':
+      // Для числовых значений сравниваем как числа
+      if (typeof answer === 'number' || typeof condition.value === 'number' || 
+          (!isNaN(Number(answer)) && !isNaN(Number(condition.value)))) {
+        return Number(answer) === Number(condition.value);
+      }
       return answer === condition.value;
     case 'not_equals':
+      // Для числовых значений сравниваем как числа
+      if (typeof answer === 'number' || typeof condition.value === 'number' || 
+          (!isNaN(Number(answer)) && !isNaN(Number(condition.value)))) {
+        return Number(answer) !== Number(condition.value);
+      }
       return answer !== condition.value;
     case 'contains':
       return Array.isArray(answer) && answer.includes(condition.value);
