@@ -48,7 +48,6 @@ export interface CreateQuestionRequest {
   image_url?: string;
   image_name?: string;
   has_other_option?: boolean;
-  conditional_logic?: any;
 }
 
 // API методы

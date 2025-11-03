@@ -15,6 +15,16 @@ export interface DraftQuestion {
   scaleMin?: number; // Для scale
   scaleMax?: number; // Для scale
   scaleLabels?: { min: string; max: string }; // Для scale
+  hasOtherOption?: boolean; // Для варианта "Другое"
+  conditionalLogic?: {
+    enabled: boolean;
+    dependsOn: string;
+    conditions: Array<{
+      operator: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'greater_than' | 'less_than' | 'greater_or_equal' | 'less_or_equal' | 'date_after' | 'date_before' | 'date_on';
+      value: string | number | string[];
+    }>;
+    logicOperator?: 'AND' | 'OR';
+  }; // Условная логика
 }
 
 export interface SurveyDraft {

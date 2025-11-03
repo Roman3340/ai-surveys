@@ -7,7 +7,32 @@ import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveSettings, saveQuestions, clearDraft } from '../../utils/surveyDraft';
 import { useAppStore } from '../../store/useAppStore';
 import { questionApi } from '../../services/api';
-import { ConditionalLogicEditor } from '../../components/ConditionalLogicEditor';
+
+// Типы для условной логики
+type ConditionalOperator = 
+  | 'equals'
+  | 'not_equals'
+  | 'contains'
+  | 'not_contains'
+  | 'greater_than'
+  | 'less_than'
+  | 'greater_or_equal'
+  | 'less_or_equal'
+  | 'date_after'
+  | 'date_before'
+  | 'date_on';
+
+interface Condition {
+  operator: ConditionalOperator;
+  value: string | number | string[];
+}
+
+interface ConditionalLogic {
+  enabled: boolean;
+  dependsOn: string; // ID вопроса, от которого зависит
+  conditions: Condition[];
+  logicOperator?: 'AND' | 'OR'; // Для множественных условий
+}
 
 // Типы для вопросов
 interface Question {
@@ -24,7 +49,7 @@ interface Question {
   scaleMax?: number; // Для scale
   scaleLabels?: { min: string; max: string }; // Для scale
   hasOtherOption?: boolean; // Для варианта "Другое"
-  conditionalLogic?: any; // Условная логика для показа других вопросов
+  conditionalLogic?: ConditionalLogic; // Условия показа этого вопроса
 }
 
 // Типы для настроек
@@ -143,7 +168,8 @@ const SurveyCreatorPage: React.FC = () => {
     }
     
     if (draft?.questions) {
-      setQuestions(draft.questions);
+      // Приводим типы DraftQuestion к Question (условная логика уже совместима)
+      setQuestions(draft.questions as Question[]);
     }
   }, []);
 
@@ -279,11 +305,6 @@ const SurveyCreatorPage: React.FC = () => {
             if (!updatedQuestion.options || updatedQuestion.options.length === 0) {
               updatedQuestion.options = ['', '']; // Пустые строки вместо предзаполненного текста
             }
-          }
-          
-          // Очищаем conditionalLogic при изменении типа на неподдерживаемый
-          if (updates.type && (updates.type === 'text' || updates.type === 'textarea')) {
-            updatedQuestion.conditionalLogic = undefined;
           }
           
           // Валидация для шкалы: "От" не должно быть больше или равно "До"
@@ -494,6 +515,11 @@ const SurveyCreatorPage: React.FC = () => {
         const surveyId = createdSurvey.id as string;
         const createPayloads = questions.map((q, index) => {
           const optionsClean = (q.options || []).filter((opt) => opt && opt.trim() !== '');
+          // Объединяем validation и conditionalLogic в одно поле validation
+          const validationWithConditional = {
+            ...(q.validation || {}),
+            ...(q.conditionalLogic ? { conditionalLogic: q.conditionalLogic } : {})
+          };
           return {
             survey_id: surveyId,
             type: q.type === 'boolean' ? 'yes_no' : q.type,
@@ -507,11 +533,10 @@ const SurveyCreatorPage: React.FC = () => {
             scale_min_label: q.scaleLabels?.min,
             scale_max_label: q.scaleLabels?.max,
             // rating_max по умолчанию 5 на бэкенде; передавать не обязательно
-            validation: q.validation,
+            validation: Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined,
             image_url: q.imageUrl,
             image_name: q.imageName,
             has_other_option: q.hasOtherOption || false,
-            conditional_logic: q.conditionalLogic || undefined,
           } as const;
         });
         // Последовательно или параллельно; используем последовательный сдержанный параллелизм
@@ -1772,6 +1797,18 @@ const QuestionsTab: React.FC<{
                     }}>
                       Вопрос {index + 1}
                     </span>
+                    {question.conditionalLogic?.enabled && (
+                      <span style={{
+                        fontSize: '11px',
+                        color: 'var(--tg-button-color)',
+                        backgroundColor: 'rgba(88, 101, 242, 0.1)',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontWeight: '500'
+                      }}>
+                        🔀 Условный
+                      </span>
+                    )}
                     
                     {/* Стрелочки для изменения порядка */}
                     {questions.length > 1 && (
@@ -2460,13 +2497,14 @@ const QuestionsTab: React.FC<{
                   </label>
                 </div>
 
-                {/* Условная логика (только для поддерживаемых типов вопросов) */}
-                {question.type !== 'text' && question.type !== 'textarea' && (
+                {/* Условная логика - только для вопросов после первого */}
+                {index > 0 && (
                   <ConditionalLogicEditor
                     question={question}
                     allQuestions={questions}
+                    currentIndex={index}
                     onConditionChange={(conditionalLogic) => {
-                      onQuestionChange(question.id, { conditionalLogic: conditionalLogic || undefined });
+                      onQuestionChange(question.id, { conditionalLogic });
                     }}
                   />
                 )}
@@ -2502,6 +2540,428 @@ const QuestionsTab: React.FC<{
         )}
       </div>
     </motion.div>
+  );
+};
+
+// Компонент редактора условной логики
+const ConditionalLogicEditor: React.FC<{
+  question: Question;
+  allQuestions: Question[];
+  currentIndex: number;
+  onConditionChange: (conditionalLogic: ConditionalLogic | undefined) => void;
+}> = ({ question, allQuestions, currentIndex, onConditionChange }) => {
+  // Получаем доступные вопросы для зависимости (только предыдущие)
+  const availableQuestions = allQuestions.slice(0, currentIndex);
+  
+  // Получаем доступные операторы для выбранного типа вопроса
+  const getAvailableOperators = (dependsOnType: string): Array<{ value: ConditionalOperator; label: string }> => {
+    switch (dependsOnType) {
+      case 'single_choice':
+      case 'boolean':
+        return [
+          { value: 'equals', label: 'равно' },
+          { value: 'not_equals', label: 'не равно' }
+        ];
+      case 'multiple_choice':
+        return [
+          { value: 'contains', label: 'содержит' },
+          { value: 'not_contains', label: 'не содержит' }
+        ];
+      case 'scale':
+      case 'number':
+        return [
+          { value: 'equals', label: 'равно' },
+          { value: 'greater_than', label: 'больше' },
+          { value: 'less_than', label: 'меньше' },
+          { value: 'greater_or_equal', label: 'больше или равно' },
+          { value: 'less_or_equal', label: 'меньше или равно' }
+        ];
+      case 'rating':
+        return [
+          { value: 'equals', label: 'равно' },
+          { value: 'greater_than', label: 'больше' },
+          { value: 'less_than', label: 'меньше' }
+        ];
+      case 'date':
+        return [
+          { value: 'date_on', label: 'равно дате' },
+          { value: 'date_after', label: 'после даты' },
+          { value: 'date_before', label: 'до даты' }
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const dependsOnQuestion = availableQuestions.find(q => q.id === question.conditionalLogic?.dependsOn);
+  const availableOperators = dependsOnQuestion ? getAvailableOperators(dependsOnQuestion.type) : [];
+  
+  // Получаем значения для выбора в зависимости от типа вопроса
+  const getConditionValueOptions = (dependsOnQuestion: Question): Array<{ value: string | number; label: string }> => {
+    if (!dependsOnQuestion) return [];
+    
+    switch (dependsOnQuestion.type) {
+      case 'single_choice':
+        return (dependsOnQuestion.options || []).filter(opt => opt.trim()).map(opt => ({ value: opt, label: opt }));
+      case 'multiple_choice':
+        return (dependsOnQuestion.options || []).filter(opt => opt.trim()).map(opt => ({ value: opt, label: opt }));
+      case 'boolean':
+        return [
+          { value: 'yes', label: 'Да' },
+          { value: 'no', label: 'Нет' }
+        ];
+      case 'scale':
+        const min = dependsOnQuestion.scaleMin || 1;
+        const max = dependsOnQuestion.scaleMax || 10;
+        return Array.from({ length: max - min + 1 }, (_, i) => {
+          const val = min + i;
+          return { value: val, label: val.toString() };
+        });
+      case 'rating':
+        return [1, 2, 3, 4, 5].map(val => ({ value: val, label: val.toString() }));
+      default:
+        return [];
+    }
+  };
+
+  const handleToggleCondition = () => {
+    if (question.conditionalLogic?.enabled) {
+      onConditionChange(undefined);
+    } else {
+      onConditionChange({
+        enabled: true,
+        dependsOn: availableQuestions[0]?.id || '',
+        conditions: [{
+          operator: availableQuestions[0] ? getAvailableOperators(availableQuestions[0].type)[0]?.value || 'equals' : 'equals',
+          value: ''
+        }],
+        logicOperator: 'AND'
+      });
+    }
+  };
+
+  const handleDependsOnChange = (questionId: string) => {
+    const selectedQuestion = availableQuestions.find(q => q.id === questionId);
+    if (!selectedQuestion) return;
+    
+    const operators = getAvailableOperators(selectedQuestion.type);
+    const firstCondition: Condition = {
+      operator: operators[0]?.value || 'equals',
+      value: selectedQuestion.type === 'scale' || selectedQuestion.type === 'rating' || selectedQuestion.type === 'number'
+        ? (selectedQuestion.scaleMin || 1)
+        : (selectedQuestion.options?.[0] || 'yes')
+    };
+    
+    onConditionChange({
+      enabled: true,
+      dependsOn: questionId,
+      conditions: [firstCondition],
+      logicOperator: selectedQuestion.type === 'multiple_choice' ? 'OR' : 'AND'
+    });
+  };
+
+  const handleOperatorChange = (conditionIndex: number, operator: ConditionalOperator) => {
+    if (!question.conditionalLogic) return;
+    const newConditions = [...question.conditionalLogic.conditions];
+    newConditions[conditionIndex] = { ...newConditions[conditionIndex], operator };
+    onConditionChange({
+      ...question.conditionalLogic,
+      conditions: newConditions
+    });
+  };
+
+  const handleValueChange = (conditionIndex: number, value: string | number | string[]) => {
+    if (!question.conditionalLogic) return;
+    const newConditions = [...question.conditionalLogic.conditions];
+    newConditions[conditionIndex] = { ...newConditions[conditionIndex], value };
+    onConditionChange({
+      ...question.conditionalLogic,
+      conditions: newConditions
+    });
+  };
+
+  const handleAddCondition = () => {
+    if (!question.conditionalLogic || !dependsOnQuestion) return;
+    const operators = getAvailableOperators(dependsOnQuestion.type);
+    const newCondition: Condition = {
+      operator: operators[0]?.value || 'equals',
+      value: dependsOnQuestion.type === 'scale' || dependsOnQuestion.type === 'rating' || dependsOnQuestion.type === 'number'
+        ? (dependsOnQuestion.scaleMin || 1)
+        : (dependsOnQuestion.options?.[0] || 'yes')
+    };
+    onConditionChange({
+      ...question.conditionalLogic,
+      conditions: [...question.conditionalLogic.conditions, newCondition]
+    });
+  };
+
+  const handleRemoveCondition = (conditionIndex: number) => {
+    if (!question.conditionalLogic) return;
+    const newConditions = question.conditionalLogic.conditions.filter((_, i) => i !== conditionIndex);
+    if (newConditions.length === 0) {
+      onConditionChange(undefined);
+    } else {
+      onConditionChange({
+        ...question.conditionalLogic,
+        conditions: newConditions
+      });
+    }
+  };
+
+  if (availableQuestions.length === 0) {
+    return null; // Нет доступных вопросов для зависимости
+  }
+
+  return (
+    <div style={{
+      marginTop: '16px',
+      padding: '12px',
+      backgroundColor: 'var(--tg-bg-color)',
+      borderRadius: '8px',
+      border: '1px solid var(--tg-section-separator-color)'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: question.conditionalLogic?.enabled ? '12px' : '0'
+      }}>
+        <label style={{
+          fontSize: '14px',
+          fontWeight: '500',
+          color: 'var(--tg-text-color)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer'
+        }} onClick={handleToggleCondition}>
+          <span>🔀</span>
+          <span>Показывать этот вопрос только при определённых условиях</span>
+        </label>
+        <label style={{
+          position: 'relative',
+          display: 'inline-block',
+          width: '40px',
+          height: '20px'
+        }}>
+          <input
+            type="checkbox"
+            checked={question.conditionalLogic?.enabled || false}
+            onChange={handleToggleCondition}
+            style={{ opacity: 0, width: 0, height: 0 }}
+          />
+          <span style={{
+            position: 'absolute',
+            cursor: 'pointer',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: question.conditionalLogic?.enabled ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+            borderRadius: '20px',
+            transition: '0.3s'
+          }}>
+            <span style={{
+              position: 'absolute',
+              height: '16px',
+              width: '16px',
+              left: question.conditionalLogic?.enabled ? '21px' : '2px',
+              bottom: '2px',
+              backgroundColor: 'white',
+              borderRadius: '50%',
+              transition: '0.3s'
+            }} />
+          </span>
+        </label>
+      </div>
+
+      {question.conditionalLogic?.enabled && (
+        <div style={{ marginTop: '12px' }}>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '12px',
+              color: 'var(--tg-hint-color)',
+              marginBottom: '6px'
+            }}>
+              Зависит от вопроса:
+            </label>
+            <select
+              value={question.conditionalLogic.dependsOn}
+              onChange={(e) => handleDependsOnChange(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                color: 'var(--tg-text-color)',
+                fontSize: '14px',
+                outline: 'none'
+              }}
+            >
+              {availableQuestions.map(q => (
+                <option key={q.id} value={q.id}>
+                  {q.title || `Вопрос ${allQuestions.findIndex(qq => qq.id === q.id) + 1}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {dependsOnQuestion && (
+            <>
+              {question.conditionalLogic.conditions.map((condition, conditionIndex) => (
+                <div key={conditionIndex} style={{
+                  marginBottom: '12px',
+                  padding: '10px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'center'
+                }}>
+                  {conditionIndex > 0 && (
+                    <span style={{
+                      fontSize: '12px',
+                      color: 'var(--tg-hint-color)',
+                      fontWeight: '500',
+                      minWidth: '30px'
+                    }}>
+                      {question.conditionalLogic?.logicOperator || 'AND'}
+                    </span>
+                  )}
+                  
+                  <select
+                    value={condition.operator}
+                    onChange={(e) => handleOperatorChange(conditionIndex, e.target.value as ConditionalOperator)}
+                    style={{
+                      flex: 1,
+                      padding: '6px 8px',
+                      borderRadius: '4px',
+                      border: 'none',
+                      backgroundColor: 'var(--tg-bg-color)',
+                      color: 'var(--tg-text-color)',
+                      fontSize: '13px',
+                      outline: 'none'
+                    }}
+                  >
+                    {availableOperators.map(op => (
+                      <option key={op.value} value={op.value}>{op.label}</option>
+                    ))}
+                  </select>
+
+                  {dependsOnQuestion.type === 'date' ? (
+                    <input
+                      type="date"
+                      value={typeof condition.value === 'string' ? condition.value : ''}
+                      onChange={(e) => handleValueChange(conditionIndex, e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        borderRadius: '4px',
+                        border: 'none',
+                        backgroundColor: 'var(--tg-bg-color)',
+                        color: 'var(--tg-text-color)',
+                        fontSize: '13px',
+                        outline: 'none'
+                      }}
+                    />
+                  ) : dependsOnQuestion.type === 'number' ? (
+                    <input
+                      type="number"
+                      value={condition.value}
+                      onChange={(e) => handleValueChange(conditionIndex, parseFloat(e.target.value) || 0)}
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        borderRadius: '4px',
+                        border: 'none',
+                        backgroundColor: 'var(--tg-bg-color)',
+                        color: 'var(--tg-text-color)',
+                        fontSize: '13px',
+                        outline: 'none'
+                      }}
+                    />
+                  ) : (
+                    <select
+                      value={typeof condition.value === 'string' || typeof condition.value === 'number' ? condition.value.toString() : ''}
+                      onChange={(e) => {
+                        const valueOptions = getConditionValueOptions(dependsOnQuestion);
+                        const selected = valueOptions.find(opt => opt.value.toString() === e.target.value);
+                        handleValueChange(conditionIndex, selected?.value || e.target.value);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        borderRadius: '4px',
+                        border: 'none',
+                        backgroundColor: 'var(--tg-bg-color)',
+                        color: 'var(--tg-text-color)',
+                        fontSize: '13px',
+                        outline: 'none'
+                      }}
+                    >
+                      {getConditionValueOptions(dependsOnQuestion).map(opt => (
+                        <option key={opt.value.toString()} value={opt.value.toString()}>{opt.label}</option>
+                      ))}
+                    </select>
+                  )}
+
+                  {question.conditionalLogic && question.conditionalLogic.conditions.length > 1 && (
+                    <button
+                      onClick={() => handleRemoveCondition(conditionIndex)}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: '#ff4444',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        fontSize: '16px',
+                        width: '24px',
+                        height: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {dependsOnQuestion.type === 'multiple_choice' && question.conditionalLogic && question.conditionalLogic.conditions.length < 5 && (
+                <button
+                  onClick={handleAddCondition}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    backgroundColor: 'transparent',
+                    border: '1px dashed var(--tg-section-separator-color)',
+                    borderRadius: '6px',
+                    color: 'var(--tg-hint-color)',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    marginBottom: '8px'
+                  }}
+                >
+                  + Добавить условие
+                </button>
+              )}
+
+              <div style={{
+                fontSize: '11px',
+                color: 'var(--tg-hint-color)',
+                lineHeight: '1.4',
+                marginTop: '8px'
+              }}>
+                💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

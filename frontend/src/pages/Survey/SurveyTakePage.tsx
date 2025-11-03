@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { surveyApi } from '../../services/api';
@@ -20,7 +20,6 @@ interface Question {
   ratingMax?: number;
   validation?: any;
   imageUrl?: string;
-  conditionalLogic?: any;
 }
 
 interface SurveyData {
@@ -70,18 +69,12 @@ export default function SurveyTakePage() {
         
         setSurvey(response);
         
-        // Маппим вопросы и гарантируем правильный формат conditionalLogic
-        const mappedQuestions = response.questions.map((q: any) => ({
-          ...q,
-          conditionalLogic: q.conditionalLogic || q.conditional_logic || null
-        }));
-        
         // Перемешиваем вопросы один раз при загрузке
         if (response.settings?.randomizeQuestions) {
-          const shuffled = [...mappedQuestions].sort(() => Math.random() - 0.5);
+          const shuffled = [...response.questions].sort(() => Math.random() - 0.5);
           setShuffledQuestions(shuffled);
         } else {
-          const sorted = [...mappedQuestions].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+          const sorted = [...response.questions].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
           setShuffledQuestions(sorted);
         }
         
@@ -96,152 +89,6 @@ export default function SurveyTakePage() {
     };
     loadSurvey();
   }, [surveyId, user?.id]);
-
-  // Получаем список видимых вопросов на основе условий
-  const visibleQuestions = useMemo(() => {
-    return shuffledQuestions.filter(q => {
-      // Находим все вопросы, которые имеют conditionalLogic с этим вопросом в showQuestions
-      const conditionQuestions = shuffledQuestions.filter(otherQ => {
-        if (!otherQ.conditionalLogic) return false;
-        const logic = otherQ.conditionalLogic;
-        
-        // Проверяем все возможные условия
-        const allShowQuestions: string[] = [];
-        if (logic.conditions) {
-          logic.conditions.forEach((c: any) => {
-            if (c.showQuestions) {
-              allShowQuestions.push(...c.showQuestions);
-            }
-          });
-        }
-        if (logic.valueConditions) {
-          logic.valueConditions.forEach((c: any) => {
-            if (c.showQuestions) {
-              allShowQuestions.push(...c.showQuestions);
-            }
-          });
-        }
-        if (logic.dateConditions) {
-          logic.dateConditions.forEach((c: any) => {
-            if (c.showQuestions) {
-              allShowQuestions.push(...c.showQuestions);
-            }
-          });
-        }
-        
-        return allShowQuestions.includes(q.id);
-      });
-      
-      // Если вопрос не упоминается ни в одном conditionalLogic, показываем его всегда
-      if (conditionQuestions.length === 0) return true;
-      
-      // Проверяем, выполнено ли хотя бы одно условие для показа этого вопроса
-      return conditionQuestions.some(conditionQuestion => {
-        const logic = conditionQuestion.conditionalLogic;
-        if (!logic) return false;
-        
-        // Single choice или Yes/No
-        if (logic.conditions && logic.conditions.length > 0) {
-          return logic.conditions.some((condition: any) => {
-            if (!condition.showQuestions || !condition.showQuestions.includes(q.id)) return false;
-            
-            const conditionAnswer = answers[conditionQuestion.id];
-            if (conditionAnswer === undefined || conditionAnswer === null) return false;
-            
-            if (conditionQuestion.type === 'yes_no') {
-              return condition.answer === conditionAnswer;
-            } else if (conditionQuestion.type === 'single_choice') {
-              return condition.optionValue === conditionAnswer;
-            }
-            
-            return false;
-          });
-        }
-        
-        // Multiple choice
-        if (logic.conditionType) {
-          // Для multiple_choice проверяем условия
-          const conditionAnswer = answers[conditionQuestion.id];
-          if (!Array.isArray(conditionAnswer)) return false;
-          
-          let conditionMet = false;
-          if (logic.conditionType === 'any') {
-            conditionMet = logic.options?.some((opt: string) => conditionAnswer.includes(opt)) || false;
-          } else if (logic.conditionType === 'all') {
-            conditionMet = logic.options?.every((opt: string) => conditionAnswer.includes(opt)) || false;
-          } else if (logic.conditionType === 'count') {
-            conditionMet = conditionAnswer.length >= (logic.minCount || 0);
-          }
-          
-          // Если условие выполнено, проверяем, есть ли этот вопрос в showQuestions
-          if (conditionMet && logic.conditions?.[0]?.showQuestions?.includes(q.id)) {
-            return true;
-          }
-        }
-        
-        // Scale, Rating, Number
-        if (logic.valueConditions && logic.valueConditions.length > 0) {
-          return logic.valueConditions.some((condition: any) => {
-            if (!condition.showQuestions || !condition.showQuestions.includes(q.id)) return false;
-            
-            const conditionAnswer = answers[conditionQuestion.id];
-            if (typeof conditionAnswer !== 'number') return false;
-            
-            switch (condition.operator) {
-              case 'less_than':
-                return conditionAnswer < (condition.value || 0);
-              case 'less_or_equal':
-                return conditionAnswer <= (condition.value || 0);
-              case 'equal':
-                return conditionAnswer === (condition.value || 0);
-              case 'greater_or_equal':
-                return conditionAnswer >= (condition.value || 0);
-              case 'greater_than':
-                return conditionAnswer > (condition.value || 0);
-              case 'range':
-                return conditionAnswer >= (condition.min || 0) && conditionAnswer <= (condition.max || 0);
-              default:
-                return false;
-            }
-          });
-        }
-        
-        // Date
-        if (logic.dateConditions && logic.dateConditions.length > 0) {
-          return logic.dateConditions.some((condition: any) => {
-            if (!condition.showQuestions || !condition.showQuestions.includes(q.id)) return false;
-            
-            const conditionAnswer = answers[conditionQuestion.id];
-            if (typeof conditionAnswer !== 'string') return false;
-            
-            const answerDate = new Date(conditionAnswer);
-            if (isNaN(answerDate.getTime())) return false;
-            
-            switch (condition.operator) {
-              case 'before':
-                return answerDate < new Date(condition.date || '');
-              case 'before_or_equal':
-                return answerDate <= new Date(condition.date || '');
-              case 'equal':
-                return answerDate.toDateString() === new Date(condition.date || '').toDateString();
-              case 'after_or_equal':
-                return answerDate >= new Date(condition.date || '');
-              case 'after':
-                return answerDate > new Date(condition.date || '');
-              case 'range':
-                const startDate = new Date(condition.startDate || '');
-                const endDate = new Date(condition.endDate || '');
-                return answerDate >= startDate && answerDate <= endDate;
-              default:
-                return false;
-            }
-          });
-        }
-        
-        return false;
-      });
-    });
-  }, [shuffledQuestions, answers]);
 
   const handleAnswerChange = (questionId: string, value: any) => {
     setAnswers(prev => ({
@@ -262,7 +109,7 @@ export default function SurveyTakePage() {
     
     const errors: Record<string, string> = {};
     
-    visibleQuestions.forEach(question => {
+    survey.questions.forEach(question => {
       const answer = answers[question.id];
       const otherAnswer = answers[`${question.id}_other`];
       
@@ -314,7 +161,7 @@ export default function SurveyTakePage() {
     hapticFeedback?.medium();
     
     try {
-      const formattedAnswers = visibleQuestions.map(q => {
+      const formattedAnswers = shuffledQuestions.map(q => {
         let answerValue = answers[q.id] || null;
         
         if (answerValue === 'Другое') {
@@ -1120,21 +967,15 @@ export default function SurveyTakePage() {
       </div>
 
       <div style={{ padding: '0 20px 120px 20px' }}>
-        {visibleQuestions.map((question, index) => (
-            <motion.div
-              key={question.id}
-              id={`question-${question.id}`}
-              initial={{ opacity: 0, y: 20, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{ 
-                paddingTop: '24px', 
-                borderBottom: index < visibleQuestions.length - 1 ? '1px solid var(--tg-section-separator-color)' : 'none', 
-                paddingBottom: '24px',
-                overflow: 'hidden'
-              }}
-            >
+        {shuffledQuestions.map((question, index) => (
+          <motion.div
+            key={question.id}
+            id={`question-${question.id}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            style={{ paddingTop: '24px', borderBottom: index < survey.questions.length - 1 ? '1px solid var(--tg-section-separator-color)' : 'none', paddingBottom: '24px' }}
+          >
             {question.imageUrl && (
               <div style={{ marginBottom: '20px' }}>
                 <img 

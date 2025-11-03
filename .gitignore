@@ -5,6 +5,9 @@ backend/
 
 deploy/
 
+CONDITIONAL_LOGIC_IMPLEMENTATION.md
+CONDITIONAL_LOGIC_PROPOSAL.md
+
 # Python (Backend)
 __pycache__/
 *.py[cod]
