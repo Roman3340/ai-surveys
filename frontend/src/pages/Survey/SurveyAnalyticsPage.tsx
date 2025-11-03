@@ -2766,6 +2766,14 @@ export default function SurveyAnalyticsPage() {
         }
         
         if (q.id.startsWith('temp_')) {
+          // Для новых вопросов: если conditionalLogic зависит от временного ID, который еще не создан,
+          // не отправляем conditionalLogic в первом проходе - обновим во втором проходе
+          const hasTempDependsOn = validationWithConditional.conditionalLogic?.dependsOn?.startsWith('temp_') && 
+                                   !questionIdMap[validationWithConditional.conditionalLogic.dependsOn];
+          
+          // Если dependsOn указывает на временный ID, который еще не создан, не отправляем validation
+          const validationToSend = hasTempDependsOn ? undefined : (Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined);
+          
           const createdQuestion = await questionApi.createQuestion({
             survey_id: surveyId,
             type: q.type,
@@ -2779,12 +2787,18 @@ export default function SurveyAnalyticsPage() {
             scale_max: q.scale_max,
             scale_min_label: q.scale_min_label,
             scale_max_label: q.scale_max_label,
-            validation: Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined
+            validation: validationToSend
           });
           questionIdMap[q.id] = createdQuestion.id;
         } else {
           // Обновляем существующие вопросы
-          await questionApi.updateQuestion(q.id, {
+          // Для существующих вопросов: если conditionalLogic зависит от временного ID, который еще не создан,
+          // не обновляем validation в первом проходе - обновим во втором проходе
+          const hasTempDependsOn = validationWithConditional.conditionalLogic?.dependsOn?.startsWith('temp_') && 
+                                   !questionIdMap[validationWithConditional.conditionalLogic.dependsOn];
+          
+          // Если dependsOn указывает на временный ID, который еще не создан, не обновляем validation
+          const updatePayload: any = {
             type: q.type,
             text: q.text,
             description: q.description,
@@ -2795,30 +2809,57 @@ export default function SurveyAnalyticsPage() {
             scale_min: q.scale_min,
             scale_max: q.scale_max,
             scale_min_label: q.scale_min_label,
-            scale_max_label: q.scale_max_label,
-            validation: Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined
-          });
+            scale_max_label: q.scale_max_label
+          };
+          
+          // Добавляем validation только если dependsOn не указывает на временный ID
+          if (!hasTempDependsOn && Object.keys(validationWithConditional).length > 0) {
+            updatePayload.validation = validationWithConditional;
+          }
+          
+          await questionApi.updateQuestion(q.id, updatePayload);
         }
       }
       
       // Второй проход: обновляем все вопросы с условной логикой, у которых dependsOn указывал на временный ID
       // и теперь нужно обновить на реальный UUID
       for (const q of editedQuestions) {
-        if (q.conditionalLogic?.dependsOn) {
+        if (q.conditionalLogic?.dependsOn && q.conditionalLogic.dependsOn.startsWith('temp_')) {
           const originalDependsOn = q.conditionalLogic.dependsOn;
           const realDependsOn = questionIdMap[originalDependsOn];
           
           // Если dependsOn был временным ID и теперь имеет реальный UUID, обновляем
-          if (originalDependsOn.startsWith('temp_') && realDependsOn && realDependsOn !== originalDependsOn) {
+          if (realDependsOn && realDependsOn !== originalDependsOn) {
+            const questionIdToUpdate = q.id.startsWith('temp_') ? questionIdMap[q.id] : q.id;
+            
+            // Получаем текущее состояние вопроса из БД чтобы не потерять существующие данные validation
+            const currentQuestions = await questionApi.getSurveyQuestions(surveyId);
+            const questionToUpdate = currentQuestions.find((qu: any) => {
+              return qu.id === questionIdToUpdate || qu.id === questionIdToUpdate.toString();
+            });
+            
+            // Объединяем существующий validation с обновленным conditionalLogic
+            let currentValidation: any = {};
+            if (questionToUpdate?.validation) {
+              if (typeof questionToUpdate.validation === 'string') {
+                try {
+                  currentValidation = JSON.parse(questionToUpdate.validation);
+                } catch (e) {
+                  currentValidation = {};
+                }
+              } else {
+                currentValidation = { ...questionToUpdate.validation };
+              }
+            }
+            
             const updatedConditionalLogic = {
               ...q.conditionalLogic,
               dependsOn: realDependsOn
             };
             
-            const questionIdToUpdate = q.id.startsWith('temp_') ? questionIdMap[q.id] : q.id;
-            
             await questionApi.updateQuestion(questionIdToUpdate, {
               validation: {
+                ...currentValidation,
                 conditionalLogic: updatedConditionalLogic
               }
             });
