@@ -1791,32 +1791,37 @@ const QuestionsTab: React.FC<{
               >
                 <div style={{
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
+                  flexDirection: 'column',
+                  gap: '4px',
                   marginBottom: '16px'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: 'var(--tg-hint-color)'
-                    }}>
-                      Вопрос {index + 1}
-                    </span>
-                    {question.conditionalLogic?.enabled && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span style={{
-                        fontSize: '11px',
-                        color: 'var(--tg-button-color)',
-                        backgroundColor: 'rgba(88, 101, 242, 0.1)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontWeight: '500'
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: 'var(--tg-hint-color)'
                       }}>
-                        🔀 Условный
+                        Вопрос {index + 1}
                       </span>
-                    )}
-                    
-                    {/* Стрелочки для изменения порядка */}
+                      {question.conditionalLogic?.enabled && (
+                        <span style={{
+                          fontSize: '11px',
+                          color: 'var(--tg-button-color)',
+                          backgroundColor: 'rgba(88, 101, 242, 0.1)',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontWeight: '500'
+                        }}>
+                          🔀 Условный
+                        </span>
+                      )}
+                      
+                      {/* Стрелочки для изменения порядка */}
                     {questions.length > 1 && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         {index > 0 && (
@@ -1855,9 +1860,9 @@ const QuestionsTab: React.FC<{
                         )}
                       </div>
                     )}
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '8px' }}>
                     <button
                       onClick={() => onDuplicateQuestion(question.id)}
                       style={{
@@ -1885,6 +1890,26 @@ const QuestionsTab: React.FC<{
                       <Trash2 size={14} />
                     </button>
                   </div>
+                  </div>
+                  
+                  {/* Подсказка о родительском вопросе для условных */}
+                  {question.conditionalLogic?.enabled && (() => {
+                    const parentQuestion = questions.find(q => q.id === question.conditionalLogic?.dependsOn);
+                    if (!parentQuestion) return null;
+                    
+                    const parentIndex = questions.findIndex(q => q.id === parentQuestion.id);
+                    return (
+                      <div style={{
+                        fontSize: '11px',
+                        color: '#FF9500',
+                        fontStyle: 'italic',
+                        marginLeft: '0',
+                        lineHeight: '1.3'
+                      }}>
+                        Зависит от вопроса {parentIndex + 1}: "{parentQuestion.title || 'Без названия'}"
+                      </div>
+                    );
+                  })()}
                 </div>
                 
                 {/* Поле для ввода вопроса */}
@@ -2586,7 +2611,9 @@ const ConditionalLogicEditor: React.FC<{
         return [
           { value: 'equals', label: 'равно' },
           { value: 'greater_than', label: 'больше' },
-          { value: 'less_than', label: 'меньше' }
+          { value: 'less_than', label: 'меньше' },
+          { value: 'greater_or_equal', label: 'больше или равно' },
+          { value: 'less_or_equal', label: 'меньше или равно' }
         ];
       case 'date':
         return [
