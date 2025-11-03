@@ -1,8 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
+
+// Типы для условной логики
+type ConditionalOperator = 
+  | 'equals'
+  | 'not_equals'
+  | 'contains'
+  | 'not_contains'
+  | 'greater_than'
+  | 'less_than'
+  | 'greater_or_equal'
+  | 'less_or_equal'
+  | 'date_after'
+  | 'date_before'
+  | 'date_on';
+
+interface Condition {
+  operator: ConditionalOperator;
+  value: string | number | string[];
+}
+
+interface ConditionalLogic {
+  enabled: boolean;
+  dependsOn: string; // ID вопроса, от которого зависит
+  conditions: Condition[];
+  logicOperator?: 'AND' | 'OR'; // Для множественных условий
+}
 
 interface Question {
   id: string;
@@ -18,7 +44,9 @@ interface Question {
   scaleMinLabel?: string;
   scaleMaxLabel?: string;
   ratingMax?: number;
-  validation?: any;
+  validation?: {
+    conditionalLogic?: ConditionalLogic;
+  };
   imageUrl?: string;
 }
 
@@ -91,10 +119,31 @@ export default function SurveyTakePage() {
   }, [surveyId, user?.id]);
 
   const handleAnswerChange = (questionId: string, value: any) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: value
-    }));
+    setAnswers(prev => {
+      const newAnswers = {
+        ...prev,
+        [questionId]: value
+      };
+      
+      // После изменения ответа проверяем видимость всех вопросов и очищаем ответы скрытых
+      if (survey && shuffledQuestions.length > 0) {
+        shuffledQuestions.forEach(question => {
+          const isVisible = shouldShowQuestion(question, newAnswers);
+          
+          // Если вопрос скрыт и у него есть ответ - очищаем его
+          if (!isVisible && question.id in newAnswers && question.id !== questionId) {
+            delete newAnswers[question.id];
+            // Также очищаем поле "Другое" если оно есть
+            if (`${question.id}_other` in newAnswers) {
+              delete newAnswers[`${question.id}_other`];
+            }
+          }
+        });
+      }
+      
+      return newAnswers;
+    });
+    
     if (validationErrors[questionId]) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
@@ -103,13 +152,159 @@ export default function SurveyTakePage() {
       });
     }
   };
+
+  // Функция проверки одного условия
+  const checkCondition = (
+    condition: Condition,
+    answer: any
+  ): boolean => {
+    switch (condition.operator) {
+      case 'equals':
+        // Для числовых значений сравниваем как числа
+        if (typeof answer === 'number' || typeof condition.value === 'number' || 
+            (!isNaN(Number(answer)) && !isNaN(Number(condition.value)))) {
+          return Number(answer) === Number(condition.value);
+        }
+        return answer === condition.value;
+      case 'not_equals':
+        // Для числовых значений сравниваем как числа
+        if (typeof answer === 'number' || typeof condition.value === 'number' || 
+            (!isNaN(Number(answer)) && !isNaN(Number(condition.value)))) {
+          return Number(answer) !== Number(condition.value);
+        }
+        return answer !== condition.value;
+      case 'contains':
+        return Array.isArray(answer) && answer.includes(condition.value);
+      case 'not_contains':
+        return !Array.isArray(answer) || !answer.includes(condition.value);
+      case 'greater_than':
+        return Number(answer) > Number(condition.value);
+      case 'less_than':
+        return Number(answer) < Number(condition.value);
+      case 'greater_or_equal':
+        return Number(answer) >= Number(condition.value);
+      case 'less_or_equal':
+        return Number(answer) <= Number(condition.value);
+      case 'date_after':
+        return new Date(answer) > new Date(condition.value as string);
+      case 'date_before':
+        return new Date(answer) < new Date(condition.value as string);
+      case 'date_on':
+        return new Date(answer).toDateString() === new Date(condition.value as string).toDateString();
+      default:
+        return true;
+    }
+  };
+
+  // Функция проверки, должен ли вопрос быть показан
+  const shouldShowQuestion = (question: Question, currentAnswers: Record<string, any>): boolean => {
+    if (!question.validation?.conditionalLogic?.enabled) {
+      return true; // Вопрос без условий всегда показывается
+    }
+
+    const logic = question.validation.conditionalLogic;
+    const dependsOnAnswer = currentAnswers[logic.dependsOn];
+
+    if (dependsOnAnswer === undefined || dependsOnAnswer === null) {
+      return false; // Если зависимый вопрос не отвечен, скрываем
+    }
+
+    // Проверяем условия
+    const conditionResults = logic.conditions.map(condition => {
+      return checkCondition(condition, dependsOnAnswer);
+    });
+
+    // Применяем логический оператор
+    let conditionMet = false;
+    if (logic.logicOperator === 'AND') {
+      conditionMet = conditionResults.every(result => result);
+    } else {
+      conditionMet = conditionResults.some(result => result);
+    }
+
+    if (!conditionMet) {
+      return false;
+    }
+
+    // Если условие выполнено, проверяем приоритет для числовых типов
+    // Находим родительский вопрос
+    const allQuestions = shuffledQuestions;
+    const parentQuestion = allQuestions.find(q => q.id === logic.dependsOn);
+    if (!parentQuestion || !['scale', 'rating', 'number'].includes(parentQuestion.type)) {
+      // Для нечисловых типов или если родительский вопрос не найден - показываем без проверки приоритета
+      return true;
+    }
+
+    // Находим все вопросы, зависящие от того же вопроса
+    const competingQuestions = allQuestions.filter(q => 
+      q.id !== question.id && 
+      q.validation?.conditionalLogic?.enabled && 
+      q.validation.conditionalLogic.dependsOn === logic.dependsOn
+    );
+
+    if (competingQuestions.length === 0) {
+      return true; // Нет конкурентов - показываем
+    }
+
+    // Вычисляем "строгость" условий для приоритета
+    const getConditionPriority = (q: Question): number => {
+      if (!q.validation?.conditionalLogic || q.validation.conditionalLogic.conditions.length === 0) return 0;
+      const condition = q.validation.conditionalLogic.conditions[0];
+      const conditionValue = Number(condition.value);
+      
+      // Проверяем, выполняется ли условие конкурента
+      const competitorMet = checkCondition(condition, dependsOnAnswer);
+      if (!competitorMet) {
+        return -Infinity; // Условие не выполнено - низкий приоритет
+      }
+
+      // Приоритет для >=: чем больше значение, тем выше приоритет
+      if (condition.operator === 'greater_or_equal') {
+        return conditionValue;
+      }
+      // Приоритет для >: чем больше значение, тем выше приоритет
+      if (condition.operator === 'greater_than') {
+        return conditionValue + 0.1; // Немного выше чем >= для того же значения
+      }
+      // Приоритет для <=: чем меньше значение, тем выше приоритет (обратная логика)
+      if (condition.operator === 'less_or_equal') {
+        return -conditionValue;
+      }
+      // Приоритет для <: чем меньше значение, тем выше приоритет
+      if (condition.operator === 'less_than') {
+        return -(conditionValue + 0.1);
+      }
+      // Для == приоритет средний
+      if (condition.operator === 'equals') {
+        return 0;
+      }
+      
+      return 0;
+    };
+
+    const currentPriority = getConditionPriority(question);
+    const maxPriority = Math.max(
+      currentPriority,
+      ...competingQuestions.map(q => getConditionPriority(q))
+    );
+
+    // Показываем только если у этого вопроса наивысший приоритет
+    return currentPriority === maxPriority && currentPriority !== -Infinity;
+  };
+
   
   const validateAllQuestions = (): boolean => {
     if (!survey) return false;
     
     const errors: Record<string, string> = {};
     
-    survey.questions.forEach(question => {
+    shuffledQuestions.forEach(question => {
+      // Проверяем только видимые вопросы
+      const isVisible = shouldShowQuestion(question, answers);
+      if (!isVisible) {
+        return; // Пропускаем скрытые вопросы
+      }
+      
       const answer = answers[question.id];
       const otherAnswer = answers[`${question.id}_other`];
       
@@ -161,7 +356,9 @@ export default function SurveyTakePage() {
     hapticFeedback?.medium();
     
     try {
-      const formattedAnswers = shuffledQuestions.map(q => {
+      // Отправляем только ответы на видимые вопросы
+      const visibleQuestions = shuffledQuestions.filter(q => shouldShowQuestion(q, answers));
+      const formattedAnswers = visibleQuestions.map(q => {
         let answerValue = answers[q.id] || null;
         
         if (answerValue === 'Другое') {
@@ -967,15 +1164,36 @@ export default function SurveyTakePage() {
       </div>
 
       <div style={{ padding: '0 20px 120px 20px' }}>
-        {shuffledQuestions.map((question, index) => (
-          <motion.div
-            key={question.id}
-            id={`question-${question.id}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            style={{ paddingTop: '24px', borderBottom: index < survey.questions.length - 1 ? '1px solid var(--tg-section-separator-color)' : 'none', paddingBottom: '24px' }}
-          >
+        <AnimatePresence>
+          {shuffledQuestions.map((question, index) => {
+            const isVisible = shouldShowQuestion(question, answers);
+            
+            // Скрываем условные вопросы, которые не должны показываться
+            if (!isVisible) {
+              return null;
+            }
+            
+            // Правильная нумерация видимых вопросов
+            const visibleIndex = shuffledQuestions.slice(0, index + 1).filter((q, i) => {
+              if (i === index) return true; // Текущий вопрос
+              return shouldShowQuestion(q, answers);
+            }).length - 1;
+            
+            return (
+              <motion.div
+                key={question.id}
+                id={`question-${question.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20, height: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ 
+                  paddingTop: '24px', 
+                  borderBottom: index < shuffledQuestions.length - 1 ? '1px solid var(--tg-section-separator-color)' : 'none', 
+                  paddingBottom: '24px',
+                  overflow: 'hidden'
+                }}
+              >
             {question.imageUrl && (
               <div style={{ marginBottom: '20px' }}>
                 <img 
@@ -993,7 +1211,7 @@ export default function SurveyTakePage() {
 
             <div style={{ marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 8px 0', lineHeight: '1.4' }}>
-                    {question.text}
+                    {visibleIndex + 1}. {question.text}
                     {question.isRequired && <span style={{ color: 'var(--tg-destructive-text-color)', marginLeft: '4px' }}>*</span>}
                 </h2>
                 {question.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap', textAlign: 'justify' }}>{question.description}</p>}
@@ -1003,8 +1221,10 @@ export default function SurveyTakePage() {
             <div>
               {renderQuestion(question)}
             </div>
-          </motion.div>
-        ))}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
 
       <div style={{
