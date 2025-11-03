@@ -388,6 +388,12 @@ const SurveyCreatorPage: React.FC = () => {
     if (index > 0) {
       const newQuestions = [...questions];
       [newQuestions[index - 1], newQuestions[index]] = [newQuestions[index], newQuestions[index - 1]];
+      
+      // Если вопрос стал первым и у него была условная логика - сбрасываем её
+      if (index === 1 && newQuestions[0].conditionalLogic?.enabled) {
+        newQuestions[0] = { ...newQuestions[0], conditionalLogic: undefined };
+      }
+      
       setQuestions(newQuestions);
       
       // Автоскролл к перемещенному вопросу
@@ -2733,16 +2739,21 @@ const ConditionalLogicEditor: React.FC<{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          flex: 1,
+          minWidth: 0
         }} onClick={handleToggleCondition}>
           <span>🔀</span>
-          <span>Показывать этот вопрос только при определённых условиях</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            Условный вопрос
+          </span>
         </label>
         <label style={{
           position: 'relative',
           display: 'inline-block',
           width: '40px',
-          height: '20px'
+          height: '20px',
+          flexShrink: 0
         }}>
           <input
             type="checkbox"
@@ -3546,6 +3557,65 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
   }
 };
 
+// Функция проверки одного условия
+const checkCondition = (
+  condition: Condition,
+  answer: any
+): boolean => {
+  switch (condition.operator) {
+    case 'equals':
+      return answer === condition.value;
+    case 'not_equals':
+      return answer !== condition.value;
+    case 'contains':
+      return Array.isArray(answer) && answer.includes(condition.value);
+    case 'not_contains':
+      return !Array.isArray(answer) || !answer.includes(condition.value);
+    case 'greater_than':
+      return Number(answer) > Number(condition.value);
+    case 'less_than':
+      return Number(answer) < Number(condition.value);
+    case 'greater_or_equal':
+      return Number(answer) >= Number(condition.value);
+    case 'less_or_equal':
+      return Number(answer) <= Number(condition.value);
+    case 'date_after':
+      return new Date(answer) > new Date(condition.value as string);
+    case 'date_before':
+      return new Date(answer) < new Date(condition.value as string);
+    case 'date_on':
+      return new Date(answer).toDateString() === new Date(condition.value as string).toDateString();
+    default:
+      return true;
+  }
+};
+
+// Функция проверки, должен ли вопрос быть показан
+const shouldShowQuestion = (question: Question, answers: Record<string, any>): boolean => {
+  if (!question.conditionalLogic?.enabled) {
+    return true; // Вопрос без условий всегда показывается
+  }
+
+  const logic = question.conditionalLogic;
+  const dependsOnAnswer = answers[logic.dependsOn];
+
+  if (dependsOnAnswer === undefined || dependsOnAnswer === null) {
+    return false; // Если зависимый вопрос не отвечен, скрываем
+  }
+
+  // Проверяем условия
+  const conditionResults = logic.conditions.map(condition => {
+    return checkCondition(condition, dependsOnAnswer);
+  });
+
+  // Применяем логический оператор
+  if (logic.logicOperator === 'AND') {
+    return conditionResults.every(result => result);
+  } else {
+    return conditionResults.some(result => result);
+  }
+};
+
 // Компонент таба предпросмотра
 const PreviewTab: React.FC<{
   surveyData: SurveyData;
@@ -3555,6 +3625,9 @@ const PreviewTab: React.FC<{
   validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
   previewAnswers: Record<string, any>;
 }> = ({ surveyData, questions, validationErrors, previewAnswers, onAnswerChange, answers }) => {
+  // Используем answers для проверки условий (это текущие ответы в предпросмотре)
+  const currentAnswers = answers || previewAnswers;
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -3611,8 +3684,56 @@ const PreviewTab: React.FC<{
             
             {/* Вопросы */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {questions.map((question, index) => (
-                <div key={question.id} style={{ marginBottom: '20px' }}>
+              {questions.map((question, index) => {
+                const isConditional = question.conditionalLogic?.enabled;
+                const isVisible = shouldShowQuestion(question, currentAnswers);
+                const dependsOnQuestion = isConditional ? questions.find(q => q.id === question.conditionalLogic?.dependsOn) : null;
+                
+                // Формируем текст условия для подсказки
+                let conditionText = '';
+                if (isConditional && dependsOnQuestion && question.conditionalLogic) {
+                  const condition = question.conditionalLogic.conditions[0];
+                  if (condition) {
+                    const operatorLabels: Record<string, string> = {
+                      'equals': 'равно',
+                      'not_equals': 'не равно',
+                      'contains': 'содержит',
+                      'not_contains': 'не содержит',
+                      'greater_than': 'больше',
+                      'less_than': 'меньше',
+                      'greater_or_equal': 'больше или равно',
+                      'less_or_equal': 'меньше или равно',
+                      'date_after': 'после',
+                      'date_before': 'до',
+                      'date_on': 'равно дате'
+                    };
+                    conditionText = `${operatorLabels[condition.operator] || condition.operator} "${condition.value}"`;
+                  }
+                }
+                
+                return (
+                <div key={question.id} style={{ 
+                  marginBottom: '20px',
+                  marginLeft: isConditional ? '20px' : '0',
+                  paddingLeft: isConditional ? '16px' : '0',
+                  borderLeft: isConditional ? '3px solid var(--tg-button-color)' : 'none',
+                  opacity: isConditional && !isVisible ? 0.4 : 1,
+                  transition: 'opacity 0.3s ease',
+                  display: isConditional && !isVisible ? 'none' : 'block'
+                }}>
+                  {isConditional && (
+                    <div style={{
+                      fontSize: '12px',
+                      color: isVisible ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+                      marginBottom: '8px',
+                      fontStyle: 'italic',
+                      padding: '6px 8px',
+                      backgroundColor: isVisible ? 'rgba(88, 101, 242, 0.1)' : 'rgba(128, 128, 128, 0.1)',
+                      borderRadius: '6px'
+                    }}>
+                      🔀 Условный: {isVisible ? '✅ Показывается' : '❌ Скрыт'} {dependsOnQuestion && conditionText ? `(если "${dependsOnQuestion.title}" ${conditionText})` : ''}
+                    </div>
+                  )}
                   <label style={{
                     display: 'block',
                     fontSize: '16px',
@@ -3652,7 +3773,8 @@ const PreviewTab: React.FC<{
                   
                   {renderQuestionInput(question, validationErrors, onAnswerChange, answers)}
                 </div>
-              ))}
+                );
+              })}
             </div>
             
             {/* Кнопка отправки */}
@@ -3661,8 +3783,9 @@ const PreviewTab: React.FC<{
                 onClick={() => {
                   const requiredQuestions = questions.filter(q => q.required);
                   
-                  // Проверяем ответы на обязательные вопросы
-                  const unansweredRequired = requiredQuestions.filter(question => {
+                  // Проверяем ответы на обязательные вопросы (только видимые)
+                  const visibleRequiredQuestions = requiredQuestions.filter(q => shouldShowQuestion(q, answers || previewAnswers));
+                  const unansweredRequired = visibleRequiredQuestions.filter(question => {
                     const answer = previewAnswers[question.id];
                     
                     switch (question.type) {
