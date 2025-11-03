@@ -95,16 +95,50 @@ export default function SurveyTakePage() {
           return;
         }
         
-        setSurvey(response);
+        // Парсим validation если это строка JSON
+        const processedQuestions = response.questions.map((q: any) => {
+          let validation = q.validation;
+          
+          // Если validation - строка, пытаемся распарсить
+          if (typeof validation === 'string') {
+            try {
+              validation = JSON.parse(validation);
+            } catch (e) {
+              console.warn('Failed to parse validation as JSON:', e);
+            }
+          }
+          
+          return {
+            ...q,
+            validation
+          };
+        });
+        
+        const surveyWithProcessedQuestions = {
+          ...response,
+          questions: processedQuestions
+        };
+        
+        setSurvey(surveyWithProcessedQuestions);
         
         // Перемешиваем вопросы один раз при загрузке
         if (response.settings?.randomizeQuestions) {
-          const shuffled = [...response.questions].sort(() => Math.random() - 0.5);
+          const shuffled = [...processedQuestions].sort(() => Math.random() - 0.5);
           setShuffledQuestions(shuffled);
         } else {
-          const sorted = [...response.questions].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+          const sorted = [...processedQuestions].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
           setShuffledQuestions(sorted);
         }
+        
+        // Отладка: проверяем структуру данных
+        console.log('Survey questions loaded:', processedQuestions.map((q: Question) => ({
+          id: q.id,
+          text: q.text,
+          type: q.type,
+          validation: q.validation,
+          conditionalLogic: q.validation?.conditionalLogic,
+          hasConditional: !!q.validation?.conditionalLogic
+        })));
         
         // Скроллим к верху страницы
         window.scrollTo(0, 0);
@@ -119,6 +153,8 @@ export default function SurveyTakePage() {
   }, [surveyId, user?.id]);
 
   const handleAnswerChange = (questionId: string, value: any) => {
+    console.log(`handleAnswerChange called: questionId=${questionId}, value=`, value);
+    
     setAnswers(prev => {
       const newAnswers = {
         ...prev,
@@ -132,6 +168,7 @@ export default function SurveyTakePage() {
           
           // Если вопрос скрыт и у него есть ответ - очищаем его
           if (!isVisible && question.id in newAnswers && question.id !== questionId) {
+            console.log(`Clearing answer for hidden question ${question.id}`);
             delete newAnswers[question.id];
             // Также очищаем поле "Другое" если оно есть
             if (`${question.id}_other` in newAnswers) {
@@ -141,6 +178,7 @@ export default function SurveyTakePage() {
         });
       }
       
+      console.log('New answers state:', newAnswers);
       return newAnswers;
     });
     
@@ -158,21 +196,27 @@ export default function SurveyTakePage() {
     condition: Condition,
     answer: any
   ): boolean => {
+    // Нормализуем значения для сравнения (приводим к строкам для текстовых сравнений)
+    const normalizedAnswer = answer !== null && answer !== undefined ? String(answer).trim() : answer;
+    const normalizedValue = condition.value !== null && condition.value !== undefined ? String(condition.value).trim() : condition.value;
+    
     switch (condition.operator) {
       case 'equals':
         // Для числовых значений сравниваем как числа
         if (typeof answer === 'number' || typeof condition.value === 'number' || 
-            (!isNaN(Number(answer)) && !isNaN(Number(condition.value)))) {
+            (!isNaN(Number(answer)) && !isNaN(Number(condition.value)) && answer !== '' && condition.value !== '')) {
           return Number(answer) === Number(condition.value);
         }
-        return answer === condition.value;
+        // Для строковых значений сравниваем с учетом нормализации
+        return normalizedAnswer === normalizedValue;
       case 'not_equals':
         // Для числовых значений сравниваем как числа
         if (typeof answer === 'number' || typeof condition.value === 'number' || 
-            (!isNaN(Number(answer)) && !isNaN(Number(condition.value)))) {
+            (!isNaN(Number(answer)) && !isNaN(Number(condition.value)) && answer !== '' && condition.value !== '')) {
           return Number(answer) !== Number(condition.value);
         }
-        return answer !== condition.value;
+        // Для строковых значений сравниваем с учетом нормализации
+        return normalizedAnswer !== normalizedValue;
       case 'contains':
         return Array.isArray(answer) && answer.includes(condition.value);
       case 'not_contains':
@@ -198,33 +242,73 @@ export default function SurveyTakePage() {
 
   // Функция проверки, должен ли вопрос быть показан
   const shouldShowQuestion = (question: Question, currentAnswers: Record<string, any>): boolean => {
-    if (!question.validation?.conditionalLogic?.enabled) {
+    // Проверяем, есть ли условная логика в разных возможных местах
+    // Важно: validation может быть объектом напрямую или содержать conditionalLogic
+    let validationObj = question.validation;
+    
+    // Если validation - строка, пытаемся распарсить
+    if (typeof validationObj === 'string') {
+      try {
+        validationObj = JSON.parse(validationObj);
+      } catch (e) {
+        // Не критично, продолжаем
+      }
+    }
+    
+    const conditionalLogic = validationObj?.conditionalLogic || null;
+    
+    if (!conditionalLogic || !conditionalLogic.enabled) {
       return true; // Вопрос без условий всегда показывается
     }
 
-    const logic = question.validation.conditionalLogic;
+    const logic = conditionalLogic;
     const dependsOnAnswer = currentAnswers[logic.dependsOn];
+    
+    // Находим родительский вопрос для отладки
+    const parentQuestionForDebug = shuffledQuestions.find(q => q.id === logic.dependsOn);
+    
+    // Отладка
+    console.log(`Checking question ${question.id} (${question.text}):`, {
+      dependsOn: logic.dependsOn,
+      parentQuestionType: parentQuestionForDebug?.type,
+      parentQuestionText: parentQuestionForDebug?.text,
+      dependsOnAnswer,
+      dependsOnAnswerType: typeof dependsOnAnswer,
+      conditions: logic.conditions,
+      conditionValue: logic.conditions[0]?.value,
+      conditionValueType: typeof logic.conditions[0]?.value,
+      conditionOperator: logic.conditions[0]?.operator,
+      allAnswers: currentAnswers
+    });
 
-    if (dependsOnAnswer === undefined || dependsOnAnswer === null) {
+    if (dependsOnAnswer === undefined || dependsOnAnswer === null || dependsOnAnswer === '') {
+      console.log(`Question ${question.id} hidden: no answer for dependsOn ${logic.dependsOn}`);
       return false; // Если зависимый вопрос не отвечен, скрываем
     }
 
     // Проверяем условия
-    const conditionResults = logic.conditions.map(condition => {
-      return checkCondition(condition, dependsOnAnswer);
+    const conditionResults = logic.conditions.map((condition: Condition) => {
+      const result = checkCondition(condition, dependsOnAnswer);
+      console.log(`  Condition check: ${condition.operator} ${condition.value} vs ${dependsOnAnswer} = ${result}`);
+      return result;
     });
 
     // Применяем логический оператор
     let conditionMet = false;
     if (logic.logicOperator === 'AND') {
-      conditionMet = conditionResults.every(result => result);
+      conditionMet = conditionResults.every((result: boolean) => result);
     } else {
-      conditionMet = conditionResults.some(result => result);
+      conditionMet = conditionResults.some((result: boolean) => result);
     }
 
+    console.log(`  Condition met (${logic.logicOperator}): ${conditionMet}`);
+
     if (!conditionMet) {
+      console.log(`Question ${question.id} hidden: conditions not met`);
       return false;
     }
+    
+    console.log(`Question ${question.id} visible: conditions met`);
 
     // Если условие выполнено, проверяем приоритет для числовых типов
     // Находим родительский вопрос
@@ -236,11 +320,13 @@ export default function SurveyTakePage() {
     }
 
     // Находим все вопросы, зависящие от того же вопроса
-    const competingQuestions = allQuestions.filter(q => 
-      q.id !== question.id && 
-      q.validation?.conditionalLogic?.enabled && 
-      q.validation.conditionalLogic.dependsOn === logic.dependsOn
-    );
+    const competingQuestions = allQuestions.filter(q => {
+      const qConditionalLogic = q.validation?.conditionalLogic || 
+                                (q.validation && typeof q.validation === 'object' && 'conditionalLogic' in q.validation ? (q.validation as any).conditionalLogic : null);
+      return q.id !== question.id && 
+             qConditionalLogic?.enabled && 
+             qConditionalLogic.dependsOn === logic.dependsOn;
+    });
 
     if (competingQuestions.length === 0) {
       return true; // Нет конкурентов - показываем
@@ -248,8 +334,10 @@ export default function SurveyTakePage() {
 
     // Вычисляем "строгость" условий для приоритета
     const getConditionPriority = (q: Question): number => {
-      if (!q.validation?.conditionalLogic || q.validation.conditionalLogic.conditions.length === 0) return 0;
-      const condition = q.validation.conditionalLogic.conditions[0];
+      const qConditionalLogic = q.validation?.conditionalLogic || 
+                                (q.validation && typeof q.validation === 'object' && 'conditionalLogic' in q.validation ? (q.validation as any).conditionalLogic : null);
+      if (!qConditionalLogic || qConditionalLogic.conditions.length === 0) return 0;
+      const condition = qConditionalLogic.conditions[0];
       const conditionValue = Number(condition.value);
       
       // Проверяем, выполняется ли условие конкурента
@@ -500,7 +588,10 @@ export default function SurveyTakePage() {
                     type="radio"
                     name={`question_${question.id}`}
                     checked={isSelected}
-                    onChange={() => handleAnswerChange(question.id, optionText)}
+                    onChange={() => {
+                      console.log(`Setting answer for ${question.id} to '${optionText}'`);
+                      handleAnswerChange(question.id, optionText);
+                    }}
                     style={{ 
                       position: 'absolute',
                       opacity: 0,
@@ -913,6 +1004,7 @@ export default function SurveyTakePage() {
                 <button
                   key={star}
                   onClick={() => {
+                    console.log(`Setting rating for ${question.id} to ${star}`);
                     setRatingValues(prev => ({ ...prev, [question.id]: star }));
                     handleAnswerChange(question.id, star);
                   }}
@@ -942,7 +1034,7 @@ export default function SurveyTakePage() {
       );
     }
 
-    // Yes/No
+    // Yes/No (на сервере это yes_no)
     if (question.type === 'yes_no') {
       return (
         <div>
@@ -966,7 +1058,10 @@ export default function SurveyTakePage() {
                   type="radio"
                   name={`question_${question.id}`}
                   checked={answer === 'yes'}
-                  onChange={() => handleAnswerChange(question.id, 'yes')}
+                  onChange={() => {
+                    console.log(`Setting answer for ${question.id} to 'yes'`);
+                    handleAnswerChange(question.id, 'yes');
+                  }}
                   style={{ 
                     position: 'absolute',
                     opacity: 0,
@@ -1011,7 +1106,10 @@ export default function SurveyTakePage() {
                   type="radio"
                   name={`question_${question.id}`}
                   checked={answer === 'no'}
-                  onChange={() => handleAnswerChange(question.id, 'no')}
+                  onChange={() => {
+                    console.log(`Setting answer for ${question.id} to 'no'`);
+                    handleAnswerChange(question.id, 'no');
+                  }}
                   style={{ 
                     position: 'absolute',
                     opacity: 0,
