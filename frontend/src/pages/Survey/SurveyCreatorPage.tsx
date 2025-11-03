@@ -519,14 +519,34 @@ const SurveyCreatorPage: React.FC = () => {
       // Создаем вопросы для опроса
       try {
         const surveyId = createdSurvey.id as string;
-        const createPayloads = questions.map((q, index) => {
+        
+        // Сначала создаем маппинг временных ID на реальные UUID
+        // Ключ: временный ID вопроса, значение: реальный UUID
+        const questionIdMap: Record<string, string> = {};
+        
+        // Создаем вопросы последовательно и обновляем маппинг
+        for (let index = 0; index < questions.length; index++) {
+          const q = questions[index];
           const optionsClean = (q.options || []).filter((opt) => opt && opt.trim() !== '');
+          
           // Объединяем validation и conditionalLogic в одно поле validation
-          const validationWithConditional = {
+          let validationWithConditional = {
             ...(q.validation || {}),
             ...(q.conditionalLogic ? { conditionalLogic: q.conditionalLogic } : {})
           };
-          return {
+          
+          // Если есть conditionalLogic с dependsOn, и это временный ID, обновляем его на реальный UUID
+          if (validationWithConditional.conditionalLogic?.dependsOn && questionIdMap[validationWithConditional.conditionalLogic.dependsOn]) {
+            validationWithConditional = {
+              ...validationWithConditional,
+              conditionalLogic: {
+                ...validationWithConditional.conditionalLogic,
+                dependsOn: questionIdMap[validationWithConditional.conditionalLogic.dependsOn]
+              }
+            };
+          }
+          
+          const payload = {
             survey_id: surveyId,
             type: q.type === 'boolean' ? 'yes_no' : q.type,
             text: q.title || '',
@@ -544,11 +564,12 @@ const SurveyCreatorPage: React.FC = () => {
             image_name: q.imageName,
             has_other_option: q.hasOtherOption || false,
           } as const;
-        });
-        // Последовательно или параллельно; используем последовательный сдержанный параллелизм
-        for (const payload of createPayloads) {
-          // eslint-disable-next-line no-await-in-loop
-          await questionApi.createQuestion(payload as any);
+          
+          // Создаем вопрос и получаем его реальный UUID
+          const createdQuestion = await questionApi.createQuestion(payload as any);
+          
+          // Сохраняем маппинг: временный ID -> реальный UUID
+          questionIdMap[q.id] = createdQuestion.id;
         }
       } catch (e) {
         console.error('Ошибка создания вопросов:', e);

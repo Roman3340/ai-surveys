@@ -153,8 +153,6 @@ export default function SurveyTakePage() {
   }, [surveyId, user?.id]);
 
   const handleAnswerChange = (questionId: string, value: any) => {
-    console.log(`handleAnswerChange called: questionId=${questionId}, value=`, value);
-    
     setAnswers(prev => {
       const newAnswers = {
         ...prev,
@@ -168,7 +166,6 @@ export default function SurveyTakePage() {
           
           // Если вопрос скрыт и у него есть ответ - очищаем его
           if (!isVisible && question.id in newAnswers && question.id !== questionId) {
-            console.log(`Clearing answer for hidden question ${question.id}`);
             delete newAnswers[question.id];
             // Также очищаем поле "Другое" если оно есть
             if (`${question.id}_other` in newAnswers) {
@@ -178,7 +175,6 @@ export default function SurveyTakePage() {
         });
       }
       
-      console.log('New answers state:', newAnswers);
       return newAnswers;
     });
     
@@ -263,34 +259,14 @@ export default function SurveyTakePage() {
 
     const logic = conditionalLogic;
     const dependsOnAnswer = currentAnswers[logic.dependsOn];
-    
-    // Находим родительский вопрос для отладки
-    const parentQuestionForDebug = shuffledQuestions.find(q => q.id === logic.dependsOn);
-    
-    // Отладка
-    console.log(`Checking question ${question.id} (${question.text}):`, {
-      dependsOn: logic.dependsOn,
-      parentQuestionType: parentQuestionForDebug?.type,
-      parentQuestionText: parentQuestionForDebug?.text,
-      dependsOnAnswer,
-      dependsOnAnswerType: typeof dependsOnAnswer,
-      conditions: logic.conditions,
-      conditionValue: logic.conditions[0]?.value,
-      conditionValueType: typeof logic.conditions[0]?.value,
-      conditionOperator: logic.conditions[0]?.operator,
-      allAnswers: currentAnswers
-    });
 
     if (dependsOnAnswer === undefined || dependsOnAnswer === null || dependsOnAnswer === '') {
-      console.log(`Question ${question.id} hidden: no answer for dependsOn ${logic.dependsOn}`);
       return false; // Если зависимый вопрос не отвечен, скрываем
     }
 
     // Проверяем условия
     const conditionResults = logic.conditions.map((condition: Condition) => {
-      const result = checkCondition(condition, dependsOnAnswer);
-      console.log(`  Condition check: ${condition.operator} ${condition.value} vs ${dependsOnAnswer} = ${result}`);
-      return result;
+      return checkCondition(condition, dependsOnAnswer);
     });
 
     // Применяем логический оператор
@@ -301,14 +277,9 @@ export default function SurveyTakePage() {
       conditionMet = conditionResults.some((result: boolean) => result);
     }
 
-    console.log(`  Condition met (${logic.logicOperator}): ${conditionMet}`);
-
     if (!conditionMet) {
-      console.log(`Question ${question.id} hidden: conditions not met`);
       return false;
     }
-    
-    console.log(`Question ${question.id} visible: conditions met`);
 
     // Если условие выполнено, проверяем приоритет для числовых типов
     // Находим родительский вопрос
