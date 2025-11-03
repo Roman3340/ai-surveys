@@ -2766,8 +2766,6 @@ export default function SurveyAnalyticsPage() {
         }
         
         if (q.id.startsWith('temp_')) {
-          // Для новых вопросов: если conditionalLogic зависит от временного ID, который еще не создан,
-          // оставляем dependsOn как есть - обновим во втором проходе
           const createdQuestion = await questionApi.createQuestion({
             survey_id: surveyId,
             type: q.type,
@@ -2786,8 +2784,6 @@ export default function SurveyAnalyticsPage() {
           questionIdMap[q.id] = createdQuestion.id;
         } else {
           // Обновляем существующие вопросы
-          // Для существующих вопросов: если conditionalLogic зависит от временного ID, 
-          // оставляем dependsOn как есть - обновим во втором проходе
           await questionApi.updateQuestion(q.id, {
             type: q.type,
             text: q.text,
@@ -2808,42 +2804,21 @@ export default function SurveyAnalyticsPage() {
       // Второй проход: обновляем все вопросы с условной логикой, у которых dependsOn указывал на временный ID
       // и теперь нужно обновить на реальный UUID
       for (const q of editedQuestions) {
-        if (q.conditionalLogic?.dependsOn && q.conditionalLogic.dependsOn.startsWith('temp_')) {
+        if (q.conditionalLogic?.dependsOn) {
           const originalDependsOn = q.conditionalLogic.dependsOn;
           const realDependsOn = questionIdMap[originalDependsOn];
           
           // Если dependsOn был временным ID и теперь имеет реальный UUID, обновляем
-          if (realDependsOn && realDependsOn !== originalDependsOn) {
-            const questionIdToUpdate = q.id.startsWith('temp_') ? questionIdMap[q.id] : q.id;
-            
-            // Получаем текущее состояние вопроса из БД чтобы не потерять существующие данные validation
-            const currentQuestions = await questionApi.getSurveyQuestions(surveyId);
-            const questionToUpdate = currentQuestions.find((qu: any) => {
-              return qu.id === questionIdToUpdate || qu.id === questionIdToUpdate.toString();
-            });
-            
-            // Объединяем существующий validation с обновленным conditionalLogic
-            let currentValidation: any = {};
-            if (questionToUpdate?.validation) {
-              if (typeof questionToUpdate.validation === 'string') {
-                try {
-                  currentValidation = JSON.parse(questionToUpdate.validation);
-                } catch (e) {
-                  currentValidation = {};
-                }
-              } else {
-                currentValidation = { ...questionToUpdate.validation };
-              }
-            }
-            
+          if (originalDependsOn.startsWith('temp_') && realDependsOn && realDependsOn !== originalDependsOn) {
             const updatedConditionalLogic = {
               ...q.conditionalLogic,
               dependsOn: realDependsOn
             };
             
+            const questionIdToUpdate = q.id.startsWith('temp_') ? questionIdMap[q.id] : q.id;
+            
             await questionApi.updateQuestion(questionIdToUpdate, {
               validation: {
-                ...currentValidation,
                 conditionalLogic: updatedConditionalLogic
               }
             });
@@ -3115,13 +3090,7 @@ export default function SurveyAnalyticsPage() {
       }
     };
 
-    // Находим вопрос, от которого зависит текущий вопрос
-    // Важно: ищем в availableQuestions, но если не нашли, проверяем все вопросы (на случай, если вопрос был только что создан)
-    let dependsOnQuestion = availableQuestions.find(q => q.id === question.conditionalLogic?.dependsOn);
-    if (!dependsOnQuestion && question.conditionalLogic?.dependsOn) {
-      // Если не нашли в предыдущих вопросах, возможно это новый вопрос - ищем во всех вопросах
-      dependsOnQuestion = allQuestions.find(q => q.id === question.conditionalLogic?.dependsOn);
-    }
+    const dependsOnQuestion = availableQuestions.find(q => q.id === question.conditionalLogic?.dependsOn);
     const availableOperators = dependsOnQuestion ? getAvailableOperators(dependsOnQuestion.type) : [];
     
     // Получаем значения для выбора в зависимости от типа вопроса
@@ -3160,20 +3129,11 @@ export default function SurveyAnalyticsPage() {
         if (!firstQuestion) return;
         
         const operators = getAvailableOperators(firstQuestion.type);
-        
-        // Правильно определяем значение по умолчанию в зависимости от типа вопроса
-        let defaultValue: string | number;
-        if (firstQuestion.type === 'scale' || firstQuestion.type === 'rating' || firstQuestion.type === 'number') {
-          defaultValue = firstQuestion.type === 'scale' ? (firstQuestion.scale_min || 1) : 
-                         firstQuestion.type === 'rating' ? 1 : 
-                         (firstQuestion.scale_min || 1);
-        } else if (firstQuestion.type === 'yes_no') {
-          defaultValue = 'yes';
-        } else {
-          // Для single_choice и multiple_choice берем первый непустой вариант
-          const firstOption = (firstQuestion.options || []).find(opt => opt && opt.trim() !== '');
-          defaultValue = firstOption || '';
-        }
+        const defaultValue = firstQuestion.type === 'scale' || firstQuestion.type === 'rating' || firstQuestion.type === 'number'
+          ? (firstQuestion.scale_min || 1)
+          : firstQuestion.type === 'yes_no'
+          ? 'yes'
+          : (firstQuestion.options?.[0] || '');
         
         onConditionChange({
           enabled: true,
@@ -3188,32 +3148,15 @@ export default function SurveyAnalyticsPage() {
     };
 
     const handleDependsOnChange = (questionId: string) => {
-      // Ищем выбранный вопрос сначала в доступных (предыдущих), потом во всех вопросах
-      let selectedQuestion = availableQuestions.find(q => q.id === questionId);
-      if (!selectedQuestion) {
-        selectedQuestion = allQuestions.find(q => q.id === questionId);
-      }
+      const selectedQuestion = availableQuestions.find(q => q.id === questionId);
       if (!selectedQuestion) return;
       
       const operators = getAvailableOperators(selectedQuestion.type);
-      
-      // Правильно определяем значение по умолчанию в зависимости от типа вопроса
-      let defaultValue: string | number;
-      if (selectedQuestion.type === 'scale' || selectedQuestion.type === 'rating' || selectedQuestion.type === 'number') {
-        defaultValue = selectedQuestion.type === 'scale' ? (selectedQuestion.scale_min || 1) : 
-                       selectedQuestion.type === 'rating' ? 1 : 
-                       (selectedQuestion.scale_min || 1);
-      } else if (selectedQuestion.type === 'yes_no') {
-        defaultValue = 'yes';
-      } else {
-        // Для single_choice и multiple_choice берем первый непустой вариант
-        const firstOption = (selectedQuestion.options || []).find(opt => opt && opt.trim() !== '');
-        defaultValue = firstOption || '';
-      }
-      
       const firstCondition: Condition = {
         operator: operators[0]?.value || 'equals',
-        value: defaultValue
+        value: selectedQuestion.type === 'scale' || selectedQuestion.type === 'rating' || selectedQuestion.type === 'number'
+          ? (selectedQuestion.scale_min || 1)
+          : (selectedQuestion.options?.[0] || 'yes')
       };
       
       onConditionChange({
@@ -3375,9 +3318,9 @@ export default function SurveyAnalyticsPage() {
                   cursor: disabled ? 'not-allowed' : 'pointer'
                 }}
               >
-                {availableQuestions.map((q, idx) => (
+                {availableQuestions.map(q => (
                   <option key={q.id} value={q.id}>
-                    {q.text || `Вопрос ${idx + 1}`}
+                    {q.text || `Вопрос ${allQuestions.findIndex(qq => qq.id === q.id) + 1}`}
                   </option>
                 ))}
               </select>
