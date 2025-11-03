@@ -258,6 +258,15 @@ export default function SurveyTakePage() {
     }
 
     const logic = conditionalLogic;
+    
+    // Находим родительский вопрос
+    const parentQuestion = shuffledQuestions.find(q => q.id === logic.dependsOn);
+    
+    // Если родительский вопрос имеет тип 'text' или 'textarea', всегда показываем вопрос
+    if (parentQuestion && (parentQuestion.type === 'text' || parentQuestion.type === 'textarea')) {
+      return true;
+    }
+    
     const dependsOnAnswer = currentAnswers[logic.dependsOn];
 
     if (dependsOnAnswer === undefined || dependsOnAnswer === null || dependsOnAnswer === '') {
@@ -283,8 +292,7 @@ export default function SurveyTakePage() {
 
     // Если условие выполнено, проверяем приоритет для числовых типов
     // Находим родительский вопрос
-    const allQuestions = shuffledQuestions;
-    const parentQuestion = allQuestions.find(q => q.id === logic.dependsOn);
+    // parentQuestion уже найден выше
     if (!parentQuestion || !['scale', 'rating', 'number'].includes(parentQuestion.type)) {
       // Для нечисловых типов или если родительский вопрос не найден - показываем без проверки приоритета
       return true;

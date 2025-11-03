@@ -2882,7 +2882,25 @@ const ConditionalLogicEditor: React.FC<{
 
           {dependsOnQuestion && (
             <>
-              {question.conditionalLogic.conditions.map((condition, conditionIndex) => (
+              {/* Проверяем, является ли родительский вопрос текстовым типом */}
+              {dependsOnQuestion.type === 'text' || dependsOnQuestion.type === 'textarea' ? (
+                <div style={{
+                  padding: '12px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  borderRadius: '6px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '13px',
+                    color: 'var(--tg-hint-color)',
+                    lineHeight: '1.4'
+                  }}>
+                    Для вопросов с типами "Короткий ответ" и "Развернутый ответ" настройка условных вопросов недоступна
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {question.conditionalLogic.conditions.map((condition, conditionIndex) => (
                 <div key={conditionIndex} style={{
                   marginBottom: '12px',
                   padding: '10px',
@@ -3027,33 +3045,35 @@ const ConditionalLogicEditor: React.FC<{
                 </div>
               ))}
 
-              {dependsOnQuestion.type === 'multiple_choice' && question.conditionalLogic && question.conditionalLogic.conditions.length < 5 && (
-                <button
-                  onClick={handleAddCondition}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    backgroundColor: 'transparent',
-                    border: '1px dashed var(--tg-section-separator-color)',
-                    borderRadius: '6px',
-                    color: 'var(--tg-hint-color)',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    marginBottom: '8px'
-                  }}
-                >
-                  + Добавить условие
-                </button>
-              )}
+                  {dependsOnQuestion.type === 'multiple_choice' && question.conditionalLogic && question.conditionalLogic.conditions.length < 5 && (
+                    <button
+                      onClick={handleAddCondition}
+                      style={{
+                        width: '100%',
+                        padding: '8px',
+                        backgroundColor: 'transparent',
+                        border: '1px dashed var(--tg-section-separator-color)',
+                        borderRadius: '6px',
+                        color: 'var(--tg-hint-color)',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        marginBottom: '8px'
+                      }}
+                    >
+                      + Добавить условие
+                    </button>
+                  )}
 
-              <div style={{
-                fontSize: '11px',
-                color: 'var(--tg-hint-color)',
-                lineHeight: '1.4',
-                marginTop: '8px'
-              }}>
-                💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
-              </div>
+                  <div style={{
+                    fontSize: '11px',
+                    color: 'var(--tg-hint-color)',
+                    lineHeight: '1.4',
+                    marginTop: '8px'
+                  }}>
+                    💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
@@ -3693,6 +3713,15 @@ const shouldShowQuestion = (question: Question, answers: Record<string, any>, al
   }
 
   const logic = question.conditionalLogic;
+  
+  // Находим родительский вопрос
+  const parentQuestion = allQuestions.find(q => q.id === logic.dependsOn);
+  
+  // Если родительский вопрос имеет тип 'text' или 'textarea', всегда показываем вопрос
+  if (parentQuestion && (parentQuestion.type === 'text' || parentQuestion.type === 'textarea')) {
+    return true;
+  }
+  
   const dependsOnAnswer = answers[logic.dependsOn];
 
   if (dependsOnAnswer === undefined || dependsOnAnswer === null) {
@@ -3717,8 +3746,7 @@ const shouldShowQuestion = (question: Question, answers: Record<string, any>, al
   }
 
   // Если условие выполнено, проверяем приоритет для числовых типов
-  // Находим родительский вопрос
-  const parentQuestion = allQuestions.find(q => q.id === logic.dependsOn);
+  // parentQuestion уже найден выше
   if (!parentQuestion || !['scale', 'rating', 'number'].includes(parentQuestion.type)) {
     // Для нечисловых типов или если родительский вопрос не найден - показываем без проверки приоритета
     return true;

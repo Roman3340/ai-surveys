@@ -2752,8 +2752,14 @@ export default function SurveyAnalyticsPage() {
         }
       }
       
+      // Пересчитываем order_index для всех вопросов последовательно (1, 2, 3...)
+      const questionsWithCorrectOrder = editedQuestions.map((q, index) => ({
+        ...q,
+        order_index: index + 1
+      }));
+      
       // Создаем и обновляем вопросы последовательно
-      for (const q of editedQuestions) {
+      for (const q of questionsWithCorrectOrder) {
         // Объединяем validation и conditionalLogic
         let validationWithConditional: any = {};
         if (q.conditionalLogic) {
@@ -2803,7 +2809,7 @@ export default function SurveyAnalyticsPage() {
       
       // Второй проход: обновляем все вопросы с условной логикой, у которых dependsOn указывал на временный ID
       // и теперь нужно обновить на реальный UUID
-      for (const q of editedQuestions) {
+      for (const q of questionsWithCorrectOrder) {
         if (q.conditionalLogic?.dependsOn) {
           const originalDependsOn = q.conditionalLogic.dependsOn;
           const realDependsOn = questionIdMap[originalDependsOn];
@@ -3328,7 +3334,25 @@ export default function SurveyAnalyticsPage() {
 
             {dependsOnQuestion && (
               <>
-                {question.conditionalLogic.conditions.map((condition, conditionIndex) => (
+                {/* Проверяем, является ли родительский вопрос текстовым типом */}
+                {dependsOnQuestion.type === 'text' || dependsOnQuestion.type === 'textarea' ? (
+                  <div style={{
+                    padding: '12px',
+                    backgroundColor: 'var(--tg-section-bg-color)',
+                    borderRadius: '6px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{
+                      fontSize: '13px',
+                      color: 'var(--tg-hint-color)',
+                      lineHeight: '1.4'
+                    }}>
+                      Для вопросов с типами "Короткий ответ" и "Развернутый ответ" настройка условных вопросов недоступна
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {question.conditionalLogic.conditions.map((condition, conditionIndex) => (
                   <div key={conditionIndex} style={{
                     marginBottom: '12px',
                     padding: '10px',
@@ -3483,33 +3507,35 @@ export default function SurveyAnalyticsPage() {
                   </div>
                 ))}
 
-                {dependsOnQuestion.type === 'multiple_choice' && question.conditionalLogic && question.conditionalLogic.conditions.length < 5 && !disabled && (
-                  <button
-                    onClick={handleAddCondition}
-                    style={{
-                      width: '100%',
-                      padding: '8px',
-                      backgroundColor: 'transparent',
-                      border: '1px dashed var(--tg-section-separator-color)',
-                      borderRadius: '6px',
-                      color: 'var(--tg-hint-color)',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      marginBottom: '8px'
-                    }}
-                  >
-                    + Добавить условие
-                  </button>
-                )}
+                    {dependsOnQuestion.type === 'multiple_choice' && question.conditionalLogic && question.conditionalLogic.conditions.length < 5 && !disabled && (
+                      <button
+                        onClick={handleAddCondition}
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          backgroundColor: 'transparent',
+                          border: '1px dashed var(--tg-section-separator-color)',
+                          borderRadius: '6px',
+                          color: 'var(--tg-hint-color)',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          marginBottom: '8px'
+                        }}
+                      >
+                        + Добавить условие
+                      </button>
+                    )}
 
-                <div style={{
-                  fontSize: '11px',
-                  color: 'var(--tg-hint-color)',
-                  lineHeight: '1.4',
-                  marginTop: '8px'
-                }}>
-                  💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
-                </div>
+                    <div style={{
+                      fontSize: '11px',
+                      color: 'var(--tg-hint-color)',
+                      lineHeight: '1.4',
+                      marginTop: '8px'
+                    }}>
+                      💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -5364,13 +5390,18 @@ export default function SurveyAnalyticsPage() {
           {editingQuestions && (
             <button
               onClick={() => {
+                // Вычисляем максимальный order_index из всех вопросов
+                const maxOrderIndex = editedQuestions.length > 0 
+                  ? Math.max(...editedQuestions.map(q => q.order_index))
+                  : 0;
+                
                 const newQuestion: EditableQuestion = {
                   id: `temp_${Date.now()}`,
                   type: 'text',
                   text: 'Новый вопрос',
                   description: undefined,
                   is_required: false,
-                  order_index: editedQuestions.length,
+                  order_index: maxOrderIndex + 1,
                   options: [],
                   has_other_option: false,
                   scale_min: undefined,
