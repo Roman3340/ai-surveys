@@ -2717,7 +2717,9 @@ const ConditionalLogicEditor: React.FC<{
   const handleValueChange = (conditionIndex: number, value: string | number | string[]) => {
     if (!question.conditionalLogic) return;
     const newConditions = [...question.conditionalLogic.conditions];
-    newConditions[conditionIndex] = { ...newConditions[conditionIndex], value };
+    // Для числовых типов, если значение - пустая строка, преобразуем в 0 при сохранении
+    const finalValue = (value === '' && dependsOnQuestion?.type === 'number') ? 0 : value;
+    newConditions[conditionIndex] = { ...newConditions[conditionIndex], value: finalValue };
     onConditionChange({
       ...question.conditionalLogic,
       conditions: newConditions
@@ -2918,10 +2920,35 @@ const ConditionalLogicEditor: React.FC<{
                   ) : dependsOnQuestion.type === 'number' ? (
                     <input
                       type="number"
-                      value={condition.value}
-                      onChange={(e) => handleValueChange(conditionIndex, parseFloat(e.target.value) || 0)}
+                      value={condition.value === 0 ? '' : condition.value}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Позволяем пустую строку для возможности очистки поля
+                        if (value === '' || value === '-') {
+                          // Храним как пустую строку временно, чтобы можно было стереть
+                          const newConditions = [...(question.conditionalLogic?.conditions || [])];
+                          newConditions[conditionIndex] = { ...newConditions[conditionIndex], value: value as any };
+                          onConditionChange({
+                            ...question.conditionalLogic!,
+                            conditions: newConditions
+                          });
+                        } else {
+                          const numValue = parseFloat(value);
+                          if (!isNaN(numValue)) {
+                            handleValueChange(conditionIndex, numValue);
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        // Если поле пустое при потере фокуса, устанавливаем 0
+                        if (e.target.value === '' || e.target.value === '-') {
+                          handleValueChange(conditionIndex, 0);
+                        }
+                      }}
                       style={{
                         flex: 1,
+                        minWidth: 0,
+                        maxWidth: '120px',
                         padding: '6px 8px',
                         borderRadius: '4px',
                         border: 'none',
