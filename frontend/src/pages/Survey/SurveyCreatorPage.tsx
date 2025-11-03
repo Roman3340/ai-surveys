@@ -3602,7 +3602,7 @@ const checkCondition = (
 };
 
 // Функция проверки, должен ли вопрос быть показан
-const shouldShowQuestion = (question: Question, answers: Record<string, any>): boolean => {
+const shouldShowQuestion = (question: Question, answers: Record<string, any>, allQuestions: Question[] = []): boolean => {
   if (!question.conditionalLogic?.enabled) {
     return true; // Вопрос без условий всегда показывается
   }
@@ -3620,11 +3620,82 @@ const shouldShowQuestion = (question: Question, answers: Record<string, any>): b
   });
 
   // Применяем логический оператор
+  let conditionMet = false;
   if (logic.logicOperator === 'AND') {
-    return conditionResults.every(result => result);
+    conditionMet = conditionResults.every(result => result);
   } else {
-    return conditionResults.some(result => result);
+    conditionMet = conditionResults.some(result => result);
   }
+
+  if (!conditionMet) {
+    return false;
+  }
+
+  // Если условие выполнено, проверяем приоритет для числовых типов
+  // Находим родительский вопрос
+  const parentQuestion = allQuestions.find(q => q.id === logic.dependsOn);
+  if (!parentQuestion || !['scale', 'rating', 'number'].includes(parentQuestion.type)) {
+    // Для нечисловых типов или если родительский вопрос не найден - показываем без проверки приоритета
+    return true;
+  }
+
+  // Находим все вопросы, зависящие от того же вопроса
+  const competingQuestions = allQuestions.filter(q => 
+    q.id !== question.id && 
+    q.conditionalLogic?.enabled && 
+    q.conditionalLogic.dependsOn === logic.dependsOn
+  );
+
+  if (competingQuestions.length === 0) {
+    return true; // Нет конкурентов - показываем
+  }
+
+  // Вычисляем "строгость" условий для приоритета
+  // Чем больше значение в условии >=, тем выше приоритет
+  // Чем меньше значение в условие <=, тем выше приоритет
+  const getConditionPriority = (q: Question): number => {
+    if (!q.conditionalLogic || q.conditionalLogic.conditions.length === 0) return 0;
+    const condition = q.conditionalLogic.conditions[0];
+    const conditionValue = Number(condition.value);
+    
+    // Проверяем, выполняется ли условие конкурента
+    const competitorMet = checkCondition(condition, dependsOnAnswer);
+    if (!competitorMet) {
+      return -Infinity; // Условие не выполнено - низкий приоритет
+    }
+
+    // Приоритет для >=: чем больше значение, тем выше приоритет
+    if (condition.operator === 'greater_or_equal') {
+      return conditionValue;
+    }
+    // Приоритет для >: чем больше значение, тем выше приоритет
+    if (condition.operator === 'greater_than') {
+      return conditionValue + 0.1; // Немного выше чем >= для того же значения
+    }
+    // Приоритет для <=: чем меньше значение, тем выше приоритет (обратная логика)
+    if (condition.operator === 'less_or_equal') {
+      return -conditionValue;
+    }
+    // Приоритет для <: чем меньше значение, тем выше приоритет
+    if (condition.operator === 'less_than') {
+      return -(conditionValue + 0.1);
+    }
+    // Для == приоритет средний
+    if (condition.operator === 'equals') {
+      return 0;
+    }
+    
+    return 0;
+  };
+
+  const currentPriority = getConditionPriority(question);
+  const maxPriority = Math.max(
+    currentPriority,
+    ...competingQuestions.map(q => getConditionPriority(q))
+  );
+
+  // Показываем только если у этого вопроса наивысший приоритет
+  return currentPriority === maxPriority && currentPriority !== -Infinity;
 };
 
 // Компонент таба предпросмотра
@@ -3696,21 +3767,21 @@ const PreviewTab: React.FC<{
             {/* Вопросы */}
             <AnimatePresence>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {questions.map((question, index) => {
-                  const isConditional = question.conditionalLogic?.enabled;
-                  const isVisible = shouldShowQuestion(question, currentAnswers);
-                  
-                  // Скрываем условные вопросы, которые не должны показываться
-                  if (isConditional && !isVisible) {
-                    return null;
-                  }
-                  
-                  // Правильная нумерация видимых вопросов
-                  const visibleIndex = questions.slice(0, index + 1).filter((q, i) => {
-                    if (i === index) return true; // Текущий вопрос
-                    const qIsConditional = q.conditionalLogic?.enabled;
-                    return !qIsConditional || shouldShowQuestion(q, currentAnswers);
-                  }).length - 1;
+              {questions.map((question, index) => {
+                const isConditional = question.conditionalLogic?.enabled;
+                const isVisible = shouldShowQuestion(question, currentAnswers, questions);
+                
+                // Скрываем условные вопросы, которые не должны показываться
+                if (isConditional && !isVisible) {
+                  return null;
+                }
+                
+                // Правильная нумерация видимых вопросов
+                const visibleIndex = questions.slice(0, index + 1).filter((q, i) => {
+                  if (i === index) return true; // Текущий вопрос
+                  const qIsConditional = q.conditionalLogic?.enabled;
+                  return !qIsConditional || shouldShowQuestion(q, currentAnswers, questions);
+                }).length - 1;
                   
                   return (
                   <motion.div
