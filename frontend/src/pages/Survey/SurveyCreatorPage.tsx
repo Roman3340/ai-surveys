@@ -3064,14 +3064,46 @@ const ConditionalLogicEditor: React.FC<{
                     </button>
                   )}
 
-                  <div style={{
-                    fontSize: '11px',
-                    color: 'var(--tg-hint-color)',
-                    lineHeight: '1.4',
-                    marginTop: '8px'
-                  }}>
-                    💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
-                  </div>
+                  {/* Проверяем, полностью ли заполнены условия */}
+                  {(() => {
+                    const hasIncompleteConditions = question.conditionalLogic?.conditions.some(condition => {
+                      if (condition.value === undefined || condition.value === null || condition.value === '') {
+                        return true;
+                      }
+                      if (Array.isArray(condition.value) && condition.value.length === 0) {
+                        return true;
+                      }
+                      return false;
+                    });
+                    
+                    if (hasIncompleteConditions) {
+                      return (
+                        <div style={{
+                          fontSize: '11px',
+                          color: '#FF9500',
+                          lineHeight: '1.4',
+                          marginTop: '8px',
+                          padding: '8px',
+                          backgroundColor: 'rgba(255, 149, 0, 0.1)',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(255, 149, 0, 0.3)'
+                        }}>
+                          ⚠️ Условие не полностью заполнено. Вопрос будет показываться всегда, пока все поля условий не будут заполнены.
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <div style={{
+                        fontSize: '11px',
+                        color: 'var(--tg-hint-color)',
+                        lineHeight: '1.4',
+                        marginTop: '8px'
+                      }}>
+                        💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
+                      </div>
+                    );
+                  })()}
                 </>
               )}
             </>
@@ -3713,6 +3745,24 @@ const shouldShowQuestion = (question: Question, answers: Record<string, any>, al
   }
 
   const logic = question.conditionalLogic;
+  
+  // Проверяем, что все условия полностью заполнены
+  // Если хотя бы одно условие не имеет значения, всегда показываем вопрос
+  const hasIncompleteConditions = logic.conditions.some(condition => {
+    // Проверяем, что значение не пустое
+    if (condition.value === undefined || condition.value === null || condition.value === '') {
+      return true; // Неполное условие
+    }
+    // Для массивов проверяем, что массив не пустой
+    if (Array.isArray(condition.value) && condition.value.length === 0) {
+      return true; // Неполное условие
+    }
+    return false;
+  });
+  
+  if (hasIncompleteConditions) {
+    return true; // Условие не полностью заполнено - всегда показываем
+  }
   
   // Находим родительский вопрос
   const parentQuestion = allQuestions.find(q => q.id === logic.dependsOn);

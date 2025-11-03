@@ -3526,14 +3526,46 @@ export default function SurveyAnalyticsPage() {
                       </button>
                     )}
 
-                    <div style={{
-                      fontSize: '11px',
-                      color: 'var(--tg-hint-color)',
-                      lineHeight: '1.4',
-                      marginTop: '8px'
-                    }}>
-                      💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
-                    </div>
+                    {/* Проверяем, полностью ли заполнены условия */}
+                    {(() => {
+                      const hasIncompleteConditions = question.conditionalLogic?.conditions.some(condition => {
+                        if (condition.value === undefined || condition.value === null || condition.value === '') {
+                          return true;
+                        }
+                        if (Array.isArray(condition.value) && condition.value.length === 0) {
+                          return true;
+                        }
+                        return false;
+                      });
+                      
+                      if (hasIncompleteConditions) {
+                        return (
+                          <div style={{
+                            fontSize: '11px',
+                            color: '#FF9500',
+                            lineHeight: '1.4',
+                            marginTop: '8px',
+                            padding: '8px',
+                            backgroundColor: 'rgba(255, 149, 0, 0.1)',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(255, 149, 0, 0.3)'
+                          }}>
+                            ⚠️ Условие не полностью заполнено. Вопрос будет показываться всегда, пока все поля условий не будут заполнены.
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <div style={{
+                          fontSize: '11px',
+                          color: 'var(--tg-hint-color)',
+                          lineHeight: '1.4',
+                          marginTop: '8px'
+                        }}>
+                          💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
+                        </div>
+                      );
+                    })()}
                   </>
                 )}
               </>
@@ -3607,7 +3639,7 @@ export default function SurveyAnalyticsPage() {
                 value={question.text}
                 onChange={(e) => updateEditedQuestion(index, { text: e.target.value })}
                 disabled={disabled}
-                placeholder="Вопрос"
+                placeholder={question.text === '' ? 'Вопрос' : undefined}
                 style={{
                   width: '100%',
                   fontSize: '15px',
@@ -5398,9 +5430,9 @@ export default function SurveyAnalyticsPage() {
                 const newQuestion: EditableQuestion = {
                   id: `temp_${Date.now()}`,
                   type: 'text',
-                  text: 'Новый вопрос',
+                  text: '',
                   description: undefined,
-                  is_required: false,
+                  is_required: true,
                   order_index: maxOrderIndex + 1,
                   options: [],
                   has_other_option: false,

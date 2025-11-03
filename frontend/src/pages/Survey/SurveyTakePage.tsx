@@ -259,8 +259,26 @@ export default function SurveyTakePage() {
 
     const logic = conditionalLogic;
     
+    // Проверяем, что все условия полностью заполнены
+    // Если хотя бы одно условие не имеет значения, всегда показываем вопрос
+    const hasIncompleteConditions = logic.conditions.some((condition: Condition) => {
+      // Проверяем, что значение не пустое
+      if (condition.value === undefined || condition.value === null || condition.value === '') {
+        return true; // Неполное условие
+      }
+      // Для массивов проверяем, что массив не пустой
+      if (Array.isArray(condition.value) && condition.value.length === 0) {
+        return true; // Неполное условие
+      }
+      return false;
+    });
+    
+    if (hasIncompleteConditions) {
+      return true; // Условие не полностью заполнено - всегда показываем
+    }
+    
     // Находим родительский вопрос
-    const parentQuestion = shuffledQuestions.find(q => q.id === logic.dependsOn);
+    const parentQuestion = shuffledQuestions.find((q: Question) => q.id === logic.dependsOn);
     
     // Если родительский вопрос имеет тип 'text' или 'textarea', всегда показываем вопрос
     if (parentQuestion && (parentQuestion.type === 'text' || parentQuestion.type === 'textarea')) {
