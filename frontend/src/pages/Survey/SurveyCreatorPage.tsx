@@ -6,7 +6,7 @@ import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveSettings, saveQuestions, clearDraft } from '../../utils/surveyDraft';
 import { useAppStore } from '../../store/useAppStore';
-import { questionApi } from '../../services/api';
+import { questionApi, uploadApi } from '../../services/api';
 
 // Типы для условной логики
 type ConditionalOperator = 
@@ -44,6 +44,7 @@ interface Question {
   options?: string[]; // Для single_choice и multiple_choice
   imageUrl?: string;
   imageName?: string;
+  tempImagePath?: string; // Временный путь к изображению для загрузки в Яндекс Диск
   validation?: Record<string, any>;
   scaleMin?: number; // Для scale
   scaleMax?: number; // Для scale
@@ -565,11 +566,47 @@ const SurveyCreatorPage: React.FC = () => {
             has_other_option: q.hasOtherOption || false,
           } as const;
           
+          // Создаем вопрос БЕЗ изображения (если оно есть, оно временное)
+          // Изображение будет загружено в Яндекс Диск после создания вопроса
+          const payloadWithoutImage = {
+            ...payload,
+            image_url: undefined,
+            image_name: undefined
+          };
+          
           // Создаем вопрос и получаем его реальный UUID
-          const createdQuestion = await questionApi.createQuestion(payload as any);
+          const createdQuestion = await questionApi.createQuestion(payloadWithoutImage as any);
           
           // Сохраняем маппинг: временный ID -> реальный UUID
           questionIdMap[q.id] = createdQuestion.id;
+        }
+        
+        // Второй проход: загружаем изображения в Яндекс Диск и обновляем вопросы
+        for (let index = 0; index < questions.length; index++) {
+          const q = questions[index];
+          const realQuestionId = questionIdMap[q.id];
+          
+          // Если у вопроса есть временное изображение, загружаем его в Яндекс Диск
+          if (q.tempImagePath && realQuestionId) {
+            try {
+              const uploadResult = await uploadApi.uploadToYandexDisk(q.tempImagePath, realQuestionId);
+              
+              // Обновляем вопрос с публичной ссылкой из Яндекс Диска
+              await questionApi.updateQuestion(realQuestionId, {
+                image_url: uploadResult.url,
+                image_name: uploadResult.filename
+              });
+            } catch (e) {
+              console.error(`Ошибка загрузки изображения для вопроса ${q.id}:`, e);
+              // Продолжаем публикацию даже если изображение не загрузилось
+            }
+          } else if (q.imageUrl && realQuestionId) {
+            // Если изображение уже есть (не временное), просто обновляем вопрос
+            await questionApi.updateQuestion(realQuestionId, {
+              image_url: q.imageUrl,
+              image_name: q.imageName
+            });
+          }
         }
       } catch (e) {
         console.error('Ошибка создания вопросов:', e);
@@ -737,6 +774,7 @@ const SurveyCreatorPage: React.FC = () => {
               validationErrors={validationErrors}
               validateScaleValues={validateScaleValues}
               onCreateWithAI={handleCreateWithAI}
+              hapticFeedback={hapticFeedback}
             />
         )}
         
@@ -1653,7 +1691,8 @@ const QuestionsTab: React.FC<{
   validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
   validateScaleValues: (questionId: string, scaleMin?: number, scaleMax?: number) => void;
   onCreateWithAI: () => void;
-}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues, onCreateWithAI }) => {
+  hapticFeedback?: { success?: () => void; error?: () => void };
+}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues, onCreateWithAI, hapticFeedback }) => {
 
   return (
     <motion.div
@@ -2443,6 +2482,71 @@ const QuestionsTab: React.FC<{
                   </div>
                 )}
 
+                {/* Загрузка изображения */}
+                {!question.imageUrl && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px',
+                      border: '2px dashed var(--tg-section-separator-color)',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      backgroundColor: 'var(--tg-section-bg-color)',
+                      transition: 'all 0.2s ease'
+                    }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          
+                          try {
+                            const result = await uploadApi.uploadImage(file);
+                            // Получаем полный URL для отображения
+                            // API возвращает относительный путь, нужно получить базовый URL API
+                            const apiBaseUrl = (window as any).__API_BASE_URL__ || window.location.origin;
+                            const fullUrl = result.url.startsWith('http') 
+                              ? result.url 
+                              : `${apiBaseUrl}${result.url.startsWith('/') ? '' : '/'}${result.url}`;
+                            
+                            onQuestionChange(question.id, {
+                              imageUrl: fullUrl,
+                              imageName: result.filename,
+                              tempImagePath: result.temp_path
+                            });
+                            const successFn = hapticFeedback?.success;
+                            if (successFn) {
+                              successFn();
+                            }
+                          } catch (error) {
+                            console.error('Ошибка загрузки изображения:', error);
+                            alert('Не удалось загрузить изображение');
+                            const errorFn = hapticFeedback?.error;
+                            if (errorFn) {
+                              errorFn();
+                            }
+                          }
+                          
+                          // Сбрасываем input
+                          e.target.value = '';
+                        }}
+                      />
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tg-hint-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21,15 16,10 5,21"></polyline>
+                      </svg>
+                      <span style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
+                        Добавить изображение
+                      </span>
+                    </label>
+                  </div>
+                )}
+
                 {/* Отображение загруженной картинки (если есть) */}
                 {question.imageUrl && (
                   <div style={{ marginBottom: '16px' }}>
@@ -2461,7 +2565,11 @@ const QuestionsTab: React.FC<{
                         }}
                       />
                       <button
-                        onClick={() => onQuestionChange(question.id, { imageUrl: undefined, imageName: undefined })}
+                        onClick={() => onQuestionChange(question.id, { 
+                          imageUrl: undefined, 
+                          imageName: undefined,
+                          tempImagePath: undefined
+                        })}
                         style={{
                           position: 'absolute',
                           top: '8px',

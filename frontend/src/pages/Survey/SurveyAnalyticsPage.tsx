@@ -3639,7 +3639,7 @@ export default function SurveyAnalyticsPage() {
                 value={question.text}
                 onChange={(e) => updateEditedQuestion(index, { text: e.target.value })}
                 disabled={disabled}
-                placeholder={question.text === '' ? 'Вопрос' : undefined}
+                placeholder={question.text === '' ? 'Введите вопрос...' : undefined}
                 style={{
                   width: '100%',
                   fontSize: '15px',

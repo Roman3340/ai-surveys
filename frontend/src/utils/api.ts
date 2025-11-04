@@ -38,6 +38,11 @@ const api = axios.create({
   timeout: 30000,
 });
 
+// Сохраняем базовый URL для использования в других местах
+if (typeof window !== 'undefined') {
+  (window as any).__API_BASE_URL__ = PRIMARY_API;
+}
+
 // Экспортируем api
 export { api };
 

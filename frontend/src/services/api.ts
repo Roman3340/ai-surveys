@@ -199,6 +199,28 @@ export const questionApi = {
 
 };
 
+// Загрузка файлов
+export const uploadApi = {
+  async uploadImage(file: File): Promise<{ url: string; filename: string; temp_path: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await api.post('/uploads/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  },
+  
+  async uploadToYandexDisk(tempPath: string, questionId: string): Promise<{ url: string; filename: string }> {
+    const res = await api.post('/uploads/to-yandex-disk', {
+      temp_path: tempPath,
+      question_id: questionId,
+    });
+    return res.data;
+  },
+};
+
 // ИИ Аналитика
 export const aiAnalytics = {
   async getAnalytics(surveyId: string) {
