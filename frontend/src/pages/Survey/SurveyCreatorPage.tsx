@@ -1693,6 +1693,8 @@ const QuestionsTab: React.FC<{
   onCreateWithAI: () => void;
   hapticFeedback?: { success?: () => void; error?: () => void };
 }> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues, onCreateWithAI, hapticFeedback }) => {
+  // Состояние для отслеживания загрузки изображений для каждого вопроса
+  const [uploadingImages, setUploadingImages] = useState<{ [questionId: string]: boolean }>({});
 
   return (
     <motion.div
@@ -2485,120 +2487,164 @@ const QuestionsTab: React.FC<{
                 {/* Загрузка изображения */}
                 {!question.imageUrl && (
                   <div style={{ marginBottom: '16px' }}>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '12px',
-                      border: '2px dashed var(--tg-section-separator-color)',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      backgroundColor: 'var(--tg-section-bg-color)',
-                      transition: 'all 0.2s ease'
-                    }}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          
-                          try {
-                            // Проверяем размер файла перед загрузкой
-                            if (file.size > 10 * 1024 * 1024) { // 10MB
-                              alert('Размер файла превышает 10MB. Пожалуйста, выберите изображение меньшего размера.');
-                              const errorFn = hapticFeedback?.error;
-                              if (errorFn) {
-                                errorFn();
-                              }
-                              e.target.value = '';
-                              return;
-                            }
-                            
-                            // Проверяем тип файла
-                            if (!file.type || !file.type.startsWith('image/')) {
-                              alert('Пожалуйста, выберите файл изображения (JPEG, PNG, WebP, GIF)');
-                              const errorFn = hapticFeedback?.error;
-                              if (errorFn) {
-                                errorFn();
-                              }
-                              e.target.value = '';
-                              return;
-                            }
-                            
-                            const result = await uploadApi.uploadImage(file);
-                            
-                            if (!result || !result.url) {
-                              throw new Error('Сервер не вернул URL изображения');
-                            }
-                            
-                            // Получаем полный URL для отображения
-                            // API возвращает путь вида /api/uploads/file/temp/...
-                            let fullUrl = result.url;
-                            
-                            if (!fullUrl.startsWith('http')) {
-                              // Если путь относительный, получаем базовый URL API
-                              const getApiBase = (window as any).__GET_API_BASE_URL__;
-                              let apiBaseUrl = getApiBase ? getApiBase() : ((window as any).__API_BASE_URL__ || window.location.origin);
-                              
-                              // Убираем /api из конца apiBaseUrl если он есть
-                              if (apiBaseUrl.endsWith('/api')) {
-                                apiBaseUrl = apiBaseUrl.slice(0, -4);
-                              }
-                              
-                              // Если путь начинается с /api, убираем его и добавляем к базовому URL
-                              if (fullUrl.startsWith('/api')) {
-                                fullUrl = `${apiBaseUrl}${fullUrl}`;
-                              } else {
-                                // Иначе добавляем базовый URL API
-                                fullUrl = `${apiBaseUrl}/api${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`;
-                              }
-                            }
-                            
-                            onQuestionChange(question.id, {
-                              imageUrl: fullUrl,
-                              imageName: result.filename,
-                              tempImagePath: result.temp_path
-                            });
-                            const successFn = hapticFeedback?.success;
-                            if (successFn) {
-                              successFn();
-                            }
-                          } catch (error: any) {
-                            console.error('Ошибка загрузки изображения:', error);
-                            let errorMessage = 'Не удалось загрузить изображение';
-                            
-                            if (error?.response?.data?.detail) {
-                              errorMessage = error.response.data.detail;
-                            } else if (error?.message) {
-                              errorMessage = error.message;
-                            } else if (error?.response?.status === 413) {
-                              errorMessage = 'Файл слишком большой';
-                            } else if (error?.response?.status === 400) {
-                              errorMessage = error?.response?.data?.detail || 'Некорректный файл';
-                            }
-                            
-                            alert(errorMessage);
-                            const errorFn = hapticFeedback?.error;
-                            if (errorFn) {
-                              errorFn();
-                            }
+                    {uploadingImages[question.id] ? (
+                      // Показываем лоадер при загрузке
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '12px',
+                        padding: '12px',
+                        border: '2px dashed var(--tg-section-separator-color)',
+                        borderRadius: '8px',
+                        backgroundColor: 'var(--tg-section-bg-color)'
+                      }}>
+                        <div style={{
+                          width: '20px',
+                          height: '20px',
+                          border: '2px solid var(--tg-section-separator-color)',
+                          borderTop: '2px solid var(--tg-button-color)',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite'
+                        }} />
+                        <span style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
+                          Загрузка изображения...
+                        </span>
+                        <style>{`
+                          @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
                           }
-                          
-                          // Сбрасываем input
-                          e.target.value = '';
-                        }}
-                      />
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tg-hint-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                        <polyline points="21,15 16,10 5,21"></polyline>
-                      </svg>
-                      <span style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
-                        Добавить изображение
-                      </span>
-                    </label>
+                        `}</style>
+                      </div>
+                    ) : (
+                      <label style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '12px',
+                        border: '2px dashed var(--tg-section-separator-color)',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        backgroundColor: 'var(--tg-section-bg-color)',
+                        transition: 'all 0.2s ease'
+                      }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            try {
+                              // Устанавливаем состояние загрузки
+                              setUploadingImages(prev => ({ ...prev, [question.id]: true }));
+                              
+                              // Проверяем размер файла перед загрузкой
+                              if (file.size > 10 * 1024 * 1024) { // 10MB
+                                setUploadingImages(prev => ({ ...prev, [question.id]: false }));
+                                alert('Размер файла превышает 10MB. Пожалуйста, выберите изображение меньшего размера.');
+                                const errorFn = hapticFeedback?.error;
+                                if (errorFn) {
+                                  errorFn();
+                                }
+                                e.target.value = '';
+                                return;
+                              }
+                              
+                              // Проверяем тип файла
+                              if (!file.type || !file.type.startsWith('image/')) {
+                                setUploadingImages(prev => ({ ...prev, [question.id]: false }));
+                                alert('Пожалуйста, выберите файл изображения (JPEG, PNG, WebP, GIF)');
+                                const errorFn = hapticFeedback?.error;
+                                if (errorFn) {
+                                  errorFn();
+                                }
+                                e.target.value = '';
+                                return;
+                              }
+                              
+                              const result = await uploadApi.uploadImage(file);
+                              
+                              if (!result || !result.url) {
+                                throw new Error('Сервер не вернул URL изображения');
+                              }
+                              
+                              // Получаем полный URL для отображения
+                              // API возвращает путь вида /api/uploads/file/temp/...
+                              let fullUrl = result.url;
+                              
+                              if (!fullUrl.startsWith('http')) {
+                                // Если путь относительный, получаем базовый URL API
+                                const getApiBase = (window as any).__GET_API_BASE_URL__;
+                                let apiBaseUrl = getApiBase ? getApiBase() : ((window as any).__API_BASE_URL__ || window.location.origin);
+                                
+                                // Убираем /api из конца apiBaseUrl если он есть
+                                if (apiBaseUrl.endsWith('/api')) {
+                                  apiBaseUrl = apiBaseUrl.slice(0, -4);
+                                }
+                                
+                                // Если путь начинается с /api, убираем его и добавляем к базовому URL
+                                if (fullUrl.startsWith('/api')) {
+                                  fullUrl = `${apiBaseUrl}${fullUrl}`;
+                                } else {
+                                  // Иначе добавляем базовый URL API
+                                  fullUrl = `${apiBaseUrl}/api${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`;
+                                }
+                              }
+                              
+                              onQuestionChange(question.id, {
+                                imageUrl: fullUrl,
+                                imageName: result.filename,
+                                tempImagePath: result.temp_path
+                              });
+                              const successFn = hapticFeedback?.success;
+                              if (successFn) {
+                                successFn();
+                              }
+                              
+                              // Сбрасываем состояние загрузки
+                              setUploadingImages(prev => ({ ...prev, [question.id]: false }));
+                            } catch (error: any) {
+                              console.error('Ошибка загрузки изображения:', error);
+                              
+                              // Сбрасываем состояние загрузки при ошибке
+                              setUploadingImages(prev => ({ ...prev, [question.id]: false }));
+                              
+                              let errorMessage = 'Не удалось загрузить изображение';
+                              
+                              if (error?.response?.data?.detail) {
+                                errorMessage = error.response.data.detail;
+                              } else if (error?.message) {
+                                errorMessage = error.message;
+                              } else if (error?.response?.status === 413) {
+                                errorMessage = 'Файл слишком большой. Максимальный размер: 10MB';
+                              } else if (error?.response?.status === 400) {
+                                errorMessage = error?.response?.data?.detail || 'Некорректный файл';
+                              }
+                              
+                              alert(errorMessage);
+                              const errorFn = hapticFeedback?.error;
+                              if (errorFn) {
+                                errorFn();
+                              }
+                            }
+                            
+                            // Сбрасываем input
+                            e.target.value = '';
+                          }}
+                        />
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tg-hint-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                          <polyline points="21,15 16,10 5,21"></polyline>
+                        </svg>
+                        <span style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
+                          Добавить изображение
+                        </span>
+                      </label>
+                    )}
                   </div>
                 )}
 
