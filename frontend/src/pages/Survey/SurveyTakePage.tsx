@@ -97,62 +97,49 @@ export default function SurveyTakePage() {
           return;
         }
         
-        // Функция для конвертации публичной ссылки Яндекс Диска в прямую ссылку для скачивания
-        const convertYandexDiskUrl = async (url: string): Promise<string> => {
-          // Проверяем, является ли это публичной ссылкой Яндекс Диска
-          if (!url || (!url.includes('yadi.sk') && !url.includes('disk.yandex.ru'))) {
+        // Функция для конвертации ссылки Яндекс Диска в прокси-URL на бэкенде
+        const convertYandexDiskUrl = (url: string): string => {
+          // Проверяем, является ли это ссылкой Яндекс Диска
+          if (!url || (!url.includes('yadi.sk') && !url.includes('disk.yandex.ru') && !url.includes('downloader.disk.yandex.ru'))) {
             return url; // Если это не ссылка Яндекс Диска, возвращаем как есть
           }
           
-          // Если это уже прямая ссылка (содержит /download или начинается с https://getfile), возвращаем как есть
-          if (url.includes('/download') || url.includes('getfile')) {
+          // Если это ссылка на наш прокси-эндпоинт, возвращаем как есть
+          if (url.includes('/api/uploads/yandex-disk-proxy')) {
             return url;
           }
           
-          try {
-            // Пытаемся получить прямую ссылку через публичный API Яндекс Диска
-            const response = await fetch(`https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=${encodeURIComponent(url)}`);
-            if (response.ok) {
-              const data = await response.json();
-              if (data.href) {
-                return data.href;
-              }
-            }
-          } catch (e) {
-            console.warn('Не удалось конвертировать публичную ссылку Яндекс Диска:', e);
-          }
-          
-          // Если не удалось конвертировать, возвращаем оригинальную ссылку
-          return url;
+          // Используем прокси-эндпоинт на бэкенде для всех ссылок Яндекс Диска
+          const apiBaseUrl = (window as any).__API_BASE_URL__ || window.location.origin;
+          const proxyUrl = `${apiBaseUrl}/api/uploads/yandex-disk-proxy?url=${encodeURIComponent(url)}`;
+          return proxyUrl;
         };
         
         // Парсим validation если это строка JSON и конвертируем URL изображений
-        const processedQuestions = await Promise.all(
-          response.questions.map(async (q: any) => {
-            let validation = q.validation;
-            
-            // Если validation - строка, пытаемся распарсить
-            if (typeof validation === 'string') {
-              try {
-                validation = JSON.parse(validation);
-              } catch (e) {
-                console.warn('Failed to parse validation as JSON:', e);
-              }
+        const processedQuestions = response.questions.map((q: any) => {
+          let validation = q.validation;
+          
+          // Если validation - строка, пытаемся распарсить
+          if (typeof validation === 'string') {
+            try {
+              validation = JSON.parse(validation);
+            } catch (e) {
+              console.warn('Failed to parse validation as JSON:', e);
             }
-            
-            // Конвертируем URL изображения если он есть
-            let imageUrl = q.imageUrl || q.image_url;
-            if (imageUrl) {
-              imageUrl = await convertYandexDiskUrl(imageUrl);
-            }
-            
-            return {
-              ...q,
-              validation,
-              imageUrl
-            };
-          })
-        );
+          }
+          
+          // Конвертируем URL изображения если он есть (используем прокси)
+          let imageUrl = q.imageUrl || q.image_url;
+          if (imageUrl) {
+            imageUrl = convertYandexDiskUrl(imageUrl);
+          }
+          
+          return {
+            ...q,
+            validation,
+            imageUrl
+          };
+        });
         
         const surveyWithProcessedQuestions = {
           ...response,
