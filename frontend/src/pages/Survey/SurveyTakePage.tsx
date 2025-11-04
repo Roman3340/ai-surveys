@@ -1291,6 +1291,14 @@ export default function SurveyTakePage() {
                 <img 
                   src={question.imageUrl} 
                   alt="Question illustration"
+                  onError={(e) => {
+                    console.error('Ошибка загрузки изображения:', question.imageUrl);
+                    const imgElement = e.currentTarget;
+                    imgElement.style.display = 'none';
+                  }}
+                  onLoad={() => {
+                    console.log('Изображение успешно загружено:', question.imageUrl);
+                  }}
                   style={{
                     width: '100%',
                     maxHeight: '200px',

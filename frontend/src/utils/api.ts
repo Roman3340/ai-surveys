@@ -41,6 +41,8 @@ const api = axios.create({
 // Сохраняем базовый URL для использования в других местах
 if (typeof window !== 'undefined') {
   (window as any).__API_BASE_URL__ = PRIMARY_API;
+  // Также сохраняем функцию для получения актуального URL
+  (window as any).__GET_API_BASE_URL__ = () => activeApiBase;
 }
 
 // Экспортируем api

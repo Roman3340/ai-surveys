@@ -2505,13 +2505,47 @@ const QuestionsTab: React.FC<{
                           if (!file) return;
                           
                           try {
+                            // Проверяем размер файла перед загрузкой
+                            if (file.size > 10 * 1024 * 1024) { // 10MB
+                              alert('Размер файла превышает 10MB. Пожалуйста, выберите изображение меньшего размера.');
+                              const errorFn = hapticFeedback?.error;
+                              if (errorFn) {
+                                errorFn();
+                              }
+                              e.target.value = '';
+                              return;
+                            }
+                            
+                            // Проверяем тип файла
+                            if (!file.type || !file.type.startsWith('image/')) {
+                              alert('Пожалуйста, выберите файл изображения (JPEG, PNG, WebP, GIF)');
+                              const errorFn = hapticFeedback?.error;
+                              if (errorFn) {
+                                errorFn();
+                              }
+                              e.target.value = '';
+                              return;
+                            }
+                            
                             const result = await uploadApi.uploadImage(file);
+                            
+                            if (!result || !result.url) {
+                              throw new Error('Сервер не вернул URL изображения');
+                            }
+                            
                             // Получаем полный URL для отображения
-                            // API возвращает относительный путь, нужно получить базовый URL API
-                            const apiBaseUrl = (window as any).__API_BASE_URL__ || window.location.origin;
-                            const fullUrl = result.url.startsWith('http') 
-                              ? result.url 
-                              : `${apiBaseUrl}${result.url.startsWith('/') ? '' : '/'}${result.url}`;
+                            // API возвращает относительный путь вида /uploads/temp/...
+                            let fullUrl = result.url;
+                            
+                            if (!fullUrl.startsWith('http')) {
+                              // Если путь относительный, получаем базовый URL API
+                              const getApiBase = (window as any).__GET_API_BASE_URL__;
+                              const apiBaseUrl = getApiBase ? getApiBase() : ((window as any).__API_BASE_URL__ || window.location.origin);
+                              
+                              // Убираем /api из URL если он есть, так как /uploads монтируется на корне
+                              const baseWithoutApi = apiBaseUrl.replace('/api', '');
+                              fullUrl = `${baseWithoutApi}${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`;
+                            }
                             
                             onQuestionChange(question.id, {
                               imageUrl: fullUrl,
@@ -2522,9 +2556,21 @@ const QuestionsTab: React.FC<{
                             if (successFn) {
                               successFn();
                             }
-                          } catch (error) {
+                          } catch (error: any) {
                             console.error('Ошибка загрузки изображения:', error);
-                            alert('Не удалось загрузить изображение');
+                            let errorMessage = 'Не удалось загрузить изображение';
+                            
+                            if (error?.response?.data?.detail) {
+                              errorMessage = error.response.data.detail;
+                            } else if (error?.message) {
+                              errorMessage = error.message;
+                            } else if (error?.response?.status === 413) {
+                              errorMessage = 'Файл слишком большой';
+                            } else if (error?.response?.status === 400) {
+                              errorMessage = error?.response?.data?.detail || 'Некорректный файл';
+                            }
+                            
+                            alert(errorMessage);
                             const errorFn = hapticFeedback?.error;
                             if (errorFn) {
                               errorFn();
@@ -2557,6 +2603,19 @@ const QuestionsTab: React.FC<{
                       <img
                         src={question.imageUrl}
                         alt="Загруженная картинка"
+                        onError={(e) => {
+                          console.error('Ошибка загрузки изображения:', question.imageUrl);
+                          // Показываем сообщение об ошибке
+                          const imgElement = e.currentTarget;
+                          imgElement.style.display = 'none';
+                          const errorDiv = document.createElement('div');
+                          errorDiv.textContent = 'Ошибка загрузки изображения';
+                          errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 8px;';
+                          imgElement.parentElement?.appendChild(errorDiv);
+                        }}
+                        onLoad={() => {
+                          console.log('Изображение успешно загружено:', question.imageUrl);
+                        }}
                         style={{
                           width: '100%',
                           maxHeight: '200px',
@@ -4092,6 +4151,11 @@ const PreviewTab: React.FC<{
                       <img
                         src={question.imageUrl}
                         alt="Изображение к вопросу"
+                        onError={(e) => {
+                          console.error('Ошибка загрузки изображения в предпросмотре:', question.imageUrl);
+                          const imgElement = e.currentTarget;
+                          imgElement.style.display = 'none';
+                        }}
                         style={{
                           width: '100%',
                           maxHeight: '200px',
