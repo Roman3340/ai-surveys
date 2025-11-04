@@ -81,6 +81,8 @@ export default function SurveyTakePage() {
   const [scaleValues, setScaleValues] = useState<Record<string, number>>({});
   const [ratingValues, setRatingValues] = useState<Record<string, number>>({});
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
+  // Состояние для отслеживания загрузки изображений
+  const [imageLoading, setImageLoading] = useState<{ [questionId: string]: boolean }>({});
 
   useEffect(() => {
     const loadSurvey = async () => {
@@ -95,24 +97,62 @@ export default function SurveyTakePage() {
           return;
         }
         
-        // Парсим validation если это строка JSON
-        const processedQuestions = response.questions.map((q: any) => {
-          let validation = q.validation;
-          
-          // Если validation - строка, пытаемся распарсить
-          if (typeof validation === 'string') {
-            try {
-              validation = JSON.parse(validation);
-            } catch (e) {
-              console.warn('Failed to parse validation as JSON:', e);
-            }
+        // Функция для конвертации публичной ссылки Яндекс Диска в прямую ссылку для скачивания
+        const convertYandexDiskUrl = async (url: string): Promise<string> => {
+          // Проверяем, является ли это публичной ссылкой Яндекс Диска
+          if (!url || (!url.includes('yadi.sk') && !url.includes('disk.yandex.ru'))) {
+            return url; // Если это не ссылка Яндекс Диска, возвращаем как есть
           }
           
-          return {
-            ...q,
-            validation
-          };
-        });
+          // Если это уже прямая ссылка (содержит /download или начинается с https://getfile), возвращаем как есть
+          if (url.includes('/download') || url.includes('getfile')) {
+            return url;
+          }
+          
+          try {
+            // Пытаемся получить прямую ссылку через публичный API Яндекс Диска
+            const response = await fetch(`https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=${encodeURIComponent(url)}`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.href) {
+                return data.href;
+              }
+            }
+          } catch (e) {
+            console.warn('Не удалось конвертировать публичную ссылку Яндекс Диска:', e);
+          }
+          
+          // Если не удалось конвертировать, возвращаем оригинальную ссылку
+          return url;
+        };
+        
+        // Парсим validation если это строка JSON и конвертируем URL изображений
+        const processedQuestions = await Promise.all(
+          response.questions.map(async (q: any) => {
+            let validation = q.validation;
+            
+            // Если validation - строка, пытаемся распарсить
+            if (typeof validation === 'string') {
+              try {
+                validation = JSON.parse(validation);
+              } catch (e) {
+                console.warn('Failed to parse validation as JSON:', e);
+              }
+            }
+            
+            // Конвертируем URL изображения если он есть
+            let imageUrl = q.imageUrl || q.image_url;
+            if (imageUrl) {
+              imageUrl = await convertYandexDiskUrl(imageUrl);
+            }
+            
+            return {
+              ...q,
+              validation,
+              imageUrl
+            };
+          })
+        );
         
         const surveyWithProcessedQuestions = {
           ...response,
@@ -1287,23 +1327,73 @@ export default function SurveyTakePage() {
                 }}
               >
             {question.imageUrl && (
-              <div style={{ marginBottom: '20px' }}>
+              <div style={{ marginBottom: '20px', position: 'relative' }}>
+                {imageLoading[question.id] && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '150px',
+                    backgroundColor: 'var(--tg-section-bg-color)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--tg-section-separator-color)'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        border: '3px solid var(--tg-section-separator-color)',
+                        borderTop: '3px solid var(--tg-button-color)',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }} />
+                      <span style={{ 
+                        color: 'var(--tg-hint-color)', 
+                        fontSize: '14px' 
+                      }}>
+                        Загрузка изображения...
+                      </span>
+                      <style>{`
+                        @keyframes spin {
+                          0% { transform: rotate(0deg); }
+                          100% { transform: rotate(360deg); }
+                        }
+                      `}</style>
+                    </div>
+                  </div>
+                )}
                 <img 
                   src={question.imageUrl} 
                   alt="Question illustration"
+                  onLoadStart={() => {
+                    setImageLoading(prev => ({ ...prev, [question.id]: true }));
+                  }}
+                  onLoad={() => {
+                    console.log('Изображение успешно загружено:', question.imageUrl);
+                    setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                  }}
                   onError={(e) => {
                     console.error('Ошибка загрузки изображения:', question.imageUrl);
                     const imgElement = e.currentTarget;
                     imgElement.style.display = 'none';
-                  }}
-                  onLoad={() => {
-                    console.log('Изображение успешно загружено:', question.imageUrl);
+                    setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                    // Показываем сообщение об ошибке
+                    const errorDiv = document.createElement('div');
+                    errorDiv.textContent = 'Не удалось загрузить изображение';
+                    errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
+                    imgElement.parentElement?.appendChild(errorDiv);
                   }}
                   style={{
                     width: '100%',
                     maxHeight: '200px',
                     objectFit: 'cover',
-                    borderRadius: '12px'
+                    borderRadius: '12px',
+                    display: imageLoading[question.id] ? 'none' : 'block'
                   }}
                 />
               </div>
