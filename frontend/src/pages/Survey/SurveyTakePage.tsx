@@ -110,7 +110,13 @@ export default function SurveyTakePage() {
           }
           
           // Используем прокси-эндпоинт на бэкенде для всех ссылок Яндекс Диска
-          const apiBaseUrl = (window as any).__API_BASE_URL__ || window.location.origin;
+          let apiBaseUrl = (window as any).__API_BASE_URL__ || window.location.origin;
+          
+          // Убираем /api из конца apiBaseUrl если он есть, чтобы избежать двойного /api/api/
+          if (apiBaseUrl.endsWith('/api')) {
+            apiBaseUrl = apiBaseUrl.slice(0, -4);
+          }
+          
           const proxyUrl = `${apiBaseUrl}/api/uploads/yandex-disk-proxy?url=${encodeURIComponent(url)}`;
           return proxyUrl;
         };
