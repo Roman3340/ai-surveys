@@ -2534,17 +2534,26 @@ const QuestionsTab: React.FC<{
                             }
                             
                             // Получаем полный URL для отображения
-                            // API возвращает относительный путь вида /uploads/temp/...
+                            // API возвращает путь вида /api/uploads/file/temp/...
                             let fullUrl = result.url;
                             
                             if (!fullUrl.startsWith('http')) {
                               // Если путь относительный, получаем базовый URL API
                               const getApiBase = (window as any).__GET_API_BASE_URL__;
-                              const apiBaseUrl = getApiBase ? getApiBase() : ((window as any).__API_BASE_URL__ || window.location.origin);
+                              let apiBaseUrl = getApiBase ? getApiBase() : ((window as any).__API_BASE_URL__ || window.location.origin);
                               
-                              // Убираем /api из URL если он есть, так как /uploads монтируется на корне
-                              const baseWithoutApi = apiBaseUrl.replace('/api', '');
-                              fullUrl = `${baseWithoutApi}${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`;
+                              // Убираем /api из конца apiBaseUrl если он есть
+                              if (apiBaseUrl.endsWith('/api')) {
+                                apiBaseUrl = apiBaseUrl.slice(0, -4);
+                              }
+                              
+                              // Если путь начинается с /api, убираем его и добавляем к базовому URL
+                              if (fullUrl.startsWith('/api')) {
+                                fullUrl = `${apiBaseUrl}${fullUrl}`;
+                              } else {
+                                // Иначе добавляем базовый URL API
+                                fullUrl = `${apiBaseUrl}/api${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`;
+                              }
                             }
                             
                             onQuestionChange(question.id, {
