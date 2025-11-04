@@ -1319,6 +1319,15 @@ export default function SurveyTakePage() {
                   paddingBottom: '24px'
                 }}
               >
+            <div style={{ marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 8px 0', lineHeight: '1.4' }}>
+                    {visibleIndex + 1}. {question.text}
+                    {question.isRequired && <span style={{ color: 'var(--tg-destructive-text-color)', marginLeft: '4px' }}>*</span>}
+                </h2>
+                {question.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap', textAlign: 'justify' }}>{question.description}</p>}
+                {validationErrors[question.id] && <p style={{ fontSize: '13px', color: 'var(--tg-destructive-text-color)', margin: '8px 0 0 0' }}>{validationErrors[question.id]}</p>}
+            </div>
+
             {question.imageUrl && (
               <div style={{ marginBottom: '20px', position: 'relative' }}>
                 {imageLoading[question.id] && (
@@ -1391,15 +1400,6 @@ export default function SurveyTakePage() {
                 />
               </div>
             )}
-
-            <div style={{ marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 8px 0', lineHeight: '1.4' }}>
-                    {visibleIndex + 1}. {question.text}
-                    {question.isRequired && <span style={{ color: 'var(--tg-destructive-text-color)', marginLeft: '4px' }}>*</span>}
-                </h2>
-                {question.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, lineHeight: '1.5', whiteSpace: 'pre-wrap', textAlign: 'justify' }}>{question.description}</p>}
-                {validationErrors[question.id] && <p style={{ fontSize: '13px', color: 'var(--tg-destructive-text-color)', margin: '8px 0 0 0' }}>{validationErrors[question.id]}</p>}
-            </div>
 
             <div>
               {renderQuestion(question)}
