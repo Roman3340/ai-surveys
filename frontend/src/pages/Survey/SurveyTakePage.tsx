@@ -1339,11 +1339,10 @@ export default function SurveyTakePage() {
                   borderRadius: '12px',
                   border: '1px solid var(--tg-section-separator-color)',
                   padding: '8px',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  maxHeight: '200px',
-                  overflow: 'hidden',
+                  maxWidth: '100%',
                   cursor: 'pointer',
                   transition: 'opacity 0.2s ease'
                 }}
@@ -1412,7 +1411,9 @@ export default function SurveyTakePage() {
                     }}
                     style={{
                       maxWidth: '100%',
-                      maxHeight: '100%',
+                      maxHeight: '200px',
+                      width: 'auto',
+                      height: 'auto',
                       objectFit: 'contain',
                       display: imageLoading[question.id] ? 'none' : 'block'
                     }}

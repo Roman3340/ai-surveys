@@ -2661,11 +2661,10 @@ const QuestionsTab: React.FC<{
                       borderRadius: '8px',
                       border: '1px solid var(--tg-section-separator-color)',
                       padding: '8px',
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      maxHeight: '200px',
-                      overflow: 'hidden',
+                      maxWidth: '100%',
                       cursor: 'pointer',
                       transition: 'opacity 0.2s ease'
                     }}
@@ -2695,7 +2694,9 @@ const QuestionsTab: React.FC<{
                         }}
                         style={{
                           maxWidth: '100%',
-                          maxHeight: '100%',
+                          maxHeight: '200px',
+                          width: 'auto',
+                          height: 'auto',
                           objectFit: 'contain'
                         }}
                         onClick={(e) => {
@@ -4253,12 +4254,10 @@ const PreviewTab: React.FC<{
                         borderRadius: '8px',
                         border: '1px solid var(--tg-section-separator-color)',
                         padding: '8px',
-                        display: 'flex',
+                        display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        minHeight: '200px',
-                        maxHeight: '200px',
-                        overflow: 'hidden',
+                        maxWidth: '100%',
                         cursor: 'pointer',
                         transition: 'opacity 0.2s ease'
                       }}
@@ -4279,8 +4278,10 @@ const PreviewTab: React.FC<{
                             imgElement.style.display = 'none';
                           }}
                           style={{
-                            width: '100%',
-                            height: '100%',
+                            maxWidth: '100%',
+                            maxHeight: '200px',
+                            width: 'auto',
+                            height: 'auto',
                             objectFit: 'contain'
                           }}
                           onClick={(e) => {
