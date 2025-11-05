@@ -84,7 +84,7 @@ const SummaryTab: React.FC<{
           width: '40px',
           height: '40px',
           border: '3px solid var(--tg-section-separator-color)',
-          borderTop: '3px solid #FF9500',
+          borderTop: '3px solid var(--tg-button-color)',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
           margin: '0 auto 16px'

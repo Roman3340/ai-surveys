@@ -924,6 +924,8 @@ const AIAnalyticsPage: React.FC = () => {
   const [surveyTitle, setSurveyTitle] = useState<string>('');
   
   const wsRef = useRef<WebSocket | null>(null);
+  const pollingIntervalRef = useRef<number | null>(null);
+  const generatingRef = useRef<boolean>(false);
   const { surveyId } = useParams();
 
   // Настраиваем кнопку "Назад"
@@ -943,6 +945,9 @@ const AIAnalyticsPage: React.FC = () => {
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
+      }
+      if (pollingIntervalRef.current) {
+        window.clearInterval(pollingIntervalRef.current);
       }
     };
   }, [surveyId]);
@@ -969,16 +974,34 @@ const AIAnalyticsPage: React.FC = () => {
       if (response.data.status === 'cached' || response.data.status === 'completed') {
         setAnalyticsData(response.data.data);
         setGenerating(false);
+        generatingRef.current = false;
         setLoading(false);
+        setError(null);
+        // Останавливаем polling, если он был запущен
+        if (pollingIntervalRef.current) {
+          window.clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
       } else if (response.data.status === 'generating') {
         setGenerating(true);
+        generatingRef.current = true;
         setProgress(response.data.progress);
+        setError(null); // Очищаем ошибку, если генерация началась
+        setLoading(false);
         connectWebSocket();
+        // Запускаем polling как fallback, если WebSocket не работает
+        startPolling();
       } else {
         // Аналитика не найдена
         setAnalyticsData(null);
         setGenerating(false);
+        generatingRef.current = false;
         setLoading(false);
+        // Останавливаем polling, если он был запущен
+        if (pollingIntervalRef.current) {
+          window.clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
       }
     } catch (err) {
       console.error('Ошибка загрузки аналитики:', err);
@@ -1038,7 +1061,13 @@ const AIAnalyticsPage: React.FC = () => {
         if (progressData.status === 'completed') {
           console.log('Генерация завершена, перезагружаем аналитику');
           setGenerating(false);
+          generatingRef.current = false;
           setLoading(true);
+          // Останавливаем polling
+          if (pollingIntervalRef.current) {
+            window.clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
           // Небольшая задержка перед перезагрузкой, чтобы данные успели сохраниться
           setTimeout(() => {
             loadAnalytics();
@@ -1049,7 +1078,13 @@ const AIAnalyticsPage: React.FC = () => {
         } else if (progressData.status === 'error') {
           console.log('Ошибка генерации:', progressData.error);
           setGenerating(false);
+          generatingRef.current = false;
           setError(progressData.error || 'Ошибка генерации');
+          // Останавливаем polling
+          if (pollingIntervalRef.current) {
+            window.clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
           if (wsRef.current) {
             wsRef.current.close();
           }
@@ -1064,12 +1099,32 @@ const AIAnalyticsPage: React.FC = () => {
     wsRef.current.onerror = (error) => {
       console.error('WebSocket ошибка:', error);
       console.error('WebSocket URL был:', wsUrl);
+      // Не показываем ошибку сразу, если генерация идет - используем polling
+      if (!generatingRef.current) {
         setError('Ошибка подключения к серверу. Проверьте, что бэкенд запущен на ai-surveys.ru');
+      } else {
+        console.log('WebSocket ошибка, но генерация продолжается. Используем polling.');
+        startPolling();
+      }
     };
 
     wsRef.current.onclose = (event) => {
       console.log('WebSocket отключен:', event.code, event.reason);
-      console.log('Коды закрытия: 1000=нормальное, 1001=уход со страницы, 1006=неожиданное закрытие, 4000=отсутствует telegram_id, 4001=пользователь не найден, 4002=внутренняя ошибка');
+      console.log('Коды закрытия: 1000=нормальное, 1001=уход со страницы, 1005=без кода закрытия, 1006=неожиданное закрытие, 4000=отсутствует telegram_id, 4001=пользователь не найден, 4002=внутренняя ошибка');
+      
+      // Если генерация еще идет, не показываем ошибку, используем polling
+      if (generatingRef.current) {
+        console.log('WebSocket закрыт, но генерация продолжается. Используем polling для проверки статуса.');
+        startPolling();
+        return; // Не обрабатываем другие коды, если генерация идет
+      }
+      
+      // Обработка кода 1005 (No Status Received) - обычно означает неожиданное закрытие
+      if (event.code === 1005) {
+        console.log('WebSocket закрыт без кода закрытия (1005). Используем polling для проверки статуса.');
+        startPolling();
+        return;
+      }
       
       if (event.code === 1006) {
         if (retryCount < 3) {
@@ -1078,18 +1133,90 @@ const AIAnalyticsPage: React.FC = () => {
             connectWebSocket(retryCount + 1);
           }, 2000);
         } else {
-          setError('WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на ai-surveys.ru, 2) Правильный ли URL, 3) Нет ли проблем с сетью');
+          // Не показываем ошибку, если генерация идет - используем polling
+          if (!generatingRef.current) {
+            setError('WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на ai-surveys.ru, 2) Правильный ли URL, 3) Нет ли проблем с сетью');
+          }
         }
       } else if (event.code === 4000) {
-        setError('Ошибка: отсутствует telegram_id');
+        if (!generatingRef.current) {
+          setError('Ошибка: отсутствует telegram_id');
+        }
       } else if (event.code === 4001) {
-        setError('Ошибка: пользователь не найден');
+        if (!generatingRef.current) {
+          setError('Ошибка: пользователь не найден');
+        }
       } else if (event.code === 4002) {
-        setError('Ошибка сервера');
+        if (!generatingRef.current) {
+          setError('Ошибка сервера');
+        }
       } else if (event.code !== 1000 && event.code !== 1001) {
-        setError(`Соединение потеряно (код: ${event.code})`);
+        // Не показываем ошибку для других кодов, если генерация идет
+        if (!generatingRef.current) {
+          setError(`Соединение потеряно (код: ${event.code})`);
+        }
       }
     };
+  };
+
+  const startPolling = () => {
+    // Останавливаем предыдущий polling, если он есть
+    if (pollingIntervalRef.current) {
+      window.clearInterval(pollingIntervalRef.current);
+    }
+    
+    // Polling каждые 3 секунды
+    pollingIntervalRef.current = window.setInterval(async () => {
+      if (!surveyId || !generatingRef.current) {
+        // Если генерация не идет, останавливаем polling
+        if (pollingIntervalRef.current) {
+          window.clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+        return;
+      }
+      
+      try {
+        console.log('Polling статуса аналитики...');
+        const response = await aiAnalytics.getAnalytics(surveyId);
+        
+        if (response.data.status === 'completed') {
+          console.log('Генерация завершена (обнаружено через polling)');
+          setGenerating(false);
+          generatingRef.current = false;
+          setLoading(true);
+          
+          // Останавливаем polling
+          if (pollingIntervalRef.current) {
+            window.clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+          
+          // Загружаем аналитику
+          setTimeout(() => {
+            loadAnalytics();
+          }, 500);
+        } else if (response.data.status === 'error') {
+          console.log('Ошибка генерации (обнаружено через polling)');
+          setGenerating(false);
+          generatingRef.current = false;
+          setError(response.data.error || 'Ошибка генерации');
+          
+          // Останавливаем polling
+          if (pollingIntervalRef.current) {
+            window.clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+        } else if (response.data.status === 'generating' && response.data.progress) {
+          // Обновляем прогресс, если он есть
+          console.log('Обновление прогресса через polling:', response.data.progress);
+          setProgress(response.data.progress);
+        }
+      } catch (err) {
+        console.error('Ошибка polling статуса:', err);
+        // Не останавливаем polling при ошибке, продолжаем проверять
+      }
+    }, 3000);
   };
 
 
@@ -1097,6 +1224,7 @@ const AIAnalyticsPage: React.FC = () => {
     if (!surveyId) return;
     try {
       setGenerating(true);
+      generatingRef.current = true;
       setError(null);
       hapticFeedback?.medium?.();
 
@@ -1142,10 +1270,23 @@ const AIAnalyticsPage: React.FC = () => {
 
       // Теперь запускаем генерацию
       await aiAnalytics.generateAnalytics(surveyId);
+      
+      // После запуска генерации, если WebSocket не подключился, запускаем polling
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+        console.log('WebSocket не подключен после запуска генерации, используем polling');
+        startPolling();
+      }
     } catch (err) {
       console.error('Ошибка запуска генерации:', err);
       setError('Не удалось запустить генерацию аналитики');
       setGenerating(false);
+      generatingRef.current = false;
+      
+      // Останавливаем polling при ошибке
+      if (pollingIntervalRef.current) {
+        window.clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
     }
   };
 
