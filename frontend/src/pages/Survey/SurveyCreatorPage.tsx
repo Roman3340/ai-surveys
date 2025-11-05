@@ -7,6 +7,7 @@ import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { getDraft, saveSettings, saveQuestions, clearDraft } from '../../utils/surveyDraft';
 import { useAppStore } from '../../store/useAppStore';
 import { questionApi, uploadApi } from '../../services/api';
+import ImagePopup from '../../components/ui/ImagePopup';
 
 // Типы для условной логики
 type ConditionalOperator = 
@@ -1695,6 +1696,8 @@ const QuestionsTab: React.FC<{
 }> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues, onCreateWithAI, hapticFeedback }) => {
   // Состояние для отслеживания загрузки изображений для каждого вопроса
   const [uploadingImages, setUploadingImages] = useState<{ [questionId: string]: boolean }>({});
+  // Состояние для полноэкранного просмотра изображения
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   return (
     <motion.div
@@ -2653,8 +2656,28 @@ const QuestionsTab: React.FC<{
                   <div style={{ marginBottom: '16px' }}>
                     <div style={{
                       position: 'relative',
-                      marginBottom: '8px'
-                    }}>
+                      marginBottom: '8px',
+                      backgroundColor: 'var(--tg-section-bg-color)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      padding: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '200px',
+                      maxHeight: '200px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'opacity 0.2s ease'
+                    }}
+                    onClick={() => setFullscreenImage(question.imageUrl || null)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '0.9';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                    }}
+                    >
                       <img
                         src={question.imageUrl}
                         alt="Загруженная картинка"
@@ -2673,17 +2696,23 @@ const QuestionsTab: React.FC<{
                         }}
                         style={{
                           width: '100%',
-                          maxHeight: '200px',
-                          objectFit: 'cover',
-                          borderRadius: '8px'
+                          height: '100%',
+                          objectFit: 'contain'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFullscreenImage(question.imageUrl || null);
                         }}
                       />
                       <button
-                        onClick={() => onQuestionChange(question.id, { 
-                          imageUrl: undefined, 
-                          imageName: undefined,
-                          tempImagePath: undefined
-                        })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onQuestionChange(question.id, { 
+                            imageUrl: undefined, 
+                            imageName: undefined,
+                            tempImagePath: undefined
+                          });
+                        }}
                         style={{
                           position: 'absolute',
                           top: '8px',
@@ -2710,6 +2739,15 @@ const QuestionsTab: React.FC<{
                         </svg>
                       </button>
                     </div>
+                    <p style={{
+                      fontSize: '11px',
+                      color: 'var(--tg-hint-color)',
+                      margin: '6px 0 0 0',
+                      textAlign: 'center',
+                      fontStyle: 'italic'
+                    }}>
+                      Нажмите на изображение для просмотра
+                    </p>
                   </div>
                 )}
 
@@ -2812,6 +2850,12 @@ const QuestionsTab: React.FC<{
             )}
           </div>
         )}
+
+        {/* Полноэкранный просмотр изображения */}
+        <ImagePopup 
+          imageUrl={fullscreenImage} 
+          onClose={() => setFullscreenImage(null)} 
+        />
       </div>
     </motion.div>
   );
@@ -4094,6 +4138,8 @@ const PreviewTab: React.FC<{
 }> = ({ surveyData, questions, validationErrors, previewAnswers, onAnswerChange, answers }) => {
   // Используем answers для проверки условий (это текущие ответы в предпросмотре)
   const currentAnswers = answers || previewAnswers;
+  // Состояние для полноэкранного просмотра изображения
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   
   return (
     <motion.div
@@ -4203,21 +4249,56 @@ const PreviewTab: React.FC<{
                   
                   {question.imageUrl && (
                     <div style={{ marginBottom: '12px' }}>
-                      <img
-                        src={question.imageUrl}
-                        alt="Изображение к вопросу"
-                        onError={(e) => {
-                          console.error('Ошибка загрузки изображения в предпросмотре:', question.imageUrl);
-                          const imgElement = e.currentTarget;
-                          imgElement.style.display = 'none';
-                        }}
-                        style={{
-                          width: '100%',
-                          maxHeight: '200px',
-                          objectFit: 'cover',
-                          borderRadius: '8px'
-                        }}
-                      />
+                      <div style={{
+                        backgroundColor: 'var(--tg-section-bg-color)',
+                        borderRadius: '8px',
+                        border: '1px solid var(--tg-section-separator-color)',
+                        padding: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '200px',
+                        maxHeight: '200px',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        transition: 'opacity 0.2s ease'
+                      }}
+                      onClick={() => setFullscreenImage(question.imageUrl || null)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = '0.9';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                      }}
+                      >
+                        <img
+                          src={question.imageUrl}
+                          alt="Изображение к вопросу"
+                          onError={(e) => {
+                            console.error('Ошибка загрузки изображения в предпросмотре:', question.imageUrl);
+                            const imgElement = e.currentTarget;
+                            imgElement.style.display = 'none';
+                          }}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFullscreenImage(question.imageUrl || null);
+                          }}
+                        />
+                      </div>
+                      <p style={{
+                        fontSize: '11px',
+                        color: 'var(--tg-hint-color)',
+                        margin: '6px 0 0 0',
+                        textAlign: 'center',
+                        fontStyle: 'italic'
+                      }}>
+                        Нажмите на изображение для просмотра
+                      </p>
                     </div>
                   )}
                   
@@ -4326,6 +4407,12 @@ const PreviewTab: React.FC<{
             </div>
           </div>
         )}
+
+        {/* Полноэкранный просмотр изображения */}
+        <ImagePopup 
+          imageUrl={fullscreenImage} 
+          onClose={() => setFullscreenImage(null)} 
+        />
       </div>
     </motion.div>
   );

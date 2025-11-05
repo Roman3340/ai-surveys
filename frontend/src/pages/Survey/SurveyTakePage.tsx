@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
+import ImagePopup from '../../components/ui/ImagePopup';
 
 // Типы для условной логики
 type ConditionalOperator = 
@@ -83,6 +84,8 @@ export default function SurveyTakePage() {
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
   // Состояние для отслеживания загрузки изображений
   const [imageLoading, setImageLoading] = useState<{ [questionId: string]: boolean }>({});
+  // Состояние для полноэкранного просмотра изображения
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSurvey = async () => {
@@ -1329,22 +1332,41 @@ export default function SurveyTakePage() {
             </div>
 
             {question.imageUrl && (
-              <div style={{ marginBottom: '20px', position: 'relative' }}>
-                {imageLoading[question.id] && (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: '150px',
-                    backgroundColor: 'var(--tg-section-bg-color)',
-                    borderRadius: '12px',
-                    border: '1px solid var(--tg-section-separator-color)'
-                  }}>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{
+                  position: 'relative',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  borderRadius: '12px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  padding: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '200px',
+                  maxHeight: '200px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s ease'
+                }}
+                onClick={() => setFullscreenImage(question.imageUrl || null)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.9';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+                >
+                  {imageLoading[question.id] && (
                     <div style={{
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '12px'
+                      gap: '12px',
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 1
                     }}>
                       <div style={{
                         width: '32px',
@@ -1367,37 +1389,45 @@ export default function SurveyTakePage() {
                         }
                       `}</style>
                     </div>
-                  </div>
-                )}
-                <img 
-                  src={question.imageUrl} 
-                  alt="Question illustration"
-                  onLoadStart={() => {
-                    setImageLoading(prev => ({ ...prev, [question.id]: true }));
-                  }}
-                  onLoad={() => {
-                    console.log('Изображение успешно загружено:', question.imageUrl);
-                    setImageLoading(prev => ({ ...prev, [question.id]: false }));
-                  }}
-                  onError={(e) => {
-                    console.error('Ошибка загрузки изображения:', question.imageUrl);
-                    const imgElement = e.currentTarget;
-                    imgElement.style.display = 'none';
-                    setImageLoading(prev => ({ ...prev, [question.id]: false }));
-                    // Показываем сообщение об ошибке
-                    const errorDiv = document.createElement('div');
-                    errorDiv.textContent = 'Не удалось загрузить изображение';
-                    errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
-                    imgElement.parentElement?.appendChild(errorDiv);
-                  }}
-                  style={{
-                    width: '100%',
-                    maxHeight: '200px',
-                    objectFit: 'cover',
-                    borderRadius: '12px',
-                    display: imageLoading[question.id] ? 'none' : 'block'
-                  }}
-                />
+                  )}
+                  <img 
+                    src={question.imageUrl} 
+                    alt="Question illustration"
+                    onLoadStart={() => {
+                      setImageLoading(prev => ({ ...prev, [question.id]: true }));
+                    }}
+                    onLoad={() => {
+                      console.log('Изображение успешно загружено:', question.imageUrl);
+                      setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                    }}
+                    onError={(e) => {
+                      console.error('Ошибка загрузки изображения:', question.imageUrl);
+                      const imgElement = e.currentTarget;
+                      imgElement.style.display = 'none';
+                      setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                      // Показываем сообщение об ошибке
+                      const errorDiv = document.createElement('div');
+                      errorDiv.textContent = 'Не удалось загрузить изображение';
+                      errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
+                      imgElement.parentElement?.appendChild(errorDiv);
+                    }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      display: imageLoading[question.id] ? 'none' : 'block'
+                    }}
+                  />
+                </div>
+                <p style={{
+                  fontSize: '11px',
+                  color: 'var(--tg-hint-color)',
+                  margin: '6px 0 0 0',
+                  textAlign: 'center',
+                  fontStyle: 'italic'
+                }}>
+                  Нажмите на изображение для просмотра
+                </p>
               </div>
             )}
 
@@ -1427,6 +1457,12 @@ export default function SurveyTakePage() {
           {submitting ? 'Отправка...' : 'Отправить ответы'}
         </button>
       </div>
+
+      {/* Полноэкранный просмотр изображения */}
+      <ImagePopup 
+        imageUrl={fullscreenImage} 
+        onClose={() => setFullscreenImage(null)} 
+      />
     </div>
   );
 }

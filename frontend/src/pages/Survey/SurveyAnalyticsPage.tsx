@@ -8,6 +8,7 @@ import type { Survey, SurveySettings, QuestionType } from '../../types';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
+import ImagePopup from '../../components/ui/ImagePopup';
 
 // Типы для условной логики
 type ConditionalOperator = 
@@ -65,7 +66,8 @@ const SummaryTab: React.FC<{
   onNavigateToAI: () => void;
   imageLoading: { [questionId: string]: boolean };
   setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
-}> = ({ survey, questions, responses, stats, loading, aiAnalyticsStatus, onNavigateToAI, imageLoading, setImageLoading }) => {
+  setFullscreenImage: React.Dispatch<React.SetStateAction<string | null>>;
+}> = ({ survey, questions, responses, stats, loading, aiAnalyticsStatus, onNavigateToAI, imageLoading, setImageLoading, setFullscreenImage }) => {
   const [showAllAnswers, setShowAllAnswers] = useState<{ [questionId: string]: boolean }>({});
   const [showAnswersPopup, setShowAnswersPopup] = useState<{ questionId: string; answers: any[] } | null>(null);
 
@@ -279,22 +281,41 @@ const SummaryTab: React.FC<{
 
               {/* Изображение к вопросу */}
               {question.image_url && (
-                <div style={{ marginBottom: '20px', position: 'relative' }}>
-                  {imageLoading[question.id] && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      minHeight: '150px',
-                      backgroundColor: 'var(--tg-section-bg-color)',
-                      borderRadius: '12px',
-                      border: '1px solid var(--tg-section-separator-color)'
-                    }}>
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{
+                    position: 'relative',
+                    backgroundColor: 'var(--tg-section-bg-color)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--tg-section-separator-color)',
+                    padding: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '200px',
+                    maxHeight: '200px',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'opacity 0.2s ease'
+                  }}
+                  onClick={() => setFullscreenImage(question.image_url || null)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '0.9';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                  >
+                    {imageLoading[question.id] && (
                       <div style={{
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '12px'
+                        gap: '12px',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 1
                       }}>
                         <div style={{
                           width: '32px',
@@ -317,37 +338,45 @@ const SummaryTab: React.FC<{
                           }
                         `}</style>
                       </div>
-                    </div>
-                  )}
-                  <img 
-                    src={question.image_url} 
-                    alt={question.image_name || 'Question illustration'}
-                    onLoadStart={() => {
-                      setImageLoading(prev => ({ ...prev, [question.id]: true }));
-                    }}
-                    onLoad={() => {
-                      console.log('Изображение успешно загружено:', question.image_url);
-                      setImageLoading(prev => ({ ...prev, [question.id]: false }));
-                    }}
-                    onError={(e) => {
-                      console.error('Ошибка загрузки изображения:', question.image_url);
-                      const imgElement = e.currentTarget;
-                      imgElement.style.display = 'none';
-                      setImageLoading(prev => ({ ...prev, [question.id]: false }));
-                      // Показываем сообщение об ошибке
-                      const errorDiv = document.createElement('div');
-                      errorDiv.textContent = 'Не удалось загрузить изображение';
-                      errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
-                      imgElement.parentElement?.appendChild(errorDiv);
-                    }}
-                    style={{
-                      width: '100%',
-                      maxHeight: '200px',
-                      objectFit: 'cover',
-                      borderRadius: '12px',
-                      display: imageLoading[question.id] ? 'none' : 'block'
-                    }}
-                  />
+                    )}
+                    <img 
+                      src={question.image_url} 
+                      alt={question.image_name || 'Question illustration'}
+                      onLoadStart={() => {
+                        setImageLoading(prev => ({ ...prev, [question.id]: true }));
+                      }}
+                      onLoad={() => {
+                        console.log('Изображение успешно загружено:', question.image_url);
+                        setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                      }}
+                      onError={(e) => {
+                        console.error('Ошибка загрузки изображения:', question.image_url);
+                        const imgElement = e.currentTarget;
+                        imgElement.style.display = 'none';
+                        setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                        // Показываем сообщение об ошибке
+                        const errorDiv = document.createElement('div');
+                        errorDiv.textContent = 'Не удалось загрузить изображение';
+                        errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
+                        imgElement.parentElement?.appendChild(errorDiv);
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        display: imageLoading[question.id] ? 'none' : 'block'
+                      }}
+                    />
+                  </div>
+                  <p style={{
+                    fontSize: '11px',
+                    color: 'var(--tg-hint-color)',
+                    margin: '6px 0 0 0',
+                    textAlign: 'center',
+                    fontStyle: 'italic'
+                  }}>
+                    Нажмите на изображение для просмотра
+                  </p>
                 </div>
               )}
               
@@ -548,7 +577,8 @@ const IndividualUserTab: React.FC<{
   onUserSelect: (userId: string) => void;
   imageLoading: { [questionId: string]: boolean };
   setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
-}> = ({ questions, responses, survey, loading, selectedUserId, onUserSelect, imageLoading, setImageLoading }) => {
+  setFullscreenImage: React.Dispatch<React.SetStateAction<string | null>>;
+}> = ({ questions, responses, survey, loading, selectedUserId, onUserSelect, imageLoading, setImageLoading, setFullscreenImage }) => {
   const [currentUserIndex, setCurrentUserIndex] = useState<number>(1);
   const [manualUserInput, setManualUserInput] = useState<string>('1');
 
@@ -922,22 +952,41 @@ const IndividualUserTab: React.FC<{
 
                 {/* Изображение к вопросу */}
                 {question.image_url && (
-                  <div style={{ marginBottom: '20px', position: 'relative' }}>
-                    {imageLoading[question.id] && (
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minHeight: '150px',
-                        backgroundColor: 'var(--tg-section-bg-color)',
-                        borderRadius: '12px',
-                        border: '1px solid var(--tg-section-separator-color)'
-                      }}>
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{
+                      position: 'relative',
+                      backgroundColor: 'var(--tg-section-bg-color)',
+                      borderRadius: '12px',
+                      border: '1px solid var(--tg-section-separator-color)',
+                      padding: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '200px',
+                      maxHeight: '200px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'opacity 0.2s ease'
+                    }}
+                    onClick={() => setFullscreenImage(question.image_url || null)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.opacity = '0.9';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                    }}
+                    >
+                      {imageLoading[question.id] && (
                         <div style={{
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '12px'
+                          gap: '12px',
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 1
                         }}>
                           <div style={{
                             width: '32px',
@@ -960,37 +1009,45 @@ const IndividualUserTab: React.FC<{
                             }
                           `}</style>
                         </div>
-                      </div>
-                    )}
-                    <img 
-                      src={question.image_url} 
-                      alt={question.image_name || 'Question illustration'}
-                      onLoadStart={() => {
-                        setImageLoading(prev => ({ ...prev, [question.id]: true }));
-                      }}
-                      onLoad={() => {
-                        console.log('Изображение успешно загружено:', question.image_url);
-                        setImageLoading(prev => ({ ...prev, [question.id]: false }));
-                      }}
-                      onError={(e) => {
-                        console.error('Ошибка загрузки изображения:', question.image_url);
-                        const imgElement = e.currentTarget;
-                        imgElement.style.display = 'none';
-                        setImageLoading(prev => ({ ...prev, [question.id]: false }));
-                        // Показываем сообщение об ошибке
-                        const errorDiv = document.createElement('div');
-                        errorDiv.textContent = 'Не удалось загрузить изображение';
-                        errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
-                        imgElement.parentElement?.appendChild(errorDiv);
-                      }}
-                      style={{
-                        width: '100%',
-                        maxHeight: '200px',
-                        objectFit: 'cover',
-                        borderRadius: '12px',
-                        display: imageLoading[question.id] ? 'none' : 'block'
-                      }}
-                    />
+                      )}
+                      <img 
+                        src={question.image_url} 
+                        alt={question.image_name || 'Question illustration'}
+                        onLoadStart={() => {
+                          setImageLoading(prev => ({ ...prev, [question.id]: true }));
+                        }}
+                        onLoad={() => {
+                          console.log('Изображение успешно загружено:', question.image_url);
+                          setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                        }}
+                        onError={(e) => {
+                          console.error('Ошибка загрузки изображения:', question.image_url);
+                          const imgElement = e.currentTarget;
+                          imgElement.style.display = 'none';
+                          setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                          // Показываем сообщение об ошибке
+                          const errorDiv = document.createElement('div');
+                          errorDiv.textContent = 'Не удалось загрузить изображение';
+                          errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
+                          imgElement.parentElement?.appendChild(errorDiv);
+                        }}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          display: imageLoading[question.id] ? 'none' : 'block'
+                        }}
+                      />
+                    </div>
+                    <p style={{
+                      fontSize: '11px',
+                      color: 'var(--tg-hint-color)',
+                      margin: '6px 0 0 0',
+                      textAlign: 'center',
+                      fontStyle: 'italic'
+                    }}>
+                      Нажмите на изображение для просмотра
+                    </p>
                   </div>
                 )}
                 
@@ -1022,7 +1079,8 @@ const QuestionTab: React.FC<{
   onQuestionSelect: (questionId: string) => void;
   imageLoading: { [questionId: string]: boolean };
   setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
-}> = ({ questions, responses, survey, loading, selectedQuestionId, onQuestionSelect, imageLoading, setImageLoading }) => {
+  setFullscreenImage: React.Dispatch<React.SetStateAction<string | null>>;
+}> = ({ questions, responses, survey, loading, selectedQuestionId, onQuestionSelect, imageLoading, setImageLoading, setFullscreenImage }) => {
 
   if (loading) {
     return (
@@ -1196,22 +1254,41 @@ const QuestionTab: React.FC<{
 
           {/* Изображение к вопросу */}
           {selectedQuestion.image_url && (
-            <div style={{ marginBottom: '20px', position: 'relative' }}>
-              {imageLoading[selectedQuestion.id] && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: '150px',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  borderRadius: '12px',
-                  border: '1px solid var(--tg-section-separator-color)'
-                }}>
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                position: 'relative',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                borderRadius: '12px',
+                border: '1px solid var(--tg-section-separator-color)',
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '200px',
+                maxHeight: '200px',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'opacity 0.2s ease'
+              }}
+              onClick={() => setFullscreenImage(selectedQuestion.image_url || null)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+              >
+                {imageLoading[selectedQuestion.id] && (
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '12px'
+                    gap: '12px',
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 1
                   }}>
                     <div style={{
                       width: '32px',
@@ -1234,37 +1311,45 @@ const QuestionTab: React.FC<{
                       }
                     `}</style>
                   </div>
-                </div>
-              )}
-              <img 
-                src={selectedQuestion.image_url} 
-                alt={selectedQuestion.image_name || 'Question illustration'}
-                onLoadStart={() => {
-                  setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: true }));
-                }}
-                onLoad={() => {
-                  console.log('Изображение успешно загружено:', selectedQuestion.image_url);
-                  setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: false }));
-                }}
-                onError={(e) => {
-                  console.error('Ошибка загрузки изображения:', selectedQuestion.image_url);
-                  const imgElement = e.currentTarget;
-                  imgElement.style.display = 'none';
-                  setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: false }));
-                  // Показываем сообщение об ошибке
-                  const errorDiv = document.createElement('div');
-                  errorDiv.textContent = 'Не удалось загрузить изображение';
-                  errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
-                  imgElement.parentElement?.appendChild(errorDiv);
-                }}
-                style={{
-                  width: '100%',
-                  maxHeight: '200px',
-                  objectFit: 'cover',
-                  borderRadius: '12px',
-                  display: imageLoading[selectedQuestion.id] ? 'none' : 'block'
-                }}
-              />
+                )}
+                <img 
+                  src={selectedQuestion.image_url} 
+                  alt={selectedQuestion.image_name || 'Question illustration'}
+                  onLoadStart={() => {
+                    setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: true }));
+                  }}
+                  onLoad={() => {
+                    console.log('Изображение успешно загружено:', selectedQuestion.image_url);
+                    setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: false }));
+                  }}
+                  onError={(e) => {
+                    console.error('Ошибка загрузки изображения:', selectedQuestion.image_url);
+                    const imgElement = e.currentTarget;
+                    imgElement.style.display = 'none';
+                    setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: false }));
+                    // Показываем сообщение об ошибке
+                    const errorDiv = document.createElement('div');
+                    errorDiv.textContent = 'Не удалось загрузить изображение';
+                    errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
+                    imgElement.parentElement?.appendChild(errorDiv);
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    display: imageLoading[selectedQuestion.id] ? 'none' : 'block'
+                  }}
+                />
+              </div>
+              <p style={{
+                fontSize: '11px',
+                color: 'var(--tg-hint-color)',
+                margin: '6px 0 0 0',
+                textAlign: 'center',
+                fontStyle: 'italic'
+              }}>
+                Нажмите на изображение для просмотра
+              </p>
             </div>
           )}
 
@@ -2578,6 +2663,7 @@ export default function SurveyAnalyticsPage() {
   const [imageLoading, setImageLoading] = useState<{ [questionId: string]: boolean }>({});
   const [uploadingImages, setUploadingImages] = useState<{ [questionId: string]: boolean }>({});
   const [savingQuestions, setSavingQuestions] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   useStableBackButton({ targetRoute: '/' });
 
@@ -4301,23 +4387,41 @@ export default function SurveyAnalyticsPage() {
 
           {/* Изображение к вопросу */}
           {question.image_url && (
-            <div style={{ marginBottom: '12px', position: 'relative' }}>
-              {imageLoading[question.id] && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: '150px',
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  borderRadius: '8px',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  marginBottom: '8px'
-                }}>
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{
+                position: 'relative',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                borderRadius: '8px',
+                border: '1px solid var(--tg-section-separator-color)',
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '200px',
+                maxHeight: '200px',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'opacity 0.2s ease'
+              }}
+              onClick={() => setFullscreenImage(question.image_url || null)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+              >
+                {imageLoading[question.id] && (
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '12px'
+                    gap: '12px',
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 1
                   }}>
                     <div style={{
                       width: '32px',
@@ -4340,38 +4444,45 @@ export default function SurveyAnalyticsPage() {
                       }
                     `}</style>
                   </div>
-                </div>
-              )}
-              <img 
-                src={question.image_url} 
-                alt={question.image_name || 'Изображение'}
-                onLoadStart={() => {
-                  setImageLoading(prev => ({ ...prev, [question.id]: true }));
-                }}
-                onLoad={() => {
-                  console.log('Изображение успешно загружено:', question.image_url);
-                  setImageLoading(prev => ({ ...prev, [question.id]: false }));
-                }}
-                onError={(e) => {
-                  console.error('Ошибка загрузки изображения:', question.image_url);
-                  const imgElement = e.currentTarget;
-                  imgElement.style.display = 'none';
-                  setImageLoading(prev => ({ ...prev, [question.id]: false }));
-                  // Показываем сообщение об ошибке
-                  const errorDiv = document.createElement('div');
-                  errorDiv.textContent = 'Не удалось загрузить изображение';
-                  errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 8px; border: 1px solid var(--tg-section-separator-color);';
-                  imgElement.parentElement?.appendChild(errorDiv);
-                }}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '200px',
-                  borderRadius: '8px',
-                  objectFit: 'contain',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  display: imageLoading[question.id] ? 'none' : 'block'
-                }}
-              />
+                )}
+                <img 
+                  src={question.image_url} 
+                  alt={question.image_name || 'Изображение'}
+                  onLoadStart={() => {
+                    setImageLoading(prev => ({ ...prev, [question.id]: true }));
+                  }}
+                  onLoad={() => {
+                    console.log('Изображение успешно загружено:', question.image_url);
+                    setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                  }}
+                  onError={(e) => {
+                    console.error('Ошибка загрузки изображения:', question.image_url);
+                    const imgElement = e.currentTarget;
+                    imgElement.style.display = 'none';
+                    setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                    // Показываем сообщение об ошибке
+                    const errorDiv = document.createElement('div');
+                    errorDiv.textContent = 'Не удалось загрузить изображение';
+                    errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 8px; border: 1px solid var(--tg-section-separator-color);';
+                    imgElement.parentElement?.appendChild(errorDiv);
+                  }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    display: imageLoading[question.id] ? 'none' : 'block'
+                  }}
+                />
+              </div>
+              <p style={{
+                fontSize: '11px',
+                color: 'var(--tg-hint-color)',
+                margin: '6px 0 0 0',
+                textAlign: 'center',
+                fontStyle: 'italic'
+              }}>
+                Нажмите на изображение для просмотра
+              </p>
               {!disabled && (
                 <button
                   onClick={() => updateEditedQuestion(index, { 
@@ -6248,6 +6359,7 @@ export default function SurveyAnalyticsPage() {
               }}
               imageLoading={imageLoading}
               setImageLoading={setImageLoading}
+              setFullscreenImage={setFullscreenImage}
             />
           )}
           
@@ -6272,6 +6384,7 @@ export default function SurveyAnalyticsPage() {
                 onQuestionSelect={setSelectedQuestionId}
                 imageLoading={imageLoading}
                 setImageLoading={setImageLoading}
+                setFullscreenImage={setFullscreenImage}
               />
             ) 
           )}
@@ -6297,11 +6410,18 @@ export default function SurveyAnalyticsPage() {
                 onUserSelect={setSelectedUserId}
                 imageLoading={imageLoading}
                 setImageLoading={setImageLoading}
+                setFullscreenImage={setFullscreenImage}
               />
             )
           )}
         </div>
       )}
+
+      {/* Полноэкранный просмотр изображения */}
+      <ImagePopup 
+        imageUrl={fullscreenImage} 
+        onClose={() => setFullscreenImage(null)} 
+      />
     </div>
   );
 }
