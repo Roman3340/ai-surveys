@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X, Trash2, Download, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { surveyApi, questionApi, aiAnalytics } from '../../services/api';
+import { surveyApi, questionApi, aiAnalytics, uploadApi } from '../../services/api';
 import type { SurveyShareResponse } from '../../services/api';
 import type { Survey, SurveySettings, QuestionType } from '../../types';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -50,6 +50,7 @@ interface EditableQuestion {
   scale_max_label?: string;
   image_url?: string;
   image_name?: string;
+  tempImagePath?: string; // Временный путь к изображению для загрузки в Яндекс Диск
   conditionalLogic?: ConditionalLogic; // Условия показа этого вопроса
 }
 
@@ -2346,6 +2347,8 @@ export default function SurveyAnalyticsPage() {
   const [aiAnalyticsStatus, setAiAnalyticsStatus] = useState<'not_found' | 'exists' | 'generating' | 'loading'>('loading');
   const [selectedQuestionId, setSelectedQuestionId] = useState<string>('');
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [imageLoading, setImageLoading] = useState<{ [questionId: string]: boolean }>({});
+  const [uploadingImages, setUploadingImages] = useState<{ [questionId: string]: boolean }>({});
 
   useStableBackButton({ targetRoute: '/' });
 
@@ -2503,6 +2506,31 @@ export default function SurveyAnalyticsPage() {
       if (activeTab !== 'questions' || !surveyId) return;
       try {
         const list = await questionApi.getSurveyQuestions(surveyId);
+        
+        // Функция для конвертации ссылки Яндекс Диска в прокси-URL на бэкенде
+        const convertYandexDiskUrl = (url: string): string => {
+          // Проверяем, является ли это ссылкой Яндекс Диска
+          if (!url || (!url.includes('yadi.sk') && !url.includes('disk.yandex.ru') && !url.includes('downloader.disk.yandex.ru'))) {
+            return url; // Если это не ссылка Яндекс Диска, возвращаем как есть
+          }
+          
+          // Если это ссылка на наш прокси-эндпоинт, возвращаем как есть
+          if (url.includes('/api/uploads/yandex-disk-proxy')) {
+            return url;
+          }
+          
+          // Используем прокси-эндпоинт на бэкенде для всех ссылок Яндекс Диска
+          let apiBaseUrl = (window as any).__API_BASE_URL__ || window.location.origin;
+          
+          // Убираем /api из конца apiBaseUrl если он есть, чтобы избежать двойного /api/api/
+          if (apiBaseUrl.endsWith('/api')) {
+            apiBaseUrl = apiBaseUrl.slice(0, -4);
+          }
+          
+          const proxyUrl = `${apiBaseUrl}/api/uploads/yandex-disk-proxy?url=${encodeURIComponent(url)}`;
+          return proxyUrl;
+        };
+        
         const mapped = list.map((q: any) => {
           // Парсим validation для получения conditionalLogic
           let validation = q.validation;
@@ -2512,6 +2540,12 @@ export default function SurveyAnalyticsPage() {
             } catch (e) {
               // Не критично, продолжаем
             }
+          }
+          
+          // Конвертируем URL изображения если он есть (используем прокси)
+          let imageUrl = q.imageUrl || q.image_url;
+          if (imageUrl) {
+            imageUrl = convertYandexDiskUrl(imageUrl);
           }
           
           return {
@@ -2527,7 +2561,7 @@ export default function SurveyAnalyticsPage() {
             scale_max: q.scaleMax || q.scale_max,
             scale_min_label: q.scaleMinLabel || q.scale_min_label,
             scale_max_label: q.scaleMaxLabel || q.scale_max_label,
-            image_url: q.imageUrl || q.image_url,
+            image_url: imageUrl,
             image_name: q.imageName || q.image_name,
             conditionalLogic: validation?.conditionalLogic
           };
@@ -2548,6 +2582,26 @@ export default function SurveyAnalyticsPage() {
       try {
         setAnalyticsLoading(true);
         
+        // Функция для конвертации ссылки Яндекс Диска в прокси-URL на бэкенде
+        const convertYandexDiskUrl = (url: string): string => {
+          if (!url || (!url.includes('yadi.sk') && !url.includes('disk.yandex.ru') && !url.includes('downloader.disk.yandex.ru'))) {
+            return url;
+          }
+          
+          if (url.includes('/api/uploads/yandex-disk-proxy')) {
+            return url;
+          }
+          
+          let apiBaseUrl = (window as any).__API_BASE_URL__ || window.location.origin;
+          
+          if (apiBaseUrl.endsWith('/api')) {
+            apiBaseUrl = apiBaseUrl.slice(0, -4);
+          }
+          
+          const proxyUrl = `${apiBaseUrl}/api/uploads/yandex-disk-proxy?url=${encodeURIComponent(url)}`;
+          return proxyUrl;
+        };
+        
         // Загружаем вопросы и ответы параллельно для аналитики
         const [questionsList, responses] = await Promise.all([
           questionApi.getSurveyQuestions(surveyId),
@@ -2566,6 +2620,12 @@ export default function SurveyAnalyticsPage() {
             }
           }
           
+          // Конвертируем URL изображения если он есть (используем прокси)
+          let imageUrl = q.imageUrl || q.image_url;
+          if (imageUrl) {
+            imageUrl = convertYandexDiskUrl(imageUrl);
+          }
+          
           return {
             id: q.id,
             type: q.type,
@@ -2579,7 +2639,7 @@ export default function SurveyAnalyticsPage() {
             scale_max: q.scaleMax || q.scale_max,
             scale_min_label: q.scaleMinLabel || q.scale_min_label,
             scale_max_label: q.scaleMaxLabel || q.scale_max_label,
-            image_url: q.imageUrl || q.image_url,
+            image_url: imageUrl,
             image_name: q.imageName || q.image_name,
             conditionalLogic: validation?.conditionalLogic
           };
@@ -2807,7 +2867,34 @@ export default function SurveyAnalyticsPage() {
         }
       }
       
-      // Второй проход: обновляем все вопросы с условной логикой, у которых dependsOn указывал на временный ID
+      // Второй проход: загружаем изображения в Яндекс Диск и обновляем вопросы
+      for (const q of questionsWithCorrectOrder) {
+        const realQuestionId = q.id.startsWith('temp_') ? questionIdMap[q.id] : q.id;
+        
+        // Если у вопроса есть временное изображение, загружаем его в Яндекс Диск
+        if (q.tempImagePath && realQuestionId) {
+          try {
+            const uploadResult = await uploadApi.uploadToYandexDisk(q.tempImagePath, realQuestionId);
+            
+            // Обновляем вопрос с публичной ссылкой из Яндекс Диска
+            await questionApi.updateQuestion(realQuestionId, {
+              image_url: uploadResult.url,
+              image_name: uploadResult.filename
+            });
+          } catch (e) {
+            console.error(`Ошибка загрузки изображения для вопроса ${q.id}:`, e);
+            // Продолжаем сохранение даже если изображение не загрузилось
+          }
+        } else if (q.image_url && realQuestionId && !q.tempImagePath) {
+          // Если изображение уже есть (не временное), просто обновляем вопрос
+          await questionApi.updateQuestion(realQuestionId, {
+            image_url: q.image_url,
+            image_name: q.image_name
+          });
+        }
+      }
+      
+      // Третий проход: обновляем все вопросы с условной логикой, у которых dependsOn указывал на временный ID
       // и теперь нужно обновить на реальный UUID
       for (const q of questionsWithCorrectOrder) {
         if (q.conditionalLogic?.dependsOn) {
@@ -2833,6 +2920,27 @@ export default function SurveyAnalyticsPage() {
       }
       
       const list = await questionApi.getSurveyQuestions(surveyId);
+      
+      // Функция для конвертации ссылки Яндекс Диска в прокси-URL на бэкенде
+      const convertYandexDiskUrl = (url: string): string => {
+        if (!url || (!url.includes('yadi.sk') && !url.includes('disk.yandex.ru') && !url.includes('downloader.disk.yandex.ru'))) {
+          return url;
+        }
+        
+        if (url.includes('/api/uploads/yandex-disk-proxy')) {
+          return url;
+        }
+        
+        let apiBaseUrl = (window as any).__API_BASE_URL__ || window.location.origin;
+        
+        if (apiBaseUrl.endsWith('/api')) {
+          apiBaseUrl = apiBaseUrl.slice(0, -4);
+        }
+        
+        const proxyUrl = `${apiBaseUrl}/api/uploads/yandex-disk-proxy?url=${encodeURIComponent(url)}`;
+        return proxyUrl;
+      };
+      
       const mapped = list.map((q: any) => {
         // Парсим validation для получения conditionalLogic
         let validation = q.validation;
@@ -2842,6 +2950,12 @@ export default function SurveyAnalyticsPage() {
           } catch (e) {
             // Не критично, продолжаем
           }
+        }
+        
+        // Конвертируем URL изображения если он есть (используем прокси)
+        let imageUrl = q.imageUrl || q.image_url;
+        if (imageUrl) {
+          imageUrl = convertYandexDiskUrl(imageUrl);
         }
         
         return {
@@ -2857,7 +2971,7 @@ export default function SurveyAnalyticsPage() {
           scale_max: q.scaleMax || q.scale_max,
           scale_min_label: q.scaleMinLabel || q.scale_min_label,
           scale_max_label: q.scaleMaxLabel || q.scale_max_label,
-          image_url: q.imageUrl || q.image_url,
+          image_url: imageUrl,
           image_name: q.imageName || q.image_name,
           conditionalLogic: validation?.conditionalLogic
         };
@@ -3804,23 +3918,219 @@ export default function SurveyAnalyticsPage() {
             </div>
           </div>
 
+          {/* Загрузка изображения к вопросу */}
+          {!disabled && editingQuestions && (
+            <div style={{ marginBottom: '12px' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px dashed var(--tg-section-separator-color)',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  color: 'var(--tg-hint-color)'
+                }}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    
+                    try {
+                      setUploadingImages(prev => ({ ...prev, [question.id]: true }));
+                      
+                      // Проверяем размер файла (10MB)
+                      if (file.size > 10 * 1024 * 1024) {
+                        setUploadingImages(prev => ({ ...prev, [question.id]: false }));
+                        alert('Размер файла не должен превышать 10MB');
+                        hapticFeedback?.error();
+                        e.target.value = '';
+                        return;
+                      }
+                      
+                      // Проверяем тип файла
+                      if (!file.type || !file.type.startsWith('image/')) {
+                        setUploadingImages(prev => ({ ...prev, [question.id]: false }));
+                        alert('Пожалуйста, выберите файл изображения (JPEG, PNG, WebP, GIF)');
+                        hapticFeedback?.error();
+                        e.target.value = '';
+                        return;
+                      }
+                      
+                      const result = await uploadApi.uploadImage(file);
+                      
+                      if (!result || !result.url) {
+                        throw new Error('Сервер не вернул URL изображения');
+                      }
+                      
+                      // Получаем полный URL для отображения
+                      let fullUrl = result.url;
+                      
+                      if (!fullUrl.startsWith('http')) {
+                        const getApiBase = (window as any).__GET_API_BASE_URL__;
+                        let apiBaseUrl = getApiBase ? getApiBase() : ((window as any).__API_BASE_URL__ || window.location.origin);
+                        
+                        if (apiBaseUrl.endsWith('/api')) {
+                          apiBaseUrl = apiBaseUrl.slice(0, -4);
+                        }
+                        
+                        if (fullUrl.startsWith('/api')) {
+                          fullUrl = `${apiBaseUrl}${fullUrl}`;
+                        } else {
+                          fullUrl = `${apiBaseUrl}/api${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`;
+                        }
+                      }
+                      
+                      updateEditedQuestion(index, {
+                        image_url: fullUrl,
+                        image_name: result.filename,
+                        tempImagePath: result.temp_path
+                      });
+                      
+                      hapticFeedback?.success();
+                      setUploadingImages(prev => ({ ...prev, [question.id]: false }));
+                    } catch (error: any) {
+                      console.error('Ошибка загрузки изображения:', error);
+                      setUploadingImages(prev => ({ ...prev, [question.id]: false }));
+                      
+                      let errorMessage = 'Не удалось загрузить изображение';
+                      
+                      if (error?.response?.data?.detail) {
+                        errorMessage = error.response.data.detail;
+                      } else if (error?.message) {
+                        errorMessage = error.message;
+                      } else if (error?.response?.status === 413) {
+                        errorMessage = 'Файл слишком большой. Максимальный размер: 10MB';
+                      } else if (error?.response?.status === 400) {
+                        errorMessage = error?.response?.data?.detail || 'Некорректный файл';
+                      }
+                      
+                      alert(errorMessage);
+                      hapticFeedback?.error();
+                    }
+                    
+                    e.target.value = '';
+                  }}
+                />
+                {uploadingImages[question.id] ? (
+                  <>
+                    <div style={{
+                      width: '16px',
+                      height: '16px',
+                      border: '2px solid var(--tg-section-separator-color)',
+                      borderTop: '2px solid var(--tg-button-color)',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    <span>Загрузка изображения...</span>
+                    <style>{`
+                      @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                      }
+                    `}</style>
+                  </>
+                ) : (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tg-hint-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21,15 16,10 5,21"></polyline>
+                    </svg>
+                    <span>Добавить изображение</span>
+                  </>
+                )}
+              </label>
+            </div>
+          )}
+
           {/* Изображение к вопросу */}
           {question.image_url && (
             <div style={{ marginBottom: '12px', position: 'relative' }}>
+              {imageLoading[question.id] && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '150px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  marginBottom: '8px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      border: '3px solid var(--tg-section-separator-color)',
+                      borderTop: '3px solid var(--tg-button-color)',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    <span style={{ 
+                      color: 'var(--tg-hint-color)', 
+                      fontSize: '14px' 
+                    }}>
+                      Загрузка изображения...
+                    </span>
+                    <style>{`
+                      @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                      }
+                    `}</style>
+                  </div>
+                </div>
+              )}
               <img 
                 src={question.image_url} 
-                alt={question.image_name || 'Изображение'} 
+                alt={question.image_name || 'Изображение'}
+                onLoadStart={() => {
+                  setImageLoading(prev => ({ ...prev, [question.id]: true }));
+                }}
+                onLoad={() => {
+                  console.log('Изображение успешно загружено:', question.image_url);
+                  setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                }}
+                onError={(e) => {
+                  console.error('Ошибка загрузки изображения:', question.image_url);
+                  const imgElement = e.currentTarget;
+                  imgElement.style.display = 'none';
+                  setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                  // Показываем сообщение об ошибке
+                  const errorDiv = document.createElement('div');
+                  errorDiv.textContent = 'Не удалось загрузить изображение';
+                  errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 8px; border: 1px solid var(--tg-section-separator-color);';
+                  imgElement.parentElement?.appendChild(errorDiv);
+                }}
                 style={{
                   maxWidth: '100%',
                   maxHeight: '200px',
                   borderRadius: '8px',
                   objectFit: 'contain',
-                  border: '1px solid var(--tg-section-separator-color)'
+                  border: '1px solid var(--tg-section-separator-color)',
+                  display: imageLoading[question.id] ? 'none' : 'block'
                 }}
               />
               {!disabled && (
                 <button
-                  onClick={() => updateEditedQuestion(index, { image_url: undefined, image_name: undefined })}
+                  onClick={() => updateEditedQuestion(index, { 
+                    image_url: undefined, 
+                    image_name: undefined,
+                    tempImagePath: undefined
+                  })}
                   style={{
                     position: 'absolute',
                     top: '8px',
