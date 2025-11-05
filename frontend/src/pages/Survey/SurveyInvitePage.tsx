@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +32,48 @@ export default function SurveyInvitePage() {
   const [error, setError] = useState<string | null>(null);
   const [activePopover, setActivePopover] = useState<string | null>(null);
 
+  // Функция для преобразования сообщений бэкенда в локализованные
+  const localizeMessage = useCallback((message: string | undefined): string => {
+    if (!message) return t('surveyInvite.participationMessages.unavailable');
+    
+    // Определяем тип сообщения по ключевым словам
+    if (message.includes('уже участвовали') || message.includes('already participated')) {
+      return t('surveyInvite.participationMessages.alreadyParticipated');
+    }
+    if (message.includes('завершён') || message.includes('completed') || message.includes('завершен')) {
+      return t('surveyInvite.participationMessages.completed');
+    }
+    if (message.includes('не опубликован') || message.includes('not published')) {
+      return t('surveyInvite.participationMessages.draft');
+    }
+    if (message.includes('архивирован') || message.includes('archived')) {
+      return t('surveyInvite.participationMessages.archived');
+    }
+    if (message.includes('Достигнуто максимальное') || message.includes('Maximum number of participants')) {
+      // Извлекаем число из сообщения
+      const match = message.match(/(\d+)/);
+      const count = match ? match[1] : '';
+      return t('surveyInvite.participationMessages.maxParticipants', { count });
+    }
+    
+    // Если сообщение не распознано, возвращаем как есть или дефолтное
+    return message;
+  }, [t]);
+
+  // Функция для обработки ошибок API
+  const localizeError = useCallback((errorDetail: string | undefined): string => {
+    if (!errorDetail) return t('surveyInvite.notFound');
+    
+    // Проверяем формат "Опрос с ID {id} не найден"
+    const match = errorDetail.match(/Опрос с ID (\d+) не найден|Survey with ID (\d+) not found/i);
+    if (match) {
+      const id = match[1] || match[2];
+      return t('surveyInvite.notFoundWithId', { id });
+    }
+    
+    return errorDetail;
+  }, [t]);
+
   useEffect(() => {
     const loadSurvey = async () => {
       if (!surveyId) return;
@@ -45,17 +87,19 @@ export default function SurveyInvitePage() {
         setSurvey(response);
       } catch (e: any) {
         console.error(e);
-        setError(e?.response?.data?.detail || t('surveyTake.loadError'));
+        const errorDetail = e?.response?.data?.detail;
+        setError(localizeError(errorDetail) || t('surveyTake.loadError'));
       } finally {
         setLoading(false);
       }
     };
     loadSurvey();
-  }, [surveyId, user, isReady]);
+  }, [surveyId, user, isReady, localizeError, t]);
 
   const handleParticipate = () => {
     if (!survey?.canParticipate) {
-      alert(survey?.participationMessage || t('surveyTake.participationUnavailable'));
+      const localizedMessage = localizeMessage(survey?.participationMessage);
+      alert(localizedMessage);
       return;
     }
     hapticFeedback?.medium();
@@ -753,7 +797,7 @@ export default function SurveyInvitePage() {
               color: 'var(--tg-hint-color)',
               margin: 0
             }}>
-              {survey.participationMessage}
+              {localizeMessage(survey.participationMessage)}
             </p>
           </div>
         )}

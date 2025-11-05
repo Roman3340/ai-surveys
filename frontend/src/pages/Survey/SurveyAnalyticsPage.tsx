@@ -2819,12 +2819,12 @@ export default function SurveyAnalyticsPage() {
         setLoading(false);
       } catch (e) {
         console.error(e);
-        setError('Не удалось загрузить опрос');
+        setError(t('surveyAnalytics.alerts.loadError'));
         setLoading(false);
       }
     };
     load();
-  }, [surveyId]);
+  }, [surveyId, t]);
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -3004,7 +3004,7 @@ export default function SurveyAnalyticsPage() {
       hapticFeedback?.success();
     } catch (e: any) {
       console.error(e);
-      alert(e?.response?.data?.detail || 'Не удалось изменить статус');
+      alert(e?.response?.data?.detail || t('surveyAnalytics.alerts.statusChangeError'));
     }
   };
 
@@ -3079,10 +3079,10 @@ export default function SurveyAnalyticsPage() {
       setEditingSettings(false);
       setSettingsValidationErrors({});
       hapticFeedback?.success();
-      alert('Настройки успешно обновлены!');
+      alert(t('surveyAnalytics.alerts.settingsUpdated'));
     } catch (e) {
       console.error(e);
-      alert('Не удалось сохранить настройки');
+      alert(t('surveyAnalytics.alerts.settingsSaveError'));
     }
   };
 
@@ -3316,10 +3316,10 @@ export default function SurveyAnalyticsPage() {
       setDeletedQuestions([]);
       setEditingQuestions(false);
       hapticFeedback?.success();
-      alert('Вопросы успешно обновлены!');
+      alert(t('surveyAnalytics.alerts.questionsUpdated'));
     } catch (e) {
       console.error(e);
-      alert('Не удалось сохранить вопросы');
+      alert(t('surveyAnalytics.alerts.questionsSaveError'));
     } finally {
       setSavingQuestions(false);
     }
@@ -3456,13 +3456,13 @@ export default function SurveyAnalyticsPage() {
     if (!survey) return null;
     switch (survey.status) {
       case 'active':
-        return { text: 'Активен', color: '#34C759' };
+        return { text: t('surveyAnalytics.status.active'), color: '#34C759' };
       case 'draft':
-        return { text: 'Черновик', color: '#8E8E93' };
+        return { text: t('surveyAnalytics.status.draft'), color: '#8E8E93' };
       case 'completed':
-        return { text: 'Завершён', color: '#FF6B6B' };
+        return { text: t('surveyAnalytics.status.completed'), color: '#FF6B6B' };
       case 'archived':
-        return { text: 'Архив', color: '#FF9500' };
+        return { text: t('surveyAnalytics.status.archived'), color: '#FF9500' };
       default:
         return { text: survey.status, color: '#8E8E93' };
     }
@@ -3784,7 +3784,7 @@ export default function SurveyAnalyticsPage() {
               >
                 {availableQuestions.map(q => (
                   <option key={q.id} value={q.id}>
-                    {q.text || `Вопрос ${allQuestions.findIndex(qq => qq.id === q.id) + 1}`}
+                    {q.text || t('surveyAnalytics.questions.question', { number: allQuestions.findIndex(qq => qq.id === q.id) + 1 })}
                   </option>
                 ))}
               </select>
@@ -4008,7 +4008,7 @@ export default function SurveyAnalyticsPage() {
                             borderRadius: '6px',
                             border: '1px solid rgba(255, 149, 0, 0.3)'
                           }}>
-                            ⚠️ Условие не полностью заполнено. Вопрос будет показываться всегда, пока все поля условий не будут заполнены.
+                            ⚠️ {t('surveyAnalytics.questions.incompleteCondition')}
                           </div>
                         );
                       }
@@ -4293,7 +4293,7 @@ export default function SurveyAnalyticsPage() {
                       // Проверяем размер файла (10MB)
                       if (file.size > 10 * 1024 * 1024) {
                         setUploadingImages(prev => ({ ...prev, [question.id]: false }));
-                        alert('Размер файла не должен превышать 10MB');
+                        alert(t('surveyAnalytics.alerts.imageSizeError'));
                         hapticFeedback?.error();
                         e.target.value = '';
                         return;
@@ -4302,7 +4302,7 @@ export default function SurveyAnalyticsPage() {
                       // Проверяем тип файла
                       if (!file.type || !file.type.startsWith('image/')) {
                         setUploadingImages(prev => ({ ...prev, [question.id]: false }));
-                        alert('Пожалуйста, выберите файл изображения (JPEG, PNG, WebP, GIF)');
+                        alert(t('surveyAnalytics.alerts.imageTypeError'));
                         hapticFeedback?.error();
                         e.target.value = '';
                         return;
@@ -4344,7 +4344,7 @@ export default function SurveyAnalyticsPage() {
                       console.error('Ошибка загрузки изображения:', error);
                       setUploadingImages(prev => ({ ...prev, [question.id]: false }));
                       
-                      let errorMessage = 'Не удалось загрузить изображение';
+                      let errorMessage = t('surveyAnalytics.alerts.imageUploadError');
                       
                       if (error?.response?.data?.detail) {
                         errorMessage = error.response.data.detail;
@@ -4472,7 +4472,7 @@ export default function SurveyAnalyticsPage() {
                     setImageLoading(prev => ({ ...prev, [question.id]: false }));
                     // Показываем сообщение об ошибке
                     const errorDiv = document.createElement('div');
-                    errorDiv.textContent = 'Не удалось загрузить изображение';
+                    errorDiv.textContent = t('surveyAnalytics.alerts.imageUploadError');
                     errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 8px; border: 1px solid var(--tg-section-separator-color);';
                     imgElement.parentElement?.appendChild(errorDiv);
                   }}
@@ -4970,9 +4970,9 @@ export default function SurveyAnalyticsPage() {
       {/* Табы */}
       <AnimatedTabs
         tabs={[
-          { id: 'overview', label: 'Обзор' },
-          { id: 'questions', label: 'Вопросы' },
-          { id: 'analytics', label: 'Аналитика' },
+          { id: 'overview', label: t('surveyAnalytics.tabs.overview') },
+          { id: 'questions', label: t('surveyAnalytics.tabs.questions') },
+          { id: 'analytics', label: t('surveyAnalytics.tabs.analytics') },
         ]}
         activeTab={activeTab}
         onTabChange={(id) => {
@@ -4987,7 +4987,7 @@ export default function SurveyAnalyticsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {/* Управление статусом */}
           <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 12 }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>Статус опроса</h3>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>{t('surveyAnalytics.status.title')}</h3>
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowStatusDropdown(!showStatusDropdown)}
@@ -5038,7 +5038,7 @@ export default function SurveyAnalyticsPage() {
                         borderBottom: '1px solid var(--tg-section-separator-color)'
                       }}
                     >
-                      ✅ Активировать
+                      ✅ {t('surveyAnalytics.status.activate')}
                     </button>
                   )}
                   {survey.status === 'active' && canEdit && (
@@ -5056,7 +5056,7 @@ export default function SurveyAnalyticsPage() {
                         borderBottom: '1px solid var(--tg-section-separator-color)'
                       }}
                     >
-                      📝 Перевести в черновик
+                      📝 {t('surveyAnalytics.status.moveToDraft')}
                     </button>
                   )}
                   {survey.status !== 'completed' && (
@@ -5074,7 +5074,7 @@ export default function SurveyAnalyticsPage() {
                         borderBottom: '1px solid var(--tg-section-separator-color)'
                       }}
                     >
-                      ✔️ Завершить опрос
+                      ✔️ {t('surveyAnalytics.status.complete')}
                     </button>
                   )}
                   {survey.status !== 'archived' && (
@@ -5091,7 +5091,7 @@ export default function SurveyAnalyticsPage() {
                         cursor: 'pointer'
                       }}
                     >
-                      📦 Архивировать
+                      📦 {t('surveyAnalytics.status.archive')}
                     </button>
                   )}
                 </div>
@@ -5122,7 +5122,7 @@ export default function SurveyAnalyticsPage() {
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                🔗 Распространение
+                🔗 {t('surveyAnalytics.distribution.title')}
               </h3>
               
               <div style={{ 
@@ -5136,7 +5136,7 @@ export default function SurveyAnalyticsPage() {
                 fontFamily: 'monospace',
                 border: '1px solid var(--tg-section-separator-color)'
               }}>
-                {share?.share_url || 'Ссылка будет доступна после публикации опроса'}
+                {share?.share_url || t('surveyAnalytics.distribution.linkUnavailable')}
               </div>
               
               {share?.share_url && (
@@ -5160,7 +5160,7 @@ export default function SurveyAnalyticsPage() {
                       boxShadow: copied ? '0 4px 12px rgba(52, 199, 89, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)'
                     }}
                   >
-                    <Copy size={16} /> {copied ? 'Скопировано!' : 'Копировать'}
+                    <Copy size={16} /> {copied ? t('surveyAnalytics.distribution.copied') : t('surveyAnalytics.distribution.copy')}
                   </button>
                   <button
                     onClick={handleShareTelegram}
@@ -5181,7 +5181,7 @@ export default function SurveyAnalyticsPage() {
                       boxShadow: '0 4px 12px rgba(0, 136, 204, 0.3)'
                     }}
                   >
-                    <Share size={16} /> Поделиться
+                    <Share size={16} /> {t('surveyAnalytics.distribution.share')}
                   </button>
                 </div>
               )}
@@ -5205,7 +5205,7 @@ export default function SurveyAnalyticsPage() {
                     color: 'var(--tg-text-color)'
                   }}>
                     <QrCode size={18} />
-                    QR-код
+                    {t('surveyAnalytics.distribution.qrCode')}
                   </div>
                   
                   <div style={{ marginBottom: '12px' }}>
@@ -5227,7 +5227,7 @@ export default function SurveyAnalyticsPage() {
                     margin: '0 0 12px 0',
                     lineHeight: '1.4'
                   }}>
-                    Отсканируйте QR-код для быстрого доступа
+                    {t('surveyAnalytics.distribution.qrScanHint')}
                   </p>
                   
                   <button
@@ -5252,7 +5252,7 @@ export default function SurveyAnalyticsPage() {
                     }}
                   >
                     <Download size={14} />
-                    {downloading ? 'Скачивание...' : 'Скачать QR-код'}
+                    {downloading ? t('surveyAnalytics.distribution.downloading') : t('surveyAnalytics.distribution.downloadQR')}
                   </button>
                 </div>
               )}
@@ -5293,7 +5293,7 @@ export default function SurveyAnalyticsPage() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Settings size={16} />
-                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>Настройки опроса</h3>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{t('surveyAnalytics.settings.title')}</h3>
               </div>
               {settingsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
@@ -5328,7 +5328,7 @@ export default function SurveyAnalyticsPage() {
                     marginBottom: 10
                   }}
                 >
-                  {editingSettings ? <><Save size={14} /> Сохранить изменения</> : <>⚙️ Редактировать</>}
+                  {editingSettings ? <><Save size={14} /> {t('surveyAnalytics.settings.saveChanges')}</> : <>⚙️ {t('surveyAnalytics.settings.edit')}</>}
                 </button>
                 
                 {editingSettings && (
@@ -5356,7 +5356,7 @@ export default function SurveyAnalyticsPage() {
                       marginBottom: 10
                     }}
                   >
-                    <X size={14} /> Отменить
+                    <X size={14} /> {t('surveyAnalytics.settings.cancel')}
                   </button>
                 )}
 
@@ -5374,7 +5374,7 @@ export default function SurveyAnalyticsPage() {
                       color: '#856404',
                       lineHeight: '1.4'
                     }}>
-                      ⚠️ После получения первых ответов некоторые настройки менять нельзя
+                      ⚠️ {t('surveyAnalytics.settings.lockWarning')}
                     </div>
                   </div>
                 )}
@@ -5422,7 +5422,7 @@ export default function SurveyAnalyticsPage() {
 
                   {/* Один ответ на пользователя */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                    <span style={{ color: 'var(--tg-hint-color)' }}>Один ответ на пользователя</span>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>{t('surveyAnalytics.settings.oneResponsePerUser')}</span>
                     {editingSettings ? (
                       <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
                         <input
@@ -5456,13 +5456,13 @@ export default function SurveyAnalyticsPage() {
                         </span>
                       </label>
                     ) : (
-                      <span style={{ fontWeight: 500 }}>{settings.oneResponsePerUser ? 'Да' : 'Нет'}</span>
+                      <span style={{ fontWeight: 500 }}>{settings.oneResponsePerUser ? t('surveyAnalytics.settings.yes') : t('surveyAnalytics.settings.no')}</span>
                     )}
                   </div>
 
                   {/* Анонимность */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                    <span style={{ color: 'var(--tg-hint-color)' }}>Анонимность</span>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>{t('surveyAnalytics.settings.anonymous')}</span>
                     {editingSettings ? (
                       <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
                         <input
@@ -5498,13 +5498,13 @@ export default function SurveyAnalyticsPage() {
                         </span>
                       </label>
                     ) : (
-                      <span style={{ fontWeight: 500 }}>{settings.allowAnonymous ? 'Разрешена' : 'Запрещена'}</span>
+                      <span style={{ fontWeight: 500 }}>{settings.allowAnonymous ? t('surveyAnalytics.settings.anonymousAllowed') : t('surveyAnalytics.settings.anonymousForbidden')}</span>
                     )}
                   </div>
 
                   {/* Скрыть создателя опроса */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                    <span style={{ color: 'var(--tg-hint-color)' }}>Скрыть создателя опроса</span>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>{t('surveyAnalytics.settings.hideCreator')}</span>
                     {editingSettings ? (
                       <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
                         <input
@@ -5547,7 +5547,7 @@ export default function SurveyAnalyticsPage() {
                         </span>
                       </label>
                     ) : (
-                      <span style={{ fontWeight: 500 }}>{settings.hideCreator ? 'Да' : 'Нет'}</span>
+                      <span style={{ fontWeight: 500 }}>{settings.hideCreator ? t('surveyAnalytics.settings.yes') : t('surveyAnalytics.settings.no')}</span>
                     )}
                   </div>
 
@@ -5593,7 +5593,7 @@ export default function SurveyAnalyticsPage() {
 
                   {/* Перемешать вопросы */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                    <span style={{ color: 'var(--tg-hint-color)' }}>Перемешать вопросы</span>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>{t('surveyAnalytics.settings.randomizeQuestions')}</span>
                     {editingSettings ? (
                       <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
                         <input
@@ -5627,13 +5627,13 @@ export default function SurveyAnalyticsPage() {
                         </span>
                       </label>
                     ) : (
-                      <span style={{ fontWeight: 500 }}>{settings.randomizeQuestions ? 'Да' : 'Нет'}</span>
+                      <span style={{ fontWeight: 500 }}>{settings.randomizeQuestions ? t('surveyAnalytics.settings.yes') : t('surveyAnalytics.settings.no')}</span>
                     )}
                   </div>
 
                   {/* Макс. участников */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                    <span style={{ color: 'var(--tg-hint-color)' }}>Макс. участников</span>
+                    <span style={{ color: 'var(--tg-hint-color)' }}>{t('surveyAnalytics.settings.maxParticipants')}</span>
                     {editingSettings ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                         <input
@@ -5650,7 +5650,7 @@ export default function SurveyAnalyticsPage() {
                               });
                             }
                           }}
-                          placeholder="Без ограничений"
+                          placeholder={t('surveyAnalytics.settings.noLimit')}
                           min={1}
                           style={{
                             width: '120px',
@@ -5671,7 +5671,7 @@ export default function SurveyAnalyticsPage() {
                         )}
                       </div>
                     ) : (
-                      <span style={{ fontWeight: 500 }}>{survey.maxParticipants || 'Не указано'}</span>
+                      <span style={{ fontWeight: 500 }}>{survey.maxParticipants || t('surveyAnalytics.settings.notSpecified')}</span>
                     )}
                   </div>
 
@@ -5693,13 +5693,13 @@ export default function SurveyAnalyticsPage() {
                             color: 'var(--tg-hint-color)', 
                             lineHeight: '1.4' 
                           }}>
-                            ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы предоставим Ваш Telegram-контакт респонденту для связи с Вами и получении награды. AI Surveys не участвует в хранении и передаче наград.
+                            ⚠️ {t('surveyAnalytics.settings.motivation.warning')}
                           </div>
                         </div>
                       )}
                       
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                        <span style={{ color: 'var(--tg-hint-color)' }}>Мотивация</span>
+                        <span style={{ color: 'var(--tg-hint-color)' }}>{t('surveyAnalytics.settings.motivation.title')}</span>
                         {editingSettings ? (
                           <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '22px' }}>
                             <input
@@ -5743,7 +5743,7 @@ export default function SurveyAnalyticsPage() {
                         <>
                           <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                             <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                              Тип мотивации
+                              {t('surveyAnalytics.settings.motivation.type')}
                             </label>
                             <select
                               value={editedSettings?.motivationType || 'discount'}
@@ -5764,18 +5764,18 @@ export default function SurveyAnalyticsPage() {
                                 outline: 'none'
                               }}
                             >
-                              <option value="discount">💰 Скидка</option>
-                              <option value="promo">🛒 Промокод</option>
-                              <option value="stars">⭐ Звёзды Telegram</option>
-                              <option value="gift">🎁 Подарок</option>
-                              <option value="other">Другое</option>
+                              <option value="discount">{t('surveyAnalytics.settings.motivation.discount')}</option>
+                              <option value="promo">{t('surveyAnalytics.settings.motivation.promo')}</option>
+                              <option value="stars">{t('surveyAnalytics.settings.motivation.stars')}</option>
+                              <option value="gift">{t('surveyAnalytics.settings.motivation.gift')}</option>
+                              <option value="other">{t('surveyAnalytics.settings.motivation.other')}</option>
                             </select>
                           </div>
 
                           {editedSettings?.motivationType === 'stars' && (
                             <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                               <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                Количество звёзд (минимум 1)
+                                {t('surveyAnalytics.settings.motivation.starsCount')}
                               </label>
                               <input
                                 id="settings-motivationDetails"
@@ -5816,7 +5816,7 @@ export default function SurveyAnalyticsPage() {
                           {editedSettings?.motivationType === 'discount' && (
                             <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                               <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                Описание скидки
+                                {t('surveyAnalytics.settings.motivation.discountDescription')}
                               </label>
                               <input
                                 id="settings-motivationDetails"
@@ -5832,7 +5832,7 @@ export default function SurveyAnalyticsPage() {
                                     });
                                   }
                                 }}
-                                placeholder="20% скидка на следующий заказ"
+                                placeholder={t('surveyAnalytics.settings.motivation.discountPlaceholder')}
                                 style={{
                                   width: '100%',
                                   padding: '8px',
@@ -5856,7 +5856,7 @@ export default function SurveyAnalyticsPage() {
                             <>
                               <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                                 <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                  Описание промокода
+                                  {t('surveyAnalytics.settings.motivation.promoDescription')}
                                 </label>
                                 <input
                                   id="settings-motivationDetails"
@@ -5872,7 +5872,7 @@ export default function SurveyAnalyticsPage() {
                                       });
                                     }
                                   }}
-                                  placeholder="Бесплатная доставка за прохождение опроса"
+                                  placeholder={t('surveyAnalytics.settings.motivation.promoPlaceholder')}
                                   style={{
                                     width: '100%',
                                     padding: '8px',
@@ -5892,7 +5892,7 @@ export default function SurveyAnalyticsPage() {
                               </div>
                               <div style={{ padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
                                 <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                  Промокод
+                                  {t('surveyAnalytics.settings.motivation.promoCode')}
                                 </label>
                                 <input
                                   id="settings-motivationConditions"
@@ -5932,7 +5932,7 @@ export default function SurveyAnalyticsPage() {
                           {(editedSettings?.motivationType === 'gift' || editedSettings?.motivationType === 'other') && (
                             <div style={{ padding: '8px 0' }}>
                               <label style={{ fontSize: '12px', color: 'var(--tg-hint-color)', display: 'block', marginBottom: '6px' }}>
-                                Описание
+                                {t('surveyAnalytics.settings.motivation.description')}
                               </label>
                               <input
                                 id="settings-motivationDetails"
@@ -5948,7 +5948,7 @@ export default function SurveyAnalyticsPage() {
                                     });
                                   }
                                 }}
-                                placeholder="Опишите мотивацию..."
+                                placeholder={t('surveyAnalytics.settings.motivation.descriptionPlaceholder')}
                                 style={{
                                   width: '100%',
                                   padding: '8px',
@@ -5973,21 +5973,21 @@ export default function SurveyAnalyticsPage() {
                       {!editingSettings && settings.motivationEnabled && (
                         <>
                           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-                            <span style={{ color: 'var(--tg-hint-color)' }}>Тип мотивации</span>
+                            <span style={{ color: 'var(--tg-hint-color)' }}>{t('surveyAnalytics.settings.motivation.type')}</span>
                             <span style={{ fontWeight: 500 }}>
-                              {settings.motivationType === 'discount' && '💰 Скидка'}
-                              {settings.motivationType === 'promo' && '🛒 Промокод'}
-                              {settings.motivationType === 'stars' && '⭐ Telegram Stars'}
-                              {settings.motivationType === 'gift' && '🎁 Подарок'}
-                              {settings.motivationType === 'other' && 'Другое'}
+                              {settings.motivationType === 'discount' && t('surveyAnalytics.settings.motivation.discount')}
+                              {settings.motivationType === 'promo' && t('surveyAnalytics.settings.motivation.promo')}
+                              {settings.motivationType === 'stars' && t('surveyAnalytics.settings.motivation.stars')}
+                              {settings.motivationType === 'gift' && t('surveyAnalytics.settings.motivation.gift')}
+                              {settings.motivationType === 'other' && t('surveyAnalytics.settings.motivation.other')}
                             </span>
                           </div>
                           {settings.motivationDetails && (
                             <div style={{ padding: '8px 0' }}>
                               <div style={{ fontSize: '12px', color: 'var(--tg-hint-color)', marginBottom: '4px' }}>
-                                {settings.motivationType === 'stars' ? 'Количество звёзд:' : 
-                                 settings.motivationType === 'discount' ? 'Размер скидки:' :
-                                 settings.motivationType === 'promo' ? 'Описание промокода:' : 'Описание:'}
+                                {settings.motivationType === 'stars' ? t('surveyAnalytics.settings.motivation.starsCountLabel') : 
+                                 settings.motivationType === 'discount' ? t('surveyAnalytics.settings.motivation.discountLabel') :
+                                 settings.motivationType === 'promo' ? t('surveyAnalytics.settings.motivation.promoDescriptionLabel') : t('surveyAnalytics.settings.motivation.descriptionLabel')}
                               </div>
                               <div style={{ fontSize: '13px', fontWeight: 500 }}>{settings.motivationDetails}</div>
                             </div>
@@ -6010,7 +6010,7 @@ export default function SurveyAnalyticsPage() {
             <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: 13, color: 'var(--tg-hint-color)' }}>
-                  {editingQuestions ? 'Режим редактирования активен' : 'Редактирование доступно'}
+                  {editingQuestions ? t('surveyAnalytics.questions.editModeActive') : t('surveyAnalytics.questions.editAvailable')}
                 </span>
               </div>
               <button
@@ -6120,7 +6120,7 @@ export default function SurveyAnalyticsPage() {
           
           {editedQuestions.length === 0 ? (
             <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 10, padding: 20, textAlign: 'center', color: 'var(--tg-hint-color)' }}>
-              Вопросов нет
+              {t('surveyAnalytics.questions.noQuestions')}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -6207,7 +6207,7 @@ export default function SurveyAnalyticsPage() {
                 transition: 'all 0.2s ease'
               }}
             >
-              Сводка
+              {t('surveyAnalytics.analyticsSubTabs.summary')}
             </button>
             <button
               onClick={() => setAnalyticsTab('question')}
@@ -6224,7 +6224,7 @@ export default function SurveyAnalyticsPage() {
                 transition: 'all 0.2s ease'
               }}
             >
-              Вопрос
+              {t('surveyAnalytics.analyticsSubTabs.question')}
             </button>
             <button
               onClick={() => setAnalyticsTab('user')}
@@ -6241,7 +6241,7 @@ export default function SurveyAnalyticsPage() {
                 transition: 'all 0.2s ease'
               }}
             >
-              Отдельный пользователь
+              {t('surveyAnalytics.analyticsSubTabs.user')}
             </button>
           </div>
 
@@ -6273,7 +6273,7 @@ export default function SurveyAnalyticsPage() {
                     <polyline points="7,10 12,15 17,10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
-                  Экспорт всех ответов
+                  {t('surveyAnalytics.export.allAnswers')}
                 </button>
               )}
               

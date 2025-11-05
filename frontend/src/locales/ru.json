@@ -338,6 +338,7 @@
   "surveyInvite": {
     "loading": "Загрузка...",
     "notFound": "Опрос не найден",
+    "notFoundWithId": "Опрос с ID {{id}} не найден",
     "wantToCreate": "Хотите создать свой опрос?",
     "openHomePage": "Откройте главную страницу AI Surveys",
     "anonymousTag": "🔒 Анонимность",
@@ -365,7 +366,15 @@
     "privacyAgreement1": "Запуская опрос вы соглашаетесь с",
     "dataPolicy": "политикой обработки данных",
     "and": "и",
-    "privacyPolicy": "политикой конфиденциальности"
+    "privacyPolicy": "политикой конфиденциальности",
+    "participationMessages": {
+      "alreadyParticipated": "Вы уже участвовали в этом опросе",
+      "completed": "Опрос завершён и больше не принимает ответы",
+      "draft": "Опрос ещё не опубликован",
+      "archived": "Опрос архивирован и не принимает ответы",
+      "unavailable": "Опрос недоступен для прохождения",
+      "maxParticipants": "Опрос закрыт. Достигнуто максимальное количество участников ({{count}})"
+    }
   },
   "aiAnalytics": {
     "title": "ИИ Аналитика",
@@ -442,6 +451,100 @@
     "imageClick": "Нажмите на изображение для просмотра",
     "showAll": "Показать все",
     "hide": "Скрыть",
+    "tabs": {
+      "overview": "Обзор",
+      "questions": "Вопросы",
+      "analytics": "Аналитика"
+    },
+    "analyticsSubTabs": {
+      "summary": "Сводка",
+      "question": "Вопрос",
+      "user": "Отдельный пользователь"
+    },
+    "status": {
+      "title": "Статус опроса",
+      "activate": "Активировать",
+      "moveToDraft": "Перевести в черновик",
+      "complete": "Завершить опрос",
+      "archive": "Архивировать",
+      "active": "Активен",
+      "draft": "Черновик",
+      "completed": "Завершён",
+      "archived": "Архив"
+    },
+    "distribution": {
+      "title": "Распространение",
+      "linkUnavailable": "Ссылка будет доступна после публикации опроса",
+      "copy": "Копировать",
+      "copied": "Скопировано!",
+      "share": "Поделиться",
+      "qrCode": "QR-код",
+      "qrScanHint": "Отсканируйте QR-код для быстрого доступа",
+      "downloadQR": "Скачать QR-код",
+      "downloading": "Скачивание..."
+    },
+    "settings": {
+      "title": "Настройки опроса",
+      "edit": "Редактировать",
+      "saveChanges": "Сохранить изменения",
+      "cancel": "Отменить",
+      "lockWarning": "После получения первых ответов некоторые настройки менять нельзя",
+      "oneResponsePerUser": "Один ответ на пользователя",
+      "anonymous": "Анонимность",
+      "anonymousAllowed": "Разрешена",
+      "anonymousForbidden": "Запрещена",
+      "hideCreator": "Скрыть создателя опроса",
+      "randomizeQuestions": "Перемешать вопросы",
+      "maxParticipants": "Макс. участников",
+      "notSpecified": "Не указано",
+      "noLimit": "Без ограничений",
+      "yes": "Да",
+      "no": "Нет",
+      "motivation": {
+        "title": "Мотивация",
+        "warning": "При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы предоставим Ваш Telegram-контакт респонденту для связи с Вами и получении награды. AI Surveys не участвует в хранении и передаче наград.",
+        "type": "Тип мотивации",
+        "discount": "💰 Скидка",
+        "promo": "🛒 Промокод",
+        "stars": "⭐ Звёзды Telegram",
+        "gift": "🎁 Подарок",
+        "other": "Другое",
+        "starsCount": "Количество звёзд (минимум 1)",
+        "discountDescription": "Описание скидки",
+        "discountPlaceholder": "20% скидка на следующий заказ",
+        "promoDescription": "Описание промокода",
+        "promoPlaceholder": "Бесплатная доставка за прохождение опроса",
+        "promoCode": "Промокод",
+        "description": "Описание",
+        "descriptionPlaceholder": "Опишите мотивацию...",
+        "starsCountLabel": "Количество звёзд:",
+        "discountLabel": "Размер скидки:",
+        "promoDescriptionLabel": "Описание промокода:",
+        "descriptionLabel": "Описание:"
+      }
+    },
+    "questions": {
+      "tab": "Вопросы",
+      "noQuestions": "Вопросов нет",
+      "editModeActive": "Режим редактирования активен",
+      "editAvailable": "Редактирование доступно",
+      "question": "Вопрос {{number}}",
+      "incompleteCondition": "Условие не полностью заполнено. Вопрос будет показываться всегда, пока все поля условий не будут заполнены."
+    },
+    "export": {
+      "allAnswers": "Экспорт всех ответов"
+    },
+    "alerts": {
+      "settingsUpdated": "Настройки успешно обновлены!",
+      "questionsUpdated": "Вопросы успешно обновлены!",
+      "settingsSaveError": "Не удалось сохранить настройки",
+      "questionsSaveError": "Не удалось сохранить вопросы",
+      "statusChangeError": "Не удалось изменить статус",
+      "loadError": "Не удалось загрузить опрос",
+      "imageSizeError": "Размер файла не должен превышать 10MB",
+      "imageTypeError": "Пожалуйста, выберите файл изображения (JPEG, PNG, WebP, GIF)",
+      "imageUploadError": "Не удалось загрузить изображение"
+    },
     "aiAnalytics": {
       "button": {
         "exists": "👁️ Посмотреть ИИ аналитику",

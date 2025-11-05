@@ -338,6 +338,7 @@
   "surveyInvite": {
     "loading": "Loading...",
     "notFound": "Survey not found",
+    "notFoundWithId": "Survey with ID {{id}} not found",
     "wantToCreate": "Want to create your own survey?",
     "openHomePage": "Open AI Surveys home page",
     "anonymousTag": "🔒 Anonymous",
@@ -365,7 +366,15 @@
     "privacyAgreement1": "By starting the survey you agree to",
     "dataPolicy": "data processing policy",
     "and": "and",
-    "privacyPolicy": "privacy policy"
+    "privacyPolicy": "privacy policy",
+    "participationMessages": {
+      "alreadyParticipated": "You have already participated in this survey",
+      "completed": "Survey is completed and no longer accepts responses",
+      "draft": "Survey is not published yet",
+      "archived": "Survey is archived and does not accept responses",
+      "unavailable": "Survey is unavailable for participation",
+      "maxParticipants": "Survey is closed. Maximum number of participants reached ({{count}})"
+    }
   },
   "aiAnalytics": {
     "title": "AI Analytics",
@@ -442,6 +451,100 @@
     "imageClick": "Click on the image to view",
     "showAll": "Show All",
     "hide": "Hide",
+    "tabs": {
+      "overview": "Overview",
+      "questions": "Questions",
+      "analytics": "Analytics"
+    },
+    "analyticsSubTabs": {
+      "summary": "Summary",
+      "question": "Question",
+      "user": "Individual User"
+    },
+    "status": {
+      "title": "Survey Status",
+      "activate": "Activate",
+      "moveToDraft": "Move to Draft",
+      "complete": "Complete Survey",
+      "archive": "Archive",
+      "active": "Active",
+      "draft": "Draft",
+      "completed": "Completed",
+      "archived": "Archived"
+    },
+    "distribution": {
+      "title": "Distribution",
+      "linkUnavailable": "Link will be available after survey publication",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "share": "Share",
+      "qrCode": "QR Code",
+      "qrScanHint": "Scan QR code for quick access",
+      "downloadQR": "Download QR Code",
+      "downloading": "Downloading..."
+    },
+    "settings": {
+      "title": "Survey Settings",
+      "edit": "Edit",
+      "saveChanges": "Save Changes",
+      "cancel": "Cancel",
+      "lockWarning": "Some settings cannot be changed after receiving first responses",
+      "oneResponsePerUser": "One response per user",
+      "anonymous": "Anonymous",
+      "anonymousAllowed": "Allowed",
+      "anonymousForbidden": "Forbidden",
+      "hideCreator": "Hide survey creator",
+      "randomizeQuestions": "Randomize questions",
+      "maxParticipants": "Max participants",
+      "notSpecified": "Not specified",
+      "noLimit": "No limit",
+      "yes": "Yes",
+      "no": "No",
+      "motivation": {
+        "title": "Motivation",
+        "warning": "When enabling motivation, respondents will know in advance about the reward for completing the survey. We will provide your Telegram contact to the respondent to contact you and receive the reward. AI Surveys does not participate in storing and transferring rewards.",
+        "type": "Motivation type",
+        "discount": "💰 Discount",
+        "promo": "🛒 Promo Code",
+        "stars": "⭐ Telegram Stars",
+        "gift": "🎁 Gift",
+        "other": "Other",
+        "starsCount": "Number of stars (minimum 1)",
+        "discountDescription": "Discount description",
+        "discountPlaceholder": "20% discount on next order",
+        "promoDescription": "Promo code description",
+        "promoPlaceholder": "Free delivery for completing survey",
+        "promoCode": "Promo Code",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe motivation...",
+        "starsCountLabel": "Number of stars:",
+        "discountLabel": "Discount size:",
+        "promoDescriptionLabel": "Promo code description:",
+        "descriptionLabel": "Description:"
+      }
+    },
+    "questions": {
+      "tab": "Questions",
+      "noQuestions": "No questions",
+      "editModeActive": "Edit mode active",
+      "editAvailable": "Editing available",
+      "question": "Question {{number}}",
+      "incompleteCondition": "Condition is not fully filled. Question will always be shown until all condition fields are filled."
+    },
+    "export": {
+      "allAnswers": "Export All Answers"
+    },
+    "alerts": {
+      "settingsUpdated": "Settings successfully updated!",
+      "questionsUpdated": "Questions successfully updated!",
+      "settingsSaveError": "Failed to save settings",
+      "questionsSaveError": "Failed to save questions",
+      "statusChangeError": "Failed to change status",
+      "loadError": "Failed to load survey",
+      "imageSizeError": "File size must not exceed 10MB",
+      "imageTypeError": "Please select an image file (JPEG, PNG, WebP, GIF)",
+      "imageUploadError": "Failed to upload image"
+    },
     "aiAnalytics": {
       "button": {
         "exists": "👁️ View AI Analytics",

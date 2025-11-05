@@ -91,6 +91,32 @@ export default function SurveyTakePage() {
   // Состояние для отслеживания открытия клавиатуры
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
+  // Функция для преобразования сообщений бэкенда в локализованные
+  const localizeParticipationMessage = (message: string | undefined): string => {
+    if (!message) return t('surveyTake.participationUnavailable');
+    
+    // Определяем тип сообщения по ключевым словам
+    if (message.includes('уже участвовали') || message.includes('already participated')) {
+      return t('surveyInvite.participationMessages.alreadyParticipated');
+    }
+    if (message.includes('завершён') || message.includes('completed') || message.includes('завершен')) {
+      return t('surveyInvite.participationMessages.completed');
+    }
+    if (message.includes('не опубликован') || message.includes('not published')) {
+      return t('surveyInvite.participationMessages.draft');
+    }
+    if (message.includes('архивирован') || message.includes('archived')) {
+      return t('surveyInvite.participationMessages.archived');
+    }
+    if (message.includes('Достигнуто максимальное') || message.includes('Maximum number of participants')) {
+      const match = message.match(/(\d+)/);
+      const count = match ? match[1] : '';
+      return t('surveyInvite.participationMessages.maxParticipants', { count });
+    }
+    
+    return message;
+  };
+
   useEffect(() => {
     const loadSurvey = async () => {
       if (!surveyId) return;
@@ -99,7 +125,7 @@ export default function SurveyTakePage() {
         const response = await surveyApi.getSurveyPublic(surveyId, user?.id);
         
         if (!response.canParticipate) {
-          setError(response.participationMessage || t('surveyTake.participationUnavailable'));
+          setError(localizeParticipationMessage(response.participationMessage));
           setLoading(false);
           return;
         }
