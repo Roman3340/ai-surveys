@@ -63,7 +63,9 @@ const SummaryTab: React.FC<{
   loading: boolean;
   aiAnalyticsStatus: 'not_found' | 'exists' | 'generating' | 'loading';
   onNavigateToAI: () => void;
-}> = ({ survey, questions, responses, stats, loading, aiAnalyticsStatus, onNavigateToAI }) => {
+  imageLoading: { [questionId: string]: boolean };
+  setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
+}> = ({ survey, questions, responses, stats, loading, aiAnalyticsStatus, onNavigateToAI, imageLoading, setImageLoading }) => {
   const [showAllAnswers, setShowAllAnswers] = useState<{ [questionId: string]: boolean }>({});
   const [showAnswersPopup, setShowAnswersPopup] = useState<{ questionId: string; answers: any[] } | null>(null);
 
@@ -274,6 +276,80 @@ const SummaryTab: React.FC<{
                   {question.description}
                 </p>
               )}
+
+              {/* Изображение к вопросу */}
+              {question.image_url && (
+                <div style={{ marginBottom: '20px', position: 'relative' }}>
+                  {imageLoading[question.id] && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '150px',
+                      backgroundColor: 'var(--tg-section-bg-color)',
+                      borderRadius: '12px',
+                      border: '1px solid var(--tg-section-separator-color)'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '12px'
+                      }}>
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          border: '3px solid var(--tg-section-separator-color)',
+                          borderTop: '3px solid var(--tg-button-color)',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite'
+                        }} />
+                        <span style={{ 
+                          color: 'var(--tg-hint-color)', 
+                          fontSize: '14px' 
+                        }}>
+                          Загрузка изображения...
+                        </span>
+                        <style>{`
+                          @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                          }
+                        `}</style>
+                      </div>
+                    </div>
+                  )}
+                  <img 
+                    src={question.image_url} 
+                    alt={question.image_name || 'Question illustration'}
+                    onLoadStart={() => {
+                      setImageLoading(prev => ({ ...prev, [question.id]: true }));
+                    }}
+                    onLoad={() => {
+                      console.log('Изображение успешно загружено:', question.image_url);
+                      setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                    }}
+                    onError={(e) => {
+                      console.error('Ошибка загрузки изображения:', question.image_url);
+                      const imgElement = e.currentTarget;
+                      imgElement.style.display = 'none';
+                      setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                      // Показываем сообщение об ошибке
+                      const errorDiv = document.createElement('div');
+                      errorDiv.textContent = 'Не удалось загрузить изображение';
+                      errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
+                      imgElement.parentElement?.appendChild(errorDiv);
+                    }}
+                    style={{
+                      width: '100%',
+                      maxHeight: '200px',
+                      objectFit: 'cover',
+                      borderRadius: '12px',
+                      display: imageLoading[question.id] ? 'none' : 'block'
+                    }}
+                  />
+                </div>
+              )}
               
               {questionStats.type === 'text' && (
                 <TextAnswersBlock 
@@ -470,7 +546,9 @@ const IndividualUserTab: React.FC<{
   loading: boolean;
   selectedUserId: string;
   onUserSelect: (userId: string) => void;
-}> = ({ questions, responses, survey, loading, selectedUserId, onUserSelect }) => {
+  imageLoading: { [questionId: string]: boolean };
+  setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
+}> = ({ questions, responses, survey, loading, selectedUserId, onUserSelect, imageLoading, setImageLoading }) => {
   const [currentUserIndex, setCurrentUserIndex] = useState<number>(1);
   const [manualUserInput, setManualUserInput] = useState<string>('1');
 
@@ -841,6 +919,80 @@ const IndividualUserTab: React.FC<{
                     {question.description}
                   </p>
                 )}
+
+                {/* Изображение к вопросу */}
+                {question.image_url && (
+                  <div style={{ marginBottom: '20px', position: 'relative' }}>
+                    {imageLoading[question.id] && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '150px',
+                        backgroundColor: 'var(--tg-section-bg-color)',
+                        borderRadius: '12px',
+                        border: '1px solid var(--tg-section-separator-color)'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '12px'
+                        }}>
+                          <div style={{
+                            width: '32px',
+                            height: '32px',
+                            border: '3px solid var(--tg-section-separator-color)',
+                            borderTop: '3px solid var(--tg-button-color)',
+                            borderRadius: '50%',
+                            animation: 'spin 1s linear infinite'
+                          }} />
+                          <span style={{ 
+                            color: 'var(--tg-hint-color)', 
+                            fontSize: '14px' 
+                          }}>
+                            Загрузка изображения...
+                          </span>
+                          <style>{`
+                            @keyframes spin {
+                              0% { transform: rotate(0deg); }
+                              100% { transform: rotate(360deg); }
+                            }
+                          `}</style>
+                        </div>
+                      </div>
+                    )}
+                    <img 
+                      src={question.image_url} 
+                      alt={question.image_name || 'Question illustration'}
+                      onLoadStart={() => {
+                        setImageLoading(prev => ({ ...prev, [question.id]: true }));
+                      }}
+                      onLoad={() => {
+                        console.log('Изображение успешно загружено:', question.image_url);
+                        setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                      }}
+                      onError={(e) => {
+                        console.error('Ошибка загрузки изображения:', question.image_url);
+                        const imgElement = e.currentTarget;
+                        imgElement.style.display = 'none';
+                        setImageLoading(prev => ({ ...prev, [question.id]: false }));
+                        // Показываем сообщение об ошибке
+                        const errorDiv = document.createElement('div');
+                        errorDiv.textContent = 'Не удалось загрузить изображение';
+                        errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
+                        imgElement.parentElement?.appendChild(errorDiv);
+                      }}
+                      style={{
+                        width: '100%',
+                        maxHeight: '200px',
+                        objectFit: 'cover',
+                        borderRadius: '12px',
+                        display: imageLoading[question.id] ? 'none' : 'block'
+                      }}
+                    />
+                  </div>
+                )}
                 
                 <div style={{ 
                   marginTop: '12px',
@@ -868,7 +1020,9 @@ const QuestionTab: React.FC<{
   loading: boolean;
   selectedQuestionId: string;
   onQuestionSelect: (questionId: string) => void;
-}> = ({ questions, responses, survey, loading, selectedQuestionId, onQuestionSelect }) => {
+  imageLoading: { [questionId: string]: boolean };
+  setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
+}> = ({ questions, responses, survey, loading, selectedQuestionId, onQuestionSelect, imageLoading, setImageLoading }) => {
 
   if (loading) {
     return (
@@ -1038,6 +1192,80 @@ const QuestionTab: React.FC<{
             }}>
               {selectedQuestion.description}
             </p>
+          )}
+
+          {/* Изображение к вопросу */}
+          {selectedQuestion.image_url && (
+            <div style={{ marginBottom: '20px', position: 'relative' }}>
+              {imageLoading[selectedQuestion.id] && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '150px',
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  borderRadius: '12px',
+                  border: '1px solid var(--tg-section-separator-color)'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      border: '3px solid var(--tg-section-separator-color)',
+                      borderTop: '3px solid var(--tg-button-color)',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    <span style={{ 
+                      color: 'var(--tg-hint-color)', 
+                      fontSize: '14px' 
+                    }}>
+                      Загрузка изображения...
+                    </span>
+                    <style>{`
+                      @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                      }
+                    `}</style>
+                  </div>
+                </div>
+              )}
+              <img 
+                src={selectedQuestion.image_url} 
+                alt={selectedQuestion.image_name || 'Question illustration'}
+                onLoadStart={() => {
+                  setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: true }));
+                }}
+                onLoad={() => {
+                  console.log('Изображение успешно загружено:', selectedQuestion.image_url);
+                  setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: false }));
+                }}
+                onError={(e) => {
+                  console.error('Ошибка загрузки изображения:', selectedQuestion.image_url);
+                  const imgElement = e.currentTarget;
+                  imgElement.style.display = 'none';
+                  setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: false }));
+                  // Показываем сообщение об ошибке
+                  const errorDiv = document.createElement('div');
+                  errorDiv.textContent = 'Не удалось загрузить изображение';
+                  errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
+                  imgElement.parentElement?.appendChild(errorDiv);
+                }}
+                style={{
+                  width: '100%',
+                  maxHeight: '200px',
+                  objectFit: 'cover',
+                  borderRadius: '12px',
+                  display: imageLoading[selectedQuestion.id] ? 'none' : 'block'
+                }}
+              />
+            </div>
           )}
 
           {questionAnswers.length === 0 ? (
@@ -2349,6 +2577,7 @@ export default function SurveyAnalyticsPage() {
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [imageLoading, setImageLoading] = useState<{ [questionId: string]: boolean }>({});
   const [uploadingImages, setUploadingImages] = useState<{ [questionId: string]: boolean }>({});
+  const [savingQuestions, setSavingQuestions] = useState(false);
 
   useStableBackButton({ targetRoute: '/' });
 
@@ -2795,11 +3024,21 @@ export default function SurveyAnalyticsPage() {
   };
 
   const handleSaveQuestions = async () => {
-    if (!surveyId) return;
+    if (!surveyId || savingQuestions) return;
+    
+    setSavingQuestions(true);
     try {
-      // Удаляем удаленные вопросы
+      // Удаляем удаленные вопросы (только те, которые существуют в БД, т.е. не имеют temp_ ID)
       for (const questionId of deletedQuestions) {
-        await questionApi.deleteQuestion(questionId);
+        // Пропускаем временные ID, т.к. они не существуют в БД
+        if (!questionId.startsWith('temp_')) {
+          try {
+            await questionApi.deleteQuestion(questionId);
+          } catch (e: any) {
+            // Если вопрос уже удален или не найден, просто логируем и продолжаем
+            console.warn(`Не удалось удалить вопрос ${questionId}:`, e);
+          }
+        }
       }
       
       // Создаем маппинг временных ID на реальные UUID
@@ -2985,6 +3224,8 @@ export default function SurveyAnalyticsPage() {
     } catch (e) {
       console.error(e);
       alert('Не удалось сохранить вопросы');
+    } finally {
+      setSavingQuestions(false);
     }
   };
 
@@ -3060,8 +3301,15 @@ export default function SurveyAnalyticsPage() {
 
   const deleteQuestion = (questionId: string) => {
     if (window.confirm('Вы уверены, что хотите удалить этот вопрос? Все ответы на этот вопрос будут удалены безвозвратно.')) {
-      setDeletedQuestions(prev => [...prev, questionId]);
-      setEditedQuestions(prev => prev.filter(q => q.id !== questionId));
+      // Если вопрос новый (с временным ID), просто удаляем его из списка,
+      // не добавляя в deletedQuestions, т.к. он еще не существует в БД
+      if (questionId.startsWith('temp_')) {
+        setEditedQuestions(prev => prev.filter(q => q.id !== questionId));
+      } else {
+        // Если вопрос существующий, добавляем его в список для удаления из БД
+        setDeletedQuestions(prev => [...prev, questionId]);
+        setEditedQuestions(prev => prev.filter(q => q.id !== questionId));
+      }
       hapticFeedback?.light();
     }
   };
@@ -5651,10 +5899,13 @@ export default function SurveyAnalyticsPage() {
                   } else {
                     setEditingQuestions(true);
                   }
-                  hapticFeedback?.light();
+                  if (!savingQuestions) {
+                    hapticFeedback?.light();
+                  }
                 }}
+                disabled={savingQuestions}
                 style={{
-                  background: editingQuestions ? 'var(--tg-button-color)' : 'var(--tg-button-color)',
+                  background: editingQuestions ? (savingQuestions ? 'var(--tg-hint-color)' : 'var(--tg-button-color)') : 'var(--tg-button-color)',
                   color: 'white',
                   border: 'none',
                   borderRadius: 8,
@@ -5665,20 +5916,48 @@ export default function SurveyAnalyticsPage() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 6,
+                  cursor: savingQuestions ? 'not-allowed' : 'pointer',
+                  opacity: savingQuestions ? 0.7 : 1,
+                  position: 'relative'
                 }}
               >
-                {editingQuestions ? <><Save size={14} /> Сохранить изменения</> : <>⚙️ Редактировать вопросы</>}
+                {savingQuestions ? (
+                  <>
+                    <div style={{
+                      width: '14px',
+                      height: '14px',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderTop: '2px solid white',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    <span>Сохранение...</span>
+                    <style>{`
+                      @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                      }
+                    `}</style>
+                  </>
+                ) : (
+                  <>
+                    {editingQuestions ? <><Save size={14} /> Сохранить изменения</> : <>⚙️ Редактировать вопросы</>}
+                  </>
+                )}
               </button>
               {editingQuestions && (
                 <button
                   onClick={() => {
-                    setEditingQuestions(false);
-                    setEditedQuestions(JSON.parse(JSON.stringify(questions)));
-                    setDeletedQuestions([]);
-                    hapticFeedback?.light();
+                    if (!savingQuestions) {
+                      setEditingQuestions(false);
+                      setEditedQuestions(JSON.parse(JSON.stringify(questions)));
+                      setDeletedQuestions([]);
+                      hapticFeedback?.light();
+                    }
                   }}
+                  disabled={savingQuestions}
                   style={{
-                    background: '#8E8E93',
+                    background: savingQuestions ? 'var(--tg-hint-color)' : '#8E8E93',
                     color: 'white',
                     border: 'none',
                     borderRadius: 8,
@@ -5689,6 +5968,8 @@ export default function SurveyAnalyticsPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: 6,
+                    cursor: savingQuestions ? 'not-allowed' : 'pointer',
+                    opacity: savingQuestions ? 0.7 : 1
                   }}
                 >
                   <X size={14} /> Отменить
@@ -5732,31 +6013,34 @@ export default function SurveyAnalyticsPage() {
           {editingQuestions && (
             <button
               onClick={() => {
-                // Вычисляем максимальный order_index из всех вопросов
-                const maxOrderIndex = editedQuestions.length > 0 
-                  ? Math.max(...editedQuestions.map(q => q.order_index))
-                  : 0;
-                
-                const newQuestion: EditableQuestion = {
-                  id: `temp_${Date.now()}`,
-                  type: 'text',
-                  text: '',
-                  description: undefined,
-                  is_required: true,
-                  order_index: maxOrderIndex + 1,
-                  options: [],
-                  has_other_option: false,
-                  scale_min: undefined,
-                  scale_max: undefined,
-                  scale_min_label: undefined,
-                  scale_max_label: undefined
-                };
-                setEditedQuestions([...editedQuestions, newQuestion]);
-                hapticFeedback?.light();
+                if (!savingQuestions) {
+                  // Вычисляем максимальный order_index из всех вопросов
+                  const maxOrderIndex = editedQuestions.length > 0 
+                    ? Math.max(...editedQuestions.map(q => q.order_index))
+                    : 0;
+                  
+                  const newQuestion: EditableQuestion = {
+                    id: `temp_${Date.now()}`,
+                    type: 'text',
+                    text: '',
+                    description: undefined,
+                    is_required: true,
+                    order_index: maxOrderIndex + 1,
+                    options: [],
+                    has_other_option: false,
+                    scale_min: undefined,
+                    scale_max: undefined,
+                    scale_min_label: undefined,
+                    scale_max_label: undefined
+                  };
+                  setEditedQuestions([...editedQuestions, newQuestion]);
+                  hapticFeedback?.light();
+                }
               }}
+              disabled={savingQuestions}
               style={{
                 background: 'transparent',
-                color: 'var(--tg-hint-color)',
+                color: savingQuestions ? 'var(--tg-hint-color)' : 'var(--tg-hint-color)',
                 border: 'none',
                 borderRadius: 8,
                 padding: '12px 16px',
@@ -5765,7 +6049,9 @@ export default function SurveyAnalyticsPage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                marginTop: 8
+                marginTop: 8,
+                cursor: savingQuestions ? 'not-allowed' : 'pointer',
+                opacity: savingQuestions ? 0.5 : 1
               }}
             >
               ➕ Создать вопрос
@@ -5960,6 +6246,8 @@ export default function SurveyAnalyticsPage() {
                 }
                 navigate(`/survey/${surveyId}/ai-analytics`);
               }}
+              imageLoading={imageLoading}
+              setImageLoading={setImageLoading}
             />
           )}
           
@@ -5982,6 +6270,8 @@ export default function SurveyAnalyticsPage() {
                 loading={analyticsLoading}
                 selectedQuestionId={selectedQuestionId}
                 onQuestionSelect={setSelectedQuestionId}
+                imageLoading={imageLoading}
+                setImageLoading={setImageLoading}
               />
             ) 
           )}
@@ -6005,6 +6295,8 @@ export default function SurveyAnalyticsPage() {
                 loading={analyticsLoading}
                 selectedUserId={selectedUserId}
                 onUserSelect={setSelectedUserId}
+                imageLoading={imageLoading}
+                setImageLoading={setImageLoading}
               />
             )
           )}
