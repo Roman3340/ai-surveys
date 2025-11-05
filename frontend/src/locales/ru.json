@@ -542,7 +542,27 @@
       "questionCountMany": "вопросов",
       "answerCount": "ответ",
       "answerCountMany": "ответов",
-      "conditionalLogicUnavailable": "Для вопросов с типами \"Короткий ответ\" и \"Развернутый ответ\" настройка условных вопросов недоступна"
+      "conditionalLogicUnavailable": "Для вопросов с типами \"Короткий ответ\" и \"Развернутый ответ\" настройка условных вопросов недоступна",
+      "conditional": "Условный",
+      "conditionalQuestion": "Условный вопрос",
+      "questionTitle": "Заголовок вопроса",
+      "enterQuestion": "Введите вопрос...",
+      "dependsOnQuestion": "Зависит от вопроса {{number}}: \"{{text}}\"",
+      "noTitle": "Без названия",
+      "descriptionPlaceholder": "Описание (необязательно)",
+      "questionType": "Тип вопроса",
+      "deleteConfirm": "Вы уверены, что хотите удалить этот вопрос? Все ответы на этот вопрос будут удалены безвозвратно.",
+      "questionTypes": {
+        "text": "Короткий ответ",
+        "textarea": "Развёрнутый ответ",
+        "single_choice": "Один из списка",
+        "multiple_choice": "Несколько из списка",
+        "scale": "Шкала",
+        "rating": "Оценка звёздами",
+        "yes_no": "Да/Нет",
+        "date": "Дата",
+        "number": "Число"
+      }
     },
     "export": {
       "allAnswers": "Экспорт всех ответов",

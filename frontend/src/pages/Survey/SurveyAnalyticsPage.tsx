@@ -3396,7 +3396,7 @@ export default function SurveyAnalyticsPage() {
   };
 
   const deleteQuestion = (questionId: string) => {
-    if (window.confirm('Вы уверены, что хотите удалить этот вопрос? Все ответы на этот вопрос будут удалены безвозвратно.')) {
+    if (window.confirm(t('surveyAnalytics.questions.deleteConfirm'))) {
       // Если вопрос новый (с временным ID), просто удаляем его из списка,
       // не добавляя в deletedQuestions, т.к. он еще не существует в БД
       if (questionId.startsWith('temp_')) {
@@ -3469,15 +3469,15 @@ export default function SurveyAnalyticsPage() {
   };
 
   const questionTypes = [
-    { value: 'text', label: 'Короткий ответ', icon: '📝' },
-    { value: 'textarea', label: 'Развёрнутый ответ', icon: '📄' },
-    { value: 'single_choice', label: 'Один из списка', icon: '🔘' },
-    { value: 'multiple_choice', label: 'Несколько из списка', icon: '☑️' },
-    { value: 'scale', label: 'Шкала', icon: '📊' },
-    { value: 'rating', label: 'Оценка звёздами', icon: '⭐' },
-    { value: 'yes_no', label: 'Да/Нет', icon: '✅' },
-    { value: 'date', label: 'Дата', icon: '📅' },
-    { value: 'number', label: 'Число', icon: '🔢' }
+    { value: 'text', label: t('surveyAnalytics.questions.questionTypes.text'), icon: '📝' },
+    { value: 'textarea', label: t('surveyAnalytics.questions.questionTypes.textarea'), icon: '📄' },
+    { value: 'single_choice', label: t('surveyAnalytics.questions.questionTypes.single_choice'), icon: '🔘' },
+    { value: 'multiple_choice', label: t('surveyAnalytics.questions.questionTypes.multiple_choice'), icon: '☑️' },
+    { value: 'scale', label: t('surveyAnalytics.questions.questionTypes.scale'), icon: '📊' },
+    { value: 'rating', label: t('surveyAnalytics.questions.questionTypes.rating'), icon: '⭐' },
+    { value: 'yes_no', label: t('surveyAnalytics.questions.questionTypes.yes_no'), icon: '✅' },
+    { value: 'date', label: t('surveyAnalytics.questions.questionTypes.date'), icon: '📅' },
+    { value: 'number', label: t('surveyAnalytics.questions.questionTypes.number'), icon: '🔢' }
   ];
 
   if (loading) {
@@ -3711,7 +3711,7 @@ export default function SurveyAnalyticsPage() {
           }} onClick={disabled ? undefined : handleToggleCondition}>
             <span>🔀</span>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              Условный вопрос
+              {t('surveyAnalytics.questions.conditionalQuestion')}
             </span>
           </label>
           <label style={{
@@ -4088,7 +4088,7 @@ export default function SurveyAnalyticsPage() {
                     borderRadius: '4px',
                     fontWeight: '500'
                   }}>
-                    🔀 Условный
+                    🔀 {t('surveyAnalytics.questions.conditional')}
                   </span>
                 )}
               </div>
@@ -4097,7 +4097,7 @@ export default function SurveyAnalyticsPage() {
                 value={question.text}
                 onChange={(e) => updateEditedQuestion(index, { text: e.target.value })}
                 disabled={disabled}
-                placeholder={question.text === '' ? 'Введите вопрос...' : undefined}
+                placeholder={question.text === '' ? t('surveyAnalytics.questions.enterQuestion') : undefined}
                 style={{
                   width: '100%',
                   fontSize: '15px',
@@ -4124,7 +4124,7 @@ export default function SurveyAnalyticsPage() {
                     marginTop: '4px',
                     lineHeight: '1.3'
                   }}>
-                    Зависит от вопроса {parentIndex + 1}: "{parentQuestion.text || 'Без названия'}"
+                    {t('surveyAnalytics.questions.dependsOnQuestion', { number: parentIndex + 1, text: parentQuestion.text || t('surveyAnalytics.questions.noTitle') })}
                   </div>
                 );
               })()}
@@ -4133,7 +4133,7 @@ export default function SurveyAnalyticsPage() {
                 value={question.description || ''}
                 onChange={(e) => updateEditedQuestion(index, { description: e.target.value })}
                 disabled={disabled}
-                placeholder="Описание (необязательно)"
+                placeholder={t('surveyAnalytics.questions.descriptionPlaceholder')}
                 rows={3}
                 style={{
                   width: '100%',

@@ -542,7 +542,27 @@
       "questionCountMany": "questions",
       "answerCount": "answer",
       "answerCountMany": "answers",
-      "conditionalLogicUnavailable": "Conditional questions setting is unavailable for \"Short answer\" and \"Long answer\" question types"
+      "conditionalLogicUnavailable": "Conditional questions setting is unavailable for \"Short answer\" and \"Long answer\" question types",
+      "conditional": "Conditional",
+      "conditionalQuestion": "Conditional question",
+      "questionTitle": "Question title",
+      "enterQuestion": "Enter question...",
+      "dependsOnQuestion": "Depends on question {{number}}: \"{{text}}\"",
+      "noTitle": "No title",
+      "descriptionPlaceholder": "Description (optional)",
+      "questionType": "Question type",
+      "deleteConfirm": "Are you sure you want to delete this question? All answers to this question will be permanently deleted.",
+      "questionTypes": {
+        "text": "Short answer",
+        "textarea": "Long answer",
+        "single_choice": "Single choice",
+        "multiple_choice": "Multiple choice",
+        "scale": "Scale",
+        "rating": "Star rating",
+        "yes_no": "Yes/No",
+        "date": "Date",
+        "number": "Number"
+      }
     },
     "export": {
       "allAnswers": "Export All Answers",
