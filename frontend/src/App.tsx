@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { HomePage } from './pages/Home/HomePage';
 import CreateSurveyPage from './pages/Survey/CreateSurveyPage';
 import SurveyCreatorPage from './pages/Survey/SurveyCreatorPage';
@@ -69,7 +68,6 @@ function AppRoutes() {
 }
 
 function App() {
-  const { t } = useTranslation();
   const { isReady, theme: telegramTheme, forceExpand, languageCode: telegramLanguageCode } = useTelegram();
   const { theme: appTheme, color: appColor, language, setLanguage } = useAppStore();
   const isInitialized = useRef(false);
@@ -152,12 +150,13 @@ function App() {
   }, [appTheme, telegramTheme, appColor, language]);
 
   // Показываем загрузку пока Telegram WebApp не готов
+  // Используем статический текст, так как i18n может быть еще не инициализирован
   if (!isReady) {
     return (
       <div className="min-h-screen bg-primary flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mx-auto mb-md"></div>
-          <p className="text-secondary">{t('app.loading')}</p>
+          <p className="text-secondary">Загрузка...</p>
         </div>
       </div>
     );
