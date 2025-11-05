@@ -2204,7 +2204,6 @@ const MultipleChoiceChart: React.FC<{
   totalCount: number;
   options: string[];
 }> = ({ stats, options }) => {
-  const { t } = useTranslation();
   const maxCount = Math.max(...Object.values(stats));
   
   return (
