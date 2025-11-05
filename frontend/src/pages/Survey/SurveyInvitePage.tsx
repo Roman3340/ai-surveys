@@ -52,7 +52,7 @@ export default function SurveyInvitePage() {
     if (message.includes('Достигнуто максимальное') || message.includes('Maximum number of participants')) {
       // Извлекаем число из сообщения
       const match = message.match(/(\d+)/);
-      const count = match ? match[1] : '';
+      const count = match ? parseInt(match[1], 10) : 0;
       return t('surveyInvite.participationMessages.maxParticipants', { count });
     }
     
