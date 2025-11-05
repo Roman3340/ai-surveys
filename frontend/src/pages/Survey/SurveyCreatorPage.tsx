@@ -2664,7 +2664,6 @@ const QuestionsTab: React.FC<{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minHeight: '200px',
                       maxHeight: '200px',
                       overflow: 'hidden',
                       cursor: 'pointer',
@@ -2695,8 +2694,8 @@ const QuestionsTab: React.FC<{
                           console.log('Изображение успешно загружено:', question.imageUrl);
                         }}
                         style={{
-                          width: '100%',
-                          height: '100%',
+                          maxWidth: '100%',
+                          maxHeight: '100%',
                           objectFit: 'contain'
                         }}
                         onClick={(e) => {

@@ -1342,7 +1342,6 @@ export default function SurveyTakePage() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  minHeight: '200px',
                   maxHeight: '200px',
                   overflow: 'hidden',
                   cursor: 'pointer',
@@ -1412,8 +1411,8 @@ export default function SurveyTakePage() {
                       imgElement.parentElement?.appendChild(errorDiv);
                     }}
                     style={{
-                      width: '100%',
-                      height: '100%',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
                       objectFit: 'contain',
                       display: imageLoading[question.id] ? 'none' : 'block'
                     }}

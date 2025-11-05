@@ -291,7 +291,6 @@ const SummaryTab: React.FC<{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minHeight: '200px',
                     maxHeight: '200px',
                     overflow: 'hidden',
                     cursor: 'pointer',
@@ -361,8 +360,8 @@ const SummaryTab: React.FC<{
                         imgElement.parentElement?.appendChild(errorDiv);
                       }}
                       style={{
-                        width: '100%',
-                        height: '100%',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
                         objectFit: 'contain',
                         display: imageLoading[question.id] ? 'none' : 'block'
                       }}
@@ -1032,8 +1031,8 @@ const IndividualUserTab: React.FC<{
                           imgElement.parentElement?.appendChild(errorDiv);
                         }}
                         style={{
-                          width: '100%',
-                          height: '100%',
+                          maxWidth: '100%',
+                          maxHeight: '100%',
                           objectFit: 'contain',
                           display: imageLoading[question.id] ? 'none' : 'block'
                         }}
@@ -1334,8 +1333,8 @@ const QuestionTab: React.FC<{
                     imgElement.parentElement?.appendChild(errorDiv);
                   }}
                   style={{
-                    width: '100%',
-                    height: '100%',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
                     objectFit: 'contain',
                     display: imageLoading[selectedQuestion.id] ? 'none' : 'block'
                   }}

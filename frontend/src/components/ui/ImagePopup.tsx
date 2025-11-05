@@ -25,45 +25,59 @@ const ImagePopup: React.FC<ImagePopupProps> = ({ imageUrl, onClose }) => {
       }}
       onClick={onClose}
     >
-      <button
-        onClick={onClose}
+      <div
         style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          width: '40px',
-          height: '40px',
-          borderRadius: '50%',
-          border: 'none',
-          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-          color: 'white',
-          fontSize: '24px',
-          cursor: 'pointer',
+          position: 'relative',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 10001,
-          transition: 'background-color 0.2s ease'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-        }}
-      >
-        ×
-      </button>
-      <img
-        src={imageUrl}
-        alt="Fullscreen view"
-        style={{
           maxWidth: '100%',
-          maxHeight: '100%',
-          objectFit: 'contain'
+          maxHeight: '100%'
         }}
         onClick={(e) => e.stopPropagation()}
-      />
+      >
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          style={{
+            position: 'absolute',
+            top: '-10px',
+            right: '-10px',
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            border: 'none',
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            color: 'white',
+            fontSize: '24px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10001,
+            transition: 'background-color 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+          }}
+        >
+          ×
+        </button>
+        <img
+          src={imageUrl}
+          alt="Fullscreen view"
+          style={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+            objectFit: 'contain'
+          }}
+        />
+      </div>
     </div>
   );
 };
