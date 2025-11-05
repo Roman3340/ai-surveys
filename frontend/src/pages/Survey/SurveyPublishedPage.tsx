@@ -218,11 +218,7 @@ export const SurveyPublishedPage = () => {
             fontSize: '28px',
             fontWeight: '700',
             margin: '0 0 8px 0',
-            color: 'var(--tg-text-color)',
-            background: 'linear-gradient(135deg, #FF6B35, #F7931E)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            color: 'var(--tg-button-color)'
           }}
         >
           Опрос опубликован!

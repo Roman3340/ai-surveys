@@ -239,7 +239,7 @@ const AIAnalyticsPage: React.FC = () => {
       height: 80px;
     }
 
-    /* Красивый оранжевый лоадер */
+    /* Красивый лоадер */
     .orange-loader {
       width: 80px;
       height: 80px;
@@ -268,7 +268,7 @@ const AIAnalyticsPage: React.FC = () => {
     .loading-dots span {
       width: 8px;
       height: 8px;
-      background: #ff6b35;
+      background: var(--tg-button-color);
       border-radius: 50%;
       animation: loadingDots 1.4s ease-in-out infinite both;
     }
@@ -299,17 +299,18 @@ const AIAnalyticsPage: React.FC = () => {
     .orange-loader::before {
       width: 60px;
       height: 60px;
-      background: linear-gradient(45deg, #ff6b35, #f7931e);
+      background: var(--tg-button-gradient);
       animation-delay: 0s;
     }
 
     .orange-loader::after {
       width: 40px;
       height: 40px;
-      background: linear-gradient(45deg, #ff8c42, #ffa726);
+      background: var(--tg-button-color);
       top: 10px;
       left: 10px;
       animation-delay: 0.3s;
+      opacity: 0.8;
     }
 
     @keyframes pulse {
@@ -327,7 +328,7 @@ const AIAnalyticsPage: React.FC = () => {
     .spinner-icon {
       width: 48px;
       height: 48px;
-      color: #ff6b35;
+      color: var(--tg-button-color);
       animation: spin 1s linear infinite;
     }
 
@@ -359,7 +360,7 @@ const AIAnalyticsPage: React.FC = () => {
     .generating-spinner .spinner-icon {
       width: 48px;
       height: 48px;
-      color: #ff6b35;
+      color: var(--tg-button-color);
       animation: brainPulse 2s ease-in-out infinite;
     }
 
@@ -367,12 +368,12 @@ const AIAnalyticsPage: React.FC = () => {
       0%, 100% { 
         opacity: 1; 
         transform: scale(1);
-        color: #ff6b35;
+        color: var(--tg-button-color);
       }
       50% { 
         opacity: 0.8; 
         transform: scale(1.1);
-        color: #ff8c42;
+        color: var(--tg-button-color);
       }
     }
 
@@ -385,7 +386,7 @@ const AIAnalyticsPage: React.FC = () => {
     .progress-bar {
       width: 200px;
       height: 6px;
-      background: rgba(255, 107, 53, 0.2);
+      background: var(--tg-section-separator-color);
       border-radius: 3px;
       overflow: hidden;
       margin-bottom: 16px;
@@ -394,10 +395,10 @@ const AIAnalyticsPage: React.FC = () => {
 
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #ff6b35, #ff8c42, #ffa726);
+      background: var(--tg-button-gradient);
       border-radius: 3px;
       transition: width 0.3s ease;
-      box-shadow: 0 2px 4px rgba(255, 107, 53, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .generating-note {
@@ -418,7 +419,7 @@ const AIAnalyticsPage: React.FC = () => {
     .empty-icon {
       width: 64px;
       height: 64px;
-      color: #ff6b35;
+      color: var(--tg-button-color);
       margin-bottom: 16px;
       animation: gentlePulse 3s ease-in-out infinite;
     }
@@ -452,27 +453,27 @@ const AIAnalyticsPage: React.FC = () => {
       align-items: center;
       gap: 8px;
       padding: 12px 24px;
-      background: linear-gradient(135deg, #ff6b35, #ff8c42);
-      color: white;
+      background: var(--tg-button-gradient);
+      color: var(--tg-button-text-color);
       border: none;
       border-radius: 8px;
       font-size: 16px;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .generate-button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     }
 
     .generate-button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
-      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .generate-button .button-icon {
@@ -1021,6 +1022,10 @@ const AIAnalyticsPage: React.FC = () => {
 
     wsRef.current.onopen = () => {
       console.log('WebSocket подключен');
+      // Отправляем начальное сообщение для подтверждения подключения
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'connected' }));
+      }
     };
 
     wsRef.current.onmessage = (event) => {
@@ -1095,10 +1100,48 @@ const AIAnalyticsPage: React.FC = () => {
       setError(null);
       hapticFeedback?.medium?.();
 
+      // Сначала подключаемся к WebSocket, чтобы не пропустить начальные обновления прогресса
+      await new Promise<void>((resolve) => {
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+          // Подключаемся к WebSocket
+          connectWebSocket();
+          
+          // Ждем подключения
+          if (wsRef.current) {
+            const checkConnection = () => {
+              if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                console.log('WebSocket подключен, запускаем генерацию');
+                resolve();
+              } else if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING) {
+                // Продолжаем проверять
+                setTimeout(checkConnection, 100);
+              } else {
+                // Не удалось подключиться, продолжаем без WebSocket
+                console.warn('WebSocket не подключился, продолжаем без него');
+                resolve();
+              }
+            };
+            
+            // Начинаем проверку через небольшой интервал
+            setTimeout(checkConnection, 100);
+            
+            // Таймаут на случай проблем с подключением
+            setTimeout(() => {
+              if (wsRef.current?.readyState !== WebSocket.OPEN) {
+                console.warn('WebSocket не подключился за 5 секунд, продолжаем без него');
+                resolve();
+              }
+            }, 5000);
+          } else {
+            resolve();
+          }
+        } else {
+          resolve();
+        }
+      });
+
+      // Теперь запускаем генерацию
       await aiAnalytics.generateAnalytics(surveyId);
-      
-      // Подключаемся к WebSocket для отслеживания прогресса
-      connectWebSocket();
     } catch (err) {
       console.error('Ошибка запуска генерации:', err);
       setError('Не удалось запустить генерацию аналитики');
