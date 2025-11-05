@@ -133,9 +133,6 @@ const ColorSettingsPage: React.FC<ColorSettingsPageProps> = () => {
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <div style={{ fontWeight: '500' }}>{option.name}</div>
                 </div>
-                {isSelected && (
-                  <Check size={18} color="white" />
-                )}
               </button>
             );
           })}

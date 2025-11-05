@@ -545,6 +545,12 @@ export default function SurveyTakePage() {
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
           onFocus={() => setIsKeyboardOpen(true)}
           onBlur={() => setIsKeyboardOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              e.currentTarget.blur();
+            }
+          }}
           enterKeyHint="done"
           style={baseStyle}
         />
@@ -595,6 +601,12 @@ export default function SurveyTakePage() {
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
           onFocus={() => setIsKeyboardOpen(true)}
           onBlur={() => setIsKeyboardOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              e.currentTarget.blur();
+            }
+          }}
           enterKeyHint="done"
           inputMode="numeric"
           style={baseStyle}
@@ -739,6 +751,12 @@ export default function SurveyTakePage() {
                     onChange={(e) => handleAnswerChange(`${question.id}_other`, e.target.value)}
                     onFocus={() => setIsKeyboardOpen(true)}
                     onBlur={() => setIsKeyboardOpen(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
+                    }}
                     enterKeyHint="done"
                     style={{
                       ...baseStyle,
@@ -933,6 +951,12 @@ export default function SurveyTakePage() {
                     onChange={(e) => handleAnswerChange(`${question.id}_other`, e.target.value)}
                     onFocus={() => setIsKeyboardOpen(true)}
                     onBlur={() => setIsKeyboardOpen(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
+                    }}
                     enterKeyHint="done"
                     style={{
                       ...baseStyle,
