@@ -288,13 +288,6 @@ const SurveyCreatorPage: React.FC = () => {
     }
   };
 
-  // Функция для перехода к созданию опроса с ИИ
-  const handleCreateWithAI = () => {
-    // Очищаем LocalStorage от данных ручного создания опроса
-    clearDraft();
-    // Переходим на страницу выбора типа ИИ-опроса
-    navigate('/survey/create/ai');
-  };
 
   const handleQuestionChange = (questionId: string, updates: Partial<Question>) => {
     setQuestions(prev => 
@@ -631,6 +624,7 @@ const SurveyCreatorPage: React.FC = () => {
 
   // Переключение табов
   const switchTab = (tab: TabType) => {
+    if (isPublishing) return; // Блокируем переключение во время публикации
     setActiveTab(tab);
     hapticFeedback?.light();
   };
@@ -678,6 +672,7 @@ const SurveyCreatorPage: React.FC = () => {
         }}>
           <button
             onClick={() => switchTab('settings')}
+            disabled={isPublishing}
             style={{
               flex: 1,
               padding: '10px 8px',
@@ -687,12 +682,13 @@ const SurveyCreatorPage: React.FC = () => {
               color: activeTab === 'settings' ? 'white' : 'var(--tg-text-color)',
               fontSize: '12px',
               fontWeight: '500',
-              cursor: 'pointer',
+              cursor: isPublishing ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '4px',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              opacity: isPublishing ? 0.5 : 1
             }}
           >
             <Settings size={14} />
@@ -701,6 +697,7 @@ const SurveyCreatorPage: React.FC = () => {
           
           <button
             onClick={() => switchTab('questions')}
+            disabled={isPublishing}
             style={{
               flex: 1,
               padding: '10px 8px',
@@ -710,12 +707,13 @@ const SurveyCreatorPage: React.FC = () => {
               color: activeTab === 'questions' ? 'white' : 'var(--tg-text-color)',
               fontSize: '12px',
               fontWeight: '500',
-              cursor: 'pointer',
+              cursor: isPublishing ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '4px',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              opacity: isPublishing ? 0.5 : 1
             }}
           >
             <HelpCircle size={14} />
@@ -724,6 +722,7 @@ const SurveyCreatorPage: React.FC = () => {
           
           <button
             onClick={() => switchTab('preview')}
+            disabled={isPublishing}
             style={{
               flex: 1,
               padding: '10px 8px',
@@ -733,12 +732,13 @@ const SurveyCreatorPage: React.FC = () => {
               color: activeTab === 'preview' ? 'white' : 'var(--tg-text-color)',
               fontSize: '12px',
               fontWeight: '500',
-              cursor: 'pointer',
+              cursor: isPublishing ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '4px',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              opacity: isPublishing ? 0.5 : 1
             }}
           >
             <Eye size={14} />
@@ -774,7 +774,6 @@ const SurveyCreatorPage: React.FC = () => {
               onKeyboardStateChange={(isOpen) => setSurveyData(prev => ({ ...prev, isKeyboardOpen: isOpen }))}
               validationErrors={validationErrors}
               validateScaleValues={validateScaleValues}
-              onCreateWithAI={handleCreateWithAI}
               hapticFeedback={hapticFeedback}
             />
         )}
@@ -807,19 +806,19 @@ const SurveyCreatorPage: React.FC = () => {
           disabled={!isReadyToPublish || isPublishing}
           style={{
             width: '100%',
-            backgroundColor: isReadyToPublish ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
+            backgroundColor: (isReadyToPublish && !isPublishing) ? 'var(--tg-button-color)' : 'var(--tg-hint-color)',
             color: 'white',
             border: 'none',
             borderRadius: '12px',
             padding: '16px 24px',
             fontSize: '16px',
             fontWeight: '600',
-            cursor: isReadyToPublish ? 'pointer' : 'not-allowed',
+            cursor: (isReadyToPublish && !isPublishing) ? 'pointer' : 'not-allowed',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            opacity: isReadyToPublish ? 1 : 0.5
+            opacity: (isReadyToPublish && !isPublishing) ? 1 : 0.5
           }}
         >
           {isPublishing ? (
@@ -838,6 +837,12 @@ const SurveyCreatorPage: React.FC = () => {
             '📊 Опубликовать опрос'
           )}
         </button>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
         
         {!isReadyToPublish && (
           <p style={{
@@ -1691,9 +1696,8 @@ const QuestionsTab: React.FC<{
   onKeyboardStateChange: (isOpen: boolean) => void;
   validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
   validateScaleValues: (questionId: string, scaleMin?: number, scaleMax?: number) => void;
-  onCreateWithAI: () => void;
   hapticFeedback?: { success?: () => void; error?: () => void };
-}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues, onCreateWithAI, hapticFeedback }) => {
+}> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues, hapticFeedback }) => {
   // Состояние для отслеживания загрузки изображений для каждого вопроса
   const [uploadingImages, setUploadingImages] = useState<{ [questionId: string]: boolean }>({});
   // Состояние для полноэкранного просмотра изображения
@@ -1749,96 +1753,6 @@ const QuestionsTab: React.FC<{
             >
               Создать вопрос
             </button>
-            
-            <div style={{ 
-              fontSize: '14px', 
-              color: 'var(--tg-hint-color)', 
-              marginBottom: '16px' 
-            }}>
-              или
-            </div>
-            
-            <div style={{ position: 'relative', display: 'inline-block' }}>
-              {/* Летающие звездочки SVG */}
-              <div style={{
-                position: 'absolute',
-                top: '-8px',
-                right: '-16px',
-                animation: 'float 2s ease-in-out infinite',
-                animationDelay: '0s'
-              }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
-                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                </svg>
-              </div>
-              <div style={{
-                position: 'absolute',
-                bottom: '-8px',
-                left: '-16px',
-                animation: 'float 2s ease-in-out infinite',
-                animationDelay: '1s'
-              }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" strokeWidth="1">
-                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                </svg>
-              </div>
-              
-              <button
-                onClick={onCreateWithAI}
-                style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  backgroundSize: '200% 200%',
-                  animation: 'gradientShift 3s ease infinite',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '12px 24px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                  transition: 'all 0.3s ease',
-                  width: '160px',
-                  height: '40px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: '-50%',
-                  left: '-50%',
-                  width: '200%',
-                  height: '200%',
-                  background: 'linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent)',
-                  transform: 'rotate(45deg)',
-                  transition: 'all 0.6s',
-                  opacity: 0
-                }} />
-                <span style={{ position: 'relative', zIndex: 1 }}>
-                  Создать с ИИ
-                </span>
-              </button>
-            </div>
-            
-            <div style={{ 
-              fontSize: '12px', 
-              color: 'var(--tg-hint-color)', 
-              lineHeight: '1.4',
-              maxWidth: '280px',
-              margin: '15px auto 0 auto',
-              textAlign: 'center'
-            }}>
-              Искусственный интеллект создаст готовый опрос по вашим требованиям. Требуется подписка.
-            </div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

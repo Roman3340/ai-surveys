@@ -141,6 +141,8 @@ export interface AIInsight {
 
 export type Theme = 'light' | 'dark' | 'system';
 
+export type AppColor = 'orange' | 'dark-green' | 'blue' | 'burgundy' | 'purple' | 'teal' | 'pink' | 'cyan';
+
 export interface AppState {
   user: User | null;
   theme: Theme;

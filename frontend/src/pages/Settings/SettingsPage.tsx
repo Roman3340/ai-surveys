@@ -32,6 +32,11 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
     navigate('/settings/language');
   };
 
+  const handleColorSelect = () => {
+    hapticFeedback?.light();
+    navigate('/settings/color');
+  };
+
   const handleClearCache = () => {
     hapticFeedback?.medium();
     if (window.confirm('Очистить кэш приложения? Все локальные данные будут удалены.')) {
@@ -111,6 +116,47 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             <div style={{ flex: 1, textAlign: 'left' }}>
               <div style={{ fontWeight: '500' }}>Тема</div>
               <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>{getCurrentThemeName()}</div>
+            </div>
+            <ChevronRight size={18} color="var(--tg-hint-color)" />
+          </button>
+        </div>
+
+        {/* Цвет */}
+        <div style={{
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          marginBottom: '16px'
+        }}>
+          <button
+            onClick={handleColorSelect}
+            style={{
+              width: '100%',
+              padding: '16px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              color: 'var(--tg-text-color)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              fontSize: '16px'
+            }}
+          >
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'var(--tg-button-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ fontSize: '18px' }}>🎨</span>
+            </div>
+            <div style={{ flex: 1, textAlign: 'left' }}>
+              <div style={{ fontWeight: '500' }}>Цвет приложения</div>
+              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>Выбор основного цвета</div>
             </div>
             <ChevronRight size={18} color="var(--tg-hint-color)" />
           </button>

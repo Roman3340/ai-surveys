@@ -10,6 +10,7 @@ import AIAdvancedSettingsPage from './pages/Survey/AIAdvancedSettingsPage';
 import { SurveyPublishedPage } from './pages/Survey/SurveyPublishedPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 import ThemeSettingsPage from './pages/Settings/ThemeSettingsPage';
+import ColorSettingsPage from './pages/Settings/ColorSettingsPage';
 import LanguageSettingsPage from './pages/Settings/LanguageSettingsPage';
 import SurveyAnalyticsPage from './pages/Survey/SurveyAnalyticsPage';
 import SurveyInvitePage from './pages/Survey/SurveyInvitePage';
@@ -54,6 +55,7 @@ function AppRoutes() {
       <Route path="/survey/:surveyId/completed" element={<SurveyCompletedPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/settings/theme" element={<ThemeSettingsPage />} />
+      <Route path="/settings/color" element={<ColorSettingsPage />} />
       <Route path="/settings/language" element={<LanguageSettingsPage />} />
       <Route path="/templates" element={<SurveyTemplatesPage />} />
       <Route path="/templates/:templateId" element={<TemplateDetailPage />} />
@@ -65,7 +67,7 @@ function AppRoutes() {
 
 function App() {
   const { isReady, theme: telegramTheme, forceExpand } = useTelegram();
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, color: appColor } = useAppStore();
   const isInitialized = useRef(false);
 
   // Синхронизация темы и принудительное расширение
@@ -81,16 +83,18 @@ function App() {
         finalTheme = telegramTheme; // Используем тему из Telegram для системной
       }
       
-      // Устанавливаем тему в DOM
+      // Устанавливаем тему и цвет в DOM
       document.documentElement.setAttribute('data-theme', finalTheme);
+      document.documentElement.setAttribute('data-color', appColor);
       console.log('Theme applied:', finalTheme, 'from app theme:', appTheme);
+      console.log('Color applied:', appColor);
       
       // Отмечаем что инициализация завершена
       if (!isInitialized.current) {
         isInitialized.current = true;
       }
     }
-  }, [isReady, telegramTheme, appTheme, forceExpand]);
+  }, [isReady, telegramTheme, appTheme, appColor, forceExpand]);
 
   // Дополнительный эффект для принудительного применения темы при изменении appTheme
   useEffect(() => {
@@ -102,9 +106,11 @@ function App() {
       }
       
       document.documentElement.setAttribute('data-theme', finalTheme);
+      document.documentElement.setAttribute('data-color', appColor);
       console.log('Theme force applied:', finalTheme, 'from app theme:', appTheme);
+      console.log('Color force applied:', appColor);
     }
-  }, [appTheme, telegramTheme]);
+  }, [appTheme, telegramTheme, appColor]);
 
   // Показываем загрузку пока Telegram WebApp не готов
   if (!isReady) {

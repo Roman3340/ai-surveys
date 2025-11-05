@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, Survey, Theme } from '../types';
+import type { User, Survey, Theme, AppColor } from '../types';
 import { surveyApi } from '../services/api';
 
 interface AppStore {
@@ -11,6 +11,10 @@ interface AppStore {
   // Тема
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  
+  // Цвет приложения
+  color: AppColor;
+  setColor: (color: AppColor) => void;
   
   // Опросы пользователя (созданные)
   userSurveys: Survey[];
@@ -56,6 +60,7 @@ export const useAppStore = create<AppStore>()(
       // Начальное состояние
       user: null,
       theme: 'system',
+      color: 'orange',
       userSurveys: [],
       participatedSurveys: [],
       currentSurvey: null,
@@ -68,6 +73,9 @@ export const useAppStore = create<AppStore>()(
 
       // Действия с темой
       setTheme: (theme) => set({ theme }),
+      
+      // Действия с цветом
+      setColor: (color) => set({ color }),
 
       // Действия с опросами
       setUserSurveys: (surveys) => set({ userSurveys: surveys }),
@@ -274,6 +282,7 @@ export const useAppStore = create<AppStore>()(
       partialize: (state) => ({
         user: state.user,
         theme: state.theme,
+        color: state.color,
         userSurveys: state.userSurveys,
         participatedSurveys: state.participatedSurveys,
       }),

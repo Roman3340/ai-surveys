@@ -70,6 +70,136 @@
   --tab-active-text: #ffffff;
 }
 
+/* Цветовые схемы для светлой темы */
+[data-color="orange"] {
+  --tg-link-color: #F46D00;
+  --tg-button-color: #F46D00;
+  --tg-button-gradient: linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #DB000E -5.74%, #E53F00 34.44%, #F46D00 74.62%, #FFB12C 114.8%);
+  --tg-accent-text-color: #F46D00;
+}
+
+[data-color="dark-green"] {
+  --tg-link-color: #2D8659;
+  --tg-button-color: #2D8659;
+  --tg-button-gradient: linear-gradient(0deg, rgb(45, 134, 89) 0%, rgb(45, 134, 89) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #1a5c3f -5.74%, #2D8659 34.44%, #3fa875 74.62%, #4bc98a 114.8%);
+  --tg-accent-text-color: #2D8659;
+}
+
+[data-color="blue"] {
+  --tg-link-color: #007AFF;
+  --tg-button-color: #007AFF;
+  --tg-button-gradient: linear-gradient(0deg, rgb(0, 122, 255) 0%, rgb(0, 122, 255) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #0051D5 -5.74%, #007AFF 34.44%, #0099FF 74.62%, #00B8FF 114.8%);
+  --tg-accent-text-color: #007AFF;
+}
+
+[data-color="burgundy"] {
+  --tg-link-color: #8B1538;
+  --tg-button-color: #8B1538;
+  --tg-button-gradient: linear-gradient(0deg, rgb(139, 21, 56) 0%, rgb(139, 21, 56) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #5D0E25 -5.74%, #8B1538 34.44%, #B01D4A 74.62%, #D4265C 114.8%);
+  --tg-accent-text-color: #8B1538;
+}
+
+[data-color="purple"] {
+  --tg-link-color: #AF52DE;
+  --tg-button-color: #AF52DE;
+  --tg-button-gradient: linear-gradient(0deg, rgb(175, 82, 222) 0%, rgb(175, 82, 222) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #7D3AA0 -5.74%, #AF52DE 34.44%, #C970E8 74.62%, #E38EF2 114.8%);
+  --tg-accent-text-color: #AF52DE;
+}
+
+[data-color="teal"] {
+  --tg-link-color: #00C2D4;
+  --tg-button-color: #00C2D4;
+  --tg-button-gradient: linear-gradient(0deg, rgb(0, 194, 212) 0%, rgb(0, 194, 212) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #0095A3 -5.74%, #00C2D4 34.44%, #00E5F5 74.62%, #33F0FF 114.8%);
+  --tg-accent-text-color: #00C2D4;
+}
+
+[data-color="pink"] {
+  --tg-link-color: #FF2D55;
+  --tg-button-color: #FF2D55;
+  --tg-button-gradient: linear-gradient(0deg, rgb(255, 45, 85) 0%, rgb(255, 45, 85) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #FF0033 -5.74%, #FF2D55 34.44%, #FF5A77 74.62%, #FF87A0 114.8%);
+  --tg-accent-text-color: #FF2D55;
+}
+
+[data-color="cyan"] {
+  --tg-link-color: #5AC8FA;
+  --tg-button-color: #5AC8FA;
+  --tg-button-gradient: linear-gradient(0deg, rgb(90, 200, 250) 0%, rgb(90, 200, 250) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #1DA8F0 -5.74%, #5AC8FA 34.44%, #7DD3FF 74.62%, #A0DEFF 114.8%);
+  --tg-accent-text-color: #5AC8FA;
+}
+
+/* Цветовые схемы для темной темы - переопределяем только если нужно */
+[data-theme="dark"][data-color="orange"] {
+  --tg-link-color: #F46D00;
+  --tg-button-color: #F46D00;
+  --tg-button-gradient: linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #DB000E -5.74%, #E53F00 34.44%, #F46D00 74.62%, #FFB12C 114.8%);
+  --tg-accent-text-color: #F46D00;
+}
+
+[data-theme="dark"][data-color="dark-green"] {
+  --tg-link-color: #3fa875;
+  --tg-button-color: #3fa875;
+  --tg-button-gradient: linear-gradient(0deg, rgb(63, 168, 117) 0%, rgb(63, 168, 117) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #1a5c3f -5.74%, #3fa875 34.44%, #4bc98a 74.62%, #5dd99f 114.8%);
+  --tg-accent-text-color: #3fa875;
+}
+
+[data-theme="dark"][data-color="blue"] {
+  --tg-link-color: #0099FF;
+  --tg-button-color: #0099FF;
+  --tg-button-gradient: linear-gradient(0deg, rgb(0, 153, 255) 0%, rgb(0, 153, 255) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #0051D5 -5.74%, #0099FF 34.44%, #00B8FF 74.62%, #00D7FF 114.8%);
+  --tg-accent-text-color: #0099FF;
+}
+
+[data-theme="dark"][data-color="burgundy"] {
+  --tg-link-color: #B01D4A;
+  --tg-button-color: #B01D4A;
+  --tg-button-gradient: linear-gradient(0deg, rgb(176, 29, 74) 0%, rgb(176, 29, 74) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #5D0E25 -5.74%, #B01D4A 34.44%, #D4265C 74.62%, #E8406F 114.8%);
+  --tg-accent-text-color: #B01D4A;
+}
+
+[data-theme="dark"][data-color="purple"] {
+  --tg-link-color: #C970E8;
+  --tg-button-color: #C970E8;
+  --tg-button-gradient: linear-gradient(0deg, rgb(201, 112, 232) 0%, rgb(201, 112, 232) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #7D3AA0 -5.74%, #C970E8 34.44%, #D88EF0 74.62%, #E7ACF8 114.8%);
+  --tg-accent-text-color: #C970E8;
+}
+
+[data-theme="dark"][data-color="teal"] {
+  --tg-link-color: #00E5F5;
+  --tg-button-color: #00E5F5;
+  --tg-button-gradient: linear-gradient(0deg, rgb(0, 229, 245) 0%, rgb(0, 229, 245) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #0095A3 -5.74%, #00E5F5 34.44%, #33F0FF 74.62%, #66F5FF 114.8%);
+  --tg-accent-text-color: #00E5F5;
+}
+
+[data-theme="dark"][data-color="pink"] {
+  --tg-link-color: #FF5A77;
+  --tg-button-color: #FF5A77;
+  --tg-button-gradient: linear-gradient(0deg, rgb(255, 90, 119) 0%, rgb(255, 90, 119) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #FF0033 -5.74%, #FF5A77 34.44%, #FF87A0 74.62%, #FFB4C9 114.8%);
+  --tg-accent-text-color: #FF5A77;
+}
+
+[data-theme="dark"][data-color="cyan"] {
+  --tg-link-color: #7DD3FF;
+  --tg-button-color: #7DD3FF;
+  --tg-button-gradient: linear-gradient(0deg, rgb(125, 211, 255) 0%, rgb(125, 211, 255) 100%);
+  --tg-border-gradient: linear-gradient(129deg, #1DA8F0 -5.74%, #7DD3FF 34.44%, #A0DEFF 74.62%, #C3E9FF 114.8%);
+  --tg-accent-text-color: #7DD3FF;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

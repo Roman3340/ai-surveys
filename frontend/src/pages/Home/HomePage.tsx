@@ -615,28 +615,6 @@ export const HomePage = () => {
       </div>
 
 
-      {/* Подробнее - только для созданных опросов */}
-      {activeTab === 'created' && displayedSurveys.length > 3 && (
-        <div style={{
-          padding: '16px',
-          textAlign: 'center'
-        }}>
-          <button style={{
-            backgroundColor: 'var(--tg-section-bg-color)',
-            color: 'var(--tg-text-color)',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            width: '100%'
-          }}>
-            Подробнее
-          </button>
-        </div>
-      )}
-
       {/* Нижняя панель с кнопками */}
       <div style={{
         padding: '20px 16px 40px 16px',

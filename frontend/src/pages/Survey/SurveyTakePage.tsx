@@ -86,6 +86,8 @@ export default function SurveyTakePage() {
   const [imageLoading, setImageLoading] = useState<{ [questionId: string]: boolean }>({});
   // Состояние для полноэкранного просмотра изображения
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  // Состояние для отслеживания открытия клавиатуры
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   useEffect(() => {
     const loadSurvey = async () => {
@@ -541,6 +543,9 @@ export default function SurveyTakePage() {
           placeholder="Ваш ответ..."
           value={answer || ''}
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+          onFocus={() => setIsKeyboardOpen(true)}
+          onBlur={() => setIsKeyboardOpen(false)}
+          enterKeyHint="done"
           style={baseStyle}
         />
       );
@@ -554,6 +559,9 @@ export default function SurveyTakePage() {
           rows={4}
           value={answer || ''}
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+          onFocus={() => setIsKeyboardOpen(true)}
+          onBlur={() => setIsKeyboardOpen(false)}
+          enterKeyHint="done"
           style={{
             ...baseStyle,
             resize: 'vertical' as const
@@ -569,6 +577,9 @@ export default function SurveyTakePage() {
           type="date"
           value={answer || ''}
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+          onFocus={() => setIsKeyboardOpen(true)}
+          onBlur={() => setIsKeyboardOpen(false)}
+          enterKeyHint="done"
           style={baseStyle}
         />
       );
@@ -582,6 +593,10 @@ export default function SurveyTakePage() {
           placeholder="Введите число..."
           value={answer || ''}
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+          onFocus={() => setIsKeyboardOpen(true)}
+          onBlur={() => setIsKeyboardOpen(false)}
+          enterKeyHint="done"
+          inputMode="numeric"
           style={baseStyle}
         />
       );
@@ -722,6 +737,9 @@ export default function SurveyTakePage() {
                     placeholder="Другое"
                     value={answers[`${question.id}_other`] || ''}
                     onChange={(e) => handleAnswerChange(`${question.id}_other`, e.target.value)}
+                    onFocus={() => setIsKeyboardOpen(true)}
+                    onBlur={() => setIsKeyboardOpen(false)}
+                    enterKeyHint="done"
                     style={{
                       ...baseStyle,
                       border: !answers[`${question.id}_other`] ? '1px solid #ff4444' : '1px solid #b0b0b0',
@@ -913,6 +931,9 @@ export default function SurveyTakePage() {
                     placeholder="Другое"
                     value={answers[`${question.id}_other`] || ''}
                     onChange={(e) => handleAnswerChange(`${question.id}_other`, e.target.value)}
+                    onFocus={() => setIsKeyboardOpen(true)}
+                    onBlur={() => setIsKeyboardOpen(false)}
+                    enterKeyHint="done"
                     style={{
                       ...baseStyle,
                       border: !answers[`${question.id}_other`] ? '1px solid #ff4444' : '1px solid #b0b0b0',
@@ -1440,23 +1461,26 @@ export default function SurveyTakePage() {
         </AnimatePresence>
       </div>
 
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px',
-        backgroundColor: 'var(--tg-bg-color)', borderTop: '1px solid var(--tg-section-separator-color)',
-      }}>
-        <button
-          onClick={handleSubmit}
-          disabled={submitting}
-          style={{
-            width: '100%', padding: '16px', borderRadius: '12px', border: 'none',
-            backgroundColor: 'var(--tg-button-color)', color: 'var(--tg-button-text-color)',
-            fontSize: '16px', fontWeight: '600', cursor: submitting ? 'not-allowed' : 'pointer',
-            opacity: submitting ? 0.5 : 1, transition: 'opacity 0.2s ease'
-          }}
-        >
-          {submitting ? 'Отправка...' : 'Отправить ответы'}
-        </button>
-      </div>
+      {!isKeyboardOpen && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px 20px',
+          backgroundColor: 'var(--tg-bg-color)', borderTop: '1px solid var(--tg-section-separator-color)',
+          transition: 'transform 0.3s ease, opacity 0.3s ease'
+        }}>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            style={{
+              width: '100%', padding: '16px', borderRadius: '12px', border: 'none',
+              backgroundColor: 'var(--tg-button-color)', color: 'var(--tg-button-text-color)',
+              fontSize: '16px', fontWeight: '600', cursor: submitting ? 'not-allowed' : 'pointer',
+              opacity: submitting ? 0.5 : 1, transition: 'opacity 0.2s ease'
+            }}
+          >
+            {submitting ? 'Отправка...' : 'Отправить ответы'}
+          </button>
+        </div>
+      )}
 
       {/* Полноэкранный просмотр изображения */}
       <ImagePopup 

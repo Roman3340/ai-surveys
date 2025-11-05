@@ -7,7 +7,7 @@ import { getDraft, hasDraft, clearDraft, saveMode, getAIDraft, hasAIDraft, clear
 
 const CreateSurveyPage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedOption, setSelectedOption] = useState<'manual' | 'ai' | null>(null);
+  const [selectedOption, setSelectedOption] = useState<'survey' | 'test' | null>(null);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
 
   // Используем стабильный хук для кнопки назад
@@ -25,23 +25,25 @@ const CreateSurveyPage: React.FC = () => {
     }
   }, []);
 
-  const handleCreateManual = () => {
+  const handleCreateSurvey = () => {
     clearDraft();
     saveMode('manual');
-    setSelectedOption('manual');
+    setSelectedOption('survey');
   };
 
-  const handleCreateAI = () => {
+  const handleCreateTest = () => {
     clearDraft();
-    clearAIDraft();
-    setSelectedOption('ai');
+    setSelectedOption('test');
+    // TODO: Реализовать создание теста
+    alert('Создание тестов будет реализовано позже');
   };
 
   const handleNext = () => {
-    if (selectedOption === 'manual') {
+    if (selectedOption === 'survey') {
       navigate('/survey/create/manual');
-    } else if (selectedOption === 'ai') {
-      navigate('/survey/create/ai');
+    } else if (selectedOption === 'test') {
+      // TODO: Реализовать переход на создание теста
+      alert('Создание тестов будет реализовано позже');
     }
   };
 
@@ -108,7 +110,7 @@ const CreateSurveyPage: React.FC = () => {
           margin: 0,
           textAlign: 'center'
         }}>
-          Как создадим опрос?
+          Создать опрос или тест?
         </h1>
       </div>
 
@@ -207,21 +209,21 @@ const CreateSurveyPage: React.FC = () => {
             maxWidth: '400px',
             margin: '0 auto'
           }}>
-          {/* Вручную */}
+          {/* Создать опрос */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <div
-              onClick={handleCreateManual}
+              onClick={handleCreateSurvey}
               style={{
                 backgroundColor: 'var(--tg-section-bg-color)',
                 borderRadius: '12px',
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'transform 0.1s ease',
-                border: selectedOption === 'manual' ? '2px solid #F46D00' : '2px solid transparent'
+                border: selectedOption === 'survey' ? '2px solid #F46D00' : '2px solid transparent'
               }}
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -243,7 +245,7 @@ const CreateSurveyPage: React.FC = () => {
                   borderRadius: '10px',
                   marginTop: '2px'
                 }}>
-                  👨‍💻
+                  📊
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{
@@ -255,18 +257,18 @@ const CreateSurveyPage: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between'
                   }}>
-                    Вручную
+                    Создать опрос
                     <div style={{
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: `2px solid ${selectedOption === 'manual' ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
-                      background: selectedOption === 'manual' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
+                      border: `2px solid ${selectedOption === 'survey' ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
+                      background: selectedOption === 'survey' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      {selectedOption === 'manual' && (
+                      {selectedOption === 'survey' && (
                         <div style={{
                           width: '8px',
                           height: '8px',
@@ -281,28 +283,28 @@ const CreateSurveyPage: React.FC = () => {
                     color: 'var(--tg-hint-color)',
                     lineHeight: '1.3'
                   }}>
-                    Самостоятельно придумаю концепцию опроса и все вопросы
+                    Создать опрос для сбора обратной связи
                   </div>
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* При помощи ИИ */}
+          {/* Создать тест */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <div
-              onClick={handleCreateAI}
+              onClick={handleCreateTest}
               style={{
                 backgroundColor: 'var(--tg-section-bg-color)',
                 borderRadius: '12px',
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'transform 0.1s ease',
-                border: selectedOption === 'ai' ? '2px solid #F46D00' : '2px solid transparent'
+                border: selectedOption === 'test' ? '2px solid #F46D00' : '2px solid transparent'
               }}
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -324,7 +326,7 @@ const CreateSurveyPage: React.FC = () => {
                   borderRadius: '10px',
                   marginTop: '2px'
                 }}>
-                  🤖
+                  ✅
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{
@@ -336,18 +338,18 @@ const CreateSurveyPage: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between'
                   }}>
-                    При помощи искусственного интеллекта
+                    Создать тест
                     <div style={{
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: `2px solid ${selectedOption === 'ai' ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
-                      background: selectedOption === 'ai' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
+                      border: `2px solid ${selectedOption === 'test' ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
+                      background: selectedOption === 'test' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      {selectedOption === 'ai' && (
+                      {selectedOption === 'test' && (
                         <div style={{
                           width: '8px',
                           height: '8px',
@@ -362,12 +364,13 @@ const CreateSurveyPage: React.FC = () => {
                     color: 'var(--tg-hint-color)',
                     lineHeight: '1.3'
                   }}>
-                    Выберу ЦА из списка и опишу кратко желания - остальное сделает нейросеть
+                    Создать тест с правильными ответами и оценкой
                   </div>
                 </div>
               </div>
             </div>
           </motion.div>
+
         </div>
         )}
 
@@ -399,7 +402,7 @@ const CreateSurveyPage: React.FC = () => {
                 opacity: selectedOption ? 1 : 0.6
               }}
             >
-              Вперед
+              Создать опрос
             </button>
           </div>
         )}
