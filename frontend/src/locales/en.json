@@ -466,6 +466,8 @@
       "activate": "Activate",
       "moveToDraft": "Move to Draft",
       "complete": "Complete Survey",
+      "completeConfirm": "The survey will be completed and closed for responses. Continue?",
+      "draftConfirm": "Unpublish the survey? Users will not be able to respond to it.",
       "archive": "Archive",
       "active": "Active",
       "draft": "Draft",
@@ -529,10 +531,24 @@
       "editModeActive": "Edit mode active",
       "editAvailable": "Editing available",
       "question": "Question {{number}}",
-      "incompleteCondition": "Condition is not fully filled. Question will always be shown until all condition fields are filled."
+      "incompleteCondition": "Condition is not fully filled. Question will always be shown until all condition fields are filled.",
+      "editQuestions": "Edit questions",
+      "saveChanges": "Save changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "editRestriction": "Editing is restricted because there are responses to the survey. You can create new questions and delete old ones.",
+      "createQuestion": "Create question",
+      "questionCount": "question",
+      "questionCountMany": "questions",
+      "answerCount": "answer",
+      "answerCountMany": "answers",
+      "conditionalLogicUnavailable": "Conditional questions setting is unavailable for \"Short answer\" and \"Long answer\" question types"
     },
     "export": {
-      "allAnswers": "Export All Answers"
+      "allAnswers": "Export All Answers",
+      "questionAnswers": "Export Question Answers",
+      "userAnswers": "Export User Answers",
+      "csvFormat": "Export in CSV format"
     },
     "alerts": {
       "settingsUpdated": "Settings successfully updated!",

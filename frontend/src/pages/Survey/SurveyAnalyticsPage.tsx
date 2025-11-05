@@ -2987,12 +2987,12 @@ export default function SurveyAnalyticsPage() {
     if (!survey || !surveyId) return;
     
     if (newStatus === 'completed') {
-      const confirmed = window.confirm('Опрос будет завершён и закрыт для ответов. Продолжить?');
+      const confirmed = window.confirm(t('surveyAnalytics.status.completeConfirm'));
       if (!confirmed) return;
     }
     
     if (newStatus === 'draft') {
-      const confirmed = window.confirm('Снять опрос с публикации? Пользователи не смогут на него отвечать.');
+      const confirmed = window.confirm(t('surveyAnalytics.status.draftConfirm'));
       if (!confirmed) return;
     }
 
@@ -3805,7 +3805,7 @@ export default function SurveyAnalyticsPage() {
                       color: 'var(--tg-hint-color)',
                       lineHeight: '1.4'
                     }}>
-                      Для вопросов с типами "Короткий ответ" и "Развернутый ответ" настройка условных вопросов недоступна
+                      {t('surveyAnalytics.questions.conditionalLogicUnavailable')}
                     </div>
                   </div>
                 ) : (
@@ -4959,10 +4959,10 @@ export default function SurveyAnalyticsPage() {
         )}
         <div style={{ display: 'flex', gap: 12, marginTop: 10, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--tg-hint-color)' }}>
-            📝 {survey.questions?.length || 0} {(survey.questions?.length || 0) === 1 ? 'вопрос' : 'вопросов'}
+            📝 {survey.questions?.length || 0} {(survey.questions?.length || 0) === 1 ? t('surveyAnalytics.questions.questionCount') : t('surveyAnalytics.questions.questionCountMany')}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--tg-hint-color)' }}>
-            📊 {stats?.total_responses ?? 0} {((stats?.total_responses ?? 0) === 1 || (stats?.total_responses ?? 0) > 20) ? 'ответ' : 'ответов'}
+            📊 {stats?.total_responses ?? 0} {((stats?.total_responses ?? 0) === 1 || (stats?.total_responses ?? 0) > 20) ? t('surveyAnalytics.questions.answerCount') : t('surveyAnalytics.questions.answerCountMany')}
           </div>
         </div>
       </div>
@@ -6052,7 +6052,7 @@ export default function SurveyAnalyticsPage() {
                       borderRadius: '50%',
                       animation: 'spin 1s linear infinite'
                     }} />
-                    <span>Сохранение...</span>
+                    <span>{t('surveyAnalytics.questions.saving')}</span>
                     <style>{`
                       @keyframes spin {
                         0% { transform: rotate(0deg); }
@@ -6062,7 +6062,7 @@ export default function SurveyAnalyticsPage() {
                   </>
                 ) : (
                   <>
-                    {editingQuestions ? <><Save size={14} /> Сохранить изменения</> : <>⚙️ Редактировать вопросы</>}
+                    {editingQuestions ? <><Save size={14} /> {t('surveyAnalytics.questions.saveChanges')}</> : <>⚙️ {t('surveyAnalytics.questions.editQuestions')}</>}
                   </>
                 )}
               </button>
@@ -6093,7 +6093,7 @@ export default function SurveyAnalyticsPage() {
                     opacity: savingQuestions ? 0.7 : 1
                   }}
                 >
-                  <X size={14} /> Отменить
+                  <X size={14} /> {t('surveyAnalytics.questions.cancel')}
                 </button>
               )}
             </div>
@@ -6113,7 +6113,7 @@ export default function SurveyAnalyticsPage() {
                 color: '#856404',
                 lineHeight: '1.4'
               }}>
-                ⚠️ Редактирование ограничено, так как есть ответы на опрос. Вы можете создавать новые вопросы и удалять старые.
+                ⚠️ {t('surveyAnalytics.questions.editRestriction')}
               </div>
             </div>
           )}
@@ -6175,7 +6175,7 @@ export default function SurveyAnalyticsPage() {
                 opacity: savingQuestions ? 0.5 : 1
               }}
             >
-              ➕ Создать вопрос
+              ➕ {t('surveyAnalytics.questions.createQuestion')}
             </button>
           )}
         </div>
@@ -6302,7 +6302,7 @@ export default function SurveyAnalyticsPage() {
                     <polyline points="7,10 12,15 17,10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
-                  Экспорт ответов на вопрос
+                  {t('surveyAnalytics.export.questionAnswers')}
                 </button>
               )}
               
@@ -6331,7 +6331,7 @@ export default function SurveyAnalyticsPage() {
                     <polyline points="7,10 12,15 17,10"/>
                     <line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
-                  Экспорт ответов пользователя
+                  {t('surveyAnalytics.export.userAnswers')}
                 </button>
               )}
               
@@ -6345,7 +6345,7 @@ export default function SurveyAnalyticsPage() {
                   fontSize: '11px',
                   color: 'var(--tg-hint-color)'
                 }}>
-                  Экспорт в CSV формате
+                  {t('surveyAnalytics.export.csvFormat')}
                 </div>
               )}
             </div>
