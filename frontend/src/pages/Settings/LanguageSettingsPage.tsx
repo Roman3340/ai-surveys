@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -7,6 +8,7 @@ import { useAppStore } from '../../store/useAppStore';
 interface LanguageSettingsPageProps {}
 
 const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = () => {
+  const { t } = useTranslation();
   const { hapticFeedback } = useTelegram();
   const { language, setLanguage } = useAppStore();
   const [selectedLanguage, setSelectedLanguage] = useState(language);
@@ -59,7 +61,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = () => {
           margin: 0,
           color: 'var(--tg-text-color)'
         }}>
-          Язык
+          {t('settings.language.title')}
         </h1>
       </div>
 

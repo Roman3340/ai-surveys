@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { BookOpen, Clock, Target, Star } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -128,26 +129,28 @@ const articles: Article[] = [
   }
 ];
 
-const categories = [
-  { id: 'all', name: 'Все', icon: '📚' },
-  { id: 'Основы', name: 'Основы', icon: '📝' },
-  { id: 'Шаблоны', name: 'Шаблоны', icon: '📋' },
-  { id: 'Вопросы', name: 'Вопросы', icon: '❓' },
-  { id: 'Анализ', name: 'Анализ', icon: '📊' },
-  { id: 'Маркетинг', name: 'Маркетинг', icon: '📈' },
-  { id: 'Стратегия', name: 'Стратегия', icon: '🎯' },
-  { id: 'Технологии', name: 'Технологии', icon: '📱' },
-  { id: 'Методология', name: 'Методология', icon: '⚖️' },
-  { id: 'Планирование', name: 'Планирование', icon: '⏰' }
+const getCategories = (t: any) => [
+  { id: 'all', name: t('knowledgeBase.categories.all'), icon: '📚' },
+  { id: 'Основы', name: t('knowledgeBase.categories.basics'), icon: '📝' },
+  { id: 'Шаблоны', name: t('knowledgeBase.categories.templates'), icon: '📋' },
+  { id: 'Вопросы', name: t('knowledgeBase.categories.questions'), icon: '❓' },
+  { id: 'Анализ', name: t('knowledgeBase.categories.analysis'), icon: '📊' },
+  { id: 'Маркетинг', name: t('knowledgeBase.categories.marketing'), icon: '📈' },
+  { id: 'Стратегия', name: t('knowledgeBase.categories.strategy'), icon: '🎯' },
+  { id: 'Технологии', name: t('knowledgeBase.categories.technologies'), icon: '📱' },
+  { id: 'Методология', name: t('knowledgeBase.categories.methodology'), icon: '⚖️' },
+  { id: 'Планирование', name: t('knowledgeBase.categories.planning'), icon: '⏰' }
 ];
 
 export const KnowledgeBasePage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { hapticFeedback } = useTelegram();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const categoriesRef = useRef<HTMLDivElement>(null);
+  const categories = getCategories(t);
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
@@ -205,10 +208,10 @@ export const KnowledgeBasePage = () => {
 
   const getDifficultyText = (difficulty: string) => {
     switch (difficulty) {
-      case 'beginner': return 'Начинающий';
-      case 'intermediate': return 'Средний';
-      case 'advanced': return 'Продвинутый';
-      default: return 'Неизвестно';
+      case 'beginner': return t('knowledgeBase.difficulty.beginner');
+      case 'intermediate': return t('knowledgeBase.difficulty.intermediate');
+      case 'advanced': return t('knowledgeBase.difficulty.advanced');
+      default: return t('knowledgeBase.difficulty.unknown');
     }
   };
 
@@ -239,7 +242,7 @@ export const KnowledgeBasePage = () => {
             alignItems: 'center',
             gap: '8px'
           }}>
-            📚 База знаний
+            📚 {t('knowledgeBase.title')}
           </h1>
         </div>
 
@@ -250,7 +253,7 @@ export const KnowledgeBasePage = () => {
         }}>
           <input
             type="text"
-            placeholder="Поиск статей..."
+            placeholder={t('knowledgeBase.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -327,7 +330,7 @@ export const KnowledgeBasePage = () => {
               margin: '0',
               lineHeight: '1.4'
             }}>
-              Статьи не найдены
+              {t('knowledgeBase.notFound')}
             </p>
           </div>
         ) : (
@@ -485,7 +488,7 @@ export const KnowledgeBasePage = () => {
                   gap: '8px'
                 }}>
                   <BookOpen size={16} />
-                  Читать статью
+                  {t('knowledgeBase.readArticle')}
                 </div>
               </div>
             ))}

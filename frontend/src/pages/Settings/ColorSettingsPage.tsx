@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -8,6 +9,7 @@ import type { AppColor } from '../../types';
 interface ColorSettingsPageProps {}
 
 const ColorSettingsPage: React.FC<ColorSettingsPageProps> = () => {
+  const { t } = useTranslation();
   const { color, setColor } = useAppStore();
   const { hapticFeedback } = useTelegram();
 
@@ -24,42 +26,42 @@ const ColorSettingsPage: React.FC<ColorSettingsPageProps> = () => {
   const colorOptions: Array<{ value: AppColor; name: string; color: string }> = [
     {
       value: 'orange',
-      name: 'Оранжевый',
+      name: t('settings.color.colors.orange'),
       color: '#F46D00'
     },
     {
       value: 'dark-green',
-      name: 'Темно-зеленый',
+      name: t('settings.color.colors.dark-green'),
       color: '#2D8659'
     },
     {
       value: 'blue',
-      name: 'Синий',
+      name: t('settings.color.colors.blue'),
       color: '#007AFF'
     },
     {
       value: 'burgundy',
-      name: 'Бордовый',
+      name: t('settings.color.colors.burgundy'),
       color: '#8B1538'
     },
     {
       value: 'purple',
-      name: 'Фиолетовый',
+      name: t('settings.color.colors.purple'),
       color: '#AF52DE'
     },
     {
       value: 'teal',
-      name: 'Бирюзовый',
+      name: t('settings.color.colors.teal'),
       color: '#00C2D4'
     },
     {
       value: 'pink',
-      name: 'Розовый',
+      name: t('settings.color.colors.pink'),
       color: '#FF2D55'
     },
     {
       value: 'cyan',
-      name: 'Голубой',
+      name: t('settings.color.colors.cyan'),
       color: '#5AC8FA'
     }
   ];
@@ -83,7 +85,7 @@ const ColorSettingsPage: React.FC<ColorSettingsPageProps> = () => {
           margin: 0,
           color: 'var(--tg-text-color)'
         }}>
-          Цвет приложения
+          {t('settings.color.title')}
         </h1>
       </div>
 

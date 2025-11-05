@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ImagePopupProps {
   imageUrl: string | null;
@@ -6,6 +7,7 @@ interface ImagePopupProps {
 }
 
 const ImagePopup: React.FC<ImagePopupProps> = ({ imageUrl, onClose }) => {
+  const { t } = useTranslation();
   if (!imageUrl) return null;
 
   return (
@@ -72,7 +74,7 @@ const ImagePopup: React.FC<ImagePopupProps> = ({ imageUrl, onClose }) => {
         </button>
         <img
           src={imageUrl}
-          alt="Fullscreen view"
+          alt={t('imagePopup.fullscreenView')}
           style={{
             maxWidth: '100%',
             maxHeight: '100%',

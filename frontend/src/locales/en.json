@@ -46,6 +46,515 @@
       "settings": "Settings",
       "support": "Support"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": {
+      "title": "Theme",
+      "name": "Theme",
+      "system": {
+        "name": "System",
+        "description": "Use device settings"
+      },
+      "light": {
+        "name": "Light",
+        "description": "Light theme"
+      },
+      "dark": {
+        "name": "Dark",
+        "description": "Dark theme"
+      }
+    },
+    "color": {
+      "title": "App Color",
+      "name": "App Color",
+      "description": "Choose main color",
+      "colors": {
+        "orange": "Orange",
+        "dark-green": "Dark Green",
+        "blue": "Blue",
+        "burgundy": "Burgundy",
+        "purple": "Purple",
+        "teal": "Teal",
+        "pink": "Pink",
+        "cyan": "Cyan"
+      }
+    },
+    "language": {
+      "title": "Language",
+      "name": "Language",
+      "description": "Choose interface language"
+    },
+    "cache": {
+      "name": "Clear Cache",
+      "description": "Delete local data",
+      "confirmTitle": "Clear app cache? All local data will be deleted."
+    }
+  },
+  "createSurvey": {
+    "title": "Create Survey or Test?",
+    "draft": {
+      "found": "Unfinished survey found",
+      "restoreQuestion": "Restore draft and continue editing?",
+      "restoreButton": "Yes, restore",
+      "declineButton": "No, thanks",
+      "aiSurvey": "AI Survey"
+    },
+    "survey": {
+      "title": "Create Survey",
+      "description": "Create a survey to collect feedback"
+    },
+    "test": {
+      "title": "Create Test",
+      "description": "Create a test with correct answers and scoring",
+      "comingSoon": "Test creation will be implemented later"
+    },
+    "createButton": "Create"
+  },
+  "surveyPublished": {
+    "title": "Survey Published!",
+    "subtitle": "Now you can share the link with participants",
+    "loading": "Preparing sharing link...",
+    "error": "Failed to load survey data",
+    "close": "Close",
+    "surveyInfo": {
+      "title": "Survey Information",
+      "questions": "questions",
+      "minutes": "min",
+      "maxParticipants": "up to {{count}} participants"
+    },
+    "shareLink": {
+      "title": "Sharing Link",
+      "loading": "Loading...",
+      "copy": "Copy Link",
+      "copied": "Copied!"
+    },
+    "qrCode": {
+      "title": "QR Code",
+      "description": "Scan the QR code for quick access to the survey",
+      "download": "Download QR Code",
+      "downloading": "Downloading..."
+    },
+    "shareTelegram": "Share in Telegram"
+  },
+  "surveyCreator": {
+    "tabs": {
+      "settings": "Settings",
+      "questions": "Questions",
+      "preview": "Preview"
+    },
+    "settings": {
+      "basicInfo": "Basic Information",
+      "title": "Survey Title *",
+      "titlePlaceholder": "Enter survey title...",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Survey description...",
+      "advanced": "Advanced Settings",
+      "language": "Survey Language",
+      "endDate": "End Date",
+      "maxParticipants": "Maximum Participants",
+      "maxParticipantsPlaceholder": "Unlimited",
+      "anonymous": "Anonymous Responses",
+      "anonymousDesc": "Allow participants to respond anonymously",
+      "showProgress": "Show Progress",
+      "showProgressDesc": "Show participants their progress",
+      "randomizeQuestions": "Randomize Questions",
+      "randomizeQuestionsDesc": "Question order will be random for each participant",
+      "oneResponsePerUser": "One Response Per User",
+      "oneResponsePerUserDesc": "Limit the ability to retake the survey",
+      "hideCreator": "Hide Survey Creator",
+      "hideCreatorDesc": "Don't show information about the survey creator",
+      "motivation": "Motivation",
+      "motivationDesc": "Add a reward for participating in the survey",
+      "motivationError": "Cannot enable motivation when survey creator is hidden",
+      "motivationWarning": "Cannot enable motivation when survey creator is hidden. Disable the \"Hide Survey Creator\" setting to use motivation.",
+      "motivationNotice": "When motivation is enabled, respondents will know in advance about the reward for completing the survey. We will give your Telegram contact to the respondent to contact you and receive the prize. AI Surveys does not participate in storing and transferring rewards.",
+      "rewardType": "Reward Type",
+      "rewardTypes": {
+        "discount": "Discount",
+        "promo": "Promo Code",
+        "stars": "Telegram Stars",
+        "gift": "Gift",
+        "other": "Other"
+      },
+      "rewardDetails": {
+        "discount": "Discount Description",
+        "promo": "What is the promo code",
+        "stars": "How many stars per user",
+        "gift": "What is the gift",
+        "other": "Explanation of other reward"
+      },
+      "rewardPlaceholders": {
+        "discount": "20% discount on next order",
+        "promo": "e.g.: SAVE20",
+        "stars": "e.g.: 50",
+        "gift": "e.g.: T-shirt with logo",
+        "other": "e.g.: Free consultation"
+      },
+      "promoConditions": "What the promo code is for and under what conditions",
+      "promoConditionsPlaceholder": "e.g.: Promo code for free delivery on orders over 1000 rubles"
+    },
+    "questions": {
+      "title": "Questions",
+      "empty": "Fill in the title and add at least one question",
+      "emptyFirst": "Add first question",
+      "addQuestion": "Create Question",
+      "questionLabel": "Question {{number}}",
+      "conditionalLabel": "Conditional",
+      "dependsOnQuestion": "Depends on question {{number}}: \"{{title}}\"",
+      "noTitle": "No title",
+      "questionTitleLabel": "Question Title",
+      "titlePlaceholder": "Enter question...",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Question description (optional)...",
+      "required": "Required Question",
+      "type": "Question Type",
+      "types": {
+        "text": "Short Answer",
+        "textarea": "Long Answer",
+        "single_choice": "Single Choice",
+        "multiple_choice": "Multiple Choice",
+        "scale": "Scale",
+        "rating": "Star Rating",
+        "boolean": "Yes/No",
+        "date": "Date",
+        "number": "Number"
+      },
+      "options": "Answer Options",
+      "option": "Option {{number}}",
+      "other": "Other",
+      "addOption": "Add Option",
+      "addOther": "Add \"Other\"",
+      "scaleSettings": "Scale Settings",
+      "scaleFrom": "From",
+      "scaleTo": "To",
+      "scaleMinLabel": "Minimum Label",
+      "scaleMinLabelPlaceholder": "e.g.: Terrible",
+      "scaleMaxLabel": "Maximum Label",
+      "scaleMaxLabelPlaceholder": "e.g.: Excellent",
+      "image": {
+        "uploading": "Uploading image...",
+        "add": "Add Image",
+        "uploaded": "Uploaded image",
+        "error": "Image loading error",
+        "clickToView": "Click on the image to view",
+        "fileTooLarge": "File size exceeds 10MB. Please select a smaller image.",
+        "invalidFile": "Please select an image file (JPEG, PNG, WebP, GIF)",
+        "serverError": "Server did not return image URL",
+        "uploadFailed": "Failed to upload image",
+        "fileTooBig": "File is too large. Maximum size: 10MB",
+        "invalidFormat": "Invalid file"
+      },
+      "validation": {
+        "scaleMinLess": "Value must not be less than 1",
+        "scaleMinMore": "Value must not be greater than 99",
+        "scaleMaxLess": "Value must not be less than 2",
+        "scaleMaxMore": "Value must not be greater than 100"
+      },
+      "conditional": {
+        "title": "Conditional Question",
+        "dependsOn": "Depends on question:",
+        "textUnavailable": "For questions with types \"Short Answer\" and \"Long Answer\", conditional question settings are not available",
+        "operators": {
+          "equals": "equals",
+          "not_equals": "not equals",
+          "contains": "contains",
+          "not_contains": "does not contain",
+          "greater_than": "greater than",
+          "less_than": "less than",
+          "greater_or_equal": "greater than or equal",
+          "less_or_equal": "less than or equal",
+          "date_on": "equals date",
+          "date_after": "after date",
+          "date_before": "before date"
+        },
+        "logic": {
+          "AND": "AND",
+          "OR": "OR"
+        },
+        "values": {
+          "yes": "Yes",
+          "no": "No"
+        },
+        "addCondition": "Add Condition",
+        "removeCondition": "Remove",
+        "incompleteWarning": "Condition is not fully filled. The question will always be shown until all condition fields are filled.",
+        "completeInfo": "This question will only be shown if the conditions are met. This will help reduce the time to complete the survey."
+      },
+      "duplicate": "copy",
+      "questionNumber": "Question {{number}}"
+    },
+    "preview": {
+      "title": "Survey Preview",
+      "empty": "Add questions to preview",
+      "defaultTitle": "Survey Title",
+      "noTitle": "Question without title",
+      "imageClick": "Click on the image to view",
+      "imageAlt": "Question image",
+      "answerPlaceholder": "Your answer...",
+      "datePlaceholder": "Date",
+      "numberPlaceholder": "Enter a number...",
+      "submit": "Submit Answers",
+      "cancel": "Cancel Selection",
+      "other": "Other",
+      "otherPlaceholder": "Other",
+      "otherRequired": "Please enter your answer",
+      "option": "Option {{number}}",
+      "yes": "Yes",
+      "no": "No",
+      "success": "Survey completed successfully!",
+      "requiredError": "Please answer all required questions",
+      "otherError": "Please fill in the selected \"Other\" fields"
+    },
+    "publish": "Publish Survey",
+    "publishError": "Failed to publish survey. Please try again.",
+    "language": {
+      "ru": "Russian",
+      "en": "English"
+    }
+  },
+  "surveyTake": {
+    "loading": "Loading survey...",
+    "participationUnavailable": "Participation in the survey is unavailable",
+    "loadError": "Failed to load survey",
+    "unavailable": "Survey unavailable",
+    "requiredError": "This is a required question",
+    "unsupportedType": "Unsupported question type",
+    "submitting": "Submitting...",
+    "wantToCreate": "Want to create your own survey?",
+    "openHomePage": "Open AI Surveys home page",
+    "imageLoading": "Loading image...",
+    "imageLoadError": "Failed to load image"
+  },
+  "surveyCompleted": {
+    "thanks": "Thank you for participating!",
+    "successMessage1": "Your answers have been successfully submitted.",
+    "successMessage2": "The survey organizer will receive them and can review the results.",
+    "contactOrganizer": "💬 Contact organizer",
+    "close": "Close",
+    "wantToCreate": "Want to create your own survey?",
+    "openHomePage": "Open AI Surveys home page"
+  },
+  "surveyInvite": {
+    "loading": "Loading...",
+    "notFound": "Survey not found",
+    "wantToCreate": "Want to create your own survey?",
+    "openHomePage": "Open AI Surveys home page",
+    "anonymousTag": "🔒 Anonymous",
+    "anonymousPopover": "Your answers will be anonymous",
+    "rewardTag": "🎁 Reward",
+    "rewardNotice": "All rewards are issued by survey organizers. AI Surveys does not participate in storing and transferring rewards.",
+    "oneResponseTag": "🔄 One response",
+    "oneResponsePopover": "Can participate only once",
+    "randomTag": "🎲 Random order",
+    "randomPopover": "Questions will be in random order",
+    "hiddenCreatorTag": "🎭 Hidden creator",
+    "hiddenCreatorPopover": "The survey creator preferred to hide their identity",
+    "settingsTag": "ℹ️ Settings",
+    "settingsTitle": "Possible survey settings:",
+    "anonymousDescription": "Your account is hidden",
+    "rewardDescription": "Gift for participation",
+    "oneResponseDescription": "Can only take once",
+    "randomDescription": "Questions are shuffled",
+    "hiddenCreatorDescription": "Creator hid their identity",
+    "hashtagsNote": "If you see hashtags, they are enabled",
+    "clickForDetails": "Click on any block for details",
+    "organizerLabel": "👤 Organizer: @{{username}}",
+    "organizerLabelNoUsername": "👤 Organizer: Telegram User",
+    "startSurvey": "📝 Start survey",
+    "privacyAgreement1": "By starting the survey you agree to",
+    "dataPolicy": "data processing policy",
+    "and": "and",
+    "privacyPolicy": "privacy policy"
+  },
+  "aiAnalytics": {
+    "title": "AI Analytics",
+    "refresh": "Refresh",
+    "export": "Export",
+    "loading": "Loading analytics...",
+    "loadingSubtitle": "Preparing data for analysis",
+    "generating": "Generating analytics...",
+    "generatingNote": "You can leave the page and return later",
+    "notFound": "AI analytics not found",
+    "notFoundDescription": "Start generating analytics to get insights",
+    "generateButton": "Get AI Analytics",
+    "generatingButton": "Generating...",
+    "tabs": {
+      "metrics": "Key Metrics",
+      "insights": "Valuable Insights",
+      "visualizations": "Visualizations"
+    },
+    "metrics": {
+      "generalStats": "General Statistics",
+      "totalResponses": "Total responses:",
+      "sentiment": "Response Sentiment",
+      "positive": "Positive",
+      "neutral": "Neutral",
+      "negative": "Negative",
+      "notAvailable": "N/A",
+      "keyMetrics": "Key Metrics",
+      "averageRating": "Average Rating:",
+      "satisfaction": "Satisfaction:"
+    },
+    "insights": {
+      "criticalProblem": "Critical Problem",
+      "opportunity": "Opportunity",
+      "priority": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "confidence": "Confidence:"
+    },
+    "visualizations": {
+      "sentimentDistribution": "Sentiment Distribution",
+      "questionAnalysis": "Question Analysis",
+      "responses": "Responses:"
+    },
+    "errors": {
+      "loadError": "Failed to load analytics",
+      "websocketError": "Failed to create WebSocket connection",
+      "generationError": "Generation error",
+      "connectionError": "Connection error to server. Check that the backend is running on ai-surveys.ru",
+      "noTelegramId": "Error: telegram_id is missing",
+      "userNotFound": "Error: user not found",
+      "serverError": "Server error",
+      "connectionLost": "Connection lost (code: {{code}})",
+      "generateError": "Failed to start analytics generation",
+      "websocketClosed": "WebSocket connection unexpectedly closed. Check: 1) Is the backend running on ai-surveys.ru, 2) Is the URL correct, 3) Are there any network issues"
+    }
+  },
+  "surveyAnalytics": {
+    "loading": "Loading analytics...",
+    "noResponses": "No responses yet — analytics will be available after first completions",
+    "generalStats": "General Statistics",
+    "totalAnswers": "Total Answers",
+    "questionNotSelected": "Question not selected",
+    "selectQuestion": "Select Question",
+    "noAnswersForQuestion": "No answers for this question yet",
+    "selectUser": "Select User",
+    "respondent": "Respondent",
+    "respondentNumber": "Respondent {{number}}",
+    "from": "of",
+    "noResponsesYet": "No responses to this survey yet",
+    "imageLoading": "Loading image...",
+    "imageLoadError": "Failed to load image",
+    "imageClick": "Click on the image to view",
+    "showAll": "Show All",
+    "hide": "Hide",
+    "aiAnalytics": {
+      "button": {
+        "exists": "👁️ View AI Analytics",
+        "generating": "⏳ Generating...",
+        "notFound": "🤖 Get AI Analytics"
+      },
+      "description": "Analyze responses using artificial intelligence. You will get a ready report with key findings and trends, saving time on analyzing received responses."
+    },
+    "answers": {
+      "yes": "Yes",
+      "no": "No",
+      "other": "Other"
+    }
+  },
+  "templates": {
+    "title": "Survey Templates",
+    "searchPlaceholder": "Search templates...",
+    "notFound": "Templates not found",
+    "useTemplate": "Use Template",
+    "questions": "questions",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "unknown": "Unknown"
+    },
+    "categories": {
+      "all": "All",
+      "business": "Business",
+      "hr": "HR",
+      "marketing": "Marketing",
+      "events": "Events",
+      "product": "Product",
+      "education": "Education",
+      "health": "Health",
+      "sociology": "Sociology"
+    }
+  },
+  "templateDetail": {
+    "notFound": "Template not found",
+    "backToTemplates": "Back to Templates",
+    "questions": "questions",
+    "time": "time",
+    "anonymous": "Anonymous Survey",
+    "anonymousDescription": "Anonymity ensures honest answers to sensitive questions. You can disable anonymity in survey settings if needed.",
+    "popularity": "popularity",
+    "about": "About Template",
+    "whenToUse": "When to Use",
+    "templateQuestions": "Template Questions",
+    "andMore": "and {{count}} more questions...",
+    "useTemplate": "Use Template",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "questionTypes": {
+      "rating": "Rating",
+      "single_choice": "Choice",
+      "multiple_choice": "Multiple Choice",
+      "scale": "Scale",
+      "textarea": "Text",
+      "boolean": "Yes/No"
+    }
+  },
+  "knowledgeBase": {
+    "title": "Knowledge Base",
+    "searchPlaceholder": "Search articles...",
+    "notFound": "Articles not found",
+    "readArticle": "Read Article",
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "unknown": "Unknown"
+    },
+    "categories": {
+      "all": "All",
+      "basics": "Basics",
+      "templates": "Templates",
+      "questions": "Questions",
+      "analysis": "Analysis",
+      "marketing": "Marketing",
+      "strategy": "Strategy",
+      "technologies": "Technologies",
+      "methodology": "Methodology",
+      "planning": "Planning"
+    }
+  },
+  "article": {
+    "notFound": "Article not found",
+    "notFoundDescription": "The requested article does not exist",
+    "backToArticles": "Back to Articles",
+    "introduction": "Introduction",
+    "tips": "Tips:",
+    "warnings": "Important:",
+    "keyPoints": "Key Points",
+    "conclusion": "Conclusion",
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "unknown": "Unknown"
+    }
+  },
+  "dateTimePicker": {
+    "notSpecified": "Not specified"
+  },
+  "imagePopup": {
+    "fullscreenView": "Fullscreen view"
+  },
+  "app": {
+    "loading": "Loading..."
   }
 }
 

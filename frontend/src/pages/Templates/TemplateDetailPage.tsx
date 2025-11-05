@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Star, CheckCircle, Play } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -890,6 +891,7 @@ const templates: SurveyTemplate[] = [
 ];
 
 const TemplateDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { templateId } = useParams<{ templateId: string }>();
   const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
@@ -920,7 +922,7 @@ const TemplateDetailPage: React.FC = () => {
         gap: '16px'
       }}>
         <h1 style={{ fontSize: '24px', fontWeight: '600', margin: 0 }}>
-          Шаблон не найден
+          {t('templateDetail.notFound')}
         </h1>
         <button
           onClick={() => navigate('/templates')}
@@ -935,7 +937,7 @@ const TemplateDetailPage: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          Вернуться к шаблонам
+          {t('templateDetail.backToTemplates')}
         </button>
       </div>
     );
@@ -978,9 +980,9 @@ const TemplateDetailPage: React.FC = () => {
 
   const getDifficultyText = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'Легкий';
-      case 'medium': return 'Средний';
-      case 'hard': return 'Сложный';
+      case 'easy': return t('templateDetail.difficulty.easy');
+      case 'medium': return t('templateDetail.difficulty.medium');
+      case 'hard': return t('templateDetail.difficulty.hard');
       default: return difficulty;
     }
   };
@@ -1080,7 +1082,7 @@ const TemplateDetailPage: React.FC = () => {
               fontSize: '12px',
               color: 'var(--tg-hint-color)'
             }}>
-              вопросов
+              {t('templateDetail.questions')}
             </div>
           </div>
 
@@ -1102,7 +1104,7 @@ const TemplateDetailPage: React.FC = () => {
               fontSize: '12px',
               color: 'var(--tg-hint-color)'
             }}>
-              время
+              {t('templateDetail.time')}
             </div>
           </div>
         </div>
@@ -1121,11 +1123,10 @@ const TemplateDetailPage: React.FC = () => {
             <div style={{ fontSize: '20px' }}>🔒</div>
             <div>
               <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
-                Анонимный опрос
+                {t('templateDetail.anonymous')}
               </div>
               <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.4' }}>
-                Анонимность обеспечивает честные ответы на деликатные вопросы. 
-                В настройках опроса вы сможете отключить анонимность при необходимости.
+                {t('templateDetail.anonymousDescription')}
               </div>
             </div>
           </div>
@@ -1174,7 +1175,7 @@ const TemplateDetailPage: React.FC = () => {
               fontSize: '14px',
               color: 'var(--tg-text-color)'
             }}>
-              {template.popularity}% популярность
+              {template.popularity}% {t('templateDetail.popularity')}
             </span>
           </div>
         </div>
@@ -1187,7 +1188,7 @@ const TemplateDetailPage: React.FC = () => {
             margin: '0 0 12px 0',
             color: 'var(--tg-text-color)'
           }}>
-            О шаблоне
+            {t('templateDetail.about')}
           </h3>
           <p style={{
             fontSize: '14px',
@@ -1207,7 +1208,7 @@ const TemplateDetailPage: React.FC = () => {
             margin: '0 0 12px 0',
             color: 'var(--tg-text-color)'
           }}>
-            Когда использовать
+            {t('templateDetail.whenToUse')}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {template.useCases.map((useCase, index) => (
@@ -1238,7 +1239,7 @@ const TemplateDetailPage: React.FC = () => {
             margin: '0 0 12px 0',
             color: 'var(--tg-text-color)'
           }}>
-            Вопросы в шаблоне
+            {t('templateDetail.templateQuestions')}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {template.questionsData.slice(0, 3).map((question, index) => (
@@ -1266,12 +1267,12 @@ const TemplateDetailPage: React.FC = () => {
                     color: 'var(--tg-hint-color)',
                     textTransform: 'uppercase'
                   }}>
-                    {question.type === 'rating' ? 'Оценка' :
-                     question.type === 'single_choice' ? 'Выбор' :
-                     question.type === 'multiple_choice' ? 'Множественный выбор' :
-                     question.type === 'scale' ? 'Шкала' :
-                     question.type === 'textarea' ? 'Текст' :
-                     question.type === 'boolean' ? 'Да/Нет' : question.type}
+                    {question.type === 'rating' ? t('templateDetail.questionTypes.rating') :
+                     question.type === 'single_choice' ? t('templateDetail.questionTypes.single_choice') :
+                     question.type === 'multiple_choice' ? t('templateDetail.questionTypes.multiple_choice') :
+                     question.type === 'scale' ? t('templateDetail.questionTypes.scale') :
+                     question.type === 'textarea' ? t('templateDetail.questionTypes.textarea') :
+                     question.type === 'boolean' ? t('templateDetail.questionTypes.boolean') : question.type}
                   </span>
                 </div>
                 <p style={{
@@ -1291,7 +1292,7 @@ const TemplateDetailPage: React.FC = () => {
                 color: 'var(--tg-hint-color)',
                 fontSize: '14px'
               }}>
-                и еще {template.questionsData.length - 3} вопросов...
+                {t('templateDetail.andMore', { count: template.questionsData.length - 3 })}
               </div>
             )}
           </div>
@@ -1327,7 +1328,7 @@ const TemplateDetailPage: React.FC = () => {
           }}
         >
           <Play size={20} />
-          Использовать шаблон
+          {t('templateDetail.useTemplate')}
         </button>
       </div>
     </div>

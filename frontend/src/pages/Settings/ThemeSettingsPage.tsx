@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, Sun, Moon, Monitor } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -7,6 +8,7 @@ import { useStableBackButton } from '../../hooks/useStableBackButton';
 interface ThemeSettingsPageProps {}
 
 const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = () => {
+  const { t } = useTranslation();
   const { theme, setTheme } = useAppStore();
   const { hapticFeedback } = useTelegram();
 
@@ -23,20 +25,20 @@ const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = () => {
   const themeOptions = [
     {
       value: 'system' as const,
-      name: 'Системная',
-      description: 'Использовать настройки устройства',
+      name: t('settings.theme.system.name'),
+      description: t('settings.theme.system.description'),
       icon: Monitor
     },
     {
       value: 'light' as const,
-      name: 'Светлая',
-      description: 'Светлая тема',
+      name: t('settings.theme.light.name'),
+      description: t('settings.theme.light.description'),
       icon: Sun
     },
     {
       value: 'dark' as const,
-      name: 'Тёмная',
-      description: 'Тёмная тема',
+      name: t('settings.theme.dark.name'),
+      description: t('settings.theme.dark.description'),
       icon: Moon
     }
   ];
@@ -60,7 +62,7 @@ const ThemeSettingsPage: React.FC<ThemeSettingsPageProps> = () => {
           margin: 0,
           color: 'var(--tg-text-color)'
         }}>
-          Тема
+          {t('settings.theme.title')}
         </h1>
       </div>
 

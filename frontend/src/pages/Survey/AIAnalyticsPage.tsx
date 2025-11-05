@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, 
   RefreshCw, 
@@ -102,6 +103,7 @@ interface ProgressData {
 }
 
 const AIAnalyticsPage: React.FC = () => {
+  const { t } = useTranslation();
   // Стили для страницы
   const styles = `
     /* AI Analytics Page Styles */
@@ -1005,7 +1007,7 @@ const AIAnalyticsPage: React.FC = () => {
       }
     } catch (err) {
       console.error('Ошибка загрузки аналитики:', err);
-      setError('Не удалось загрузить аналитику');
+      setError(t('aiAnalytics.errors.loadError'));
       setLoading(false);
     }
   };
@@ -1039,7 +1041,7 @@ const AIAnalyticsPage: React.FC = () => {
     wsRef.current = new WebSocket(wsUrl);
     } catch (err) {
       console.error('Ошибка создания WebSocket:', err);
-      setError('Не удается создать WebSocket соединение');
+      setError(t('aiAnalytics.errors.websocketError'));
       return;
     }
 
@@ -1079,7 +1081,7 @@ const AIAnalyticsPage: React.FC = () => {
           console.log('Ошибка генерации:', progressData.error);
           setGenerating(false);
           generatingRef.current = false;
-          setError(progressData.error || 'Ошибка генерации');
+          setError(progressData.error || t('aiAnalytics.errors.generationError'));
           // Останавливаем polling
           if (pollingIntervalRef.current) {
             window.clearInterval(pollingIntervalRef.current);
@@ -1101,7 +1103,7 @@ const AIAnalyticsPage: React.FC = () => {
       console.error('WebSocket URL был:', wsUrl);
       // Не показываем ошибку сразу, если генерация идет - используем polling
       if (!generatingRef.current) {
-        setError('Ошибка подключения к серверу. Проверьте, что бэкенд запущен на ai-surveys.ru');
+        setError(t('aiAnalytics.errors.connectionError'));
       } else {
         console.log('WebSocket ошибка, но генерация продолжается. Используем polling.');
         startPolling();
@@ -1135,25 +1137,25 @@ const AIAnalyticsPage: React.FC = () => {
         } else {
           // Не показываем ошибку, если генерация идет - используем polling
           if (!generatingRef.current) {
-            setError('WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на ai-surveys.ru, 2) Правильный ли URL, 3) Нет ли проблем с сетью');
+            setError(t('aiAnalytics.errors.websocketClosed'));
           }
         }
       } else if (event.code === 4000) {
         if (!generatingRef.current) {
-          setError('Ошибка: отсутствует telegram_id');
+          setError(t('aiAnalytics.errors.noTelegramId'));
         }
       } else if (event.code === 4001) {
         if (!generatingRef.current) {
-          setError('Ошибка: пользователь не найден');
+          setError(t('aiAnalytics.errors.userNotFound'));
         }
       } else if (event.code === 4002) {
         if (!generatingRef.current) {
-          setError('Ошибка сервера');
+          setError(t('aiAnalytics.errors.serverError'));
         }
       } else if (event.code !== 1000 && event.code !== 1001) {
         // Не показываем ошибку для других кодов, если генерация идет
         if (!generatingRef.current) {
-          setError(`Соединение потеряно (код: ${event.code})`);
+          setError(t('aiAnalytics.errors.connectionLost', { code: event.code }));
         }
       }
     };
@@ -1200,7 +1202,7 @@ const AIAnalyticsPage: React.FC = () => {
           console.log('Ошибка генерации (обнаружено через polling)');
           setGenerating(false);
           generatingRef.current = false;
-          setError(response.data.error || 'Ошибка генерации');
+          setError(response.data.error || t('aiAnalytics.errors.generationError'));
           
           // Останавливаем polling
           if (pollingIntervalRef.current) {
@@ -1278,7 +1280,7 @@ const AIAnalyticsPage: React.FC = () => {
       }
     } catch (err) {
       console.error('Ошибка запуска генерации:', err);
-      setError('Не удалось запустить генерацию аналитики');
+      setError(t('aiAnalytics.errors.generateError'));
       setGenerating(false);
       generatingRef.current = false;
       
@@ -1322,45 +1324,45 @@ const AIAnalyticsPage: React.FC = () => {
         <div className="metrics-grid">
           {/* Общая статистика */}
           <div className="metric-card">
-            <h3>Общая статистика</h3>
+            <h3>{t('aiAnalytics.metrics.generalStats')}</h3>
             <div className="metric-item">
-              <span className="metric-label">Прохождений опроса:</span>
+              <span className="metric-label">{t('aiAnalytics.metrics.totalResponses')}</span>
               <span className="metric-value">{metrics.total_responses || 0}</span>
             </div>
           </div>
 
           {/* Анализ тональности */}
           <div className="metric-card">
-            <h3>Тональность ответов</h3>
+            <h3>{t('aiAnalytics.metrics.sentiment')}</h3>
             <div className="sentiment-bars">
               <div className="sentiment-bar positive">
-                <div className="sentiment-label">Позитивные</div>
+                <div className="sentiment-label">{t('aiAnalytics.metrics.positive')}</div>
                 <div className="sentiment-value">
                   {metrics.sentiment_analysis?.positive_percentage !== null && metrics.sentiment_analysis?.positive_percentage !== undefined 
                     ? `${metrics.sentiment_analysis.positive_percentage}%`
                     : visualizations.sentiment_chart?.positive !== null && visualizations.sentiment_chart?.positive !== undefined
                     ? `${visualizations.sentiment_chart.positive}%`
-                    : 'Н/Д'}
+                    : t('aiAnalytics.metrics.notAvailable')}
                 </div>
               </div>
               <div className="sentiment-bar neutral">
-                <div className="sentiment-label">Нейтральные</div>
+                <div className="sentiment-label">{t('aiAnalytics.metrics.neutral')}</div>
                 <div className="sentiment-value">
                   {metrics.sentiment_analysis?.neutral_percentage !== null && metrics.sentiment_analysis?.neutral_percentage !== undefined 
                     ? `${metrics.sentiment_analysis.neutral_percentage}%`
                     : visualizations.sentiment_chart?.neutral !== null && visualizations.sentiment_chart?.neutral !== undefined
                     ? `${visualizations.sentiment_chart.neutral}%`
-                    : 'Н/Д'}
+                    : t('aiAnalytics.metrics.notAvailable')}
                 </div>
               </div>
               <div className="sentiment-bar negative">
-                <div className="sentiment-label">Негативные</div>
+                <div className="sentiment-label">{t('aiAnalytics.metrics.negative')}</div>
                 <div className="sentiment-value">
                   {metrics.sentiment_analysis?.negative_percentage !== null && metrics.sentiment_analysis?.negative_percentage !== undefined 
                     ? `${metrics.sentiment_analysis.negative_percentage}%`
                     : visualizations.sentiment_chart?.negative !== null && visualizations.sentiment_chart?.negative !== undefined
                     ? `${visualizations.sentiment_chart.negative}%`
-                    : 'Н/Д'}
+                    : t('aiAnalytics.metrics.notAvailable')}
                 </div>
               </div>
             </div>
@@ -1369,16 +1371,16 @@ const AIAnalyticsPage: React.FC = () => {
           {/* Ключевые метрики */}
           {(metrics.key_metrics?.average_rating || metrics.key_metrics?.satisfaction_score) && (
             <div className="metric-card">
-              <h3>Ключевые показатели</h3>
+              <h3>{t('aiAnalytics.metrics.keyMetrics')}</h3>
               {metrics.key_metrics?.average_rating && (
                 <div className="metric-item">
-                  <span className="metric-label">Средняя оценка:</span>
+                  <span className="metric-label">{t('aiAnalytics.metrics.averageRating')}</span>
                   <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}</span>
                 </div>
               )}
               {metrics.key_metrics?.satisfaction_score && (
                 <div className="metric-item">
-                  <span className="metric-label">Удовлетворенность:</span>
+                  <span className="metric-label">{t('aiAnalytics.metrics.satisfaction')}</span>
                   <span className="metric-value">{metrics.key_metrics.satisfaction_score}%</span>
                 </div>
               )}
@@ -1405,7 +1407,7 @@ const AIAnalyticsPage: React.FC = () => {
       if (analyticsData.critical_problem) {
         allInsights.push({
           type: 'critical_problem',
-          title: analyticsData.critical_problem.title || 'Критическая проблема',
+          title: analyticsData.critical_problem.title || t('aiAnalytics.insights.criticalProblem'),
           description: analyticsData.critical_problem.description || '',
           priority: analyticsData.critical_problem.priority || 'high',
           confidence: analyticsData.critical_problem.confidence || 0.8
@@ -1416,7 +1418,7 @@ const AIAnalyticsPage: React.FC = () => {
       if (analyticsData.opportunity) {
         allInsights.push({
           type: 'opportunity',
-          title: analyticsData.opportunity.title || 'Возможность',
+          title: analyticsData.opportunity.title || t('aiAnalytics.insights.opportunity'),
           description: analyticsData.opportunity.description || '',
           priority: analyticsData.opportunity.priority || 'medium',
           confidence: analyticsData.opportunity.confidence || 0.7
@@ -1447,16 +1449,16 @@ const AIAnalyticsPage: React.FC = () => {
                     <span className="type-label">{insight.title}</span>
                   </div>
                   <div className={`priority-badge ${insight.priority}`}>
-                    {insight.priority === 'high' && 'Высокий'}
-                    {insight.priority === 'medium' && 'Средний'}
-                    {insight.priority === 'low' && 'Низкий'}
+                    {insight.priority === 'high' && t('aiAnalytics.insights.priority.high')}
+                    {insight.priority === 'medium' && t('aiAnalytics.insights.priority.medium')}
+                    {insight.priority === 'low' && t('aiAnalytics.insights.priority.low')}
                   </div>
                 </div>
                 <div className="insight-description">
                   {insight.description}
                 </div>
                 <div className="insight-confidence">
-                  Уверенность: {(insight.confidence * 100).toFixed(0)}%
+                  {t('aiAnalytics.insights.confidence')} {(insight.confidence * 100).toFixed(0)}%
                 </div>
               </motion.div>
             ))}
@@ -1487,16 +1489,16 @@ const AIAnalyticsPage: React.FC = () => {
                   <span className="type-label">{insight.title}</span>
                 </div>
                 <div className={`priority-badge ${insight.priority}`}>
-                  {insight.priority === 'high' && 'Высокий'}
-                  {insight.priority === 'medium' && 'Средний'}
-                  {insight.priority === 'low' && 'Низкий'}
+                  {insight.priority === 'high' && t('aiAnalytics.insights.priority.high')}
+                  {insight.priority === 'medium' && t('aiAnalytics.insights.priority.medium')}
+                  {insight.priority === 'low' && t('aiAnalytics.insights.priority.low')}
                 </div>
               </div>
               <div className="insight-description">
                 {insight.description}
               </div>
               <div className="insight-confidence">
-                Уверенность: {(insight.confidence * 100).toFixed(0)}%
+                {t('aiAnalytics.insights.confidence')} {(insight.confidence * 100).toFixed(0)}%
               </div>
             </motion.div>
           ))}
@@ -1532,19 +1534,19 @@ const AIAnalyticsPage: React.FC = () => {
       <div className="analytics-content">
         {/* График тональности */}
         <div className="visualization-card">
-          <h3>Распределение тональности</h3>
+          <h3>{t('aiAnalytics.visualizations.sentimentDistribution')}</h3>
           <div className="sentiment-chart">
             <div className="chart-bar positive" style={{ height: `${sentimentChart.positive > 0 ? Math.max(sentimentChart.positive, 8) : 0}%` }}>
-              <span className="bar-label">Позитивные</span>
-              <span className="bar-value">{sentimentChart.positive !== null && sentimentChart.positive !== undefined ? `${sentimentChart.positive}%` : 'Н/Д'}</span>
+              <span className="bar-label">{t('aiAnalytics.metrics.positive')}</span>
+              <span className="bar-value">{sentimentChart.positive !== null && sentimentChart.positive !== undefined ? `${sentimentChart.positive}%` : t('aiAnalytics.metrics.notAvailable')}</span>
             </div>
             <div className="chart-bar neutral" style={{ height: `${sentimentChart.neutral > 0 ? Math.max(sentimentChart.neutral, 8) : 0}%` }}>
-              <span className="bar-label">Нейтральные</span>
-              <span className="bar-value">{sentimentChart.neutral !== null && sentimentChart.neutral !== undefined ? `${sentimentChart.neutral}%` : 'Н/Д'}</span>
+              <span className="bar-label">{t('aiAnalytics.metrics.neutral')}</span>
+              <span className="bar-value">{sentimentChart.neutral !== null && sentimentChart.neutral !== undefined ? `${sentimentChart.neutral}%` : t('aiAnalytics.metrics.notAvailable')}</span>
             </div>
             <div className="chart-bar negative" style={{ height: `${sentimentChart.negative > 0 ? Math.max(sentimentChart.negative, 8) : 0}%` }}>
-              <span className="bar-label">Негативные</span>
-              <span className="bar-value">{sentimentChart.negative !== null && sentimentChart.negative !== undefined ? `${sentimentChart.negative}%` : 'Н/Д'}</span>
+              <span className="bar-label">{t('aiAnalytics.metrics.negative')}</span>
+              <span className="bar-value">{sentimentChart.negative !== null && sentimentChart.negative !== undefined ? `${sentimentChart.negative}%` : t('aiAnalytics.metrics.notAvailable')}</span>
             </div>
           </div>
         </div>
@@ -1552,7 +1554,7 @@ const AIAnalyticsPage: React.FC = () => {
         {/* Анализ по вопросам */}
         {questionAnalysis.length > 0 && (
           <div className="visualization-card">
-            <h3>Анализ по вопросам</h3>
+            <h3>{t('aiAnalytics.visualizations.questionAnalysis')}</h3>
             <div className="question-analysis">
               {questionAnalysis.map((question: any, index: number) => (
                 <div key={index} className="question-item">
@@ -1564,7 +1566,7 @@ const AIAnalyticsPage: React.FC = () => {
                       {question.sentiment === 'neutral' && '😐'}
                     </span>
                     <span className="response-rate">
-                      Ответов: {question.response_rate ? (question.response_rate * 100).toFixed(0) : 0}%
+                      {t('aiAnalytics.visualizations.responses')} {question.response_rate ? (question.response_rate * 100).toFixed(0) : 0}%
                     </span>
                   </div>
                   {question.key_themes && question.key_themes.length > 0 && (
@@ -1589,8 +1591,8 @@ const AIAnalyticsPage: React.FC = () => {
       <div className="loading-spinner">
           <div className="orange-loader"></div>
       </div>
-      <div className="loading-text">Загружаем аналитику...</div>
-        <div className="loading-subtitle">Подготавливаем данные для анализа</div>
+      <div className="loading-text">{t('aiAnalytics.loading')}</div>
+        <div className="loading-subtitle">{t('aiAnalytics.loadingSubtitle')}</div>
         <div className="loading-dots">
           <span></span>
           <span></span>
@@ -1605,7 +1607,7 @@ const AIAnalyticsPage: React.FC = () => {
       <div className="generating-spinner">
         <Brain className="spinner-icon" />
       </div>
-      <div className="generating-text">{progress?.message || 'Генерируем аналитику...'}</div>
+      <div className="generating-text">{progress?.message || t('aiAnalytics.generating')}</div>
       {progress && (
         <div className="progress-bar">
           <div 
@@ -1615,7 +1617,7 @@ const AIAnalyticsPage: React.FC = () => {
         </div>
       )}
       <div className="generating-note">
-        Вы можете покинуть страницу и вернуться позже
+        {t('aiAnalytics.generatingNote')}
       </div>
     </div>
   );
@@ -1623,8 +1625,8 @@ const AIAnalyticsPage: React.FC = () => {
   const renderEmptyState = () => (
     <div className="empty-state">
       <Brain className="empty-icon" />
-      <h3>ИИ аналитика не найдена</h3>
-      <p>Запустите генерацию аналитики для получения инсайтов</p>
+      <h3>{t('aiAnalytics.notFound')}</h3>
+      <p>{t('aiAnalytics.notFoundDescription')}</p>
       <button 
         className="generate-button"
         onClick={generateAnalytics}
@@ -1633,12 +1635,12 @@ const AIAnalyticsPage: React.FC = () => {
         {generating ? (
           <>
             <Loader2 className="button-icon" />
-            Генерируется...
+            {t('aiAnalytics.generatingButton')}
           </>
         ) : (
           <>
             <Brain className="button-icon" />
-            Получить ИИ аналитику
+            {t('aiAnalytics.generateButton')}
           </>
         )}
       </button>
@@ -1652,7 +1654,7 @@ const AIAnalyticsPage: React.FC = () => {
           <button className="back-button" onClick={() => navigate(-1)}>
             <ArrowLeft className="icon" />
           </button>
-          <h1>ИИ Аналитика</h1>
+          <h1>{t('aiAnalytics.title')}</h1>
         </div>
         {renderLoadingState()}
       </div>
@@ -1668,21 +1670,21 @@ const AIAnalyticsPage: React.FC = () => {
           <ArrowLeft className="icon" />
         </button>
         <div className="header-content">
-          <h1>ИИ Аналитика</h1>
+          <h1>{t('aiAnalytics.title')}</h1>
           <p className="survey-title">{surveyTitle}</p>
         </div>
         <div className="header-actions">
           <button 
             className="action-button"
             onClick={refreshAnalytics}
-            title="Обновить"
+            title={t('aiAnalytics.refresh')}
           >
             <RefreshCw className="icon" />
           </button>
           <button 
             className="action-button"
             onClick={() => exportAnalytics('json')}
-            title="Экспорт"
+            title={t('aiAnalytics.export')}
           >
             <Download className="icon" />
           </button>
@@ -1709,21 +1711,21 @@ const AIAnalyticsPage: React.FC = () => {
               onClick={() => handleTabClick('metrics')}
             >
               <TrendingUp className="icon" />
-              Основные показатели
+              {t('aiAnalytics.tabs.metrics')}
             </button>
             <button
               className={`tab-button ${activeTab === 'insights' ? 'active' : ''}`}
               onClick={() => handleTabClick('insights')}
             >
               <Lightbulb className="icon" />
-              Ценные инсайты
+              {t('aiAnalytics.tabs.insights')}
             </button>
             <button
               className={`tab-button ${activeTab === 'visualizations' ? 'active' : ''}`}
               onClick={() => handleTabClick('visualizations')}
             >
               <BarChart3 className="icon" />
-              Визуализация
+              {t('aiAnalytics.tabs.visualizations')}
             </button>
           </div>
 

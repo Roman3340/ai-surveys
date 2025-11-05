@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
@@ -21,6 +22,7 @@ interface SurveyPublicData {
 }
 
 export default function SurveyInvitePage() {
+  const { t } = useTranslation();
   const { surveyId } = useParams();
   const navigate = useNavigate();
   const { user, hapticFeedback, isReady } = useTelegram();
@@ -43,7 +45,7 @@ export default function SurveyInvitePage() {
         setSurvey(response);
       } catch (e: any) {
         console.error(e);
-        setError(e?.response?.data?.detail || 'Не удалось загрузить опрос');
+        setError(e?.response?.data?.detail || t('surveyTake.loadError'));
       } finally {
         setLoading(false);
       }
@@ -53,7 +55,7 @@ export default function SurveyInvitePage() {
 
   const handleParticipate = () => {
     if (!survey?.canParticipate) {
-      alert(survey?.participationMessage || 'Участие в опросе недоступно');
+      alert(survey?.participationMessage || t('surveyTake.participationUnavailable'));
       return;
     }
     hapticFeedback?.medium();
@@ -96,7 +98,7 @@ export default function SurveyInvitePage() {
             animation: 'spin 1s linear infinite',
             margin: '0 auto 12px'
           }} />
-          <p style={{ color: 'var(--tg-hint-color)' }}>Загрузка...</p>
+          <p style={{ color: 'var(--tg-hint-color)' }}>{t('surveyInvite.loading')}</p>
         </div>
       </div>
     );
@@ -116,7 +118,7 @@ export default function SurveyInvitePage() {
         <div style={{ textAlign: 'center', maxWidth: '400px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
           <p style={{ color: 'var(--tg-text-color)', fontSize: '16px', marginBottom: '8px' }}>
-            Опрос не найден
+            {t('surveyInvite.notFound')}
           </p>
           <p style={{ color: 'var(--tg-hint-color)', fontSize: '14px', marginBottom: '24px' }}>
             {error}
@@ -129,7 +131,7 @@ export default function SurveyInvitePage() {
             marginTop: '24px',
             lineHeight: '1.5'
           }}>
-            Хотите создать свой опрос?
+            {t('surveyInvite.wantToCreate')}
             <br />
             <button
               onClick={() => navigate('/')}
@@ -145,7 +147,7 @@ export default function SurveyInvitePage() {
                 margin: '0'
               }}
             >
-              Откройте главную страницу AI Surveys
+              {t('surveyInvite.openHomePage')}
             </button>
           </p>
         </div>
@@ -228,7 +230,7 @@ export default function SurveyInvitePage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  🔒 Анонимность
+                  {t('surveyInvite.anonymousTag')}
                 </button>
                 <AnimatePresence>
                   {activePopover === 'anonymous' && (
@@ -257,7 +259,7 @@ export default function SurveyInvitePage() {
                         maxWidth: '200px'
                       }}
                     >
-                      Ваши ответы будут анонимными
+                      {t('surveyInvite.anonymousPopover')}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -290,7 +292,7 @@ export default function SurveyInvitePage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  🎁 Награда
+                  {t('surveyInvite.rewardTag')}
                 </button>
                 <AnimatePresence>
                   {activePopover === 'reward' && (
@@ -320,10 +322,10 @@ export default function SurveyInvitePage() {
                       }}
                     >
                       <div style={{ marginBottom: '8px' }}>
-                        {survey.settings.motivationType === 'discount' && `💰 ${survey.settings.motivationDetails || 'Скидка'}`}
-                        {survey.settings.motivationType === 'promo' && `🛒 ${survey.settings.motivationDetails || 'Промокод'}`}
-                        {survey.settings.motivationType === 'stars' && `⭐ ${survey.settings.motivationDetails || '50'} звёзд Telegram`}
-                        {survey.settings.motivationType === 'gift' && `🎁 ${survey.settings.motivationDetails || 'Подарок'}`}
+                        {survey.settings.motivationType === 'discount' && `💰 ${survey.settings.motivationDetails || t('surveyCreator.settings.rewardTypes.discount')}`}
+                        {survey.settings.motivationType === 'promo' && `🛒 ${survey.settings.motivationDetails || t('surveyCreator.settings.rewardTypes.promo')}`}
+                        {survey.settings.motivationType === 'stars' && `⭐ ${survey.settings.motivationDetails || '50'} ${t('surveyCreator.settings.rewardTypes.stars')}`}
+                        {survey.settings.motivationType === 'gift' && `🎁 ${survey.settings.motivationDetails || t('surveyCreator.settings.rewardTypes.gift')}`}
                         {survey.settings.motivationType === 'other' && survey.settings.motivationDetails}
                       </div>
                       <div style={{ 
@@ -333,7 +335,7 @@ export default function SurveyInvitePage() {
                         borderTop: '1px solid #48484a',
                         paddingTop: '6px'
                       }}>
-                        Все награды выдаются организаторами опроса. AI Surveys не участвует в их хранении и передаче.
+                        {t('surveyInvite.rewardNotice')}
                       </div>
                     </motion.div>
                   )}
@@ -367,7 +369,7 @@ export default function SurveyInvitePage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  🔄 Один ответ
+                  {t('surveyInvite.oneResponseTag')}
                 </button>
                 <AnimatePresence>
                   {activePopover === 'oneResponse' && (
@@ -396,7 +398,7 @@ export default function SurveyInvitePage() {
                         maxWidth: '200px'
                       }}
                     >
-                      Можно участвовать только один раз
+                      {t('surveyInvite.oneResponsePopover')}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -429,7 +431,7 @@ export default function SurveyInvitePage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  🎲 Случайный порядок
+                  {t('surveyInvite.randomTag')}
                 </button>
                 <AnimatePresence>
                   {activePopover === 'random' && (
@@ -458,7 +460,7 @@ export default function SurveyInvitePage() {
                         maxWidth: '200px'
                       }}
                     >
-                      Вопросы будут в случайном порядке
+                      {t('surveyInvite.randomPopover')}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -491,7 +493,7 @@ export default function SurveyInvitePage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  🎭 Скрытый создатель
+                  {t('surveyInvite.hiddenCreatorTag')}
                 </button>
                 <AnimatePresence>
                   {activePopover === 'hidden' && (
@@ -519,7 +521,7 @@ export default function SurveyInvitePage() {
                         lineHeight: '1.3'
                       }}
                     >
-                      Создатель опроса предпочел скрыть свою личность
+                      {t('surveyInvite.hiddenCreatorPopover')}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -551,7 +553,7 @@ export default function SurveyInvitePage() {
                   transition: 'all 0.2s ease'
                 }}
               >
-                ℹ️ Настройки
+                  {t('surveyInvite.settingsTag')}
               </button>
               <AnimatePresence>
                 {activePopover === 'info' && (
@@ -582,7 +584,7 @@ export default function SurveyInvitePage() {
                     }}
                   >
                     <div style={{ marginBottom: '12px', fontWeight: '600', fontSize: '13px' }}>
-                      Возможные настройки опросов:
+                        {t('surveyInvite.settingsTitle')}
                     </div>
                     <div style={{ 
                       display: 'grid', 
@@ -591,34 +593,34 @@ export default function SurveyInvitePage() {
                       marginBottom: '12px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🔒 <span style={{ fontSize: '11px' }}>Анонимность</span>
+                          🔒 <span style={{ fontSize: '11px' }}>{t('surveyCreator.settings.anonymous')}</span>
                       </div>
                       <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
-                        Ваш аккаунт скрыт
+                          {t('surveyInvite.anonymousDescription')}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🎁 <span style={{ fontSize: '11px' }}>Награда</span>
+                          🎁 <span style={{ fontSize: '11px' }}>{t('surveyCreator.settings.motivation')}</span>
                       </div>
                       <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
-                        Подарок за участие
+                          {t('surveyInvite.rewardDescription')}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🔄 <span style={{ fontSize: '11px' }}>Один ответ</span>
+                          🔄 <span style={{ fontSize: '11px' }}>{t('surveyCreator.settings.oneResponsePerUser')}</span>
                       </div>
                       <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
-                        Пройти можно только один раз
+                          {t('surveyInvite.oneResponseDescription')}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🎲 <span style={{ fontSize: '11px' }}>Случайный порядок</span>
+                          🎲 <span style={{ fontSize: '11px' }}>{t('surveyCreator.settings.randomizeQuestions')}</span>
                       </div>
                       <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
-                        Вопросы перемешаны
+                          {t('surveyInvite.randomDescription')}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        🎭 <span style={{ fontSize: '11px' }}>Скрытый создатель</span>
+                          🎭 <span style={{ fontSize: '11px' }}>{t('surveyCreator.settings.hideCreator')}</span>
                       </div>
                       <div style={{ fontSize: '11px', color: '#a0a0a0' }}>
-                        Создатель скрыл свою личность
+                          {t('surveyInvite.hiddenCreatorDescription')}
                       </div>
                     </div>
                     <div style={{ 
@@ -629,7 +631,7 @@ export default function SurveyInvitePage() {
                       borderTop: '1px solid #48484a',
                       paddingTop: '8px'
                     }}>
-                      Если видите хэштеги - значит они включены
+                        {t('surveyInvite.hashtagsNote')}
                     </div>
                   </motion.div>
                 )}
@@ -644,7 +646,7 @@ export default function SurveyInvitePage() {
             textAlign: 'center',
             margin: 0
           }}>
-            Нажмите на любой блок для подробностей
+            {t('surveyInvite.clickForDetails')}
           </p>
         </div>
 
@@ -668,7 +670,10 @@ export default function SurveyInvitePage() {
             }}
           >
             <span style={{ fontSize: '14px', color: 'var(--tg-text-color)' }}>
-              👤 Организатор: {survey.creatorUsername ? `@${survey.creatorUsername}` : 'Пользователь Telegram'}
+              {survey.creatorUsername 
+                ? t('surveyInvite.organizerLabel', { username: survey.creatorUsername })
+                : t('surveyInvite.organizerLabelNoUsername')
+              }
             </span>
           </button>
         )}
@@ -692,7 +697,7 @@ export default function SurveyInvitePage() {
                 marginBottom: '12px'
               }}
             >
-              📝 Начать опрос
+              {t('surveyInvite.startSurvey')}
             </button>
             
             {/* Текст согласия */}
@@ -703,7 +708,7 @@ export default function SurveyInvitePage() {
               lineHeight: '1.4',
               margin: 0
             }}>
-              Запуская опрос вы соглашаетесь с{' '}
+              {t('surveyInvite.privacyAgreement1')}{' '}
               <a 
                 href="#" 
                 style={{
@@ -716,9 +721,9 @@ export default function SurveyInvitePage() {
                   // TODO: Открыть политику обработки данных
                 }}
               >
-                политикой обработки данных
+                {t('surveyInvite.dataPolicy')}
               </a>
-              {' '}и{' '}
+              {' '}{t('surveyInvite.and')}{' '}
               <a 
                 href="#" 
                 style={{
@@ -731,7 +736,7 @@ export default function SurveyInvitePage() {
                   // TODO: Открыть политику конфиденциальности
                 }}
               >
-                политикой конфиденциальности
+                {t('surveyInvite.privacyPolicy')}
               </a>
             </p>
           </div>

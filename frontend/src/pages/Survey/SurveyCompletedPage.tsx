@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useTelegram } from '../../hooks/useTelegram';
 import TelegramEmoji from '../../components/ui/TelegramEmoji';
 
 export default function SurveyCompletedPage() {
+  const { t } = useTranslation();
   const location = useLocation();
   const { close, hapticFeedback } = useTelegram();
 
@@ -70,7 +72,7 @@ export default function SurveyCompletedPage() {
             lineHeight: '1.3'
           }}
         >
-          Спасибо за участие!
+          {t('surveyCompleted.thanks')}
         </motion.h1>
 
         {/* Описание */}
@@ -85,9 +87,9 @@ export default function SurveyCompletedPage() {
             lineHeight: '1.6'
           }}
         >
-          Ваши ответы успешно отправлены.
+          {t('surveyCompleted.successMessage1')}
           <br />
-          Организатор опроса получит их и сможет ознакомиться с результатами.
+          {t('surveyCompleted.successMessage2')}
         </motion.p>
 
         {/* Кнопка связи с создателем */}
@@ -115,7 +117,7 @@ export default function SurveyCompletedPage() {
               transition: 'all 0.2s ease'
             }}
           >
-            💬 Связаться с организатором
+            {t('surveyCompleted.contactOrganizer')}
           </motion.button>
         )}
 
@@ -138,7 +140,7 @@ export default function SurveyCompletedPage() {
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
           }}
         >
-          Закрыть
+          {t('surveyCompleted.close')}
         </motion.button>
 
         {/* Дополнительный текст */}
@@ -153,10 +155,10 @@ export default function SurveyCompletedPage() {
             lineHeight: '1.5'
           }}
         >
-          Хотите создать свой опрос?
+          {t('surveyCompleted.wantToCreate')}
           <br />
           <Link to="/" style={{ color: 'var(--tg-link-color)', textDecoration: 'none', fontWeight: '500' }}>
-            Откройте главную страницу AI Surveys
+            {t('surveyCompleted.openHomePage')}
           </Link>
         </motion.p>
       </motion.div>

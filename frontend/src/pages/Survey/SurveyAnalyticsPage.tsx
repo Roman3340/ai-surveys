@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Copy, Share, Settings, ChevronDown, ChevronUp, Save, X, Trash2, Download, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { surveyApi, questionApi, aiAnalytics, uploadApi } from '../../services/api';
@@ -68,6 +69,7 @@ const SummaryTab: React.FC<{
   setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
   setFullscreenImage: React.Dispatch<React.SetStateAction<string | null>>;
 }> = ({ survey, questions, responses, stats, loading, aiAnalyticsStatus, onNavigateToAI, imageLoading, setImageLoading, setFullscreenImage }) => {
+  const { t } = useTranslation();
   const [showAllAnswers, setShowAllAnswers] = useState<{ [questionId: string]: boolean }>({});
   const [showAnswersPopup, setShowAnswersPopup] = useState<{ questionId: string; answers: any[] } | null>(null);
 
@@ -89,7 +91,7 @@ const SummaryTab: React.FC<{
           animation: 'spin 1s linear infinite',
           margin: '0 auto 16px'
         }} />
-        <div>Загрузка аналитики...</div>
+        <div>{t('surveyAnalytics.loading')}</div>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -118,7 +120,7 @@ const SummaryTab: React.FC<{
         textAlign: 'center', 
         color: 'var(--tg-hint-color)' 
       }}>
-        Пока нет ответов — аналитика будет доступна после первых прохождений
+        {t('surveyAnalytics.noResponses')}
       </div>
     );
   }
@@ -161,7 +163,7 @@ const SummaryTab: React.FC<{
       
       case 'yes_no':
         const yesNoStats = answers.reduce((acc: any, answer) => {
-          const value = answer.value === 'yes' ? 'Да' : answer.value === 'no' ? 'Нет' : answer.value;
+          const value = answer.value === 'yes' ? t('surveyAnalytics.answers.yes') : answer.value === 'no' ? t('surveyAnalytics.answers.no') : answer.value;
           acc[value] = (acc[value] || 0) + 1;
           return acc;
         }, {});
@@ -239,11 +241,11 @@ const SummaryTab: React.FC<{
       `}</style>
       {/* Общая статистика */}
       <div style={{ background: 'var(--tg-section-bg-color)', borderRadius: 12, padding: 12 }}>
-        <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>Общая статистика</h3>
+        <h3 style={{ margin: '0 0 10px 0', fontSize: 15, fontWeight: 600 }}>{t('surveyAnalytics.generalStats')}</h3>
         <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--tg-button-color)' }}>
           {stats?.total_responses ?? 0}
         </div>
-        <div style={{ color: 'var(--tg-hint-color)', fontSize: 12 }}>Всего ответов</div>
+        <div style={{ color: 'var(--tg-hint-color)', fontSize: 12 }}>{t('surveyAnalytics.totalAnswers')}</div>
       </div>
 
 
@@ -327,7 +329,7 @@ const SummaryTab: React.FC<{
                           color: 'var(--tg-hint-color)', 
                           fontSize: '14px' 
                         }}>
-                          Загрузка изображения...
+                          {t('surveyAnalytics.imageLoading')}
                         </span>
                         <style>{`
                           @keyframes spin {
@@ -354,7 +356,7 @@ const SummaryTab: React.FC<{
                         setImageLoading(prev => ({ ...prev, [question.id]: false }));
                         // Показываем сообщение об ошибке
                         const errorDiv = document.createElement('div');
-                        errorDiv.textContent = 'Не удалось загрузить изображение';
+                        errorDiv.textContent = t('surveyAnalytics.imageLoadError');
                         errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
                         imgElement.parentElement?.appendChild(errorDiv);
                       }}
@@ -375,7 +377,7 @@ const SummaryTab: React.FC<{
                     textAlign: 'center',
                     fontStyle: 'italic'
                   }}>
-                    Нажмите на изображение для просмотра
+                    {t('surveyAnalytics.imageClick')}
                   </p>
                 </div>
               )}
@@ -524,9 +526,9 @@ const SummaryTab: React.FC<{
                     opacity: 0
                   }} />
                   <span style={{ position: 'relative', zIndex: 1 }}>
-                    {aiAnalyticsStatus === 'exists' ? '👁️ Посмотреть ИИ аналитику' : 
-                     aiAnalyticsStatus === 'generating' ? '⏳ Генерируется...' :
-                     '🤖 Получить ИИ аналитику'}
+                    {aiAnalyticsStatus === 'exists' ? t('surveyAnalytics.aiAnalytics.button.exists') : 
+                     aiAnalyticsStatus === 'generating' ? t('surveyAnalytics.aiAnalytics.button.generating') :
+                     t('surveyAnalytics.aiAnalytics.button.notFound')}
                   </span>
                 </button>
 
@@ -545,7 +547,7 @@ const SummaryTab: React.FC<{
                     lineHeight: '1.4',
                     textAlign: 'center'
                   }}>
-                    Проанализировать ответы с помощью искусственного интеллекта. Вы получите готовый отчёт с ключевыми выводами и тенденциями, сэкономите время на анализе полученных ответов.
+                    {t('surveyAnalytics.aiAnalytics.description')}
                   </p>
                 </div>
               </div>
@@ -579,6 +581,7 @@ const IndividualUserTab: React.FC<{
   setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
   setFullscreenImage: React.Dispatch<React.SetStateAction<string | null>>;
 }> = ({ questions, responses, survey, loading, selectedUserId, onUserSelect, imageLoading, setImageLoading, setFullscreenImage }) => {
+  const { t } = useTranslation();
   const [currentUserIndex, setCurrentUserIndex] = useState<number>(1);
   const [manualUserInput, setManualUserInput] = useState<string>('1');
 
@@ -591,11 +594,11 @@ const IndividualUserTab: React.FC<{
     if (isAnonymous) {
       return {
         id: `respondent_${index + 1}`,
-        label: `Респондент ${index + 1}`,
+        label: t('surveyAnalytics.respondentNumber', { number: index + 1 }),
         index: index
       };
     } else {
-      const username = user?.username || 'Респондент';
+      const username = user?.username || t('surveyAnalytics.respondent');
       return {
         id: `user_${index}`,
         label: `@${username}`,
@@ -692,7 +695,7 @@ const IndividualUserTab: React.FC<{
           animation: 'spin 1s linear infinite'
         }} />
         <p style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
-          Загрузка аналитики...
+          {t('surveyAnalytics.loading')}
         </p>
       </div>
     );
@@ -709,7 +712,7 @@ const IndividualUserTab: React.FC<{
         textAlign: 'center'
       }}>
         <p style={{ color: 'var(--tg-hint-color)', fontSize: '16px' }}>
-          На этот опрос пока нет ответов
+          {t('surveyAnalytics.noResponsesYet')}
         </p>
       </div>
     );
@@ -726,7 +729,7 @@ const IndividualUserTab: React.FC<{
           fontWeight: '500',
           color: 'var(--tg-text-color)'
         }}>
-          Выберите пользователя
+          {t('surveyAnalytics.selectUser')}
         </label>
         <select
           value={selectedUserId}
@@ -802,7 +805,7 @@ const IndividualUserTab: React.FC<{
           color: 'var(--tg-text-color)',
           whiteSpace: 'nowrap'
         }}>
-          из {totalUsers}
+          {t('surveyAnalytics.from')} {totalUsers}
         </span>
         
         <button
@@ -839,7 +842,7 @@ const IndividualUserTab: React.FC<{
               color: 'var(--tg-text-color)',
               fontWeight: '500'
             }}>
-              Респондент {currentUserIndex}
+              {t('surveyAnalytics.respondentNumber', { number: currentUserIndex })}
             </span>
           ) : currentUserData ? (
             <a
@@ -859,7 +862,7 @@ const IndividualUserTab: React.FC<{
                 }
               }}
             >
-              @{currentUserData.username || 'Респондент'}
+              @{currentUserData.username || t('surveyAnalytics.respondent')}
             </a>
           ) : (
             <span style={{ 
@@ -867,7 +870,7 @@ const IndividualUserTab: React.FC<{
               color: 'var(--tg-text-color)',
               fontWeight: '500'
             }}>
-              Респондент
+              {t('surveyAnalytics.respondent')}
             </span>
           )}
         </div>
@@ -899,7 +902,7 @@ const IndividualUserTab: React.FC<{
                 if (!predefinedOptions.includes(userAnswer.value)) {
                   processedValue = {
                     type: 'other',
-                    originalValue: 'Другое',
+                    originalValue: t('surveyAnalytics.answers.other'),
                     userText: userAnswer.value
                   };
                 }
@@ -917,7 +920,7 @@ const IndividualUserTab: React.FC<{
                   
                   processedValue = {
                     type: 'other',
-                    originalValue: [...predefinedSelected, 'Другое'],
+                    originalValue: [...predefinedSelected, t('surveyAnalytics.answers.other')],
                     userText: otherAnswers.join(', ') // Объединяем все "другие" ответы
                   };
                 }
@@ -1000,7 +1003,7 @@ const IndividualUserTab: React.FC<{
                             color: 'var(--tg-hint-color)', 
                             fontSize: '14px' 
                           }}>
-                            Загрузка изображения...
+                            {t('surveyAnalytics.imageLoading')}
                           </span>
                           <style>{`
                             @keyframes spin {
@@ -1027,7 +1030,7 @@ const IndividualUserTab: React.FC<{
                           setImageLoading(prev => ({ ...prev, [question.id]: false }));
                           // Показываем сообщение об ошибке
                           const errorDiv = document.createElement('div');
-                          errorDiv.textContent = 'Не удалось загрузить изображение';
+                          errorDiv.textContent = t('surveyAnalytics.imageLoadError');
                           errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
                           imgElement.parentElement?.appendChild(errorDiv);
                         }}
@@ -1046,7 +1049,7 @@ const IndividualUserTab: React.FC<{
                       textAlign: 'center',
                       fontStyle: 'italic'
                     }}>
-                      Нажмите на изображение для просмотра
+                      {t('surveyAnalytics.imageClick')}
                     </p>
                   </div>
                 )}
@@ -1081,6 +1084,7 @@ const QuestionTab: React.FC<{
   setImageLoading: React.Dispatch<React.SetStateAction<{ [questionId: string]: boolean }>>;
   setFullscreenImage: React.Dispatch<React.SetStateAction<string | null>>;
 }> = ({ questions, responses, survey, loading, selectedQuestionId, onQuestionSelect, imageLoading, setImageLoading, setFullscreenImage }) => {
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -1103,7 +1107,7 @@ const QuestionTab: React.FC<{
           animation: 'spin 1s linear infinite'
         }} />
         <div style={{ color: 'var(--tg-text-color)', fontSize: '14px' }}>
-          Загрузка аналитики...
+          {t('surveyAnalytics.loading')}
         </div>
       </div>
     );
@@ -1118,7 +1122,7 @@ const QuestionTab: React.FC<{
         textAlign: 'center', 
         color: 'var(--tg-hint-color)' 
       }}>
-        Нет вопросов для анализа
+        {t('surveyAnalytics.loading')}
       </div>
     );
   }
@@ -1156,7 +1160,7 @@ const QuestionTab: React.FC<{
             if (!predefinedOptions.includes(mainAnswer.value)) {
               processedValue = {
                 type: 'other',
-                originalValue: 'Другое',
+                originalValue: t('surveyAnalytics.answers.other'),
                 userText: mainAnswer.value
               };
             }
@@ -1174,7 +1178,7 @@ const QuestionTab: React.FC<{
               
               processedValue = {
                 type: 'other',
-                originalValue: [...predefinedSelected, 'Другое'],
+                originalValue: [...predefinedSelected, t('surveyAnalytics.answers.other')],
                 userText: otherAnswers.join(', ') // Объединяем все "другие" ответы
               };
             }
@@ -1201,7 +1205,7 @@ const QuestionTab: React.FC<{
           marginBottom: '8px',
           color: 'var(--tg-text-color)'
         }}>
-          Выберите вопрос
+          {t('surveyAnalytics.selectQuestion')}
         </label>
         <select
           value={selectedQuestionId}
@@ -1217,7 +1221,7 @@ const QuestionTab: React.FC<{
             outline: 'none'
           }}
         >
-          <option value="">Вопрос не выбран</option>
+          <option value="">{t('surveyAnalytics.questionNotSelected')}</option>
           {questions.map((question) => (
             <option key={question.id} value={question.id}>
               {question.text}
@@ -1329,7 +1333,7 @@ const QuestionTab: React.FC<{
                     setImageLoading(prev => ({ ...prev, [selectedQuestion.id]: false }));
                     // Показываем сообщение об ошибке
                     const errorDiv = document.createElement('div');
-                    errorDiv.textContent = 'Не удалось загрузить изображение';
+                    errorDiv.textContent = t('surveyAnalytics.imageLoadError');
                     errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
                     imgElement.parentElement?.appendChild(errorDiv);
                   }}
@@ -1350,7 +1354,7 @@ const QuestionTab: React.FC<{
                 textAlign: 'center',
                 fontStyle: 'italic'
               }}>
-                Нажмите на изображение для просмотра
+                {t('surveyAnalytics.imageClick')}
               </p>
             </div>
           )}
@@ -1362,7 +1366,7 @@ const QuestionTab: React.FC<{
               textAlign: 'center',
               padding: '20px 0'
             }}>
-              На этот вопрос пока нет ответов
+              {t('surveyAnalytics.noAnswersForQuestion')}
             </p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -1950,11 +1954,12 @@ const TextAnswersBlock: React.FC<{
   onShowPopup: (answers: any[]) => void;
   questionType?: string;
 }> = ({ answers, totalCount, hasMore, isAnonymous, onShowPopup, questionType }) => {
+  const { t } = useTranslation();
   const renderUserLink = (user: any) => {
     if (!user) return null;
     
     const username = user.username;
-    const displayName = username ? `@${username}` : 'Респондент';
+    const displayName = username ? `@${username}` : t('surveyAnalytics.respondent');
     const link = username ? `https://t.me/${username}` : '#';
     
     return (
@@ -2019,9 +2024,9 @@ const TextAnswersBlock: React.FC<{
                   
                   // Форматируем yes/no для отображения
                   if (displayValue === 'yes') {
-                    displayValue = 'Да';
+                    displayValue = t('surveyAnalytics.answers.yes');
                   } else if (displayValue === 'no') {
-                    displayValue = 'Нет';
+                    displayValue = t('surveyAnalytics.answers.no');
                   }
                   
                   return displayValue;
@@ -2056,7 +2061,7 @@ const TextAnswersBlock: React.FC<{
             width: '100%'
           }}
         >
-          Посмотреть все ответы ({totalCount})
+          {t('surveyAnalytics.showAll')} ({totalCount})
         </button>
       )}
     </div>
@@ -2070,6 +2075,7 @@ const SingleChoiceChart: React.FC<{
   options: string[];
   questionType?: string;
 }> = ({ stats, totalCount, questionType }) => {
+  const { t } = useTranslation();
   // Определяем цвета в зависимости от типа вопроса
   const getColors = () => {
     if (questionType === 'yes_no') {
@@ -2185,7 +2191,7 @@ const SingleChoiceChart: React.FC<{
           color: 'var(--tg-hint-color)', 
           marginTop: '8px' 
         }}>
-          Всего ответов: {totalCount}
+          {t('surveyAnalytics.totalAnswers')}: {totalCount}
         </div>
       </div>
     </div>
@@ -2198,6 +2204,7 @@ const MultipleChoiceChart: React.FC<{
   totalCount: number;
   options: string[];
 }> = ({ stats, options }) => {
+  const { t } = useTranslation();
   const maxCount = Math.max(...Object.values(stats));
   
   return (
@@ -2320,6 +2327,7 @@ const RatingAnswersBlock: React.FC<{
   onShowAll: () => void;
   onShowPopup: (answers: any[]) => void;
 }> = ({ answers, totalCount, hasMore, averageRating, isAnonymous, onShowPopup }) => {
+  const { t } = useTranslation();
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => {
       const isFull = i < Math.floor(rating);
@@ -2354,7 +2362,7 @@ const RatingAnswersBlock: React.FC<{
     if (!user) return null;
     
     const username = user.username;
-    const displayName = username ? `@${username}` : 'Респондент';
+    const displayName = username ? `@${username}` : t('surveyAnalytics.respondent');
     const link = username ? `https://t.me/${username}` : '#';
     
     return (
@@ -2435,7 +2443,7 @@ const RatingAnswersBlock: React.FC<{
             width: '100%'
           }}
         >
-          Посмотреть все ответы ({totalCount})
+          {t('surveyAnalytics.showAll')} ({totalCount})
         </button>
       )}
     </div>
@@ -2633,6 +2641,7 @@ const AnswersPopup: React.FC<{
 };
 
 export default function SurveyAnalyticsPage() {
+  const { t } = useTranslation();
   const { surveyId } = useParams();
   const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
@@ -2718,8 +2727,8 @@ export default function SurveyAnalyticsPage() {
           .map((a: any) => ({
             question_text: question.text,
             question_type: question.type,
-            answer_value: a.value === 'yes' ? 'Да' : a.value === 'no' ? 'Нет' : a.value,
-            respondent: response.user?.username ? `@${response.user.username}` : `Респондент ${responsesPage.indexOf(response) + 1}`
+            answer_value: a.value === 'yes' ? t('surveyAnalytics.answers.yes') : a.value === 'no' ? t('surveyAnalytics.answers.no') : a.value,
+            respondent: response.user?.username ? `@${response.user.username}` : t('surveyAnalytics.respondentNumber', { number: responsesPage.indexOf(response) + 1 })
           }));
       });
       
@@ -2762,8 +2771,8 @@ export default function SurveyAnalyticsPage() {
       return {
         question_text: question.text,
         question_type: question.type,
-        answer_value: answer?.value === 'yes' ? 'Да' : answer?.value === 'no' ? 'Нет' : (answer?.value || ''),
-        respondent: userResponse.user?.username ? `@${userResponse.user.username}` : `Респондент ${userIndex + 1}`
+        answer_value: answer?.value === 'yes' ? t('surveyAnalytics.answers.yes') : answer?.value === 'no' ? t('surveyAnalytics.answers.no') : (answer?.value || ''),
+        respondent: userResponse.user?.username ? `@${userResponse.user.username}` : t('surveyAnalytics.respondentNumber', { number: userIndex + 1 })
       };
     });
     

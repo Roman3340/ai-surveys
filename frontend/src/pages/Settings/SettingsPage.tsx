@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ChevronRight, Sun, Moon, Globe, Trash2, Paintbrush } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -8,6 +9,7 @@ import { useStableBackButton } from '../../hooks/useStableBackButton';
 interface SettingsPageProps {}
 
 const SettingsPage: React.FC<SettingsPageProps> = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { theme } = useAppStore();
   const { hapticFeedback } = useTelegram();
@@ -39,7 +41,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
 
   const handleClearCache = () => {
     hapticFeedback?.medium();
-    if (window.confirm('Очистить кэш приложения? Все локальные данные будут удалены.')) {
+    if (window.confirm(t('settings.cache.confirmTitle'))) {
       localStorage.clear();
       window.location.reload();
     }
@@ -47,10 +49,10 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
 
   const getCurrentThemeName = () => {
     switch (theme) {
-      case 'light': return 'Светлая';
-      case 'dark': return 'Тёмная';
-      case 'system': return 'Системная';
-      default: return 'Системная';
+      case 'light': return t('settings.theme.light.name');
+      case 'dark': return t('settings.theme.dark.name');
+      case 'system': return t('settings.theme.system.name');
+      default: return t('settings.theme.system.name');
     }
   };
 
@@ -73,7 +75,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
           margin: 0,
           color: 'var(--tg-text-color)'
         }}>
-          Настройки
+          {t('settings.title')}
         </h1>
       </div>
 
@@ -114,7 +116,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               {theme === 'dark' ? <Moon size={18} color="white" /> : <Sun size={18} color="white" />}
             </div>
             <div style={{ flex: 1, textAlign: 'left' }}>
-              <div style={{ fontWeight: '500' }}>Тема</div>
+              <div style={{ fontWeight: '500' }}>{t('settings.theme.name')}</div>
               <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>{getCurrentThemeName()}</div>
             </div>
             <ChevronRight size={18} color="var(--tg-hint-color)" />
@@ -155,8 +157,8 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               <Paintbrush size={18} color="white" />
             </div>
             <div style={{ flex: 1, textAlign: 'left' }}>
-              <div style={{ fontWeight: '500' }}>Цвет приложения</div>
-              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>Выбор основного цвета</div>
+              <div style={{ fontWeight: '500' }}>{t('settings.color.name')}</div>
+              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>{t('settings.color.description')}</div>
             </div>
             <ChevronRight size={18} color="var(--tg-hint-color)" />
           </button>
@@ -196,8 +198,8 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               <Globe size={18} color="white" />
             </div>
             <div style={{ flex: 1, textAlign: 'left' }}>
-              <div style={{ fontWeight: '500' }}>Язык</div>
-              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>Выбор языка интерфейса</div>
+              <div style={{ fontWeight: '500' }}>{t('settings.language.name')}</div>
+              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>{t('settings.language.description')}</div>
             </div>
             <ChevronRight size={18} color="var(--tg-hint-color)" />
           </button>
@@ -236,8 +238,8 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               <Trash2 size={18} color="white" />
             </div>
             <div style={{ flex: 1, textAlign: 'left' }}>
-              <div style={{ fontWeight: '500' }}>Очистить кэш</div>
-              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>Удалить локальные данные</div>
+              <div style={{ fontWeight: '500' }}>{t('settings.cache.name')}</div>
+              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>{t('settings.cache.description')}</div>
             </div>
             <ChevronRight size={18} color="var(--tg-hint-color)" />
           </button>

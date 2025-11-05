@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Clock, Target, Star, CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -626,6 +627,7 @@ const articles: ArticleContent[] = [
 ];
 
 export const ArticlePage = () => {
+  const { t } = useTranslation();
   const { articleId } = useParams<{ articleId: string }>();
   const navigate = useNavigate();
   const { } = useTelegram();
@@ -655,9 +657,9 @@ export const ArticlePage = () => {
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
-          <h2 style={{ margin: '0 0 8px 0' }}>Статья не найдена</h2>
+          <h2 style={{ margin: '0 0 8px 0' }}>{t('article.notFound')}</h2>
           <p style={{ color: 'var(--tg-hint-color)', margin: '0 0 20px 0' }}>
-            Запрашиваемая статья не существует
+            {t('article.notFoundDescription')}
           </p>
           <button
             onClick={() => navigate('/knowledge')}
@@ -672,7 +674,7 @@ export const ArticlePage = () => {
               cursor: 'pointer'
             }}
           >
-            Вернуться к статьям
+            {t('article.backToArticles')}
           </button>
         </div>
       </div>
@@ -690,10 +692,10 @@ export const ArticlePage = () => {
 
   const getDifficultyText = (difficulty: string) => {
     switch (difficulty) {
-      case 'beginner': return 'Начинающий';
-      case 'intermediate': return 'Средний';
-      case 'advanced': return 'Продвинутый';
-      default: return 'Неизвестно';
+      case 'beginner': return t('article.difficulty.beginner');
+      case 'intermediate': return t('article.difficulty.intermediate');
+      case 'advanced': return t('article.difficulty.advanced');
+      default: return t('article.difficulty.unknown');
     }
   };
 
@@ -790,7 +792,7 @@ export const ArticlePage = () => {
             margin: '0 0 12px 0',
             color: 'var(--tg-text-color)'
           }}>
-            Введение
+            {t('article.introduction')}
           </h2>
           <p style={{
             fontSize: '16px',
@@ -844,7 +846,7 @@ export const ArticlePage = () => {
                   color: '#4CAF50'
                 }}>
                   <Lightbulb size={16} />
-                  <span style={{ fontSize: '14px', fontWeight: '600' }}>Советы:</span>
+                  <span style={{ fontSize: '14px', fontWeight: '600' }}>{t('article.tips')}</span>
                 </div>
                 <ul style={{
                   margin: 0,
@@ -877,7 +879,7 @@ export const ArticlePage = () => {
                   color: '#F44336'
                 }}>
                   <AlertCircle size={16} />
-                  <span style={{ fontSize: '14px', fontWeight: '600' }}>Важно:</span>
+                  <span style={{ fontSize: '14px', fontWeight: '600' }}>{t('article.warnings')}</span>
                 </div>
                 <ul style={{
                   margin: 0,
@@ -914,7 +916,7 @@ export const ArticlePage = () => {
             gap: '8px'
           }}>
             <CheckCircle size={20} color={article.color} />
-            Ключевые моменты
+            {t('article.keyPoints')}
           </h3>
           <ul style={{
             margin: 0,
@@ -943,7 +945,7 @@ export const ArticlePage = () => {
             margin: '0 0 12px 0',
             color: 'var(--tg-text-color)'
           }}>
-            Заключение
+            {t('article.conclusion')}
           </h3>
           <p style={{
             fontSize: '16px',

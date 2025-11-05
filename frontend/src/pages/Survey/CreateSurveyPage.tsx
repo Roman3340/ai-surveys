@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 import { getDraft, hasDraft, clearDraft, saveMode, getAIDraft, hasAIDraft, clearAIDraft } from '../../utils/surveyDraft';
 
 const CreateSurveyPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState<'survey' | 'test' | null>(null);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
@@ -35,7 +37,7 @@ const CreateSurveyPage: React.FC = () => {
     clearDraft();
     setSelectedOption('test');
     // TODO: Реализовать создание теста
-    alert('Создание тестов будет реализовано позже');
+    alert(t('createSurvey.test.comingSoon'));
   };
 
   const handleNext = () => {
@@ -43,7 +45,7 @@ const CreateSurveyPage: React.FC = () => {
       navigate('/survey/create/manual');
     } else if (selectedOption === 'test') {
       // TODO: Реализовать переход на создание теста
-      alert('Создание тестов будет реализовано позже');
+      alert(t('createSurvey.test.comingSoon'));
     }
   };
 
@@ -110,7 +112,7 @@ const CreateSurveyPage: React.FC = () => {
           margin: 0,
           textAlign: 'center'
         }}>
-          Создать опрос или тест?
+          {t('createSurvey.title')}
         </h1>
       </div>
 
@@ -143,7 +145,7 @@ const CreateSurveyPage: React.FC = () => {
             marginBottom: '16px'
           }}>
             <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
-              Найден незавершённый опрос
+              {t('createSurvey.draft.found')}
             </div>
             {(() => {
               const draft = getDraft();
@@ -152,7 +154,7 @@ const CreateSurveyPage: React.FC = () => {
               if (draft?.mode === 'manual' && draft?.settings?.title) {
                 title = draft.settings.title;
               } else if (aiDraft) {
-                title = 'Опрос с ИИ';
+                title = t('createSurvey.draft.aiSurvey');
               }
               return title ? (
                 <div style={{ fontSize: '14px', color: 'var(--tg-text-color)', marginBottom: '8px', fontWeight: 500 }}>
@@ -161,7 +163,7 @@ const CreateSurveyPage: React.FC = () => {
               ) : null;
             })()}
             <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', marginBottom: '12px' }}>
-              Восстановить черновик и продолжить редактирование?
+              {t('createSurvey.draft.restoreQuestion')}
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
@@ -178,7 +180,7 @@ const CreateSurveyPage: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                Да, восстановите
+                {t('createSurvey.draft.restoreButton')}
               </button>
               <button
                 onClick={handleDeclineRestore}
@@ -194,7 +196,7 @@ const CreateSurveyPage: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                Нет, спасибо
+                {t('createSurvey.draft.declineButton')}
               </button>
             </div>
           </div>
@@ -257,7 +259,7 @@ const CreateSurveyPage: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between'
                   }}>
-                    Создать опрос
+                    {t('createSurvey.survey.title')}
                     <div style={{
                       width: '20px',
                       height: '20px',
@@ -283,7 +285,7 @@ const CreateSurveyPage: React.FC = () => {
                     color: 'var(--tg-hint-color)',
                     lineHeight: '1.3'
                   }}>
-                    Создать опрос для сбора обратной связи
+                    {t('createSurvey.survey.description')}
                   </div>
                 </div>
               </div>
@@ -338,7 +340,7 @@ const CreateSurveyPage: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between'
                   }}>
-                    Создать тест
+                    {t('createSurvey.test.title')}
                     <div style={{
                       width: '20px',
                       height: '20px',
@@ -364,7 +366,7 @@ const CreateSurveyPage: React.FC = () => {
                     color: 'var(--tg-hint-color)',
                     lineHeight: '1.3'
                   }}>
-                    Создать тест с правильными ответами и оценкой
+                    {t('createSurvey.test.description')}
                   </div>
                 </div>
               </div>
@@ -402,7 +404,7 @@ const CreateSurveyPage: React.FC = () => {
                 opacity: selectedOption ? 1 : 0.6
               }}
             >
-              Создать
+              {t('createSurvey.createButton')}
             </button>
           </div>
         )}

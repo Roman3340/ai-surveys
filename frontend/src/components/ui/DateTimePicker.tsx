@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar, Clock } from 'lucide-react';
 
 interface DateTimePickerProps {
@@ -17,18 +18,22 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
   value,
   timeValue,
   onChange,
-  placeholder = "Не указана",
+  placeholder,
   disabled = false,
   showTime = true,
   defaultText
 }) => {
+  const { t, i18n } = useTranslation();
   const [isDateOpen, setIsDateOpen] = useState(false);
   const [isTimeOpen, setIsTimeOpen] = useState(false);
+  
+  const defaultPlaceholder = placeholder || t('dateTimePicker.notSpecified');
 
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return placeholder;
+    if (!dateStr) return defaultPlaceholder;
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ru-RU', {
+    const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
+    return date.toLocaleDateString(locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -91,7 +96,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
               textAlign: 'left'
             }}
           >
-            <span>{defaultText || (value ? formatDate(value) : placeholder)}</span>
+            <span>{defaultText || (value ? formatDate(value) : defaultPlaceholder)}</span>
             <Calendar size={18} />
           </button>
           

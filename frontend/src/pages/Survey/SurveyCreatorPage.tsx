@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, HelpCircle, Eye, Plus, Trash2, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -84,6 +85,7 @@ interface SurveyData {
 type TabType = 'settings' | 'questions' | 'preview';
 
 const SurveyCreatorPage: React.FC = () => {
+  const { t } = useTranslation();
   // Добавляем CSS анимации
   React.useEffect(() => {
     const style = document.createElement('style');
@@ -258,17 +260,17 @@ const SurveyCreatorPage: React.FC = () => {
     // Проверяем только если значения определены
     if (scaleMin !== undefined) {
       if (scaleMin < 1) {
-        errors.scaleMin = 'Значение не должно быть меньше 1';
+        errors.scaleMin = t('surveyCreator.questions.validation.scaleMinLess');
       } else if (scaleMin > 99) {
-        errors.scaleMin = 'Значение не должно быть больше 99';
+        errors.scaleMin = t('surveyCreator.questions.validation.scaleMinMore');
       }
     }
     
     if (scaleMax !== undefined) {
       if (scaleMax < 2) {
-        errors.scaleMax = 'Значение не должно быть меньше 2';
+        errors.scaleMax = t('surveyCreator.questions.validation.scaleMaxLess');
       } else if (scaleMax > 100) {
-        errors.scaleMax = 'Значение не должно быть больше 100';
+        errors.scaleMax = t('surveyCreator.questions.validation.scaleMaxMore');
       }
     }
     
@@ -371,7 +373,7 @@ const SurveyCreatorPage: React.FC = () => {
       const newQuestion = {
         ...question,
         id: `q_${Date.now()}`,
-        title: `${question.title} (копия)`
+        title: `${question.title} (${t('surveyCreator.questions.duplicate')})`
       };
       setQuestions(prev => [...prev, newQuestion]);
       hapticFeedback?.light();
@@ -427,16 +429,16 @@ const SurveyCreatorPage: React.FC = () => {
 
     // Проверяем конфликт с настройкой "Скрыть создателя"
     if (surveyData.hideCreator) {
-      setMotivationValidationError('Нельзя включить мотивацию при скрытом создателе опроса');
+      setMotivationValidationError(t('surveyCreator.settings.motivationError'));
       return false;
     }
 
     // Проверяем что описание заполнено для всех типов
     if (!surveyData.motivationDetails || surveyData.motivationDetails.trim() === '') {
       if (surveyData.motivationType === 'stars') {
-        setMotivationValidationError('Введите количество звёзд');
+        setMotivationValidationError(t('surveyCreator.settings.rewardDetails.stars'));
       } else {
-        setMotivationValidationError('Заполните описание награды');
+        setMotivationValidationError(t('surveyCreator.settings.rewardDetails.other'));
       }
       return false;
     }
@@ -445,7 +447,7 @@ const SurveyCreatorPage: React.FC = () => {
     if (surveyData.motivationType === 'stars') {
       const starsCount = parseInt(surveyData.motivationDetails);
       if (isNaN(starsCount) || starsCount < 1) {
-        setMotivationValidationError('Количество звёзд должно быть не менее 1');
+        setMotivationValidationError(t('surveyCreator.settings.rewardDetails.stars'));
         return false;
       }
     }
@@ -453,7 +455,7 @@ const SurveyCreatorPage: React.FC = () => {
     // Для промокода нужен также промокод
     if (surveyData.motivationType === 'promo') {
       if (!surveyData.motivationConditions || surveyData.motivationConditions.trim() === '') {
-        setMotivationValidationError('Введите промокод');
+        setMotivationValidationError(t('surveyCreator.settings.promoConditions'));
         return false;
       }
     }
@@ -617,7 +619,7 @@ const SurveyCreatorPage: React.FC = () => {
       navigate(`/survey/published?surveyId=${createdSurvey.id}`);
     } catch (error) {
       console.error('Ошибка публикации опроса:', error);
-      alert('Не удалось опубликовать опрос. Попробуйте снова.');
+      alert(t('surveyCreator.publishError'));
       setIsPublishing(false);
     }
   };
@@ -657,7 +659,7 @@ const SurveyCreatorPage: React.FC = () => {
             fontWeight: '600',
             margin: 0
           }}>
-            Создание опроса
+            {t('surveyCreator.tabs.settings')}
           </h1>
           <span style={{ fontSize: '48px' }}>📝</span>
         </div>
@@ -692,7 +694,7 @@ const SurveyCreatorPage: React.FC = () => {
             }}
           >
             <Settings size={14} />
-            Настройки
+            {t('surveyCreator.tabs.settings')}
           </button>
           
           <button
@@ -717,7 +719,7 @@ const SurveyCreatorPage: React.FC = () => {
             }}
           >
             <HelpCircle size={14} />
-            Вопросы
+            {t('surveyCreator.tabs.questions')}
           </button>
           
           <button
@@ -742,7 +744,7 @@ const SurveyCreatorPage: React.FC = () => {
             }}
           >
             <Eye size={14} />
-            Предпросмотр
+            {t('surveyCreator.tabs.preview')}
           </button>
         </div>
       </div>
@@ -831,10 +833,10 @@ const SurveyCreatorPage: React.FC = () => {
                 borderRadius: '50%',
                 animation: 'spin 1s linear infinite'
               }} />
-              Публикация...
+              {t('surveyCreator.publish')}...
             </>
           ) : (
-            '📊 Опубликовать опрос'
+            `📊 ${t('surveyCreator.publish')}`
           )}
         </button>
         <style>{`
@@ -851,7 +853,7 @@ const SurveyCreatorPage: React.FC = () => {
             textAlign: 'center',
             margin: '8px 0 0 0'
           }}>
-            Заполните название и добавьте хотя бы один вопрос
+            {t('surveyCreator.questions.empty')}
           </p>
         )}
         </div>
@@ -869,6 +871,7 @@ const SettingsTab: React.FC<{
   motivationValidationError: string;
   setMotivationValidationError: (error: string) => void;
 }> = ({ surveyData, onDataChange, showAdvancedSettings, onToggleAdvanced, motivationValidationError, setMotivationValidationError }) => {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -887,7 +890,7 @@ const SettingsTab: React.FC<{
           alignItems: 'center',
           gap: '8px'
         }}>
-          📝 Основная информация
+          📝 {t('surveyCreator.settings.basicInfo')}
         </h3>
         
         <div style={{ marginBottom: '16px' }}>
@@ -898,13 +901,13 @@ const SettingsTab: React.FC<{
             marginBottom: '8px',
             color: 'var(--tg-text-color)'
           }}>
-            Название опроса *
+            {t('surveyCreator.settings.title')}
           </label>
           <input
             type="text"
             value={surveyData.title}
             onChange={(e) => onDataChange('title', e.target.value)}
-            placeholder="Введите название опроса..."
+            placeholder={t('surveyCreator.settings.titlePlaceholder')}
             enterKeyHint="done"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -934,12 +937,12 @@ const SettingsTab: React.FC<{
             marginBottom: '8px',
             color: 'var(--tg-text-color)'
           }}>
-            Описание (необязательно)
+            {t('surveyCreator.settings.description')}
           </label>
           <textarea
             value={surveyData.description}
             onChange={(e) => onDataChange('description', e.target.value)}
-            placeholder="Описание опроса..."
+            placeholder={t('surveyCreator.settings.descriptionPlaceholder')}
             rows={4}
             enterKeyHint="done"
             onKeyDown={(e) => {
@@ -984,7 +987,7 @@ const SettingsTab: React.FC<{
             marginBottom: showAdvancedSettings ? '16px' : '0'
           }}
         >
-          <span>⚙️ Расширенные настройки</span>
+          <span>⚙️ {t('surveyCreator.settings.advanced')}</span>
           <span style={{ transform: showAdvancedSettings ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}>
             ▼
           </span>
@@ -1007,7 +1010,7 @@ const SettingsTab: React.FC<{
                 marginBottom: '8px',
                 color: 'var(--tg-text-color)'
               }}>
-                Язык опроса
+                {t('surveyCreator.settings.language')}
               </label>
               <select
                 value={surveyData.language}
@@ -1023,8 +1026,8 @@ const SettingsTab: React.FC<{
                   outline: 'none'
                 }}
               >
-                <option value="ru">🇷🇺 Русский</option>
-                <option value="en">🇺🇸 English</option>
+                <option value="ru">🇷🇺 {t('surveyCreator.language.ru')}</option>
+                <option value="en">🇺🇸 {t('surveyCreator.language.en')}</option>
               </select>
             </div>
 
@@ -1038,7 +1041,7 @@ const SettingsTab: React.FC<{
                   marginBottom: '8px',
                   color: 'var(--tg-text-color)'
                 }}>
-                  Дата окончания
+                  {t('surveyCreator.settings.endDate')}
                 </label>
                 <input
                   type="date"
@@ -1067,15 +1070,15 @@ const SettingsTab: React.FC<{
                 fontSize: '14px',
                 fontWeight: '500',
                 marginBottom: '8px',
-                color: 'var(--tg-text-color)'
-              }}>
-                Максимальное количество участников
-              </label>
-              <input
-                type="number"
-                value={surveyData.maxParticipants}
-                onChange={(e) => onDataChange('maxParticipants', e.target.value)}
-                placeholder="Без ограничений"
+                  color: 'var(--tg-text-color)'
+                }}>
+                  {t('surveyCreator.settings.maxParticipants')}
+                </label>
+                <input
+                  type="number"
+                  value={surveyData.maxParticipants}
+                  onChange={(e) => onDataChange('maxParticipants', e.target.value)}
+                  placeholder={t('surveyCreator.settings.maxParticipantsPlaceholder')}
                 min="1"
                 onFocus={() => onDataChange('isKeyboardOpen', true)}
                 onBlur={() => onDataChange('isKeyboardOpen', false)}
@@ -1104,9 +1107,9 @@ const SettingsTab: React.FC<{
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div>
-                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Анонимные ответы</div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>{t('surveyCreator.settings.anonymous')}</div>
                     <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-                      Разрешить участникам отвечать анонимно
+                      {t('surveyCreator.settings.anonymousDesc')}
                     </div>
                   </div>
                 </div>
@@ -1212,9 +1215,9 @@ const SettingsTab: React.FC<{
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div>
-                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Перемешивать вопросы</div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>{t('surveyCreator.settings.randomizeQuestions')}</div>
                     <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-                      Случайный порядок вопросов для участника
+                      {t('surveyCreator.settings.randomizeQuestionsDesc')}
                     </div>
                   </div>
                 </div>
@@ -1266,9 +1269,9 @@ const SettingsTab: React.FC<{
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div>
-                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Один ответ на пользователя</div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>{t('surveyCreator.settings.oneResponsePerUser')}</div>
                     <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-                      Запретить повторное участие
+                      {t('surveyCreator.settings.oneResponsePerUserDesc')}
                     </div>
                   </div>
                 </div>
@@ -1320,9 +1323,9 @@ const SettingsTab: React.FC<{
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div>
-                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Скрыть создателя опроса</div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>{t('surveyCreator.settings.hideCreator')}</div>
                     <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-                      Скрыть информацию о создателе от участников
+                      {t('surveyCreator.settings.hideCreatorDesc')}
                     </div>
                   </div>
                 </div>
@@ -1434,9 +1437,9 @@ const SettingsTab: React.FC<{
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div>
-                    <div style={{ fontSize: '16px', fontWeight: '500' }}>Мотивация</div>
+                    <div style={{ fontSize: '16px', fontWeight: '500' }}>{t('surveyCreator.settings.motivation')}</div>
                     <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-                     Добавить награду за участие в опросе
+                     {t('surveyCreator.settings.motivationDesc')}
                     </div>
                   </div>
                 </div>
@@ -1514,7 +1517,7 @@ const SettingsTab: React.FC<{
                         color: '#FF3B30', 
                         lineHeight: '1.4' 
                       }}>
-                        ⚠️ Нельзя включить мотивацию при скрытом создателе опроса. Отключите настройку "Скрыть создателя опроса" для использования мотивации.
+                        ⚠️ {t('surveyCreator.settings.motivationWarning')}
                       </div>
                     </div>
                   )}
@@ -1532,7 +1535,7 @@ const SettingsTab: React.FC<{
                       color: 'var(--tg-hint-color)', 
                       lineHeight: '1.4' 
                     }}>
-                      ⚠️ При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.
+                      ⚠️ {t('surveyCreator.settings.motivationNotice')}
                     </div>
                   </div>
                   
@@ -1563,7 +1566,7 @@ const SettingsTab: React.FC<{
                       marginBottom: '8px',
                       color: 'var(--tg-text-color)'
                     }}>
-                      Тип награды
+                      {t('surveyCreator.settings.rewardType')}
                     </label>
                     <select
                       value={surveyData.motivationType}
@@ -1579,11 +1582,11 @@ const SettingsTab: React.FC<{
                         outline: 'none'
                       }}
                     >
-                      <option value="discount">Скидка</option>
-                      <option value="promo">Промокод</option>
-                      <option value="stars">Звезды Telegram</option>
-                      <option value="gift">Подарок</option>
-                      <option value="other">Другое</option>
+                      <option value="discount">{t('surveyCreator.settings.rewardTypes.discount')}</option>
+                      <option value="promo">{t('surveyCreator.settings.rewardTypes.promo')}</option>
+                      <option value="stars">{t('surveyCreator.settings.rewardTypes.stars')}</option>
+                      <option value="gift">{t('surveyCreator.settings.rewardTypes.gift')}</option>
+                      <option value="other">{t('surveyCreator.settings.rewardTypes.other')}</option>
                     </select>
                   </div>
                   
@@ -1595,22 +1598,22 @@ const SettingsTab: React.FC<{
                       marginBottom: '8px',
                       color: 'var(--tg-text-color)'
                     }}>
-                      {surveyData.motivationType === 'discount' && 'Описание скидки'}
-                      {surveyData.motivationType === 'promo' && 'Что за промокод'}
-                      {surveyData.motivationType === 'stars' && 'Сколько звезд одному пользователю'}
-                      {surveyData.motivationType === 'gift' && 'Что за подарок'}
-                      {surveyData.motivationType === 'other' && 'Пояснение к другому награждению'}
+                      {surveyData.motivationType === 'discount' && t('surveyCreator.settings.rewardDetails.discount')}
+                      {surveyData.motivationType === 'promo' && t('surveyCreator.settings.rewardDetails.promo')}
+                      {surveyData.motivationType === 'stars' && t('surveyCreator.settings.rewardDetails.stars')}
+                      {surveyData.motivationType === 'gift' && t('surveyCreator.settings.rewardDetails.gift')}
+                      {surveyData.motivationType === 'other' && t('surveyCreator.settings.rewardDetails.other')}
                     </label>
                     <input
                       type="text"
                       value={surveyData.motivationDetails}
                       onChange={(e) => onDataChange('motivationDetails', e.target.value)}
                       placeholder={
-                        surveyData.motivationType === 'discount' ? '20% скидка на следующий заказ' :
-                        surveyData.motivationType === 'promo' ? 'Например: SAVE20' :
-                        surveyData.motivationType === 'stars' ? 'Например: 50' :
-                        surveyData.motivationType === 'gift' ? 'Например: Футболка с логотипом' :
-                        'Например: Бесплатная консультация'
+                        surveyData.motivationType === 'discount' ? t('surveyCreator.settings.rewardPlaceholders.discount') :
+                        surveyData.motivationType === 'promo' ? t('surveyCreator.settings.rewardPlaceholders.promo') :
+                        surveyData.motivationType === 'stars' ? t('surveyCreator.settings.rewardPlaceholders.stars') :
+                        surveyData.motivationType === 'gift' ? t('surveyCreator.settings.rewardPlaceholders.gift') :
+                        t('surveyCreator.settings.rewardPlaceholders.other')
                       }
                       enterKeyHint="done"
                       onKeyDown={(e) => {
@@ -1643,12 +1646,12 @@ const SettingsTab: React.FC<{
                         marginBottom: '8px',
                         color: 'var(--tg-text-color)'
                       }}>
-                        На что промокод и при каких условиях
+                        {t('surveyCreator.settings.promoConditions')}
                       </label>
                       <textarea
                         value={surveyData.motivationConditions || ''}
                         onChange={(e) => onDataChange('motivationConditions', e.target.value)}
-                        placeholder="Например: Промокод на бесплатную доставку при заказе от 1000 рублей"
+                        placeholder={t('surveyCreator.settings.promoConditionsPlaceholder')}
                         rows={3}
                         enterKeyHint="done"
                         onKeyDown={(e) => {
@@ -1698,6 +1701,7 @@ const QuestionsTab: React.FC<{
   validateScaleValues: (questionId: string, scaleMin?: number, scaleMax?: number) => void;
   hapticFeedback?: { success?: () => void; error?: () => void };
 }> = ({ questions, onQuestionChange, onAddQuestion, onDeleteQuestion, onDuplicateQuestion, onMoveQuestionUp, onMoveQuestionDown, onAddOption, onRemoveOption, onKeyboardStateChange, validationErrors, validateScaleValues, hapticFeedback }) => {
+  const { t } = useTranslation();
   // Состояние для отслеживания загрузки изображений для каждого вопроса
   const [uploadingImages, setUploadingImages] = useState<{ [questionId: string]: boolean }>({});
   // Состояние для полноэкранного просмотра изображения
@@ -1721,7 +1725,7 @@ const QuestionsTab: React.FC<{
             alignItems: 'center',
             gap: '8px'
           }}>
-            ❓ Вопросы ({questions.length})
+            ❓ {t('surveyCreator.questions.title')} ({questions.length})
           </h3>
         </div>
         
@@ -1733,7 +1737,7 @@ const QuestionsTab: React.FC<{
           }}>
             <HelpCircle size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
             <p style={{ margin: '0 0 16px 0', fontSize: '16px' }}>
-              Добавьте первый вопрос
+              {t('surveyCreator.questions.emptyFirst')}
             </p>
             <button
               onClick={onAddQuestion}
@@ -1751,7 +1755,7 @@ const QuestionsTab: React.FC<{
                 height: '40px'
               }}
             >
-              Создать вопрос
+              {t('surveyCreator.questions.addQuestion')}
             </button>
           </div>
         ) : (
@@ -1785,7 +1789,7 @@ const QuestionsTab: React.FC<{
                         fontWeight: '500',
                         color: 'var(--tg-hint-color)'
                       }}>
-                        Вопрос {index + 1}
+                        {t('surveyCreator.questions.questionLabel', { number: index + 1 })}
                       </span>
                       {question.conditionalLogic?.enabled && (
                         <span style={{
@@ -1796,7 +1800,7 @@ const QuestionsTab: React.FC<{
                           borderRadius: '4px',
                           fontWeight: '500'
                         }}>
-                          🔀 Условный
+                          🔀 {t('surveyCreator.questions.conditionalLabel')}
                         </span>
                       )}
                       
@@ -1885,7 +1889,7 @@ const QuestionsTab: React.FC<{
                         marginLeft: '0',
                         lineHeight: '1.3'
                       }}>
-                        Зависит от вопроса {parentIndex + 1}: "{parentQuestion.title || 'Без названия'}"
+                        {t('surveyCreator.questions.dependsOnQuestion', { number: parentIndex + 1, title: parentQuestion.title || t('surveyCreator.questions.noTitle') })}
                       </div>
                     );
                   })()}
@@ -1897,7 +1901,7 @@ const QuestionsTab: React.FC<{
                     type="text"
                     value={question.title}
                     onChange={(e) => onQuestionChange(question.id, { title: e.target.value })}
-                    placeholder="Введите вопрос..."
+                    placeholder={t('surveyCreator.questions.titlePlaceholder')}
                     enterKeyHint="done"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -1924,7 +1928,7 @@ const QuestionsTab: React.FC<{
                   <textarea
                     value={question.description || ''}
                     onChange={(e) => onQuestionChange(question.id, { description: e.target.value })}
-                    placeholder="Описание вопроса (необязательно)..."
+                    placeholder={t('surveyCreator.questions.descriptionPlaceholder')}
                     rows={2}
                     enterKeyHint="done"
                     onKeyDown={(e) => {
@@ -1964,15 +1968,15 @@ const QuestionsTab: React.FC<{
                       outline: 'none'
                     }}
                   >
-                    <option value="text">📝 Короткий ответ</option>
-                    <option value="textarea">📄 Развернутый ответ</option>
-                    <option value="single_choice">🔘 Один из списка</option>
-                    <option value="multiple_choice">☑️ Несколько из списка</option>
-                    <option value="scale">📊 Шкала</option>
-                    <option value="rating">⭐️ Оценка звёздами</option>
-                    <option value="boolean">✅ Да/Нет</option>
-                    <option value="date">📅 Дата</option>
-                    <option value="number">🔟 Число</option>
+                    <option value="text">📝 {t('surveyCreator.questions.types.text')}</option>
+                    <option value="textarea">📄 {t('surveyCreator.questions.types.textarea')}</option>
+                    <option value="single_choice">🔘 {t('surveyCreator.questions.types.single_choice')}</option>
+                    <option value="multiple_choice">☑️ {t('surveyCreator.questions.types.multiple_choice')}</option>
+                    <option value="scale">📊 {t('surveyCreator.questions.types.scale')}</option>
+                    <option value="rating">⭐️ {t('surveyCreator.questions.types.rating')}</option>
+                    <option value="boolean">✅ {t('surveyCreator.questions.types.boolean')}</option>
+                    <option value="date">📅 {t('surveyCreator.questions.types.date')}</option>
+                    <option value="number">🔟 {t('surveyCreator.questions.types.number')}</option>
                   </select>
                 </div>
 
@@ -1986,7 +1990,7 @@ const QuestionsTab: React.FC<{
                       marginBottom: '8px',
                       color: 'var(--tg-text-color)'
                     }}>
-                      Варианты ответов
+                      {t('surveyCreator.questions.options')}
                     </label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {/* Обычные варианты ответов */}
@@ -2000,7 +2004,7 @@ const QuestionsTab: React.FC<{
                               newOptions[index] = e.target.value;
                               onQuestionChange(question.id, { options: newOptions });
                             }}
-                            placeholder={`Вариант ${index + 1}`}
+                            placeholder={t('surveyCreator.questions.option', { number: index + 1 })}
                             enterKeyHint="done"
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
@@ -2046,7 +2050,7 @@ const QuestionsTab: React.FC<{
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <input
                             type="text"
-                            value="Другое"
+                            value={t('surveyCreator.questions.other')}
                             readOnly
                             style={{
                               flex: 1,
@@ -2101,7 +2105,7 @@ const QuestionsTab: React.FC<{
                           }}
                         >
                           <span>+</span>
-                          Добавить вариант
+                          {t('surveyCreator.questions.addOption')}
                         </button>
                         
                         <button
@@ -2122,7 +2126,7 @@ const QuestionsTab: React.FC<{
                           }}
                         >
                           <span>{question.hasOtherOption ? '✓' : '+'}</span>
-                          Добавить «Другое»
+                          {t('surveyCreator.questions.addOther')}
                         </button>
                       </div>
                     </div>
@@ -2138,7 +2142,7 @@ const QuestionsTab: React.FC<{
                       marginBottom: '8px',
                       color: 'var(--tg-text-color)'
                     }}>
-                      Настройки шкалы
+                      {t('surveyCreator.questions.scaleSettings')}
                     </label>
                     <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
                       <div style={{ flex: 1 }}>
@@ -2148,7 +2152,7 @@ const QuestionsTab: React.FC<{
                           color: 'var(--tg-hint-color)',
                           marginBottom: '4px'
                         }}>
-                          От
+                          {t('surveyCreator.questions.scaleFrom')}
                         </label>
                         <input
                           type="number"
@@ -2231,7 +2235,7 @@ const QuestionsTab: React.FC<{
                           color: 'var(--tg-hint-color)',
                           marginBottom: '4px'
                         }}>
-                          До
+                          {t('surveyCreator.questions.scaleTo')}
                         </label>
                         <input
                           type="number"
@@ -2326,7 +2330,7 @@ const QuestionsTab: React.FC<{
                           color: 'var(--tg-hint-color)',
                           marginBottom: '4px'
                         }}>
-                          Подпись минимума
+                          {t('surveyCreator.questions.scaleMinLabel')}
                         </label>
                         <input
                           type="text"
@@ -2337,7 +2341,7 @@ const QuestionsTab: React.FC<{
                               max: question.scaleLabels?.max || ''
                             } 
                           })}
-                          placeholder="Например: Ужасно"
+                          placeholder={t('surveyCreator.questions.scaleMinLabelPlaceholder')}
                           enterKeyHint="done"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -2365,7 +2369,7 @@ const QuestionsTab: React.FC<{
                           color: 'var(--tg-hint-color)',
                           marginBottom: '4px'
                         }}>
-                          Подпись максимума
+                          {t('surveyCreator.questions.scaleMaxLabel')}
                         </label>
                         <input
                           type="text"
@@ -2376,7 +2380,7 @@ const QuestionsTab: React.FC<{
                               max: e.target.value
                             } 
                           })}
-                          placeholder="Например: Отлично"
+                          placeholder={t('surveyCreator.questions.scaleMaxLabelPlaceholder')}
                           enterKeyHint="done"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -2425,7 +2429,7 @@ const QuestionsTab: React.FC<{
                           animation: 'spin 1s linear infinite'
                         }} />
                         <span style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
-                          Загрузка изображения...
+                          {t('surveyCreator.questions.image.uploading')}
                         </span>
                         <style>{`
                           @keyframes spin {
@@ -2461,7 +2465,7 @@ const QuestionsTab: React.FC<{
                               // Проверяем размер файла перед загрузкой
                               if (file.size > 10 * 1024 * 1024) { // 10MB
                                 setUploadingImages(prev => ({ ...prev, [question.id]: false }));
-                                alert('Размер файла превышает 10MB. Пожалуйста, выберите изображение меньшего размера.');
+                                alert(t('surveyCreator.questions.image.fileTooLarge'));
                                 const errorFn = hapticFeedback?.error;
                                 if (errorFn) {
                                   errorFn();
@@ -2473,7 +2477,7 @@ const QuestionsTab: React.FC<{
                               // Проверяем тип файла
                               if (!file.type || !file.type.startsWith('image/')) {
                                 setUploadingImages(prev => ({ ...prev, [question.id]: false }));
-                                alert('Пожалуйста, выберите файл изображения (JPEG, PNG, WebP, GIF)');
+                                alert(t('surveyCreator.questions.image.invalidFile'));
                                 const errorFn = hapticFeedback?.error;
                                 if (errorFn) {
                                   errorFn();
@@ -2485,7 +2489,7 @@ const QuestionsTab: React.FC<{
                               const result = await uploadApi.uploadImage(file);
                               
                               if (!result || !result.url) {
-                                throw new Error('Сервер не вернул URL изображения');
+                                throw new Error(t('surveyCreator.questions.image.serverError'));
                               }
                               
                               // Получаем полный URL для отображения
@@ -2529,16 +2533,16 @@ const QuestionsTab: React.FC<{
                               // Сбрасываем состояние загрузки при ошибке
                               setUploadingImages(prev => ({ ...prev, [question.id]: false }));
                               
-                              let errorMessage = 'Не удалось загрузить изображение';
+                              let errorMessage = t('surveyCreator.questions.image.uploadFailed');
                               
                               if (error?.response?.data?.detail) {
                                 errorMessage = error.response.data.detail;
                               } else if (error?.message) {
                                 errorMessage = error.message;
                               } else if (error?.response?.status === 413) {
-                                errorMessage = 'Файл слишком большой. Максимальный размер: 10MB';
+                                errorMessage = t('surveyCreator.questions.image.fileTooBig');
                               } else if (error?.response?.status === 400) {
-                                errorMessage = error?.response?.data?.detail || 'Некорректный файл';
+                                errorMessage = error?.response?.data?.detail || t('surveyCreator.questions.image.invalidFormat');
                               }
                               
                               alert(errorMessage);
@@ -2558,7 +2562,7 @@ const QuestionsTab: React.FC<{
                           <polyline points="21,15 16,10 5,21"></polyline>
                         </svg>
                         <span style={{ color: 'var(--tg-hint-color)', fontSize: '14px' }}>
-                          Добавить изображение
+                          {t('surveyCreator.questions.image.add')}
                         </span>
                       </label>
                     )}
@@ -2592,14 +2596,14 @@ const QuestionsTab: React.FC<{
                     >
                       <img
                         src={question.imageUrl}
-                        alt="Загруженная картинка"
+                        alt={t('surveyCreator.questions.image.uploaded')}
                         onError={(e) => {
                           console.error('Ошибка загрузки изображения:', question.imageUrl);
                           // Показываем сообщение об ошибке
                           const imgElement = e.currentTarget;
                           imgElement.style.display = 'none';
                           const errorDiv = document.createElement('div');
-                          errorDiv.textContent = 'Ошибка загрузки изображения';
+                          errorDiv.textContent = t('surveyCreator.questions.image.error');
                           errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 8px;';
                           imgElement.parentElement?.appendChild(errorDiv);
                         }}
@@ -2660,7 +2664,7 @@ const QuestionsTab: React.FC<{
                       textAlign: 'center',
                       fontStyle: 'italic'
                     }}>
-                      Нажмите на изображение для просмотра
+                      {t('surveyCreator.questions.image.clickToView')}
                     </p>
                   </div>
                 )}
@@ -2719,7 +2723,7 @@ const QuestionsTab: React.FC<{
                     }}
                     onClick={() => onQuestionChange(question.id, { required: !question.required })}
                   >
-                    Обязательный вопрос
+                    {t('surveyCreator.questions.required')}
                   </label>
                 </div>
 
@@ -2758,7 +2762,7 @@ const QuestionsTab: React.FC<{
                   }}
                 >
                   <Plus size={16} />
-                  Создать вопрос
+                  {t('surveyCreator.questions.addQuestion')}
                 </button>
               </div>
             )}
@@ -2782,6 +2786,7 @@ const ConditionalLogicEditor: React.FC<{
   currentIndex: number;
   onConditionChange: (conditionalLogic: ConditionalLogic | undefined) => void;
 }> = ({ question, allQuestions, currentIndex, onConditionChange }) => {
+  const { t } = useTranslation();
   // Получаем доступные вопросы для зависимости (только предыдущие)
   const availableQuestions = allQuestions.slice(0, currentIndex);
   
@@ -2791,36 +2796,36 @@ const ConditionalLogicEditor: React.FC<{
       case 'single_choice':
       case 'boolean':
         return [
-          { value: 'equals', label: 'равно' },
-          { value: 'not_equals', label: 'не равно' }
+          { value: 'equals', label: t('surveyCreator.questions.conditional.operators.equals') },
+          { value: 'not_equals', label: t('surveyCreator.questions.conditional.operators.notEquals') }
         ];
       case 'multiple_choice':
         return [
-          { value: 'contains', label: 'содержит' },
-          { value: 'not_contains', label: 'не содержит' }
+          { value: 'contains', label: t('surveyCreator.questions.conditional.operators.contains') },
+          { value: 'not_contains', label: t('surveyCreator.questions.conditional.operators.notContains') }
         ];
       case 'scale':
       case 'number':
         return [
-          { value: 'equals', label: 'равно' },
-          { value: 'greater_than', label: 'больше' },
-          { value: 'less_than', label: 'меньше' },
-          { value: 'greater_or_equal', label: 'больше или равно' },
-          { value: 'less_or_equal', label: 'меньше или равно' }
+          { value: 'equals', label: t('surveyCreator.questions.conditional.operators.equals') },
+          { value: 'greater_than', label: t('surveyCreator.questions.conditional.operators.greaterThan') },
+          { value: 'less_than', label: t('surveyCreator.questions.conditional.operators.lessThan') },
+          { value: 'greater_or_equal', label: t('surveyCreator.questions.conditional.operators.greaterOrEqual') },
+          { value: 'less_or_equal', label: t('surveyCreator.questions.conditional.operators.lessOrEqual') }
         ];
       case 'rating':
         return [
-          { value: 'equals', label: 'равно' },
-          { value: 'greater_than', label: 'больше' },
-          { value: 'less_than', label: 'меньше' },
-          { value: 'greater_or_equal', label: 'больше или равно' },
-          { value: 'less_or_equal', label: 'меньше или равно' }
+          { value: 'equals', label: t('surveyCreator.questions.conditional.operators.equals') },
+          { value: 'greater_than', label: t('surveyCreator.questions.conditional.operators.greaterThan') },
+          { value: 'less_than', label: t('surveyCreator.questions.conditional.operators.lessThan') },
+          { value: 'greater_or_equal', label: t('surveyCreator.questions.conditional.operators.greaterOrEqual') },
+          { value: 'less_or_equal', label: t('surveyCreator.questions.conditional.operators.lessOrEqual') }
         ];
       case 'date':
         return [
-          { value: 'date_on', label: 'равно дате' },
-          { value: 'date_after', label: 'после даты' },
-          { value: 'date_before', label: 'до даты' }
+          { value: 'date_on', label: t('surveyCreator.questions.conditional.operators.dateOn') },
+          { value: 'date_after', label: t('surveyCreator.questions.conditional.operators.dateAfter') },
+          { value: 'date_before', label: t('surveyCreator.questions.conditional.operators.dateBefore') }
         ];
       default:
         return [];
@@ -2841,8 +2846,8 @@ const ConditionalLogicEditor: React.FC<{
         return (dependsOnQuestion.options || []).filter(opt => opt.trim()).map(opt => ({ value: opt, label: opt }));
       case 'boolean':
         return [
-          { value: 'yes', label: 'Да' },
-          { value: 'no', label: 'Нет' }
+          { value: 'yes', label: t('surveyCreator.questions.conditional.values.yes') },
+          { value: 'no', label: t('surveyCreator.questions.conditional.values.no') }
         ];
       case 'scale':
         const min = dependsOnQuestion.scaleMin || 1;
@@ -2986,7 +2991,7 @@ const ConditionalLogicEditor: React.FC<{
         }} onClick={handleToggleCondition}>
           <span>🔀</span>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            Условный вопрос
+            {t('surveyCreator.questions.conditional.title')}
           </span>
         </label>
         <label style={{
@@ -3036,7 +3041,7 @@ const ConditionalLogicEditor: React.FC<{
               color: 'var(--tg-link-color)',
               marginBottom: '6px'
             }}>
-              Зависит от вопроса:
+              {t('surveyCreator.questions.conditional.dependsOn')}
             </label>
             <select
               value={question.conditionalLogic.dependsOn}
@@ -3054,7 +3059,7 @@ const ConditionalLogicEditor: React.FC<{
             >
               {availableQuestions.map(q => (
                 <option key={q.id} value={q.id}>
-                  {q.title || `Вопрос ${allQuestions.findIndex(qq => qq.id === q.id) + 1}`}
+                  {q.title || t('surveyCreator.questions.questionLabel', { number: allQuestions.findIndex(qq => qq.id === q.id) + 1 })}
                 </option>
               ))}
             </select>
@@ -3075,7 +3080,7 @@ const ConditionalLogicEditor: React.FC<{
                     color: 'var(--tg-hint-color)',
                     lineHeight: '1.4'
                   }}>
-                    Для вопросов с типами "Короткий ответ" и "Развернутый ответ" настройка условных вопросов недоступна
+                    {t('surveyCreator.questions.conditional.textUnavailable')}
                   </div>
                 </div>
               ) : (
@@ -3097,7 +3102,7 @@ const ConditionalLogicEditor: React.FC<{
                       fontWeight: '500',
                       minWidth: '30px'
                     }}>
-                      {question.conditionalLogic?.logicOperator || 'AND'}
+                      {question.conditionalLogic?.logicOperator === 'AND' ? t('surveyCreator.questions.conditional.logic.AND') : t('surveyCreator.questions.conditional.logic.OR')}
                     </span>
                   )}
                   
@@ -3240,7 +3245,7 @@ const ConditionalLogicEditor: React.FC<{
                         marginBottom: '8px'
                       }}
                     >
-                      + Добавить условие
+                      + {t('surveyCreator.questions.conditional.addCondition')}
                     </button>
                   )}
 
@@ -3268,7 +3273,7 @@ const ConditionalLogicEditor: React.FC<{
                           borderRadius: '6px',
                           border: '1px solid rgba(255, 149, 0, 0.3)'
                         }}>
-                          ⚠️ Условие не полностью заполнено. Вопрос будет показываться всегда, пока все поля условий не будут заполнены.
+                          ⚠️ {t('surveyCreator.questions.conditional.incompleteWarning')}
                         </div>
                       );
                     }
@@ -3280,7 +3285,7 @@ const ConditionalLogicEditor: React.FC<{
                         lineHeight: '1.4',
                         marginTop: '8px'
                       }}>
-                        💡 Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса.
+                        💡 {t('surveyCreator.questions.conditional.completeInfo')}
                       </div>
                     );
                   })()}
@@ -3296,6 +3301,8 @@ const ConditionalLogicEditor: React.FC<{
 
 // Функция для рендеринга разных типов вопросов
 const renderQuestionInput = (question: Question, validationErrors?: Record<string, { scaleMin?: string; scaleMax?: string }>, onAnswerChange?: (answers: Record<string, any>) => void, answers?: Record<string, any>) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation();
   const baseStyle = {
     width: '100%',
     padding: '12px 16px',
@@ -3312,7 +3319,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
       return (
         <input
           type="text"
-          placeholder="Ваш ответ..."
+          placeholder={t('surveyCreator.preview.answerPlaceholder')}
           enterKeyHint="done"
           value={answers?.[question.id] || ''}
           onChange={(e) => onAnswerChange?.({ ...answers, [question.id]: e.target.value })}
@@ -3323,7 +3330,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
     case 'textarea':
       return (
         <textarea
-          placeholder="Ваш ответ..."
+          placeholder={t('surveyCreator.preview.answerPlaceholder')}
           rows={4}
           enterKeyHint="done"
           value={answers?.[question.id] || ''}
@@ -3355,15 +3362,15 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                 width: '20px',
                 height: '20px',
                 borderRadius: '50%',
-                border: `2px solid ${answers?.[question.id] === (option && option.trim() !== '' ? option : `Вариант ${index + 1}`) ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                backgroundColor: answers?.[question.id] === (option && option.trim() !== '' ? option : `Вариант ${index + 1}`) ? 'var(--tg-button-color)' : 'transparent',
+                border: `2px solid ${answers?.[question.id] === (option && option.trim() !== '' ? option : t('surveyCreator.preview.option', { number: index + 1 })) ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                backgroundColor: answers?.[question.id] === (option && option.trim() !== '' ? option : t('surveyCreator.preview.option', { number: index + 1 })) ? 'var(--tg-button-color)' : 'transparent',
                 transition: 'all 0.2s ease'
               }}>
                 <input
                   type="radio"
                   name={`question_${question.id}`}
                   value={option}
-                  checked={answers?.[question.id] === (option && option.trim() !== '' ? option : `Вариант ${index + 1}`)}
+                  checked={answers?.[question.id] === (option && option.trim() !== '' ? option : t('surveyCreator.preview.option', { number: index + 1 }))}
                   style={{ 
                     position: 'absolute',
                     opacity: 0,
@@ -3374,7 +3381,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   }}
                   onChange={() => {
                     // Используем option если он не пустой, иначе используем placeholder
-                    const value = option && option.trim() !== '' ? option : `Вариант ${index + 1}`;
+                    const value = option && option.trim() !== '' ? option : t('surveyCreator.preview.option', { number: index + 1 });
                     onAnswerChange?.({ ...answers, [question.id]: value });
                   }}
                 />
@@ -3387,7 +3394,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   height: '8px',
                   borderRadius: '50%',
                   backgroundColor: 'white',
-                  opacity: answers?.[question.id] === (option && option.trim() !== '' ? option : `Вариант ${index + 1}`) ? 1 : 0,
+                  opacity: answers?.[question.id] === (option && option.trim() !== '' ? option : t('surveyCreator.preview.option', { number: index + 1 })) ? 1 : 0,
                   transition: 'opacity 0.2s ease'
                 }} />
               </div>
@@ -3396,7 +3403,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                 fontSize: '16px',
                 flex: 1
               }}>
-                {option || `Вариант ${index + 1}`}
+                {option || t('surveyCreator.preview.option', { number: index + 1 })}
               </span>
             </label>
           ))}
@@ -3420,15 +3427,15 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   width: '20px',
                   height: '20px',
                   borderRadius: '50%',
-                  border: `2px solid ${answers?.[question.id] === 'Другое' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                  backgroundColor: answers?.[question.id] === 'Другое' ? 'var(--tg-button-color)' : 'transparent',
+                  border: `2px solid ${answers?.[question.id] === t('surveyCreator.preview.other') ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: answers?.[question.id] === t('surveyCreator.preview.other') ? 'var(--tg-button-color)' : 'transparent',
                   transition: 'all 0.2s ease'
                 }}>
                   <input
                     type="radio"
                     name={`question_${question.id}`}
-                    value="Другое"
-                    checked={answers?.[question.id] === 'Другое'}
+                    value={t('surveyCreator.preview.other')}
+                    checked={answers?.[question.id] === t('surveyCreator.preview.other')}
                     style={{ 
                       position: 'absolute',
                       opacity: 0,
@@ -3438,7 +3445,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                       cursor: 'pointer'
                     }}
                     onChange={() => {
-                      onAnswerChange?.({ ...answers, [question.id]: 'Другое' });
+                      onAnswerChange?.({ ...answers, [question.id]: t('surveyCreator.preview.other') });
                     }}
                   />
                   <div style={{
@@ -3450,7 +3457,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     height: '8px',
                     borderRadius: '50%',
                     backgroundColor: 'white',
-                    opacity: answers?.[question.id] === 'Другое' ? 1 : 0,
+                    opacity: answers?.[question.id] === t('surveyCreator.preview.other') ? 1 : 0,
                     transition: 'opacity 0.2s ease'
                   }} />
                 </div>
@@ -3459,16 +3466,16 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   fontSize: '16px',
                   flex: 1
                 }}>
-                  Другое
+                  {t('surveyCreator.preview.other')}
                 </span>
               </label>
               
               {/* Поле для ввода текста */}
-              {answers?.[question.id] === 'Другое' && (
+              {answers?.[question.id] === t('surveyCreator.preview.other') && (
                 <div style={{ marginLeft: '32px' }}>
                   <input
                     type="text"
-                    placeholder="Другое"
+                    placeholder={t('surveyCreator.preview.otherPlaceholder')}
                     value={answers?.[`${question.id}_other`] || ''}
                     onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
                     style={{
@@ -3485,7 +3492,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   />
                   {!answers?.[`${question.id}_other`] && (
                     <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
-                      Пожалуйста, введите ваш ответ
+                      {t('surveyCreator.preview.otherRequired')}
                     </div>
                   )}
                 </div>
@@ -3516,7 +3523,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
-                Отменить выбор
+                {t('surveyCreator.preview.cancel')}
               </button>
             </div>
           )}
@@ -3528,7 +3535,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {(question.options || ['', '']).map((option, index) => {
             const currentAnswers = answers?.[question.id] || [];
-            const actualValue = option && option.trim() !== '' ? option : `Вариант ${index + 1}`;
+            const actualValue = option && option.trim() !== '' ? option : t('surveyCreator.preview.option', { number: index + 1 });
             const isChecked = currentAnswers.includes(actualValue);
             
             return (
@@ -3599,7 +3606,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   fontSize: '16px',
                   flex: 1
                 }}>
-                  {option || `Вариант ${index + 1}`}
+                  {option || t('surveyCreator.preview.option', { number: index + 1 })}
                 </span>
               </label>
             );
@@ -3624,14 +3631,14 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   width: '20px',
                   height: '20px',
                   borderRadius: '4px',
-                  border: `2px solid ${(answers?.[question.id] || []).includes('Другое') ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                  backgroundColor: (answers?.[question.id] || []).includes('Другое') ? 'var(--tg-button-color)' : 'transparent',
+                  border: `2px solid ${(answers?.[question.id] || []).includes(t('surveyCreator.preview.other')) ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: (answers?.[question.id] || []).includes(t('surveyCreator.preview.other')) ? 'var(--tg-button-color)' : 'transparent',
                   transition: 'all 0.2s ease'
                 }}>
                   <input
                     type="checkbox"
                     name={`question_${question.id}_other`}
-                    checked={(answers?.[question.id] || []).includes('Другое')}
+                    checked={(answers?.[question.id] || []).includes(t('surveyCreator.preview.other'))}
                     style={{ 
                       position: 'absolute',
                       opacity: 0,
@@ -3643,13 +3650,14 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     onChange={(e) => {
                       const currentAnswers = answers?.[question.id] || [];
                       let newAnswers;
+                      const otherText = t('surveyCreator.preview.other');
                       
                       if (e.target.checked) {
                         // Добавляем к выбранным
-                        newAnswers = [...currentAnswers, 'Другое'];
+                        newAnswers = [...currentAnswers, otherText];
                       } else {
                         // Убираем из выбранных
-                        newAnswers = currentAnswers.filter((ans: string) => ans !== 'Другое');
+                        newAnswers = currentAnswers.filter((ans: string) => ans !== otherText);
                         // Также очищаем текст "Другое"
                         onAnswerChange?.({ ...answers, [question.id]: newAnswers, [`${question.id}_other`]: '' });
                         return;
@@ -3665,7 +3673,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                     transform: 'translate(-50%, -90%)',
                     width: '12px',
                     height: '12px',
-                    opacity: (answers?.[question.id] || []).includes('Другое') ? 1 : 0,
+                    opacity: (answers?.[question.id] || []).includes(t('surveyCreator.preview.other')) ? 1 : 0,
                     transition: 'opacity 0.2s ease'
                   }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -3678,16 +3686,16 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   fontSize: '16px',
                   flex: 1
                 }}>
-                  Другое
+                  {t('surveyCreator.preview.other')}
                 </span>
               </label>
               
               {/* Поле для ввода текста */}
-              {(answers?.[question.id] || []).includes('Другое') && (
+              {(answers?.[question.id] || []).includes(t('surveyCreator.preview.other')) && (
                 <div style={{ marginLeft: '32px' }}>
                   <input
                     type="text"
-                    placeholder="Другое"
+                    placeholder={t('surveyCreator.preview.otherPlaceholder')}
                     value={answers?.[`${question.id}_other`] || ''}
                     onChange={(e) => onAnswerChange?.({ ...answers, [`${question.id}_other`]: e.target.value })}
                     style={{
@@ -3704,7 +3712,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   />
                   {!answers?.[`${question.id}_other`] && (
                     <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
-                      Пожалуйста, введите ваш ответ
+                      {t('surveyCreator.preview.otherRequired')}
                     </div>
                   )}
                 </div>
@@ -3766,7 +3774,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   transition: 'opacity 0.2s ease'
                 }} />
               </div>
-              <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
+              <span style={{ color: 'var(--tg-text-color)' }}>{t('surveyCreator.preview.yes')}</span>
             </label>
             
             <label style={{
@@ -3811,7 +3819,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
                   transition: 'opacity 0.2s ease'
                 }} />
               </div>
-              <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
+              <span style={{ color: 'var(--tg-text-color)' }}>{t('surveyCreator.preview.no')}</span>
             </label>
           </div>
           
@@ -3843,7 +3851,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
       return (
         <input
           type="date"
-          placeholder="Дата"
+          placeholder={t('surveyCreator.preview.datePlaceholder')}
           value={answers?.[question.id] || ''}
           onChange={(e) => onAnswerChange?.({ ...answers, [question.id]: e.target.value })}
           style={baseStyle}
@@ -3854,7 +3862,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
       return (
         <input
           type="number"
-          placeholder="Введите число..."
+          placeholder={t('surveyCreator.preview.numberPlaceholder')}
           enterKeyHint="done"
           inputMode="numeric"
           value={answers?.[question.id] || ''}
@@ -3867,7 +3875,7 @@ const renderQuestionInput = (question: Question, validationErrors?: Record<strin
       return (
         <input
           type="text"
-          placeholder="Ваш ответ..."
+          placeholder={t('surveyCreator.preview.answerPlaceholder')}
           enterKeyHint="done"
           style={baseStyle}
         />
@@ -4050,6 +4058,7 @@ const PreviewTab: React.FC<{
   validationErrors: Record<string, { scaleMin?: string; scaleMax?: string }>;
   previewAnswers: Record<string, any>;
 }> = ({ surveyData, questions, validationErrors, previewAnswers, onAnswerChange, answers }) => {
+  const { t } = useTranslation();
   // Используем answers для проверки условий (это текущие ответы в предпросмотре)
   const currentAnswers = answers || previewAnswers;
   // Состояние для полноэкранного просмотра изображения
@@ -4070,7 +4079,7 @@ const PreviewTab: React.FC<{
           alignItems: 'center',
           gap: '8px'
         }}>
-          👀 Предпросмотр опроса
+          👀 {t('surveyCreator.preview.title')}
         </h3>
         
         {questions.length === 0 ? (
@@ -4081,7 +4090,7 @@ const PreviewTab: React.FC<{
           }}>
             <Eye size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
             <p style={{ margin: 0, fontSize: '16px' }}>
-              Добавьте вопросы для предпросмотра
+              {t('surveyCreator.preview.empty')}
             </p>
           </div>
         ) : (
@@ -4094,7 +4103,7 @@ const PreviewTab: React.FC<{
                 margin: '0 0 8px 0',
                 color: 'var(--tg-text-color)'
               }}>
-                {surveyData.title || 'Название опроса'}
+                {surveyData.title || t('surveyCreator.preview.defaultTitle')}
               </h2>
               {surveyData.description && (
                 <p style={{
@@ -4146,7 +4155,7 @@ const PreviewTab: React.FC<{
                     marginBottom: '8px',
                     color: 'var(--tg-text-color)'
                   }}>
-                    {visibleIndex + 1}. {question.title || 'Вопрос без названия'}
+                    {visibleIndex + 1}. {question.title || t('surveyCreator.preview.noTitle')}
                     {question.required && <span style={{ color: 'red' }}> *</span>}
                   </label>
                   
@@ -4185,7 +4194,7 @@ const PreviewTab: React.FC<{
                       >
                         <img
                           src={question.imageUrl}
-                          alt="Изображение к вопросу"
+                          alt={t('surveyCreator.preview.imageAlt')}
                           onError={(e) => {
                             console.error('Ошибка загрузки изображения в предпросмотре:', question.imageUrl);
                             const imgElement = e.currentTarget;
@@ -4211,7 +4220,7 @@ const PreviewTab: React.FC<{
                         textAlign: 'center',
                         fontStyle: 'italic'
                       }}>
-                        Нажмите на изображение для просмотра
+                        {t('surveyCreator.preview.imageClick')}
                       </p>
                     </div>
                   )}
@@ -4242,7 +4251,7 @@ const PreviewTab: React.FC<{
                       case 'single_choice':
                         if (!answer) return true;
                         // Если выбран вариант "Другое", проверяем заполненность поля
-                        if (answer === 'Другое') {
+                        if (answer === t('surveyCreator.preview.other')) {
                           const otherAnswer = previewAnswers[`${question.id}_other`];
                           return !otherAnswer || otherAnswer.trim() === '';
                         }
@@ -4251,7 +4260,7 @@ const PreviewTab: React.FC<{
                       case 'multiple_choice':
                         if (!answer || !Array.isArray(answer) || answer.length === 0) return true;
                         // Если выбран вариант "Другое", проверяем заполненность поля
-                        if (answer.includes('Другое')) {
+                        if (answer.includes(t('surveyCreator.preview.other'))) {
                           const otherAnswer = previewAnswers[`${question.id}_other`];
                           return !otherAnswer || otherAnswer.trim() === '';
                         }
@@ -4281,15 +4290,16 @@ const PreviewTab: React.FC<{
                   // Дополнительно проверяем все вопросы с выбранным вариантом "Другое"
                   const unansweredOtherOptions = questions.filter(question => {
                     const answer = previewAnswers[question.id];
+                    const otherText = t('surveyCreator.preview.other');
                     
                     // Проверяем single_choice с "Другое"
-                    if (question.type === 'single_choice' && answer === 'Другое') {
+                    if (question.type === 'single_choice' && answer === otherText) {
                       const otherAnswer = previewAnswers[`${question.id}_other`];
                       return !otherAnswer || otherAnswer.trim() === '';
                     }
                     
                     // Проверяем multiple_choice с "Другое"
-                    if (question.type === 'multiple_choice' && answer && Array.isArray(answer) && answer.includes('Другое')) {
+                    if (question.type === 'multiple_choice' && answer && Array.isArray(answer) && answer.includes(otherText)) {
                       const otherAnswer = previewAnswers[`${question.id}_other`];
                       return !otherAnswer || otherAnswer.trim() === '';
                     }
@@ -4298,11 +4308,11 @@ const PreviewTab: React.FC<{
                   });
                   
                   if (unansweredRequired.length === 0 && unansweredOtherOptions.length === 0) {
-                    alert('Опрос успешно пройден!');
+                    alert(t('surveyCreator.preview.success'));
                   } else if (unansweredRequired.length > 0) {
-                    alert('Пожалуйста, ответьте на все обязательные вопросы');
+                    alert(t('surveyCreator.preview.requiredError'));
                   } else {
-                    alert('Пожалуйста, заполните выбранные поля "Другое"');
+                    alert(t('surveyCreator.preview.otherError'));
                   }
                 }}
                 style={{
@@ -4316,7 +4326,7 @@ const PreviewTab: React.FC<{
                   cursor: 'pointer'
                 }}
               >
-                Отправить ответы
+                {t('surveyCreator.preview.submit')}
               </button>
             </div>
           </div>

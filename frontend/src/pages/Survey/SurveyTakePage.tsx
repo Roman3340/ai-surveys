@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
 import ImagePopup from '../../components/ui/ImagePopup';
@@ -67,6 +68,7 @@ interface Answers {
 }
 
 export default function SurveyTakePage() {
+  const { t } = useTranslation();
   const { surveyId } = useParams();
   const navigate = useNavigate();
   const { user, hapticFeedback } = useTelegram();
@@ -97,7 +99,7 @@ export default function SurveyTakePage() {
         const response = await surveyApi.getSurveyPublic(surveyId, user?.id);
         
         if (!response.canParticipate) {
-          setError(response.participationMessage || 'Участие в опросе недоступно');
+          setError(response.participationMessage || t('surveyTake.participationUnavailable'));
           setLoading(false);
           return;
         }
@@ -182,7 +184,7 @@ export default function SurveyTakePage() {
         window.scrollTo(0, 0);
       } catch (e: any) {
         console.error(e);
-        setError(e?.response?.data?.detail || 'Не удалось загрузить опрос');
+        setError(e?.response?.data?.detail || t('surveyTake.loadError'));
       } finally {
         setLoading(false);
       }
@@ -439,22 +441,22 @@ export default function SurveyTakePage() {
           isEmpty = true;
         } else if (Array.isArray(answer) && answer.length === 0) {
           isEmpty = true;
-        } else if (answer === 'Другое' && !otherAnswer?.trim()) {
+        } else if (answer === t('surveyCreator.preview.other') && !otherAnswer?.trim()) {
           isEmpty = true;
-        } else if (Array.isArray(answer) && answer.includes('Другое') && !otherAnswer?.trim()) {
+        } else if (Array.isArray(answer) && answer.includes(t('surveyCreator.preview.other')) && !otherAnswer?.trim()) {
           isEmpty = true;
         }
 
         if (isEmpty) {
-          errors[question.id] = 'Это обязательный вопрос';
+          errors[question.id] = t('surveyTake.requiredError');
         }
       }
       
       // Проверяем валидацию "Другое" для всех вопросов (обязательных и необязательных)
-      if (answer === 'Другое' && !otherAnswer?.trim()) {
-        errors[question.id] = 'Пожалуйста, введите ваш ответ в поле "Другое"';
-      } else if (Array.isArray(answer) && answer.includes('Другое') && !otherAnswer?.trim()) {
-        errors[question.id] = 'Пожалуйста, введите ваш ответ в поле "Другое"';
+      if (answer === t('surveyCreator.preview.other') && !otherAnswer?.trim()) {
+        errors[question.id] = t('surveyCreator.preview.otherError');
+      } else if (Array.isArray(answer) && answer.includes(t('surveyCreator.preview.other')) && !otherAnswer?.trim()) {
+        errors[question.id] = t('surveyCreator.preview.otherError');
       }
     });
 
@@ -480,17 +482,18 @@ export default function SurveyTakePage() {
     try {
       // Отправляем только ответы на видимые вопросы
       const visibleQuestions = shuffledQuestions.filter(q => shouldShowQuestion(q, answers));
+      const otherText = t('surveyCreator.preview.other');
       const formattedAnswers = visibleQuestions.map(q => {
         let answerValue = answers[q.id] || null;
         
-        if (answerValue === 'Другое') {
+        if (answerValue === otherText) {
           answerValue = answers[`${q.id}_other`] || null;
         }
         
-        if (Array.isArray(answerValue) && answerValue.includes('Другое')) {
-          const otherText = answers[`${q.id}_other`] || '';
+        if (Array.isArray(answerValue) && answerValue.includes(otherText)) {
+          const otherTextValue = answers[`${q.id}_other`] || '';
           answerValue = answerValue
-            .map((a: string) => (a === 'Другое' ? otherText : a))
+            .map((a: string) => (a === otherText ? otherTextValue : a))
             .filter((a: string) => a && String(a).trim() !== '');
         }
 
@@ -513,7 +516,7 @@ export default function SurveyTakePage() {
       });
     } catch (error: any) {
       console.error('Ошибка отправки ответов:', error);
-      alert(error?.response?.data?.detail || 'Не удалось отправить ответы. Попробуйте снова.');
+      alert(error?.response?.data?.detail || t('surveyCreator.publishError'));
       hapticFeedback?.error();
     } finally {
         setSubmitting(false);
@@ -540,7 +543,7 @@ export default function SurveyTakePage() {
       return (
         <input
           type="text"
-          placeholder="Ваш ответ..."
+          placeholder={t('surveyCreator.preview.answerPlaceholder')}
           value={answer || ''}
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
           onFocus={() => setIsKeyboardOpen(true)}
@@ -561,7 +564,7 @@ export default function SurveyTakePage() {
     if (question.type === 'textarea') {
       return (
         <textarea
-          placeholder="Ваш ответ..."
+          placeholder={t('surveyCreator.preview.answerPlaceholder')}
           rows={4}
           value={answer || ''}
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
@@ -596,7 +599,7 @@ export default function SurveyTakePage() {
       return (
         <input
           type="number"
-          placeholder="Введите число..."
+          placeholder={t('surveyCreator.preview.numberPlaceholder')}
           value={answer || ''}
           onChange={(e) => handleAnswerChange(question.id, e.target.value)}
           onFocus={() => setIsKeyboardOpen(true)}
@@ -702,15 +705,15 @@ export default function SurveyTakePage() {
                   width: '20px',
                   height: '20px',
                   borderRadius: '50%',
-                  border: `2px solid ${answer === 'Другое' ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                  backgroundColor: answer === 'Другое' ? 'var(--tg-button-color)' : 'transparent',
+                  border: `2px solid ${answer === t('surveyCreator.preview.other') ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: answer === t('surveyCreator.preview.other') ? 'var(--tg-button-color)' : 'transparent',
                   transition: 'all 0.2s ease'
                 }}>
                   <input
                     type="radio"
                     name={`question_${question.id}`}
-                    checked={answer === 'Другое'}
-                    onChange={() => handleAnswerChange(question.id, 'Другое')}
+                    checked={answer === t('surveyCreator.preview.other')}
+                    onChange={() => handleAnswerChange(question.id, t('surveyCreator.preview.other'))}
                     style={{ 
                       position: 'absolute',
                       opacity: 0,
@@ -729,7 +732,7 @@ export default function SurveyTakePage() {
                     height: '8px',
                     borderRadius: '50%',
                     backgroundColor: 'white',
-                    opacity: answer === 'Другое' ? 1 : 0,
+                    opacity: answer === t('surveyCreator.preview.other') ? 1 : 0,
                     transition: 'opacity 0.2s ease'
                   }} />
                 </div>
@@ -738,15 +741,15 @@ export default function SurveyTakePage() {
                   fontSize: '16px',
                   flex: 1
                 }}>
-                  Другое
+                  {t('surveyCreator.preview.other')}
                 </span>
               </label>
               
-              {answer === 'Другое' && (
+              {answer === t('surveyCreator.preview.other') && (
                 <div style={{ marginLeft: '32px' }}>
                   <input
                     type="text"
-                    placeholder="Другое"
+                    placeholder={t('surveyCreator.preview.otherPlaceholder')}
                     value={answers[`${question.id}_other`] || ''}
                     onChange={(e) => handleAnswerChange(`${question.id}_other`, e.target.value)}
                     onFocus={() => setIsKeyboardOpen(true)}
@@ -766,7 +769,7 @@ export default function SurveyTakePage() {
                   />
                   {!answers[`${question.id}_other`] && (
                     <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
-                      Пожалуйста, введите ваш ответ
+                      {t('surveyCreator.preview.otherRequired')}
                     </div>
                   )}
                 </div>
@@ -791,7 +794,7 @@ export default function SurveyTakePage() {
                   transition: 'all 0.2s ease'
                 }}
               >
-                Отменить выбор
+                {t('surveyCreator.preview.cancel')}
               </button>
             </div>
           )}
@@ -802,6 +805,7 @@ export default function SurveyTakePage() {
     // Multiple Choice
     if (question.type === 'multiple_choice') {
       const currentAnswers = Array.isArray(answer) ? answer : [];
+      const otherText = t('surveyCreator.preview.other');
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {question.options?.map((option: any, index: number) => {
@@ -891,17 +895,17 @@ export default function SurveyTakePage() {
                   width: '20px',
                   height: '20px',
                   borderRadius: '4px',
-                  border: `2px solid ${currentAnswers.includes('Другое') ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
-                  backgroundColor: currentAnswers.includes('Другое') ? 'var(--tg-button-color)' : 'transparent',
+                  border: `2px solid ${currentAnswers.includes(otherText) ? 'var(--tg-button-color)' : 'var(--tg-hint-color)'}`,
+                  backgroundColor: currentAnswers.includes(otherText) ? 'var(--tg-button-color)' : 'transparent',
                   transition: 'all 0.2s ease'
                 }}>
                   <input
                     type="checkbox"
-                    checked={currentAnswers.includes('Другое')}
+                    checked={currentAnswers.includes(otherText)}
                     onChange={(e) => {
                       const newAnswers = e.target.checked
-                        ? [...currentAnswers, 'Другое']
-                        : currentAnswers.filter((a: string) => a !== 'Другое');
+                        ? [...currentAnswers, otherText]
+                        : currentAnswers.filter((a: string) => a !== otherText);
                       
                       if (!e.target.checked) {
                         handleAnswerChange(`${question.id}_other`, '');
@@ -925,7 +929,7 @@ export default function SurveyTakePage() {
                     transform: 'translate(-50%, -90%)',
                     width: '12px',
                     height: '12px',
-                    opacity: currentAnswers.includes('Другое') ? 1 : 0,
+                    opacity: currentAnswers.includes(otherText) ? 1 : 0,
                     transition: 'opacity 0.2s ease'
                   }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -938,15 +942,15 @@ export default function SurveyTakePage() {
                   fontSize: '16px',
                   flex: 1
                 }}>
-                  Другое
+                  {otherText}
                 </span>
               </label>
               
-              {currentAnswers.includes('Другое') && (
+              {currentAnswers.includes(otherText) && (
                 <div style={{ marginLeft: '32px' }}>
                   <input
                     type="text"
-                    placeholder="Другое"
+                    placeholder={t('surveyCreator.preview.otherPlaceholder')}
                     value={answers[`${question.id}_other`] || ''}
                     onChange={(e) => handleAnswerChange(`${question.id}_other`, e.target.value)}
                     onFocus={() => setIsKeyboardOpen(true)}
@@ -966,7 +970,7 @@ export default function SurveyTakePage() {
                   />
                   {!answers[`${question.id}_other`] && (
                     <div style={{ color: '#ff4444', fontSize: '12px', marginTop: '4px' }}>
-                      Пожалуйста, введите ваш ответ
+                      {t('surveyCreator.preview.otherRequired')}
                     </div>
                   )}
                 </div>
@@ -1161,7 +1165,7 @@ export default function SurveyTakePage() {
                   transition: 'opacity 0.2s ease'
                 }} />
               </div>
-              <span style={{ color: 'var(--tg-text-color)' }}>Да</span>
+              <span style={{ color: 'var(--tg-text-color)' }}>{t('surveyCreator.preview.yes')}</span>
             </label>
             
             <label style={{
@@ -1209,7 +1213,7 @@ export default function SurveyTakePage() {
                   transition: 'opacity 0.2s ease'
                 }} />
               </div>
-              <span style={{ color: 'var(--tg-text-color)' }}>Нет</span>
+              <span style={{ color: 'var(--tg-text-color)' }}>{t('surveyCreator.preview.no')}</span>
             </label>
           </div>
           
@@ -1230,7 +1234,7 @@ export default function SurveyTakePage() {
                   transition: 'all 0.2s ease'
                 }}
               >
-                Отменить выбор
+                {t('surveyCreator.preview.cancel')}
               </button>
             </div>
           )}
@@ -1238,7 +1242,7 @@ export default function SurveyTakePage() {
       );
     }
 
-    return <div>Неподдерживаемый тип вопроса</div>;
+    return <div>{t('surveyTake.unsupportedType')}</div>;
   };
 
   if (loading) {
@@ -1260,7 +1264,7 @@ export default function SurveyTakePage() {
             animation: 'spin 1s linear infinite',
             margin: '0 auto 12px'
           }} />
-          <p style={{ color: 'var(--tg-hint-color)' }}>Загрузка опроса...</p>
+          <p style={{ color: 'var(--tg-hint-color)' }}>{t('surveyTake.loading')}</p>
         </div>
         
         <style dangerouslySetInnerHTML={{ __html: `
@@ -1290,7 +1294,7 @@ export default function SurveyTakePage() {
             color: 'var(--tg-text-color)', 
             marginBottom: '12px' 
           }}>
-            Опрос недоступен
+            {t('surveyTake.unavailable')}
           </h2>
           <p style={{ color: 'var(--tg-hint-color)', fontSize: '15px', lineHeight: '1.5', marginBottom: '24px' }}>
             {error}
@@ -1303,7 +1307,7 @@ export default function SurveyTakePage() {
             marginTop: '24px',
             lineHeight: '1.5'
           }}>
-            Хотите создать свой опрос?
+            {t('surveyTake.wantToCreate')}
             <br />
             <button
               onClick={() => navigate('/')}
@@ -1319,7 +1323,7 @@ export default function SurveyTakePage() {
                 margin: '0'
               }}
             >
-              Откройте главную страницу AI Surveys
+              {t('surveyTake.openHomePage')}
             </button>
           </p>
         </div>
@@ -1423,7 +1427,7 @@ export default function SurveyTakePage() {
                         color: 'var(--tg-hint-color)', 
                         fontSize: '14px' 
                       }}>
-                        Загрузка изображения...
+                        {t('surveyTake.imageLoading')}
                       </span>
                       <style>{`
                         @keyframes spin {
@@ -1450,7 +1454,7 @@ export default function SurveyTakePage() {
                       setImageLoading(prev => ({ ...prev, [question.id]: false }));
                       // Показываем сообщение об ошибке
                       const errorDiv = document.createElement('div');
-                      errorDiv.textContent = 'Не удалось загрузить изображение';
+                      errorDiv.textContent = t('surveyTake.imageLoadError');
                       errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 12px; border: 1px solid var(--tg-section-separator-color);';
                       imgElement.parentElement?.appendChild(errorDiv);
                     }}
@@ -1471,7 +1475,7 @@ export default function SurveyTakePage() {
                   textAlign: 'center',
                   fontStyle: 'italic'
                 }}>
-                  Нажмите на изображение для просмотра
+                  {t('surveyCreator.preview.imageClick')}
                 </p>
               </div>
             )}
@@ -1501,7 +1505,7 @@ export default function SurveyTakePage() {
               opacity: submitting ? 0.5 : 1, transition: 'opacity 0.2s ease'
             }}
           >
-            {submitting ? 'Отправка...' : 'Отправить ответы'}
+            {submitting ? t('surveyTake.submitting') : t('surveyCreator.preview.submit')}
           </button>
         </div>
       )}

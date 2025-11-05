@@ -46,6 +46,515 @@
       "settings": "Настройки",
       "support": "Поддержка"
     }
+  },
+  "settings": {
+    "title": "Настройки",
+    "theme": {
+      "title": "Тема",
+      "name": "Тема",
+      "system": {
+        "name": "Системная",
+        "description": "Использовать настройки устройства"
+      },
+      "light": {
+        "name": "Светлая",
+        "description": "Светлая тема"
+      },
+      "dark": {
+        "name": "Тёмная",
+        "description": "Тёмная тема"
+      }
+    },
+    "color": {
+      "title": "Цвет приложения",
+      "name": "Цвет приложения",
+      "description": "Выбор основного цвета",
+      "colors": {
+        "orange": "Оранжевый",
+        "dark-green": "Темно-зеленый",
+        "blue": "Синий",
+        "burgundy": "Бордовый",
+        "purple": "Фиолетовый",
+        "teal": "Бирюзовый",
+        "pink": "Розовый",
+        "cyan": "Голубой"
+      }
+    },
+    "language": {
+      "title": "Язык",
+      "name": "Язык",
+      "description": "Выбор языка интерфейса"
+    },
+    "cache": {
+      "name": "Очистить кэш",
+      "description": "Удалить локальные данные",
+      "confirmTitle": "Очистить кэш приложения? Все локальные данные будут удалены."
+    }
+  },
+  "createSurvey": {
+    "title": "Создать опрос или тест?",
+    "draft": {
+      "found": "Найден незавершённый опрос",
+      "restoreQuestion": "Восстановить черновик и продолжить редактирование?",
+      "restoreButton": "Да, восстановите",
+      "declineButton": "Нет, спасибо",
+      "aiSurvey": "Опрос с ИИ"
+    },
+    "survey": {
+      "title": "Создать опрос",
+      "description": "Создать опрос для сбора обратной связи"
+    },
+    "test": {
+      "title": "Создать тест",
+      "description": "Создать тест с правильными ответами и оценкой",
+      "comingSoon": "Создание тестов будет реализовано позже"
+    },
+    "createButton": "Создать"
+  },
+  "surveyPublished": {
+    "title": "Опрос опубликован!",
+    "subtitle": "Теперь вы можете поделиться ссылкой с участниками",
+    "loading": "Подготовка ссылки для распространения...",
+    "error": "Не удалось загрузить данные опроса",
+    "close": "Закрыть",
+    "surveyInfo": {
+      "title": "Информация об опросе",
+      "questions": "вопросов",
+      "minutes": "мин",
+      "maxParticipants": "до {{count}} участников"
+    },
+    "shareLink": {
+      "title": "Ссылка для распространения",
+      "loading": "Загрузка...",
+      "copy": "Копировать ссылку",
+      "copied": "Скопировано!"
+    },
+    "qrCode": {
+      "title": "QR-код",
+      "description": "Отсканируйте QR-код для быстрого доступа к опросу",
+      "download": "Скачать QR-код",
+      "downloading": "Скачивание..."
+    },
+    "shareTelegram": "Поделиться в Telegram"
+  },
+  "surveyCreator": {
+    "tabs": {
+      "settings": "Настройки",
+      "questions": "Вопросы",
+      "preview": "Предпросмотр"
+    },
+    "settings": {
+      "basicInfo": "Основная информация",
+      "title": "Название опроса *",
+      "titlePlaceholder": "Введите название опроса...",
+      "description": "Описание (необязательно)",
+      "descriptionPlaceholder": "Описание опроса...",
+      "advanced": "Расширенные настройки",
+      "language": "Язык опроса",
+      "endDate": "Дата окончания",
+      "maxParticipants": "Максимальное количество участников",
+      "maxParticipantsPlaceholder": "Без ограничений",
+      "anonymous": "Анонимные ответы",
+      "anonymousDesc": "Разрешить участникам отвечать анонимно",
+      "showProgress": "Показывать прогресс",
+      "showProgressDesc": "Показывать участникам прогресс прохождения",
+      "randomizeQuestions": "Перемешивать вопросы",
+      "randomizeQuestionsDesc": "Порядок вопросов будет случайным для каждого участника",
+      "oneResponsePerUser": "Один ответ на пользователя",
+      "oneResponsePerUserDesc": "Ограничить возможность повторного прохождения",
+      "hideCreator": "Скрыть создателя опроса",
+      "hideCreatorDesc": "Не показывать информацию о создателе опроса",
+      "motivation": "Мотивация",
+      "motivationDesc": "Добавить награду за участие в опросе",
+      "motivationError": "Нельзя включить мотивацию при скрытом создателе опроса",
+      "motivationWarning": "Нельзя включить мотивацию при скрытом создателе опроса. Отключите настройку \"Скрыть создателя опроса\" для использования мотивации.",
+      "motivationNotice": "При включении мотивации респонденту будет заранее известно о награде за прохождение опроса. Мы дадим ваш Telegram-контакт респонденту для связи с вами и выдачи приза. AI Surveys не участвует в хранении и передаче наград.",
+      "rewardType": "Тип награды",
+      "rewardTypes": {
+        "discount": "Скидка",
+        "promo": "Промокод",
+        "stars": "Звезды Telegram",
+        "gift": "Подарок",
+        "other": "Другое"
+      },
+      "rewardDetails": {
+        "discount": "Описание скидки",
+        "promo": "Что за промокод",
+        "stars": "Сколько звезд одному пользователю",
+        "gift": "Что за подарок",
+        "other": "Пояснение к другому награждению"
+      },
+      "rewardPlaceholders": {
+        "discount": "20% скидка на следующий заказ",
+        "promo": "Например: SAVE20",
+        "stars": "Например: 50",
+        "gift": "Например: Футболка с логотипом",
+        "other": "Например: Бесплатная консультация"
+      },
+      "promoConditions": "На что промокод и при каких условиях",
+      "promoConditionsPlaceholder": "Например: Промокод на бесплатную доставку при заказе от 1000 рублей"
+    },
+    "questions": {
+      "title": "Вопросы",
+      "empty": "Заполните название и добавьте хотя бы один вопрос",
+      "emptyFirst": "Добавьте первый вопрос",
+      "addQuestion": "Создать вопрос",
+      "questionLabel": "Вопрос {{number}}",
+      "conditionalLabel": "Условный",
+      "dependsOnQuestion": "Зависит от вопроса {{number}}: \"{{title}}\"",
+      "noTitle": "Без названия",
+      "questionTitleLabel": "Заголовок вопроса",
+      "titlePlaceholder": "Введите вопрос...",
+      "description": "Описание (необязательно)",
+      "descriptionPlaceholder": "Описание вопроса (необязательно)...",
+      "required": "Обязательный вопрос",
+      "type": "Тип вопроса",
+      "types": {
+        "text": "Короткий ответ",
+        "textarea": "Развернутый ответ",
+        "single_choice": "Один из списка",
+        "multiple_choice": "Несколько из списка",
+        "scale": "Шкала",
+        "rating": "Оценка звёздами",
+        "boolean": "Да/Нет",
+        "date": "Дата",
+        "number": "Число"
+      },
+      "options": "Варианты ответов",
+      "option": "Вариант {{number}}",
+      "other": "Другое",
+      "addOption": "Добавить вариант",
+      "addOther": "Добавить «Другое»",
+      "scaleSettings": "Настройки шкалы",
+      "scaleFrom": "От",
+      "scaleTo": "До",
+      "scaleMinLabel": "Подпись минимума",
+      "scaleMinLabelPlaceholder": "Например: Ужасно",
+      "scaleMaxLabel": "Подпись максимума",
+      "scaleMaxLabelPlaceholder": "Например: Отлично",
+      "image": {
+        "uploading": "Загрузка изображения...",
+        "add": "Добавить изображение",
+        "uploaded": "Загруженная картинка",
+        "error": "Ошибка загрузки изображения",
+        "clickToView": "Нажмите на изображение для просмотра",
+        "fileTooLarge": "Размер файла превышает 10MB. Пожалуйста, выберите изображение меньшего размера.",
+        "invalidFile": "Пожалуйста, выберите файл изображения (JPEG, PNG, WebP, GIF)",
+        "serverError": "Сервер не вернул URL изображения",
+        "uploadFailed": "Не удалось загрузить изображение",
+        "fileTooBig": "Файл слишком большой. Максимальный размер: 10MB",
+        "invalidFormat": "Некорректный файл"
+      },
+      "validation": {
+        "scaleMinLess": "Значение не должно быть меньше 1",
+        "scaleMinMore": "Значение не должно быть больше 99",
+        "scaleMaxLess": "Значение не должно быть меньше 2",
+        "scaleMaxMore": "Значение не должно быть больше 100"
+      },
+      "conditional": {
+        "title": "Условный вопрос",
+        "dependsOn": "Зависит от вопроса:",
+        "textUnavailable": "Для вопросов с типами \"Короткий ответ\" и \"Развернутый ответ\" настройка условных вопросов недоступна",
+        "operators": {
+          "equals": "равно",
+          "not_equals": "не равно",
+          "contains": "содержит",
+          "not_contains": "не содержит",
+          "greater_than": "больше",
+          "less_than": "меньше",
+          "greater_or_equal": "больше или равно",
+          "less_or_equal": "меньше или равно",
+          "date_on": "равно дате",
+          "date_after": "после даты",
+          "date_before": "до даты"
+        },
+        "logic": {
+          "AND": "И",
+          "OR": "ИЛИ"
+        },
+        "values": {
+          "yes": "Да",
+          "no": "Нет"
+        },
+        "addCondition": "Добавить условие",
+        "removeCondition": "Удалить",
+        "incompleteWarning": "Условие не полностью заполнено. Вопрос будет показываться всегда, пока все поля условий не будут заполнены.",
+        "completeInfo": "Этот вопрос будет показан только если условия выполнены. Это поможет сократить время прохождения опроса."
+      },
+      "duplicate": "копия",
+      "questionNumber": "Вопрос {{number}}"
+    },
+    "preview": {
+      "title": "Предпросмотр опроса",
+      "empty": "Добавьте вопросы для предпросмотра",
+      "defaultTitle": "Название опроса",
+      "noTitle": "Вопрос без названия",
+      "imageClick": "Нажмите на изображение для просмотра",
+      "imageAlt": "Изображение к вопросу",
+      "answerPlaceholder": "Ваш ответ...",
+      "datePlaceholder": "Дата",
+      "numberPlaceholder": "Введите число...",
+      "submit": "Отправить ответы",
+      "cancel": "Отменить выбор",
+      "other": "Другое",
+      "otherPlaceholder": "Другое",
+      "otherRequired": "Пожалуйста, введите ваш ответ",
+      "option": "Вариант {{number}}",
+      "yes": "Да",
+      "no": "Нет",
+      "success": "Опрос успешно пройден!",
+      "requiredError": "Пожалуйста, ответьте на все обязательные вопросы",
+      "otherError": "Пожалуйста, заполните выбранные поля \"Другое\""
+    },
+    "publish": "Опубликовать опрос",
+    "publishError": "Не удалось опубликовать опрос. Попробуйте снова.",
+    "language": {
+      "ru": "Русский",
+      "en": "English"
+    }
+  },
+  "surveyTake": {
+    "loading": "Загрузка опроса...",
+    "participationUnavailable": "Участие в опросе недоступно",
+    "loadError": "Не удалось загрузить опрос",
+    "unavailable": "Опрос недоступен",
+    "requiredError": "Это обязательный вопрос",
+    "unsupportedType": "Неподдерживаемый тип вопроса",
+    "submitting": "Отправка...",
+    "wantToCreate": "Хотите создать свой опрос?",
+    "openHomePage": "Откройте главную страницу AI Surveys",
+    "imageLoading": "Загрузка изображения...",
+    "imageLoadError": "Не удалось загрузить изображение"
+  },
+  "surveyCompleted": {
+    "thanks": "Спасибо за участие!",
+    "successMessage1": "Ваши ответы успешно отправлены.",
+    "successMessage2": "Организатор опроса получит их и сможет ознакомиться с результатами.",
+    "contactOrganizer": "💬 Связаться с организатором",
+    "close": "Закрыть",
+    "wantToCreate": "Хотите создать свой опрос?",
+    "openHomePage": "Откройте главную страницу AI Surveys"
+  },
+  "surveyInvite": {
+    "loading": "Загрузка...",
+    "notFound": "Опрос не найден",
+    "wantToCreate": "Хотите создать свой опрос?",
+    "openHomePage": "Откройте главную страницу AI Surveys",
+    "anonymousTag": "🔒 Анонимность",
+    "anonymousPopover": "Ваши ответы будут анонимными",
+    "rewardTag": "🎁 Награда",
+    "rewardNotice": "Все награды выдаются организаторами опроса. AI Surveys не участвует в их хранении и передаче.",
+    "oneResponseTag": "🔄 Один ответ",
+    "oneResponsePopover": "Можно участвовать только один раз",
+    "randomTag": "🎲 Случайный порядок",
+    "randomPopover": "Вопросы будут в случайном порядке",
+    "hiddenCreatorTag": "🎭 Скрытый создатель",
+    "hiddenCreatorPopover": "Создатель опроса предпочел скрыть свою личность",
+    "settingsTag": "ℹ️ Настройки",
+    "settingsTitle": "Возможные настройки опросов:",
+    "anonymousDescription": "Ваш аккаунт скрыт",
+    "rewardDescription": "Подарок за участие",
+    "oneResponseDescription": "Пройти можно только один раз",
+    "randomDescription": "Вопросы перемешаны",
+    "hiddenCreatorDescription": "Создатель скрыл свою личность",
+    "hashtagsNote": "Если видите хэштеги - значит они включены",
+    "clickForDetails": "Нажмите на любой блок для подробностей",
+    "organizerLabel": "👤 Организатор: @{{username}}",
+    "organizerLabelNoUsername": "👤 Организатор: Пользователь Telegram",
+    "startSurvey": "📝 Начать опрос",
+    "privacyAgreement1": "Запуская опрос вы соглашаетесь с",
+    "dataPolicy": "политикой обработки данных",
+    "and": "и",
+    "privacyPolicy": "политикой конфиденциальности"
+  },
+  "aiAnalytics": {
+    "title": "ИИ Аналитика",
+    "refresh": "Обновить",
+    "export": "Экспорт",
+    "loading": "Загружаем аналитику...",
+    "loadingSubtitle": "Подготавливаем данные для анализа",
+    "generating": "Генерируем аналитику...",
+    "generatingNote": "Вы можете покинуть страницу и вернуться позже",
+    "notFound": "ИИ аналитика не найдена",
+    "notFoundDescription": "Запустите генерацию аналитики для получения инсайтов",
+    "generateButton": "Получить ИИ аналитику",
+    "generatingButton": "Генерируется...",
+    "tabs": {
+      "metrics": "Основные показатели",
+      "insights": "Ценные инсайты",
+      "visualizations": "Визуализация"
+    },
+    "metrics": {
+      "generalStats": "Общая статистика",
+      "totalResponses": "Прохождений опроса:",
+      "sentiment": "Тональность ответов",
+      "positive": "Позитивные",
+      "neutral": "Нейтральные",
+      "negative": "Негативные",
+      "notAvailable": "Н/Д",
+      "keyMetrics": "Ключевые показатели",
+      "averageRating": "Средняя оценка:",
+      "satisfaction": "Удовлетворенность:"
+    },
+    "insights": {
+      "criticalProblem": "Критическая проблема",
+      "opportunity": "Возможность",
+      "priority": {
+        "high": "Высокий",
+        "medium": "Средний",
+        "low": "Низкий"
+      },
+      "confidence": "Уверенность:"
+    },
+    "visualizations": {
+      "sentimentDistribution": "Распределение тональности",
+      "questionAnalysis": "Анализ по вопросам",
+      "responses": "Ответов:"
+    },
+    "errors": {
+      "loadError": "Не удалось загрузить аналитику",
+      "websocketError": "Не удается создать WebSocket соединение",
+      "generationError": "Ошибка генерации",
+      "connectionError": "Ошибка подключения к серверу. Проверьте, что бэкенд запущен на ai-surveys.ru",
+      "noTelegramId": "Ошибка: отсутствует telegram_id",
+      "userNotFound": "Ошибка: пользователь не найден",
+      "serverError": "Ошибка сервера",
+      "connectionLost": "Соединение потеряно (код: {{code}})",
+      "generateError": "Не удалось запустить генерацию аналитики",
+      "websocketClosed": "WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на ai-surveys.ru, 2) Правильный ли URL, 3) Нет ли проблем с сетью"
+    }
+  },
+  "surveyAnalytics": {
+    "loading": "Загрузка аналитики...",
+    "noResponses": "Пока нет ответов — аналитика будет доступна после первых прохождений",
+    "generalStats": "Общая статистика",
+    "totalAnswers": "Всего ответов",
+    "questionNotSelected": "Вопрос не выбран",
+    "selectQuestion": "Выберите вопрос",
+    "noAnswersForQuestion": "На этот вопрос пока нет ответов",
+    "selectUser": "Выберите пользователя",
+    "respondent": "Респондент",
+    "respondentNumber": "Респондент {{number}}",
+    "from": "из",
+    "noResponsesYet": "На этот опрос пока нет ответов",
+    "imageLoading": "Загрузка изображения...",
+    "imageLoadError": "Не удалось загрузить изображение",
+    "imageClick": "Нажмите на изображение для просмотра",
+    "showAll": "Показать все",
+    "hide": "Скрыть",
+    "aiAnalytics": {
+      "button": {
+        "exists": "👁️ Посмотреть ИИ аналитику",
+        "generating": "⏳ Генерируется...",
+        "notFound": "🤖 Получить ИИ аналитику"
+      },
+      "description": "Проанализировать ответы с помощью искусственного интеллекта. Вы получите готовый отчёт с ключевыми выводами и тенденциями, сэкономите время на анализе полученных ответов."
+    },
+    "answers": {
+      "yes": "Да",
+      "no": "Нет",
+      "other": "Другое"
+    }
+  },
+  "templates": {
+    "title": "Шаблоны опросов",
+    "searchPlaceholder": "Поиск шаблонов...",
+    "notFound": "Шаблоны не найдены",
+    "useTemplate": "Использовать шаблон",
+    "questions": "вопросов",
+    "difficulty": {
+      "easy": "Легкий",
+      "medium": "Средний",
+      "hard": "Сложный",
+      "unknown": "Неизвестно"
+    },
+    "categories": {
+      "all": "Все",
+      "business": "Бизнес",
+      "hr": "HR",
+      "marketing": "Маркетинг",
+      "events": "События",
+      "product": "Продукт",
+      "education": "Образование",
+      "health": "Здоровье",
+      "sociology": "Социология"
+    }
+  },
+  "templateDetail": {
+    "notFound": "Шаблон не найден",
+    "backToTemplates": "Вернуться к шаблонам",
+    "questions": "вопросов",
+    "time": "время",
+    "anonymous": "Анонимный опрос",
+    "anonymousDescription": "Анонимность обеспечивает честные ответы на деликатные вопросы. В настройках опроса вы сможете отключить анонимность при необходимости.",
+    "popularity": "популярность",
+    "about": "О шаблоне",
+    "whenToUse": "Когда использовать",
+    "templateQuestions": "Вопросы в шаблоне",
+    "andMore": "и еще {{count}} вопросов...",
+    "useTemplate": "Использовать шаблон",
+    "difficulty": {
+      "easy": "Легкий",
+      "medium": "Средний",
+      "hard": "Сложный"
+    },
+    "questionTypes": {
+      "rating": "Оценка",
+      "single_choice": "Выбор",
+      "multiple_choice": "Множественный выбор",
+      "scale": "Шкала",
+      "textarea": "Текст",
+      "boolean": "Да/Нет"
+    }
+  },
+  "knowledgeBase": {
+    "title": "База знаний",
+    "searchPlaceholder": "Поиск статей...",
+    "notFound": "Статьи не найдены",
+    "readArticle": "Читать статью",
+    "difficulty": {
+      "beginner": "Начинающий",
+      "intermediate": "Средний",
+      "advanced": "Продвинутый",
+      "unknown": "Неизвестно"
+    },
+    "categories": {
+      "all": "Все",
+      "basics": "Основы",
+      "templates": "Шаблоны",
+      "questions": "Вопросы",
+      "analysis": "Анализ",
+      "marketing": "Маркетинг",
+      "strategy": "Стратегия",
+      "technologies": "Технологии",
+      "methodology": "Методология",
+      "planning": "Планирование"
+    }
+  },
+  "article": {
+    "notFound": "Статья не найдена",
+    "notFoundDescription": "Запрашиваемая статья не существует",
+    "backToArticles": "Вернуться к статьям",
+    "introduction": "Введение",
+    "tips": "Советы:",
+    "warnings": "Важно:",
+    "keyPoints": "Ключевые моменты",
+    "conclusion": "Заключение",
+    "difficulty": {
+      "beginner": "Начинающий",
+      "intermediate": "Средний",
+      "advanced": "Продвинутый",
+      "unknown": "Неизвестно"
+    }
+  },
+  "dateTimePicker": {
+    "notSpecified": "Не указана"
+  },
+  "imagePopup": {
+    "fullscreenView": "Полноэкранный просмотр"
+  },
+  "app": {
+    "loading": "Загрузка..."
   }
 }
 

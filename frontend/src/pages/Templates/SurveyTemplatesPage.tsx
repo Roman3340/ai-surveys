@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -116,24 +117,27 @@ const templates: SurveyTemplate[] = [
   }
 ];
 
-const categories = [
-  { id: 'all', name: 'Все', icon: '📋' },
-  { id: 'Бизнес', name: 'Бизнес', icon: '💼' },
-  { id: 'HR', name: 'HR', icon: '👥' },
-  { id: 'Маркетинг', name: 'Маркетинг', icon: '📊' },
-  { id: 'События', name: 'События', icon: '🎉' },
-  { id: 'Продукт', name: 'Продукт', icon: '🛍️' },
-  { id: 'Образование', name: 'Образование', icon: '🎓' },
-  { id: 'Здоровье', name: 'Здоровье', icon: '🏥' },
-  { id: 'Социология', name: 'Социология', icon: '🌍' }
+const getCategories = (t: any) => [
+  { id: 'all', name: t('templates.categories.all'), icon: '📋' },
+  { id: 'Бизнес', name: t('templates.categories.business'), icon: '💼' },
+  { id: 'HR', name: t('templates.categories.hr'), icon: '👥' },
+  { id: 'Маркетинг', name: t('templates.categories.marketing'), icon: '📊' },
+  { id: 'События', name: t('templates.categories.events'), icon: '🎉' },
+  { id: 'Продукт', name: t('templates.categories.product'), icon: '🛍️' },
+  { id: 'Образование', name: t('templates.categories.education'), icon: '🎓' },
+  { id: 'Здоровье', name: t('templates.categories.health'), icon: '🏥' },
+  { id: 'Социология', name: t('templates.categories.sociology'), icon: '🌍' }
 ];
 
 export const SurveyTemplatesPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const categoriesRef = useRef<HTMLDivElement>(null);
+  
+  const categories = getCategories(t);
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
@@ -183,10 +187,10 @@ export const SurveyTemplatesPage = () => {
 
   const getDifficultyText = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'Легкий';
-      case 'medium': return 'Средний';
-      case 'hard': return 'Сложный';
-      default: return 'Неизвестно';
+      case 'easy': return t('templates.difficulty.easy');
+      case 'medium': return t('templates.difficulty.medium');
+      case 'hard': return t('templates.difficulty.hard');
+      default: return t('templates.difficulty.unknown');
     }
   };
 
@@ -217,7 +221,7 @@ export const SurveyTemplatesPage = () => {
             alignItems: 'center',
             gap: '8px'
           }}>
-            📋 Шаблоны опросов
+            📋 {t('templates.title')}
           </h1>
         </div>
 
@@ -228,7 +232,7 @@ export const SurveyTemplatesPage = () => {
         }}>
           <input
             type="text"
-            placeholder="Поиск шаблонов..."
+            placeholder={t('templates.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -305,7 +309,7 @@ export const SurveyTemplatesPage = () => {
               margin: '0',
               lineHeight: '1.4'
             }}>
-              Шаблоны не найдены
+              {t('templates.notFound')}
             </p>
           </div>
         ) : (
@@ -409,7 +413,7 @@ export const SurveyTemplatesPage = () => {
                     color: 'var(--tg-hint-color)'
                   }}>
                     <MessageCircle size={14} />
-                    {template.questions} вопросов
+                    {template.questions} {t('templates.questions')}
                   </div>
                   <div style={{
                     display: 'flex',
@@ -444,7 +448,7 @@ export const SurveyTemplatesPage = () => {
                   fontSize: '14px',
                   fontWeight: '600'
                 }}>
-                  Использовать шаблон
+                  {t('templates.useTemplate')}
                 </div>
               </div>
             ))}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { CheckCircle, Copy, Share, X, Download, Clock, HelpCircle, Users, QrCode } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -16,6 +17,7 @@ interface SurveyData {
 }
 
 export const SurveyPublishedPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { hapticFeedback } = useTelegram();
@@ -55,7 +57,7 @@ export const SurveyPublishedPage = () => {
       setSurveyData(survey);
     } catch (err) {
       console.error('Ошибка загрузки данных:', err);
-      setError('Не удалось загрузить данные опроса');
+      setError(t('surveyPublished.error'));
     }
   };
 
@@ -140,7 +142,7 @@ export const SurveyPublishedPage = () => {
           color: 'var(--tg-hint-color)',
           textAlign: 'center'
         }}>
-          Подготовка ссылки для распространения...
+          {t('surveyPublished.loading')}
         </p>
       </div>
     );
@@ -179,11 +181,11 @@ export const SurveyPublishedPage = () => {
             padding: '12px 24px',
             fontSize: '15px',
             fontWeight: '600',
-            cursor: 'pointer'
-          }}
-        >
-          Закрыть
-        </button>
+          cursor: 'pointer'
+        }}
+      >
+        {t('surveyPublished.close')}
+      </button>
       </div>
     );
   }
@@ -221,7 +223,7 @@ export const SurveyPublishedPage = () => {
             color: 'var(--tg-button-color)'
           }}
         >
-          Опрос опубликован!
+          {t('surveyPublished.title')}
         </motion.h1>
         <motion.p 
           initial={{ opacity: 0 }}
@@ -234,7 +236,7 @@ export const SurveyPublishedPage = () => {
             lineHeight: '1.4'
           }}
         >
-          Теперь вы можете поделиться ссылкой с участниками
+          {t('surveyPublished.subtitle')}
         </motion.p>
       </motion.div>
 
@@ -261,7 +263,7 @@ export const SurveyPublishedPage = () => {
             alignItems: 'center',
             gap: '8px'
           }}>
-            📊 Информация об опросе
+            📊 {t('surveyPublished.surveyInfo.title')}
           </h3>
           
           <div style={{ marginBottom: '12px' }}>
@@ -298,7 +300,7 @@ export const SurveyPublishedPage = () => {
               color: 'var(--tg-hint-color)'
             }}>
               <HelpCircle size={16} />
-              <span>{surveyData.questions.length} вопросов</span>
+              <span>{surveyData.questions.length} {t('surveyPublished.surveyInfo.questions')}</span>
             </div>
             <div style={{
               display: 'flex',
@@ -308,7 +310,7 @@ export const SurveyPublishedPage = () => {
               color: 'var(--tg-hint-color)'
             }}>
               <Clock size={16} />
-              <span>~{getEstimatedTime(surveyData.questions.length)} мин</span>
+              <span>~{getEstimatedTime(surveyData.questions.length)} {t('surveyPublished.surveyInfo.minutes')}</span>
             </div>
             {surveyData.maxParticipants && (
               <div style={{
@@ -319,7 +321,7 @@ export const SurveyPublishedPage = () => {
                 color: 'var(--tg-hint-color)'
               }}>
                 <Users size={16} />
-                <span>до {surveyData.maxParticipants} участников</span>
+                <span>{t('surveyPublished.surveyInfo.maxParticipants', { count: surveyData.maxParticipants })}</span>
               </div>
             )}
           </div>
@@ -348,7 +350,7 @@ export const SurveyPublishedPage = () => {
           alignItems: 'center',
           gap: '8px'
         }}>
-          🔗 Ссылка для распространения
+          🔗 {t('surveyPublished.shareLink.title')}
         </h3>
         
         <div style={{
@@ -362,7 +364,7 @@ export const SurveyPublishedPage = () => {
           color: 'var(--tg-hint-color)',
           fontFamily: 'monospace'
         }}>
-          {shareData?.share_url || 'Загрузка...'}
+          {shareData?.share_url || t('surveyPublished.shareLink.loading')}
         </div>
 
         <button
@@ -388,12 +390,12 @@ export const SurveyPublishedPage = () => {
           {copied ? (
             <>
               <CheckCircle size={18} />
-              Скопировано!
+              {t('surveyPublished.shareLink.copied')}
             </>
           ) : (
             <>
               <Copy size={18} />
-              Копировать ссылку
+              {t('surveyPublished.shareLink.copy')}
             </>
           )}
         </button>
@@ -425,7 +427,7 @@ export const SurveyPublishedPage = () => {
             gap: '8px'
           }}>
             <QrCode size={20} />
-            QR-код
+            {t('surveyPublished.qrCode.title')}
           </h3>
           
           <div style={{
@@ -435,7 +437,7 @@ export const SurveyPublishedPage = () => {
           }}>
             <img 
               src={shareData.qr_code} 
-              alt="QR код для опроса"
+              alt={t('surveyPublished.qrCode.title')}
               style={{
                 maxWidth: '200px',
                 maxHeight: '200px',
@@ -451,7 +453,7 @@ export const SurveyPublishedPage = () => {
             margin: '0 0 16px 0',
             lineHeight: '1.4'
           }}>
-            Отсканируйте QR-код для быстрого доступа к опросу
+            {t('surveyPublished.qrCode.description')}
           </p>
 
           <button
@@ -476,7 +478,7 @@ export const SurveyPublishedPage = () => {
             }}
           >
             <Download size={18} />
-            {downloading ? 'Скачивание...' : 'Скачать QR-код'}
+            {downloading ? t('surveyPublished.qrCode.downloading') : t('surveyPublished.qrCode.download')}
           </button>
         </motion.div>
       )}
@@ -509,7 +511,7 @@ export const SurveyPublishedPage = () => {
           }}
         >
           <Share size={20} />
-          Поделиться в Telegram
+          {t('surveyPublished.shareTelegram')}
         </button>
       </motion.div>
 
@@ -537,7 +539,7 @@ export const SurveyPublishedPage = () => {
         }}
       >
         <X size={20} />
-        Закрыть
+        {t('surveyPublished.close')}
       </motion.button>
     </div>
   );
