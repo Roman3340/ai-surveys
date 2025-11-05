@@ -2237,7 +2237,7 @@ const MultipleChoiceChart: React.FC<{
               <div style={{
                 width: `${widthPercent}%`,
                 height: '24px',
-                backgroundColor: '#FF9500',
+                backgroundColor: 'var(--tg-button-color)',
                 borderRadius: '4px',
                 position: 'relative',
                 minWidth: count > 0 ? '20px' : '0px'
@@ -2282,7 +2282,7 @@ const ScaleChart: React.FC<{
               <div style={{
                 width: '100%',
                 height: `${height}px`,
-                backgroundColor: '#FF9500',
+                backgroundColor: 'var(--tg-button-color)',
                 borderRadius: '4px 4px 0 0',
                 position: 'relative'
               }}>
@@ -4934,7 +4934,7 @@ export default function SurveyAnalyticsPage() {
                   </svg>
                 )}
               </div>
-              Обязательный вопрос
+              {t('surveyAnalytics.questions.requiredQuestion')}
             </label>
           </div>
         </div>

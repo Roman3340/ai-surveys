@@ -551,6 +551,7 @@
       "noTitle": "No title",
       "descriptionPlaceholder": "Description (optional)",
       "questionType": "Question type",
+      "requiredQuestion": "Required question",
       "deleteConfirm": "Are you sure you want to delete this question? All answers to this question will be permanently deleted.",
       "questionTypes": {
         "text": "Short answer",
