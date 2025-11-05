@@ -204,7 +204,7 @@ export const HomePage = () => {
             <span style={{ fontSize: '12px', fontWeight: '500' }}>Повысить статус</span>
             <div style={{
               fontSize: '10px',
-              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+              background: 'var(--tg-button-gradient)',
               color: 'white',
               padding: '2px 6px',
               borderRadius: '4px',
@@ -220,7 +220,7 @@ export const HomePage = () => {
           onClick={handleCreateSurvey}
           style={{
             width: '100%',
-            background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+            background: 'var(--tg-button-gradient)',
             color: 'white',
             border: 'none',
             borderRadius: '12px',

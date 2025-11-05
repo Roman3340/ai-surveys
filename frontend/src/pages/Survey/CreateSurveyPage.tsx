@@ -168,7 +168,7 @@ const CreateSurveyPage: React.FC = () => {
                 onClick={handleRestoreDraft}
                 style={{
                   flex: 1,
-                  background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+                  background: 'var(--tg-button-gradient)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '10px',
@@ -223,7 +223,7 @@ const CreateSurveyPage: React.FC = () => {
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'transform 0.1s ease',
-                border: selectedOption === 'survey' ? '2px solid #F46D00' : '2px solid transparent'
+                border: selectedOption === 'survey' ? '2px solid var(--tg-button-color)' : '2px solid transparent'
               }}
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -262,8 +262,8 @@ const CreateSurveyPage: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: `2px solid ${selectedOption === 'survey' ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
-                      background: selectedOption === 'survey' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
+                      border: `2px solid ${selectedOption === 'survey' ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
+                      background: selectedOption === 'survey' ? 'var(--tg-button-gradient)' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -304,7 +304,7 @@ const CreateSurveyPage: React.FC = () => {
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'transform 0.1s ease',
-                border: selectedOption === 'test' ? '2px solid #F46D00' : '2px solid transparent'
+                border: selectedOption === 'test' ? '2px solid var(--tg-button-color)' : '2px solid transparent'
               }}
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -343,8 +343,8 @@ const CreateSurveyPage: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: `2px solid ${selectedOption === 'test' ? '#F46D00' : 'var(--tg-section-separator-color)'}`,
-                      background: selectedOption === 'test' ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'transparent',
+                      border: `2px solid ${selectedOption === 'test' ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
+                      background: selectedOption === 'test' ? 'var(--tg-button-gradient)' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
@@ -391,7 +391,7 @@ const CreateSurveyPage: React.FC = () => {
               disabled={!selectedOption}
               style={{
                 width: '100%',
-                background: selectedOption ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-section-separator-color)',
+                background: selectedOption ? 'var(--tg-button-gradient)' : 'var(--tg-section-separator-color)',
                 color: selectedOption ? 'white' : 'var(--tg-hint-color)',
                 border: 'none',
                 borderRadius: '12px',
@@ -402,7 +402,7 @@ const CreateSurveyPage: React.FC = () => {
                 opacity: selectedOption ? 1 : 0.6
               }}
             >
-              Создать опрос
+              Создать
             </button>
           </div>
         )}

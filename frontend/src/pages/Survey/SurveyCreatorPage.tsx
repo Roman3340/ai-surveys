@@ -1880,7 +1880,7 @@ const QuestionsTab: React.FC<{
                     return (
                       <div style={{
                         fontSize: '11px',
-                        color: '#FF9500',
+                        color: 'var(--tg-link-color)',
                         fontStyle: 'italic',
                         marginLeft: '0',
                         lineHeight: '1.3'
@@ -3033,7 +3033,7 @@ const ConditionalLogicEditor: React.FC<{
             <label style={{
               display: 'block',
               fontSize: '12px',
-              color: 'var(--tg-hint-color)',
+              color: 'var(--tg-link-color)',
               marginBottom: '6px'
             }}>
               Зависит от вопроса:

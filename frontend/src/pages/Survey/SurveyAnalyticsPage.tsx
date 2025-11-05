@@ -3752,7 +3752,7 @@ export default function SurveyAnalyticsPage() {
               <label style={{
                 display: 'block',
                 fontSize: '12px',
-                color: 'var(--tg-hint-color)',
+                color: 'var(--tg-link-color)',
                 marginBottom: '6px'
               }}>
                 Зависит от вопроса:
@@ -4111,7 +4111,7 @@ export default function SurveyAnalyticsPage() {
                 return (
                   <div style={{
                     fontSize: '11px',
-                    color: '#FF9500',
+                    color: 'var(--tg-link-color)',
                     fontStyle: 'italic',
                     marginTop: '4px',
                     lineHeight: '1.3'

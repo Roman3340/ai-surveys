@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Sun, Moon, Globe, Trash2 } from 'lucide-react';
+import { ChevronRight, Sun, Moon, Globe, Trash2, Paintbrush } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
@@ -106,7 +106,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+              background: 'var(--tg-button-gradient)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -147,12 +147,12 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              background: 'var(--tg-button-color)',
+              background: 'var(--tg-button-gradient)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <span style={{ fontSize: '18px' }}>🎨</span>
+              <Paintbrush size={18} color="white" />
             </div>
             <div style={{ flex: 1, textAlign: 'left' }}>
               <div style={{ fontWeight: '500' }}>Цвет приложения</div>
@@ -188,7 +188,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+              background: 'var(--tg-button-gradient)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -228,7 +228,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+              background: 'var(--tg-button-gradient)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
