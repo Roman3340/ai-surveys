@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, Survey, Theme, AppColor } from '../types';
+import type { User, Survey, Theme, AppColor, Language } from '../types';
 import { surveyApi } from '../services/api';
+import { changeLanguage } from '../i18n/config';
 
 interface AppStore {
   // Пользователь
@@ -15,6 +16,10 @@ interface AppStore {
   // Цвет приложения
   color: AppColor;
   setColor: (color: AppColor) => void;
+  
+  // Язык
+  language: Language;
+  setLanguage: (language: Language) => void;
   
   // Опросы пользователя (созданные)
   userSurveys: Survey[];
@@ -61,6 +66,7 @@ export const useAppStore = create<AppStore>()(
       user: null,
       theme: 'system',
       color: 'orange',
+      language: 'ru',
       userSurveys: [],
       participatedSurveys: [],
       currentSurvey: null,
@@ -76,6 +82,12 @@ export const useAppStore = create<AppStore>()(
       
       // Действия с цветом
       setColor: (color) => set({ color }),
+      
+      // Действия с языком
+      setLanguage: (language) => {
+        set({ language });
+        changeLanguage(language); // Изменяем язык в i18n
+      },
 
       // Действия с опросами
       setUserSurveys: (surveys) => set({ userSurveys: surveys }),
@@ -283,6 +295,7 @@ export const useAppStore = create<AppStore>()(
         user: state.user,
         theme: state.theme,
         color: state.color,
+        language: state.language,
         userSurveys: state.userSurveys,
         participatedSurveys: state.participatedSurveys,
       }),

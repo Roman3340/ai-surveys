@@ -1,23 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
+import { useAppStore } from '../../store/useAppStore';
 
 interface LanguageSettingsPageProps {}
 
 const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = () => {
   const { hapticFeedback } = useTelegram();
-  const [selectedLanguage, setSelectedLanguage] = useState('ru');
+  const { language, setLanguage } = useAppStore();
+  const [selectedLanguage, setSelectedLanguage] = useState(language);
+
+  // Синхронизируем с store
+  useEffect(() => {
+    setSelectedLanguage(language);
+  }, [language]);
 
   // Используем стабильный хук для кнопки назад
   useStableBackButton({
     targetRoute: '/settings'
   });
 
-  const handleLanguageChange = (langCode: string) => {
+  const handleLanguageChange = (langCode: 'ru' | 'en') => {
     hapticFeedback?.light();
     setSelectedLanguage(langCode);
-    // Здесь можно добавить логику для сохранения языка в store
+    setLanguage(langCode); // Сохраняем в store, что автоматически изменит язык через i18n
   };
 
   const languageOptions = [

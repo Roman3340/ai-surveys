@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Settings, HelpCircle, BarChart3, Users, Trash2 } from 'lucide-react';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 import { useTelegram } from '../../hooks/useTelegram';
@@ -7,6 +8,7 @@ import { useAppStore } from '../../store/useAppStore';
 import type { Survey } from '../../types';
 
 export const HomePage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user: telegramUser, hapticFeedback } = useTelegram();
   const { user, userSurveys, participatedSurveys, setUser, loadUserSurveys, loadParticipatedSurveys, isLoading, error } = useAppStore();
@@ -121,8 +123,8 @@ export const HomePage = () => {
     : getUniqueParticipatedSurveys(participatedSurveys);
 
   const tabs = [
-    { id: 'created' as const, label: 'Созданные' },
-    { id: 'participated' as const, label: 'Где участвую?' }
+    { id: 'created' as const, label: t('home.tabs.created') },
+    { id: 'participated' as const, label: t('home.tabs.participated') }
   ];
 
   const formatDate = (dateString?: string) => {
@@ -168,7 +170,7 @@ export const HomePage = () => {
           alignItems: 'center',
           gap: '8px'
         }}>
-          👋 Привет, {user?.firstName || telegramUser?.firstName || 'Роман'}!
+          👋 {t('home.greeting', { name: user?.firstName || telegramUser?.firstName || 'Роман' })}
         </h1>
       </div>
 
@@ -182,7 +184,7 @@ export const HomePage = () => {
           marginBottom: '12px'
         }}>
           <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)' }}>
-            Создавай опросы и получай ценные инсайты
+            {t('home.subtitle')}
           </div>
           
           {/* Маленькая кнопка "Повысить статус" */}
@@ -201,7 +203,7 @@ export const HomePage = () => {
             console.log('Повысить статус');
           }}>
             <span style={{ fontSize: '14px' }}>💎</span>
-            <span style={{ fontSize: '12px', fontWeight: '500' }}>Повысить статус</span>
+            <span style={{ fontSize: '12px', fontWeight: '500' }}>{t('home.upgradeStatus')}</span>
             <div style={{
               fontSize: '10px',
               background: 'var(--tg-button-gradient)',
@@ -253,7 +255,7 @@ export const HomePage = () => {
               animation: 'lightray 1.5s infinite'
             }}
           />
-          ⚡ Новый опрос
+          ⚡ {t('home.newSurvey')}
         </button>
       </div>
 
@@ -292,13 +294,13 @@ export const HomePage = () => {
               fontWeight: '600',
               marginBottom: '2px'
             }}>
-              Шаблоны опросов
+              {t('home.templates.title')}
             </div>
             <div style={{
               fontSize: '14px',
               color: 'var(--tg-hint-color)'
             }}>
-              Готовые шаблоны для быстрого старта
+              {t('home.templates.description')}
             </div>
           </div>
         </div>
@@ -330,13 +332,13 @@ export const HomePage = () => {
               fontWeight: '600',
               marginBottom: '2px'
             }}>
-              База знаний
+              {t('home.knowledgeBase.title')}
             </div>
             <div style={{
               fontSize: '14px',
               color: 'var(--tg-hint-color)'
             }}>
-              Как собрать качественную обратную связь
+              {t('home.knowledgeBase.description')}
             </div>
           </div>
         </div>
@@ -358,7 +360,7 @@ export const HomePage = () => {
             alignItems: 'center',
             gap: '8px'
           }}>
-            📊 Опросы
+            📊 {t('home.surveys')}
           </h2>
           <button 
             onClick={handleShowAllSurveys}
@@ -370,7 +372,7 @@ export const HomePage = () => {
               cursor: 'pointer',
               fontWeight: '500'
             }}>
-            Все
+            {t('home.all')}
           </button>
         </div>
 
@@ -397,7 +399,7 @@ export const HomePage = () => {
                 margin: '0',
                 lineHeight: '1.4'
               }}>
-                Загрузка опросов...
+                {t('home.loading')}
               </p>
             </div>
           ) : error ? (
@@ -429,7 +431,7 @@ export const HomePage = () => {
                   cursor: 'pointer'
                 }}
               >
-                🔄 Попробовать снова
+                🔄 {t('home.retry')}
               </button>
             </div>
           ) : displayedSurveys.length > 0 ? (
@@ -530,14 +532,14 @@ export const HomePage = () => {
                           color: 'var(--tg-hint-color)'
                         }}>
                           <BarChart3 size={14} />
-                          {survey.questions.length} вопр.
+                          {survey.questions.length} {t('home.survey.questions')}
                         </div>
                         {(() => {
                           const statusMap: Record<string, { text: string; color: string }> = {
-                            active: { text: 'Активен', color: '#34C759' },
-                            draft: { text: 'Черновик', color: '#8E8E93' },
-                            completed: { text: 'Завершён', color: '#FF6B6B' },
-                            archived: { text: 'Архив', color: '#FF9500' }
+                            active: { text: t('home.survey.status.active'), color: '#34C759' },
+                            draft: { text: t('home.survey.status.draft'), color: '#8E8E93' },
+                            completed: { text: t('home.survey.status.completed'), color: '#FF6B6B' },
+                            archived: { text: t('home.survey.status.archived'), color: '#FF9500' }
                           };
                           const statusInfo = statusMap[survey.status] || { text: survey.status, color: '#8E8E93' };
                           return (
@@ -563,7 +565,7 @@ export const HomePage = () => {
                         color: 'var(--tg-hint-color)'
                       }}>
                         <BarChart3 size={14} />
-                        {(survey as any).questions_count || survey.questions?.length || 0} вопр.
+                        {(survey as any).questions_count || survey.questions?.length || 0} {t('home.survey.questions')}
                       </div>
                     )}
                   </div>
@@ -585,8 +587,8 @@ export const HomePage = () => {
                 lineHeight: '1.4'
               }}>
                 {activeTab === 'created' 
-                  ? 'Создайте свой первый опрос'
-                  : 'Вы еще не участвовали в опросах'
+                  ? t('home.empty.created')
+                  : t('home.empty.participated')
                 }
               </p>
               {activeTab === 'created' && (
@@ -606,7 +608,7 @@ export const HomePage = () => {
                     gap: '6px'
                   }}
                 >
-                  📊 Создать опрос
+                  📊 {t('home.empty.createButton')}
                 </button>
               )}
             </div>
@@ -641,7 +643,7 @@ export const HomePage = () => {
           gap: '8px'
         }}>
           <Settings size={20} />
-          Настройки
+          {t('home.buttons.settings')}
         </button>
         <button style={{
           flex: 1,
@@ -659,7 +661,7 @@ export const HomePage = () => {
           gap: '8px'
         }}>
           <HelpCircle size={20} />
-          Поддержка
+          {t('home.buttons.support')}
         </button>
       </div>
 
@@ -691,7 +693,7 @@ export const HomePage = () => {
               margin: '0 0 12px 0',
               color: 'var(--tg-text-color)'
             }}>
-              Удалить опрос?
+              {t('home.popup.deleteTitle')}
             </h3>
             <p style={{
               fontSize: '14px',
@@ -699,8 +701,7 @@ export const HomePage = () => {
               margin: '0 0 20px 0',
               lineHeight: '1.4'
             }}>
-              Вы уверены, что хотите удалить опрос "{deleteConfirm.survey?.title}"? 
-              Все ответы участников, вопросы и связанные данные будут удалены безвозвратно.
+              {t('home.popup.deleteMessage', { title: deleteConfirm.survey?.title })}
             </p>
             <div style={{
               display: 'flex',
@@ -720,7 +721,7 @@ export const HomePage = () => {
                   cursor: 'pointer'
                 }}
               >
-                Отмена
+                {t('home.popup.cancel')}
               </button>
               <button
                 onClick={confirmDeleteSurvey}
@@ -736,7 +737,7 @@ export const HomePage = () => {
                   cursor: 'pointer'
                 }}
               >
-                Удалить
+                {t('home.popup.delete')}
               </button>
             </div>
           </div>
@@ -779,7 +780,7 @@ export const HomePage = () => {
                 margin: 0,
                 color: 'var(--tg-text-color)'
               }}>
-                {activeTab === 'created' ? 'Все созданные опросы' : 'Все опросы участия'}
+                {activeTab === 'created' ? t('home.popup.allCreated') : t('home.popup.allParticipated')}
               </h3>
               <button
                 onClick={() => setShowAllSurveys(false)}
@@ -889,14 +890,14 @@ export const HomePage = () => {
                           color: 'var(--tg-hint-color)'
                         }}>
                           <BarChart3 size={14} />
-                          {survey.questions.length} вопр.
+                          {survey.questions.length} {t('home.survey.questions')}
                         </div>
                         {(() => {
                           const statusMap: Record<string, { text: string; color: string }> = {
-                            active: { text: 'Активен', color: '#34C759' },
-                            draft: { text: 'Черновик', color: '#8E8E93' },
-                            completed: { text: 'Завершён', color: '#FF6B6B' },
-                            archived: { text: 'Архив', color: '#FF9500' }
+                            active: { text: t('home.survey.status.active'), color: '#34C759' },
+                            draft: { text: t('home.survey.status.draft'), color: '#8E8E93' },
+                            completed: { text: t('home.survey.status.completed'), color: '#FF6B6B' },
+                            archived: { text: t('home.survey.status.archived'), color: '#FF9500' }
                           };
                           const statusInfo = statusMap[survey.status] || { text: survey.status, color: '#8E8E93' };
                           return (
@@ -922,7 +923,7 @@ export const HomePage = () => {
                         color: 'var(--tg-hint-color)'
                       }}>
                         <BarChart3 size={14} />
-                        {(survey as any).questions_count || survey.questions?.length || 0} вопр.
+                        {(survey as any).questions_count || survey.questions?.length || 0} {t('home.survey.questions')}
                       </div>
                     )}
                   </div>

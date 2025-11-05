@@ -24,6 +24,8 @@ import { ArticlePage } from './pages/Knowledge/ArticlePage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
+import { changeLanguage } from './i18n/config';
+import './i18n/config'; // Инициализация i18n
 import './styles/globals.css';
 
 function AppRoutes() {
@@ -67,14 +69,17 @@ function AppRoutes() {
 
 function App() {
   const { isReady, theme: telegramTheme, forceExpand } = useTelegram();
-  const { theme: appTheme, color: appColor } = useAppStore();
+  const { theme: appTheme, color: appColor, language } = useAppStore();
   const isInitialized = useRef(false);
 
-  // Синхронизация темы и принудительное расширение
+  // Синхронизация темы, цвета и языка при инициализации
   useEffect(() => {
     if (isReady) {
       // Принудительное расширение для полного экрана
       forceExpand();
+      
+      // Синхронизируем язык
+      changeLanguage(language);
       
       // Определяем финальную тему
       let finalTheme = appTheme;
@@ -88,17 +93,21 @@ function App() {
       document.documentElement.setAttribute('data-color', appColor);
       console.log('Theme applied:', finalTheme, 'from app theme:', appTheme);
       console.log('Color applied:', appColor);
+      console.log('Language applied:', language);
       
       // Отмечаем что инициализация завершена
       if (!isInitialized.current) {
         isInitialized.current = true;
       }
     }
-  }, [isReady, telegramTheme, appTheme, appColor, forceExpand]);
+  }, [isReady, telegramTheme, appTheme, appColor, language, forceExpand]);
 
-  // Дополнительный эффект для принудительного применения темы при изменении appTheme
+  // Дополнительный эффект для принудительного применения темы, цвета и языка при изменении
   useEffect(() => {
     if (isInitialized.current) {
+      // Синхронизируем язык при изменении
+      changeLanguage(language);
+      
       let finalTheme = appTheme;
       
       if (appTheme === 'system') {
@@ -109,8 +118,9 @@ function App() {
       document.documentElement.setAttribute('data-color', appColor);
       console.log('Theme force applied:', finalTheme, 'from app theme:', appTheme);
       console.log('Color force applied:', appColor);
+      console.log('Language force applied:', language);
     }
-  }, [appTheme, telegramTheme, appColor]);
+  }, [appTheme, telegramTheme, appColor, language]);
 
   // Показываем загрузку пока Telegram WebApp не готов
   if (!isReady) {

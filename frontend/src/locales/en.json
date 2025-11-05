@@ -1,0 +1,51 @@
+{
+  "home": {
+    "greeting": "Hello, {{name}}!",
+    "subtitle": "Create surveys and get valuable insights",
+    "newSurvey": "New Survey",
+    "upgradeStatus": "Upgrade Status",
+    "templates": {
+      "title": "Survey Templates",
+      "description": "Ready-made templates for quick start"
+    },
+    "knowledgeBase": {
+      "title": "Knowledge Base",
+      "description": "How to collect quality feedback"
+    },
+    "surveys": "Surveys",
+    "all": "All",
+    "tabs": {
+      "created": "Created",
+      "participated": "Where I participate?"
+    },
+    "loading": "Loading surveys...",
+    "retry": "Try again",
+    "empty": {
+      "created": "Create your first survey",
+      "participated": "You haven't participated in any surveys yet",
+      "createButton": "Create Survey"
+    },
+    "survey": {
+      "questions": "questions",
+      "status": {
+        "active": "Active",
+        "draft": "Draft",
+        "completed": "Completed",
+        "archived": "Archived"
+      }
+    },
+    "popup": {
+      "allCreated": "All Created Surveys",
+      "allParticipated": "All Participation Surveys",
+      "deleteTitle": "Delete Survey?",
+      "deleteMessage": "Are you sure you want to delete the survey \"{{title}}\"? All participant responses, questions, and related data will be permanently deleted.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "buttons": {
+      "settings": "Settings",
+      "support": "Support"
+    }
+  }
+}
+
