@@ -308,6 +308,7 @@ export const useTelegram = () => {
     isReady,
     user,
     startParam,
+    languageCode: user?.languageCode || (tg.initDataUnsafe.user as any)?.language_code,
     initData: (isTelegramEnvironment() 
       ? (WebApp as unknown as TelegramWebApp).initData 
       : getTelegramWebApp().initData) || '',

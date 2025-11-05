@@ -11,7 +11,10 @@ export const MOCK_TELEGRAM_USER = {
 export const MOCK_TELEGRAM_DATA = {
   initData: 'mock_init_data',
   initDataUnsafe: {
-    user: MOCK_TELEGRAM_USER,
+    user: {
+      ...MOCK_TELEGRAM_USER,
+      language_code: MOCK_TELEGRAM_USER.languageCode, // Telegram использует snake_case
+    },
     start_param: null,
   },
   colorScheme: 'light' as const,

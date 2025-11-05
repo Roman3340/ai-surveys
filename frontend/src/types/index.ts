@@ -114,6 +114,7 @@ export interface TelegramUserData {
   firstName: string;
   lastName?: string;
   username?: string;
+  languageCode?: string;
 }
 
 export interface AnalyticsData {

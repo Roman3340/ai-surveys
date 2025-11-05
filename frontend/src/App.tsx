@@ -68,9 +68,36 @@ function AppRoutes() {
 }
 
 function App() {
-  const { isReady, theme: telegramTheme, forceExpand } = useTelegram();
-  const { theme: appTheme, color: appColor, language } = useAppStore();
+  const { isReady, theme: telegramTheme, forceExpand, languageCode: telegramLanguageCode } = useTelegram();
+  const { theme: appTheme, color: appColor, language, setLanguage } = useAppStore();
   const isInitialized = useRef(false);
+
+  // Автоматическое определение языка из Telegram при первом запуске (если язык не установлен вручную)
+  useEffect(() => {
+    if (isReady && telegramLanguageCode && !isInitialized.current) {
+      // Проверяем, был ли язык установлен вручную пользователем
+      const stored = localStorage.getItem('ai-surveys-storage');
+      let wasLanguageSetManually = false;
+      
+      try {
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          wasLanguageSetManually = !!parsed.state?.language;
+        }
+      } catch (e) {
+        console.error('Error checking manual language setting:', e);
+      }
+      
+      // Если язык не был установлен вручную, устанавливаем из Telegram
+      if (!wasLanguageSetManually) {
+        const telegramLang = telegramLanguageCode.split('-')[0].toLowerCase();
+        if (telegramLang === 'en' || telegramLang === 'ru') {
+          console.log('Auto-setting language from Telegram:', telegramLang);
+          setLanguage(telegramLang as 'ru' | 'en');
+        }
+      }
+    }
+  }, [isReady, telegramLanguageCode, setLanguage]);
 
   // Синхронизация темы, цвета и языка при инициализации
   useEffect(() => {

@@ -27,7 +27,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = () => {
     setLanguage(langCode); // Сохраняем в store, что автоматически изменит язык через i18n
   };
 
-  const languageOptions = [
+  const languageOptions: Array<{ code: 'ru' | 'en'; name: string; englishName: string }> = [
     {
       code: 'ru',
       name: 'RU Русский',
