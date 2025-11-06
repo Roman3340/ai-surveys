@@ -10,7 +10,6 @@ import {
   Lightbulb, 
   BarChart3,
   AlertCircle,
-  CheckCircle,
   Loader2,
   Brain
 } from 'lucide-react';
@@ -18,80 +17,35 @@ import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { surveyApi, aiAnalytics } from '../../services/api';
 
-interface AnalyticsData {
-  // Основные метрики
-  metrics?: {
-  total_responses?: number;
-  completion_rate?: number;
-  sentiment_analysis?: {
-    positive_percentage: number;
-    negative_percentage: number;
-    neutral_percentage: number;
-  };
-  key_metrics?: {
+interface AnalyticsDataV2 {
+  version: number;
+  overview: {
+    total_responses: number;
+    completion_rate: number;
     average_rating: number | null;
-    most_common_issues: string[];
-    satisfaction_score: number;
-    };
+    sentiment: { positive: number | null; neutral: number | null; negative: number | null };
   };
-  
-  // Инсайты
-  insights?: Array<{
+  themes: Array<{
+    question_id: string;
+    label: string;
+    support_count: number;
+    sentiment: { positive: number; neutral: number; negative: number };
+    keywords: string[];
+    quotes: string[];
+  }>;
+  insights: Array<{
     type: string;
     title: string;
     description: string;
     priority: string;
     confidence: number;
-    data: any;
+    data?: any;
+    evidence?: string[];
   }>;
-  
-  // Критические проблемы и возможности
-  critical_problem?: {
-    title: string;
-    description: string;
-    priority: string;
-    confidence: number;
-  };
-  opportunity?: {
-    title: string;
-    description: string;
-    priority: string;
-    confidence: number;
-  };
-  
-  // Визуализации
-  visualizations?: {
-    sentiment_chart?: {
-      positive: number;
-      negative: number;
-      neutral: number;
-    };
-    response_timeline?: Array<{
-      date: string;
-      count: number;
-    }>;
-    question_analysis?: Array<{
-      question_id: string;
-      question_text: string;
-      response_rate: number;
-      sentiment: string;
-      key_themes: string[];
-    }>;
-  };
-  
-  // Прямые данные для визуализаций (для обратной совместимости)
-  sentiment_chart?: {
-    positive: number;
-    negative: number;
-    neutral: number;
-  };
-  question_analysis?: Array<{
-    question_id: string;
-    question_text: string;
-    response_rate: number;
-    sentiment: string;
-    key_themes: string[];
-  }>;
+  recommendations?: Array<{ title: string; rationale: string; expected_impact: string }>;
+  drivers: Array<{ factor_type: 'option' | 'pair'; question_id: string; label: string; effect_rating: number; effect_negative_pp: number; support: number; lift?: number }>;
+  questions: Array<{ question_id: string; question_text: string; question_type: string; stats: any }>;
+  trends: Array<{ date: string; responses: number; avg_value: number | null }>;
 }
 
 interface ProgressData {
@@ -901,24 +855,24 @@ const AIAnalyticsPage: React.FC = () => {
   `;
   const navigate = useNavigate();
   const { user, hapticFeedback } = useTelegram();
-  const [activeTab, setActiveTab] = useState<'metrics' | 'insights' | 'visualizations'>('metrics');
+  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'themes' | 'questions' | 'trends'>('overview');
   const tabsRef = useRef<HTMLDivElement>(null);
   
-  const handleTabClick = (tab: 'metrics' | 'insights' | 'visualizations') => {
+  const handleTabClick = (tab: 'overview' | 'drivers' | 'themes' | 'questions' | 'trends') => {
     setActiveTab(tab);
     
     // Прокручиваем табы
     if (tabsRef.current) {
-      if (tab === 'metrics') {
+      if (tab === 'overview') {
         // Прокручиваем влево для первого таба
         tabsRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-      } else if (tab === 'visualizations') {
+      } else if (tab === 'trends') {
         // Прокручиваем вправо для последнего таба
         tabsRef.current.scrollTo({ left: tabsRef.current.scrollWidth, behavior: 'smooth' });
       }
     }
   };
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsDataV2 | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState<ProgressData | null>(null);
@@ -1300,206 +1254,142 @@ const AIAnalyticsPage: React.FC = () => {
   const exportAnalytics = async (format: string) => {
     try {
       hapticFeedback?.medium?.();
-      // TODO: Реализовать экспорт
-      console.log(`Экспорт в формате ${format}`);
+      if (!analyticsData) return;
+      if (format === 'json') {
+        const blob = new Blob([JSON.stringify(analyticsData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `analytics_${surveyId}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else if (format === 'csv') {
+        const rows: string[] = [];
+        const esc = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        // Overview
+        rows.push(['section','key','value'].join(','));
+        const o = analyticsData.overview;
+        rows.push(['overview','total_responses', o.total_responses].join(','));
+        rows.push(['overview','completion_rate', Math.round((o.completion_rate || 0)*100)+'%'].join(','));
+        rows.push(['overview','average_rating', o.average_rating ?? ''].join(','));
+        rows.push(['overview','sentiment_positive', (o.sentiment.positive ?? '')].join(','));
+        rows.push(['overview','sentiment_neutral', (o.sentiment.neutral ?? '')].join(','));
+        rows.push(['overview','sentiment_negative', (o.sentiment.negative ?? '')].join(','));
+        // Drivers
+        rows.push(['section','label','effect_rating','effect_negative_pp','support','lift'].join(','));
+        for (const d of analyticsData.drivers) {
+          rows.push(['driver', esc(d.label), d.effect_rating, d.effect_negative_pp, d.support, d.lift ?? ''].join(','));
+        }
+        // Themes
+        rows.push(['section','question_id','label','support_count','pos','neu','neg'].join(','));
+        for (const th of analyticsData.themes || []) {
+          rows.push(['theme', th.question_id, esc(th.label), th.support_count, th.sentiment.positive, th.sentiment.neutral, th.sentiment.negative].join(','));
+        }
+        const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `analytics_${surveyId}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     } catch (err) {
       console.error('Ошибка экспорта:', err);
     }
   };
 
-  const renderMetrics = () => {
+  const renderOverview = () => {
     if (!analyticsData) return null;
-
-    // Извлекаем данные из правильной структуры
-    const metrics = analyticsData.metrics || {};
-    const visualizations = analyticsData.visualizations || {};
-    
-    // Отладочная информация
-    console.log('AnalyticsData:', analyticsData);
-    console.log('Metrics:', metrics);
-    console.log('Total responses:', metrics.total_responses);
-
+    const o = analyticsData.overview;
     return (
       <div className="analytics-content">
         <div className="metrics-grid">
-          {/* Общая статистика */}
           <div className="metric-card">
             <h3>{t('aiAnalytics.metrics.generalStats')}</h3>
             <div className="metric-item">
               <span className="metric-label">{t('aiAnalytics.metrics.totalResponses')}</span>
-              <span className="metric-value">{metrics.total_responses || 0}</span>
+              <span className="metric-value">{o.total_responses}</span>
+            </div>
+            {o.completion_rate != null && (
+              <div className="metric-item">
+                <span className="metric-label">{t('aiAnalytics.metrics.completionRate')}</span>
+                <span className="metric-value">{Math.round((o.completion_rate || 0) * 100)}%</span>
+              </div>
+            )}
+            <div className="metric-item">
+              <span className="metric-label">{t('aiAnalytics.metrics.averageRating')}</span>
+              <span className="metric-value">{o.average_rating ?? '—'}</span>
             </div>
           </div>
 
-          {/* Анализ тональности */}
           <div className="metric-card">
             <h3>{t('aiAnalytics.metrics.sentiment')}</h3>
             <div className="sentiment-bars">
               <div className="sentiment-bar positive">
                 <div className="sentiment-label">{t('aiAnalytics.metrics.positive')}</div>
-                <div className="sentiment-value">
-                  {metrics.sentiment_analysis?.positive_percentage !== null && metrics.sentiment_analysis?.positive_percentage !== undefined 
-                    ? `${metrics.sentiment_analysis.positive_percentage}%`
-                    : visualizations.sentiment_chart?.positive !== null && visualizations.sentiment_chart?.positive !== undefined
-                    ? `${visualizations.sentiment_chart.positive}%`
-                    : t('aiAnalytics.metrics.notAvailable')}
-                </div>
+                <div className="sentiment-value">{o.sentiment.positive != null ? `${o.sentiment.positive}%` : t('aiAnalytics.metrics.notAvailable')}</div>
               </div>
               <div className="sentiment-bar neutral">
                 <div className="sentiment-label">{t('aiAnalytics.metrics.neutral')}</div>
-                <div className="sentiment-value">
-                  {metrics.sentiment_analysis?.neutral_percentage !== null && metrics.sentiment_analysis?.neutral_percentage !== undefined 
-                    ? `${metrics.sentiment_analysis.neutral_percentage}%`
-                    : visualizations.sentiment_chart?.neutral !== null && visualizations.sentiment_chart?.neutral !== undefined
-                    ? `${visualizations.sentiment_chart.neutral}%`
-                    : t('aiAnalytics.metrics.notAvailable')}
-                </div>
+                <div className="sentiment-value">{o.sentiment.neutral != null ? `${o.sentiment.neutral}%` : t('aiAnalytics.metrics.notAvailable')}</div>
               </div>
               <div className="sentiment-bar negative">
                 <div className="sentiment-label">{t('aiAnalytics.metrics.negative')}</div>
-                <div className="sentiment-value">
-                  {metrics.sentiment_analysis?.negative_percentage !== null && metrics.sentiment_analysis?.negative_percentage !== undefined 
-                    ? `${metrics.sentiment_analysis.negative_percentage}%`
-                    : visualizations.sentiment_chart?.negative !== null && visualizations.sentiment_chart?.negative !== undefined
-                    ? `${visualizations.sentiment_chart.negative}%`
-                    : t('aiAnalytics.metrics.notAvailable')}
-                </div>
+                <div className="sentiment-value">{o.sentiment.negative != null ? `${o.sentiment.negative}%` : t('aiAnalytics.metrics.notAvailable')}</div>
               </div>
             </div>
           </div>
-
-          {/* Ключевые метрики */}
-          {(metrics.key_metrics?.average_rating || metrics.key_metrics?.satisfaction_score) && (
-            <div className="metric-card">
-              <h3>{t('aiAnalytics.metrics.keyMetrics')}</h3>
-              {metrics.key_metrics?.average_rating && (
-                <div className="metric-item">
-                  <span className="metric-label">{t('aiAnalytics.metrics.averageRating')}</span>
-                  <span className="metric-value">{metrics.key_metrics.average_rating.toFixed(1)}</span>
-                </div>
-              )}
-              {metrics.key_metrics?.satisfaction_score && (
-                <div className="metric-item">
-                  <span className="metric-label">{t('aiAnalytics.metrics.satisfaction')}</span>
-                  <span className="metric-value">{metrics.key_metrics.satisfaction_score}%</span>
-                </div>
-              )}
-            </div>
-          )}
-
         </div>
-      </div>
-    );
-  };
 
-  const renderInsights = () => {
-    if (!analyticsData) return null;
-
-    // Извлекаем инсайты из правильной структуры
-    const insights = analyticsData.insights || [];
-    
-    // Если инсайтов нет в стандартной структуре, попробуем найти их в других местах
-    if (insights.length === 0) {
-      // Ищем инсайты в других частях данных
-      const allInsights = [];
-      
-      // Проверяем, есть ли критические проблемы
-      if (analyticsData.critical_problem) {
-        allInsights.push({
-          type: 'critical_problem',
-          title: analyticsData.critical_problem.title || t('aiAnalytics.insights.criticalProblem'),
-          description: analyticsData.critical_problem.description || '',
-          priority: analyticsData.critical_problem.priority || 'high',
-          confidence: analyticsData.critical_problem.confidence || 0.8
-        });
-      }
-      
-      // Проверяем, есть ли возможности
-      if (analyticsData.opportunity) {
-        allInsights.push({
-          type: 'opportunity',
-          title: analyticsData.opportunity.title || t('aiAnalytics.insights.opportunity'),
-          description: analyticsData.opportunity.description || '',
-          priority: analyticsData.opportunity.priority || 'medium',
-          confidence: analyticsData.opportunity.confidence || 0.7
-        });
-      }
-      
-      if (allInsights.length === 0) return null;
-      
-      return (
-        <div className="analytics-content">
-          <div className="insights-list">
-            {allInsights.map((insight, index) => (
-              <motion.div
-                key={index}
-                className={`insight-card ${insight.type}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
+        {analyticsData.insights?.length > 0 && (
+          <div className="insights-list" style={{ marginTop: 16 }}>
+            {analyticsData.insights.slice(0, 3).map((insight, index) => (
+              <motion.div key={index} className={`insight-card ${insight.type}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
                 <div className="insight-header">
                   <div className="insight-type">
                     {insight.type === 'critical_problem' && <AlertCircle className="icon critical" />}
                     {insight.type === 'opportunity' && <Lightbulb className="icon opportunity" />}
-                    {insight.type === 'trend' && <TrendingUp className="icon trend" />}
-                    {insight.type === 'recommendation' && <CheckCircle className="icon recommendation" />}
-                    {insight.type === 'positive_feedback' && <CheckCircle className="icon positive_feedback" />}
-                    {insight.type === 'success' && <CheckCircle className="icon success" />}
                     <span className="type-label">{insight.title}</span>
                   </div>
-                  <div className={`priority-badge ${insight.priority}`}>
-                    {insight.priority === 'high' && t('aiAnalytics.insights.priority.high')}
-                    {insight.priority === 'medium' && t('aiAnalytics.insights.priority.medium')}
-                    {insight.priority === 'low' && t('aiAnalytics.insights.priority.low')}
-                  </div>
+                  <div className={`priority-badge ${insight.priority}`}>{insight.priority}</div>
                 </div>
-                <div className="insight-description">
-                  {insight.description}
-                </div>
-                <div className="insight-confidence">
-                  {t('aiAnalytics.insights.confidence')} {(insight.confidence * 100).toFixed(0)}%
-                </div>
+                <div className="insight-description">{insight.description}</div>
+                <div className="insight-confidence">{t('aiAnalytics.insights.confidence')} {(insight.confidence * 100).toFixed(0)}%</div>
               </motion.div>
             ))}
           </div>
-        </div>
-      );
-    }
+        )}
+      </div>
+    );
+  };
 
+  const renderThemes = () => {
+    if (!analyticsData) return null;
+    const themes = analyticsData.themes || [];
     return (
       <div className="analytics-content">
         <div className="insights-list">
-          {insights.map((insight, index) => (
-            <motion.div
-              key={index}
-              className={`insight-card ${insight.type}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
+          {themes.map((th, index) => (
+            <motion.div key={index} className={`insight-card`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
               <div className="insight-header">
                 <div className="insight-type">
-                  {insight.type === 'critical_problem' && <AlertCircle className="icon critical" />}
-                  {insight.type === 'opportunity' && <Lightbulb className="icon opportunity" />}
-                  {insight.type === 'trend' && <TrendingUp className="icon trend" />}
-                  {insight.type === 'recommendation' && <CheckCircle className="icon recommendation" />}
-                  {insight.type === 'positive_feedback' && <CheckCircle className="icon positive_feedback" />}
-                  {insight.type === 'success' && <CheckCircle className="icon success" />}
-                  <span className="type-label">{insight.title}</span>
+                  <TrendingUp className="icon trend" />
+                  <span className="type-label">{th.label}</span>
                 </div>
-                <div className={`priority-badge ${insight.priority}`}>
-                  {insight.priority === 'high' && t('aiAnalytics.insights.priority.high')}
-                  {insight.priority === 'medium' && t('aiAnalytics.insights.priority.medium')}
-                  {insight.priority === 'low' && t('aiAnalytics.insights.priority.low')}
+                <div className="priority-badge medium">{t('aiAnalytics.metrics.totalResponses')}: {th.support_count}</div>
+              </div>
+              <div className="sentiment-bars" style={{ marginBottom: 8 }}>
+                <div className="sentiment-bar positive"><div className="sentiment-label">{t('aiAnalytics.metrics.positive')}</div><div className="sentiment-value">{th.sentiment.positive}</div></div>
+                <div className="sentiment-bar neutral"><div className="sentiment-label">{t('aiAnalytics.metrics.neutral')}</div><div className="sentiment-value">{th.sentiment.neutral}</div></div>
+                <div className="sentiment-bar negative"><div className="sentiment-label">{t('aiAnalytics.metrics.negative')}</div><div className="sentiment-value">{th.sentiment.negative}</div></div>
+              </div>
+              {th.quotes?.length > 0 && (
+                <div className="question-themes">
+                  {th.quotes.slice(0,3).map((q, i) => (
+                    <span key={i} className="theme-tag">“{q}”</span>
+                  ))}
                 </div>
-              </div>
-              <div className="insight-description">
-                {insight.description}
-              </div>
-              <div className="insight-confidence">
-                {t('aiAnalytics.insights.confidence')} {(insight.confidence * 100).toFixed(0)}%
-              </div>
+              )}
             </motion.div>
           ))}
         </div>
@@ -1507,80 +1397,108 @@ const AIAnalyticsPage: React.FC = () => {
     );
   };
 
-  const renderVisualizations = () => {
+  const renderDrivers = () => {
     if (!analyticsData) return null;
-
-    // Извлекаем данные из правильной структуры
-    const visualizations = analyticsData.visualizations || {};
-    const metrics = analyticsData.metrics || {};
-    const sentimentAnalysis = metrics.sentiment_analysis || {};
-    
-    // Используем данные из sentiment_analysis вместо sentiment_chart
-    const sentimentChart = {
-      positive: (sentimentAnalysis as any).positive_percentage || 0,
-      negative: (sentimentAnalysis as any).negative_percentage || 0,
-      neutral: (sentimentAnalysis as any).neutral_percentage || 0
-    };
-    
-    // Отладочная информация
-    console.log('Данные тональности для визуализации:', {
-      sentimentAnalysis,
-      sentimentChart,
-      metrics
-    });
-    const questionAnalysis = visualizations.question_analysis || analyticsData.question_analysis || [];
-
+    const drivers = analyticsData.drivers || [];
     return (
       <div className="analytics-content">
-        {/* График тональности */}
+        <div className="insights-list">
+          {drivers.map((d, i) => (
+            <div key={i} className="insight-card">
+              <div className="insight-header">
+                <div className="insight-type">
+                  <BarChart3 className="icon" />
+                  <span className="type-label">{d.label}</span>
+                </div>
+                {typeof d.lift === 'number' && (
+                  <div className={`priority-badge medium`}>lift {d.lift}</div>
+                )}
+              </div>
+              <div className="insight-description">
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <span>{t('aiAnalytics.visualizations.responses')}: {d.support}</span>
+                  <span>Δ rating: {d.effect_rating > 0 ? '+' : ''}{d.effect_rating}</span>
+                  <span>Δ negative: {d.effect_negative_pp > 0 ? '+' : ''}{d.effect_negative_pp} п.п.</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderQuestions = () => {
+    if (!analyticsData) return null;
+    const qs = analyticsData.questions || [];
+    return (
+      <div className="analytics-content">
+        <div className="question-analysis">
+          {qs.map((q, idx) => {
+            const stats = q.stats || {};
+            // Отрисуем распределение как бар-чарт, если есть
+            const distribution = stats.distribution as Record<string, number> | undefined;
+            const entries = distribution ? Object.entries(distribution) : [];
+            const maxVal = entries.length ? Math.max(...entries.map(([, v]) => Number(v))) : 0;
+            return (
+              <div key={idx} className="question-item">
+                <div className="question-text">{q.question_text}</div>
+                {entries.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {entries.map(([label, value], i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 120, fontSize: 12, color: 'var(--tg-hint-color)' }}>{label}</div>
+                        <div style={{ flex: 1, background: 'var(--tg-section-separator-color)', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ width: `${maxVal ? (Number(value) / maxVal) * 100 : 0}%`, height: 8, background: 'var(--tg-button-color)' }} />
+                        </div>
+                        <div style={{ width: 32, textAlign: 'right', fontSize: 12 }}>{value}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
+                    {q.question_type === 'number' || q.question_type === 'rating' || q.question_type === 'scale' ? (
+                      <>
+                        <div>avg: {stats.avg ?? '—'}</div>
+                        <div>median: {stats.median ?? '—'}</div>
+                        <div>min/max: {stats.min ?? '—'} / {stats.max ?? '—'}</div>
+                        <div>count: {stats.count ?? 0}</div>
+                      </>
+                    ) : (
+                      <div>count: {stats.count ?? 0}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderTrends = () => {
+    if (!analyticsData) return null;
+    const tr = analyticsData.trends || [];
+    return (
+      <div className="analytics-content">
         <div className="visualization-card">
-          <h3>{t('aiAnalytics.visualizations.sentimentDistribution')}</h3>
-          <div className="sentiment-chart">
-            <div className="chart-bar positive" style={{ height: `${sentimentChart.positive > 0 ? Math.max(sentimentChart.positive, 8) : 0}%` }}>
-              <span className="bar-label">{t('aiAnalytics.metrics.positive')}</span>
-              <span className="bar-value">{sentimentChart.positive !== null && sentimentChart.positive !== undefined ? `${sentimentChart.positive}%` : t('aiAnalytics.metrics.notAvailable')}</span>
-            </div>
-            <div className="chart-bar neutral" style={{ height: `${sentimentChart.neutral > 0 ? Math.max(sentimentChart.neutral, 8) : 0}%` }}>
-              <span className="bar-label">{t('aiAnalytics.metrics.neutral')}</span>
-              <span className="bar-value">{sentimentChart.neutral !== null && sentimentChart.neutral !== undefined ? `${sentimentChart.neutral}%` : t('aiAnalytics.metrics.notAvailable')}</span>
-            </div>
-            <div className="chart-bar negative" style={{ height: `${sentimentChart.negative > 0 ? Math.max(sentimentChart.negative, 8) : 0}%` }}>
-              <span className="bar-label">{t('aiAnalytics.metrics.negative')}</span>
-              <span className="bar-value">{sentimentChart.negative !== null && sentimentChart.negative !== undefined ? `${sentimentChart.negative}%` : t('aiAnalytics.metrics.notAvailable')}</span>
-            </div>
+          <h3>{t('aiAnalytics.tabs.trends')}</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {(() => {
+              const maxResp = tr.length ? Math.max(...tr.map(x => x.responses)) : 0;
+              return tr.map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 90, fontSize: 12, color: 'var(--tg-hint-color)' }}>{r.date}</div>
+                  <div style={{ flex: 1, background: 'var(--tg-section-separator-color)', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ width: `${maxResp ? (r.responses / maxResp) * 100 : 0}%`, height: 10, background: 'var(--tg-button-gradient)' }} />
+                  </div>
+                  <div style={{ width: 80, textAlign: 'right', fontSize: 12 }}>{r.responses} | {r.avg_value ?? '—'}</div>
+                </div>
+              ));
+            })()}
           </div>
         </div>
-
-        {/* Анализ по вопросам */}
-        {questionAnalysis.length > 0 && (
-          <div className="visualization-card">
-            <h3>{t('aiAnalytics.visualizations.questionAnalysis')}</h3>
-            <div className="question-analysis">
-              {questionAnalysis.map((question: any, index: number) => (
-                <div key={index} className="question-item">
-                  <div className="question-text">{question.question_text}</div>
-                  <div className="question-metrics">
-                    <span className={`sentiment-indicator ${question.sentiment}`}>
-                      {question.sentiment === 'positive' && '😊'}
-                      {question.sentiment === 'negative' && '😞'}
-                      {question.sentiment === 'neutral' && '😐'}
-                    </span>
-                    <span className="response-rate">
-                      {t('aiAnalytics.visualizations.responses')} {question.response_rate ? (question.response_rate * 100).toFixed(0) : 0}%
-                    </span>
-                  </div>
-                  {question.key_themes && question.key_themes.length > 0 && (
-                    <div className="question-themes">
-                      {question.key_themes.map((theme: string, themeIndex: number) => (
-                        <span key={themeIndex} className="theme-tag">{theme}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     );
   };
@@ -1707,25 +1625,39 @@ const AIAnalyticsPage: React.FC = () => {
           {/* Табы */}
           <div className="analytics-tabs" ref={tabsRef}>
             <button
-              className={`tab-button ${activeTab === 'metrics' ? 'active' : ''}`}
-              onClick={() => handleTabClick('metrics')}
+              className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => handleTabClick('overview')}
             >
               <TrendingUp className="icon" />
               {t('aiAnalytics.tabs.metrics')}
             </button>
             <button
-              className={`tab-button ${activeTab === 'insights' ? 'active' : ''}`}
-              onClick={() => handleTabClick('insights')}
+              className={`tab-button ${activeTab === 'drivers' ? 'active' : ''}`}
+              onClick={() => handleTabClick('drivers')}
+            >
+              <BarChart3 className="icon" />
+              {t('aiAnalytics.tabs.visualizations')}
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'themes' ? 'active' : ''}`}
+              onClick={() => handleTabClick('themes')}
             >
               <Lightbulb className="icon" />
               {t('aiAnalytics.tabs.insights')}
             </button>
             <button
-              className={`tab-button ${activeTab === 'visualizations' ? 'active' : ''}`}
-              onClick={() => handleTabClick('visualizations')}
+              className={`tab-button ${activeTab === 'questions' ? 'active' : ''}`}
+              onClick={() => handleTabClick('questions')}
             >
               <BarChart3 className="icon" />
-              {t('aiAnalytics.tabs.visualizations')}
+              Questions
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'trends' ? 'active' : ''}`}
+              onClick={() => handleTabClick('trends')}
+            >
+              <BarChart3 className="icon" />
+              Trends
             </button>
           </div>
 
@@ -1738,9 +1670,11 @@ const AIAnalyticsPage: React.FC = () => {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.2 }}
             >
-              {activeTab === 'metrics' && renderMetrics()}
-              {activeTab === 'insights' && renderInsights()}
-              {activeTab === 'visualizations' && renderVisualizations()}
+              {activeTab === 'overview' && renderOverview()}
+              {activeTab === 'drivers' && renderDrivers()}
+              {activeTab === 'themes' && renderThemes()}
+              {activeTab === 'questions' && renderQuestions()}
+              {activeTab === 'trends' && renderTrends()}
             </motion.div>
           </AnimatePresence>
         </>
