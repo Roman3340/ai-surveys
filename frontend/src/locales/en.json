@@ -92,7 +92,7 @@
     }
   },
   "createSurvey": {
-    "title": "Create Survey or Test?",
+    "title": "What shall we create?",
     "draft": {
       "found": "Unfinished survey found",
       "restoreQuestion": "Restore draft and continue editing?",
@@ -107,7 +107,8 @@
     "test": {
       "title": "Create Test",
       "description": "Create a test with correct answers and scoring",
-      "comingSoon": "Test creation will be implemented later"
+      "comingSoon": "Test creation will be implemented later",
+      "comingSoonHint": "Test creation feature will be added later"
     },
     "createButton": "Create"
   },

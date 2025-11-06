@@ -33,13 +33,6 @@ const CreateSurveyPage: React.FC = () => {
     setSelectedOption('survey');
   };
 
-  const handleCreateTest = () => {
-    clearDraft();
-    setSelectedOption('test');
-    // TODO: Реализовать создание теста
-    alert(t('createSurvey.test.comingSoon'));
-  };
-
   const handleNext = () => {
     if (selectedOption === 'survey') {
       navigate('/survey/create/manual');
@@ -299,18 +292,15 @@ const CreateSurveyPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <div
-              onClick={handleCreateTest}
               style={{
                 backgroundColor: 'var(--tg-section-bg-color)',
                 borderRadius: '12px',
                 padding: '20px',
-                cursor: 'pointer',
+                cursor: 'not-allowed',
                 transition: 'transform 0.1s ease',
-                border: selectedOption === 'test' ? '2px solid var(--tg-button-color)' : '2px solid transparent'
+                border: '2px solid transparent',
+                opacity: 0.5
               }}
-              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
               <div style={{
                 display: 'flex',
@@ -324,7 +314,7 @@ const CreateSurveyPage: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: '#34C759',
+                  backgroundColor: '#8E8E93',
                   borderRadius: '10px',
                   marginTop: '2px'
                 }}>
@@ -335,7 +325,7 @@ const CreateSurveyPage: React.FC = () => {
                     fontSize: '18px',
                     fontWeight: '600',
                     marginBottom: '4px',
-                    color: 'var(--tg-text-color)',
+                    color: 'var(--tg-hint-color)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between'
@@ -345,20 +335,12 @@ const CreateSurveyPage: React.FC = () => {
                       width: '20px',
                       height: '20px',
                       borderRadius: '50%',
-                      border: `2px solid ${selectedOption === 'test' ? 'var(--tg-button-color)' : 'var(--tg-section-separator-color)'}`,
-                      background: selectedOption === 'test' ? 'var(--tg-button-gradient)' : 'transparent',
+                      border: '2px solid var(--tg-section-separator-color)',
+                      background: 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      {selectedOption === 'test' && (
-                        <div style={{
-                          width: '8px',
-                          height: '8px',
-                          backgroundColor: 'white',
-                          borderRadius: '50%'
-                        }} />
-                      )}
                     </div>
                   </div>
                   <div style={{
@@ -370,6 +352,15 @@ const CreateSurveyPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: 'var(--tg-hint-color)',
+              marginTop: '8px',
+              textAlign: 'center',
+              padding: '0 20px'
+            }}>
+              {t('createSurvey.test.comingSoonHint')}
             </div>
           </motion.div>
 
