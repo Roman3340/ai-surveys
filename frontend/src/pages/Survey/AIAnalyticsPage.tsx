@@ -855,10 +855,10 @@ const AIAnalyticsPage: React.FC = () => {
   `;
   const navigate = useNavigate();
   const { user, hapticFeedback } = useTelegram();
-  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'themes' | 'questions' | 'trends'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'insights' | 'themes' | 'questions' | 'trends'>('overview');
   const tabsRef = useRef<HTMLDivElement>(null);
   
-  const handleTabClick = (tab: 'overview' | 'drivers' | 'themes' | 'questions' | 'trends') => {
+  const handleTabClick = (tab: 'overview' | 'drivers' | 'insights' | 'themes' | 'questions' | 'trends') => {
     setActiveTab(tab);
     
     // Прокручиваем табы
@@ -1385,7 +1385,7 @@ const AIAnalyticsPage: React.FC = () => {
               </div>
               {th.quotes?.length > 0 && (
                 <div className="question-themes">
-                  {th.quotes.slice(0,3).map((q, i) => (
+                  {th.quotes.slice(0,3).map((q: string, i: number) => (
                     <span key={i} className="theme-tag">“{q}”</span>
                   ))}
                 </div>
@@ -1393,6 +1393,90 @@ const AIAnalyticsPage: React.FC = () => {
             </motion.div>
           ))}
         </div>
+      </div>
+    );
+  };
+
+  const renderInsights = () => {
+    if (!analyticsData) return null;
+    const insights = analyticsData.insights || [];
+    const drivers = analyticsData.drivers || [];
+
+    const groupByType: Record<string, typeof insights> = {
+      critical_problem: [],
+      opportunity: [],
+      trend: [],
+      positive_feedback: [],
+      success: [],
+      recommendation: [],
+    };
+    for (const ins of insights) {
+      const t = (ins.type || 'recommendation') as keyof typeof groupByType;
+      if (!groupByType[t]) groupByType[t] = [] as any;
+      groupByType[t].push(ins);
+    }
+
+    const findDriverMeta = (title: string) => {
+      const tl = (title || '').toLowerCase();
+      let best = null as any;
+      for (const d of drivers) {
+        const dl = (d.label || '').toLowerCase();
+        // простая эвристика сопоставления
+        if (tl && dl.includes(tl)) {
+          best = d; break;
+        }
+        // поиск по значимому слову
+        const token = tl.split(/[^\p{L}\p{N}]+/u).filter(w => w.length >= 5)[0];
+        if (token && dl.includes(token)) best = d;
+      }
+      return best;
+    };
+
+    const renderGroup = (title: string, key: keyof typeof groupByType) => (
+      <div className="visualization-card" key={key}>
+        <h3>{title}</h3>
+        <div className="insights-list">
+          {groupByType[key].map((ins, idx) => {
+            const meta = findDriverMeta(ins.title);
+            const quotes: string[] = (ins.evidence || (ins as any).data?.evidence || []).slice(0, 2);
+            return (
+              <motion.div key={idx} className={`insight-card ${ins.type}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}>
+                <div className="insight-header">
+                  <div className="insight-type">
+                    <span className="type-label">{ins.title}</span>
+                  </div>
+                  <div className={`priority-badge ${ins.priority}`}>{ins.priority}</div>
+                </div>
+                <div className="insight-description">{ins.description}</div>
+                {(meta || quotes.length > 0) && (
+                  <div className="insight-confidence" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    {meta && (
+                      <>
+                        <span>{t('aiAnalytics.visualizations.responses')}: {meta.support}</span>
+                        <span>Δ rating: {meta.effect_rating > 0 ? '+' : ''}{meta.effect_rating}</span>
+                        <span>Δ negative: {meta.effect_negative_pp > 0 ? '+' : ''}{meta.effect_negative_pp} п.п.</span>
+                      </>
+                    )}
+                    {quotes.map((q: string, i: number) => (
+                      <span key={i} style={{ opacity: 0.9 }}>“{q}”</span>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="analytics-content">
+        {renderGroup(t('aiAnalytics.insights.critical') || 'Критические проблемы', 'critical_problem')}
+        {renderGroup(t('aiAnalytics.insights.opportunities') || 'Возможности', 'opportunity')}
+        {renderGroup(t('aiAnalytics.insights.trends') || 'Тренды', 'trend')}
+        {renderGroup(t('aiAnalytics.insights.positive') || 'Что нравится', 'positive_feedback')}
+        {renderGroup(t('aiAnalytics.insights.success') || 'Успехи', 'success')}
+        {renderGroup(t('aiAnalytics.insights.recommendations') || 'Рекомендации', 'recommendation')}
       </div>
     );
   };
@@ -1454,6 +1538,12 @@ const AIAnalyticsPage: React.FC = () => {
                         <div style={{ width: 32, textAlign: 'right', fontSize: 12 }}>{value}</div>
                       </div>
                     ))}
+                    {/* Итог одним предложением */}
+                    {entries.length > 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
+                        {t('aiAnalytics.questions.summary') || 'Итог'}: {entries.sort((a,b)=>b[1]-a[1])[0][0]} — {entries.sort((a,b)=>b[1]-a[1])[0][1]}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
@@ -1463,6 +1553,8 @@ const AIAnalyticsPage: React.FC = () => {
                         <div>median: {stats.median ?? '—'}</div>
                         <div>min/max: {stats.min ?? '—'} / {stats.max ?? '—'}</div>
                         <div>count: {stats.count ?? 0}</div>
+                        {/* Итог одним предложением */}
+                        <div>{t('aiAnalytics.questions.summary') || 'Итог'}: {stats.avg != null ? `в среднем ${stats.avg}` : t('aiAnalytics.metrics.notAvailable')}</div>
                       </>
                     ) : (
                       <div>count: {stats.count ?? 0}</div>
@@ -1480,6 +1572,18 @@ const AIAnalyticsPage: React.FC = () => {
   const renderTrends = () => {
     if (!analyticsData) return null;
     const tr = analyticsData.trends || [];
+    if (!tr || tr.length < 2) {
+      return (
+        <div className="analytics-content">
+          <div className="visualization-card">
+            <h3>{t('aiAnalytics.tabs.trends')}</h3>
+            <div style={{ fontSize: 14, color: 'var(--tg-hint-color)' }}>
+              {t('aiAnalytics.trends.notEnough') || 'Недостаточно данных для отображения тренда (нужно минимум 2 даты).'}
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="analytics-content">
         <div className="visualization-card">
@@ -1639,11 +1743,18 @@ const AIAnalyticsPage: React.FC = () => {
               {t('aiAnalytics.tabs.visualizations')}
             </button>
             <button
-              className={`tab-button ${activeTab === 'themes' ? 'active' : ''}`}
-              onClick={() => handleTabClick('themes')}
+              className={`tab-button ${activeTab === 'insights' ? 'active' : ''}`}
+              onClick={() => handleTabClick('insights')}
             >
               <Lightbulb className="icon" />
               {t('aiAnalytics.tabs.insights')}
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'themes' ? 'active' : ''}`}
+              onClick={() => handleTabClick('themes')}
+            >
+              <Brain className="icon" />
+              Themes
             </button>
             <button
               className={`tab-button ${activeTab === 'questions' ? 'active' : ''}`}
@@ -1672,6 +1783,7 @@ const AIAnalyticsPage: React.FC = () => {
             >
               {activeTab === 'overview' && renderOverview()}
               {activeTab === 'drivers' && renderDrivers()}
+              {activeTab === 'insights' && renderInsights()}
               {activeTab === 'themes' && renderThemes()}
               {activeTab === 'questions' && renderQuestions()}
               {activeTab === 'trends' && renderTrends()}
