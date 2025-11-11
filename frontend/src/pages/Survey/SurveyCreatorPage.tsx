@@ -2797,35 +2797,35 @@ const ConditionalLogicEditor: React.FC<{
       case 'boolean':
         return [
           { value: 'equals', label: t('surveyCreator.questions.conditional.operators.equals') },
-          { value: 'not_equals', label: t('surveyCreator.questions.conditional.operators.notEquals') }
+          { value: 'not_equals', label: t('surveyCreator.questions.conditional.operators.not_equals') }
         ];
       case 'multiple_choice':
         return [
           { value: 'contains', label: t('surveyCreator.questions.conditional.operators.contains') },
-          { value: 'not_contains', label: t('surveyCreator.questions.conditional.operators.notContains') }
+          { value: 'not_contains', label: t('surveyCreator.questions.conditional.operators.not_contains') }
         ];
       case 'scale':
       case 'number':
         return [
           { value: 'equals', label: t('surveyCreator.questions.conditional.operators.equals') },
-          { value: 'greater_than', label: t('surveyCreator.questions.conditional.operators.greaterThan') },
-          { value: 'less_than', label: t('surveyCreator.questions.conditional.operators.lessThan') },
-          { value: 'greater_or_equal', label: t('surveyCreator.questions.conditional.operators.greaterOrEqual') },
-          { value: 'less_or_equal', label: t('surveyCreator.questions.conditional.operators.lessOrEqual') }
+          { value: 'greater_than', label: t('surveyCreator.questions.conditional.operators.greater_than') },
+          { value: 'less_than', label: t('surveyCreator.questions.conditional.operators.less_than') },
+          { value: 'greater_or_equal', label: t('surveyCreator.questions.conditional.operators.greater_or_equal') },
+          { value: 'less_or_equal', label: t('surveyCreator.questions.conditional.operators.less_or_equal') }
         ];
       case 'rating':
         return [
           { value: 'equals', label: t('surveyCreator.questions.conditional.operators.equals') },
-          { value: 'greater_than', label: t('surveyCreator.questions.conditional.operators.greaterThan') },
-          { value: 'less_than', label: t('surveyCreator.questions.conditional.operators.lessThan') },
-          { value: 'greater_or_equal', label: t('surveyCreator.questions.conditional.operators.greaterOrEqual') },
-          { value: 'less_or_equal', label: t('surveyCreator.questions.conditional.operators.lessOrEqual') }
+          { value: 'greater_than', label: t('surveyCreator.questions.conditional.operators.greater_than') },
+          { value: 'less_than', label: t('surveyCreator.questions.conditional.operators.less_than') },
+          { value: 'greater_or_equal', label: t('surveyCreator.questions.conditional.operators.greater_or_equal') },
+          { value: 'less_or_equal', label: t('surveyCreator.questions.conditional.operators.less_or_equal') }
         ];
       case 'date':
         return [
-          { value: 'date_on', label: t('surveyCreator.questions.conditional.operators.dateOn') },
-          { value: 'date_after', label: t('surveyCreator.questions.conditional.operators.dateAfter') },
-          { value: 'date_before', label: t('surveyCreator.questions.conditional.operators.dateBefore') }
+          { value: 'date_on', label: t('surveyCreator.questions.conditional.operators.date_on') },
+          { value: 'date_after', label: t('surveyCreator.questions.conditional.operators.date_after') },
+          { value: 'date_before', label: t('surveyCreator.questions.conditional.operators.date_before') }
         ];
       default:
         return [];
@@ -2846,8 +2846,8 @@ const ConditionalLogicEditor: React.FC<{
         return (dependsOnQuestion.options || []).filter(opt => opt.trim()).map(opt => ({ value: opt, label: opt }));
       case 'boolean':
         return [
-          { value: 'yes', label: t('surveyCreator.questions.conditional.values.yes') },
-          { value: 'no', label: t('surveyCreator.questions.conditional.values.no') }
+          { value: 'yes', label: t('surveyCreator.questions.conditional.values.yes', { defaultValue: 'Да' }) },
+          { value: 'no', label: t('surveyCreator.questions.conditional.values.no', { defaultValue: 'Нет' }) }
         ];
       case 'scale':
         const min = dependsOnQuestion.scaleMin || 1;
@@ -3102,7 +3102,7 @@ const ConditionalLogicEditor: React.FC<{
                       fontWeight: '500',
                       minWidth: '30px'
                     }}>
-                      {question.conditionalLogic?.logicOperator === 'AND' ? t('surveyCreator.questions.conditional.logic.AND') : t('surveyCreator.questions.conditional.logic.OR')}
+                      {question.conditionalLogic?.logicOperator === 'AND' ? t('surveyCreator.questions.conditional.logic.AND', { defaultValue: 'И' }) : t('surveyCreator.questions.conditional.logic.OR', { defaultValue: 'ИЛИ' })}
                     </span>
                   )}
                   
