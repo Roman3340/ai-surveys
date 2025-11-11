@@ -37,7 +37,7 @@ function AppRoutes() {
   const { user, isReady } = useTelegram();
   
   // ID разработчиков
-  const DEVELOPER_TELEGRAM_IDS = ["649712397", "8257858398"];
+  const DEVELOPER_TELEGRAM_IDS = ["649712397"]; // "8257858398"
   
   // Проверяем, является ли текущий путь публичным (для опросов)
   const isPublicRoute = location.pathname.includes('/invite') || 
