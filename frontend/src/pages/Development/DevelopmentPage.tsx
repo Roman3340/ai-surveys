@@ -14,7 +14,6 @@ export default function DevelopmentPage() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
       backgroundColor: 'var(--tg-bg-color)',
       color: 'var(--tg-text-color)',
       padding: '20px',
@@ -68,7 +67,7 @@ export default function DevelopmentPage() {
           e.currentTarget.style.opacity = '1';
         }}
       >
-        Связаться с разработчиком
+        Задать вопрос
       </button>
       
       <style>{`
