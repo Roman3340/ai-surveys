@@ -1336,10 +1336,10 @@ const AIAnalyticsPage: React.FC = () => {
               <div className="sentiment-bar negative">
                 <div className="sentiment-label">{t('aiAnalytics.metrics.negative')}</div>
                 <div className="sentiment-value">{o.sentiment.negative != null ? `${o.sentiment.negative}%` : t('aiAnalytics.metrics.notAvailable')}</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
         {analyticsData.insights?.length > 0 && (
           <div className="insights-list" style={{ marginTop: 16 }}>
@@ -1350,15 +1350,15 @@ const AIAnalyticsPage: React.FC = () => {
                     {insight.type === 'critical_problem' && <AlertCircle className="icon critical" />}
                     {insight.type === 'opportunity' && <Lightbulb className="icon opportunity" />}
                     <span className="type-label">{insight.title}</span>
-                  </div>
+                </div>
                   <div className={`priority-badge ${insight.priority}`}>{insight.priority}</div>
                 </div>
                 <div className="insight-description">{insight.description}</div>
                 <div className="insight-confidence">{t('aiAnalytics.insights.confidence')} {(insight.confidence * 100).toFixed(0)}%</div>
               </motion.div>
             ))}
-          </div>
-        )}
+            </div>
+          )}
       </div>
     );
   };
@@ -1435,7 +1435,7 @@ const AIAnalyticsPage: React.FC = () => {
     const renderGroup = (title: string, key: keyof typeof groupByType) => (
       <div className="visualization-card" key={key}>
         <h3>{title}</h3>
-        <div className="insights-list">
+          <div className="insights-list">
           {groupByType[key].map((ins, idx) => {
             const meta = findDriverMeta(ins.title);
             const quotes: string[] = (ins.evidence || (ins as any).data?.evidence || []).slice(0, 2);
@@ -1446,7 +1446,7 @@ const AIAnalyticsPage: React.FC = () => {
                     <span className="type-label">{ins.title}</span>
                   </div>
                   <div className={`priority-badge ${ins.priority}`}>{ins.priority}</div>
-                </div>
+                  </div>
                 <div className="insight-description">{ins.description}</div>
                 {(meta || quotes.length > 0) && (
                   <div className="insight-confidence" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -1460,14 +1460,14 @@ const AIAnalyticsPage: React.FC = () => {
                     {quotes.map((q: string, i: number) => (
                       <span key={i} style={{ opacity: 0.9 }}>“{q}”</span>
                     ))}
-                  </div>
+                </div>
                 )}
               </motion.div>
             );
           })}
+          </div>
         </div>
-      </div>
-    );
+      );
 
     return (
       <div className="analytics-content">
@@ -1503,7 +1503,7 @@ const AIAnalyticsPage: React.FC = () => {
                   <span>{t('aiAnalytics.visualizations.responses')}: {d.support}</span>
                   <span>Δ rating: {d.effect_rating > 0 ? '+' : ''}{d.effect_rating}</span>
                   <span>Δ negative: {d.effect_negative_pp > 0 ? '+' : ''}{d.effect_negative_pp} п.п.</span>
-                </div>
+              </div>
               </div>
             </div>
           ))}
@@ -1534,17 +1534,17 @@ const AIAnalyticsPage: React.FC = () => {
                         <div style={{ width: 120, fontSize: 12, color: 'var(--tg-hint-color)' }}>{label}</div>
                         <div style={{ flex: 1, background: 'var(--tg-section-separator-color)', borderRadius: 4, overflow: 'hidden' }}>
                           <div style={{ width: `${maxVal ? (Number(value) / maxVal) * 100 : 0}%`, height: 8, background: 'var(--tg-button-color)' }} />
-                        </div>
+            </div>
                         <div style={{ width: 32, textAlign: 'right', fontSize: 12 }}>{value}</div>
-                      </div>
+            </div>
                     ))}
                     {/* Итог одним предложением */}
                     {entries.length > 0 && (
                       <div style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
                         {t('aiAnalytics.questions.summary') || 'Итог'}: {entries.sort((a,b)=>b[1]-a[1])[0][0]} — {entries.sort((a,b)=>b[1]-a[1])[0][1]}
-                      </div>
+            </div>
                     )}
-                  </div>
+          </div>
                 ) : (
                   <div style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
                     {q.question_type === 'number' || q.question_type === 'rating' || q.question_type === 'scale' ? (
@@ -1559,7 +1559,7 @@ const AIAnalyticsPage: React.FC = () => {
                     ) : (
                       <div>count: {stats.count ?? 0}</div>
                     )}
-                  </div>
+        </div>
                 )}
               </div>
             );
@@ -1579,9 +1579,9 @@ const AIAnalyticsPage: React.FC = () => {
             <h3>{t('aiAnalytics.tabs.trends')}</h3>
             <div style={{ fontSize: 14, color: 'var(--tg-hint-color)' }}>
               {t('aiAnalytics.trends.notEnough') || 'Недостаточно данных для отображения тренда (нужно минимум 2 даты).'}
-            </div>
-          </div>
-        </div>
+                  </div>
+                    </div>
+                </div>
       );
     }
     return (
@@ -1596,9 +1596,9 @@ const AIAnalyticsPage: React.FC = () => {
                   <div style={{ width: 90, fontSize: 12, color: 'var(--tg-hint-color)' }}>{r.date}</div>
                   <div style={{ flex: 1, background: 'var(--tg-section-separator-color)', borderRadius: 4, overflow: 'hidden' }}>
                     <div style={{ width: `${maxResp ? (r.responses / maxResp) * 100 : 0}%`, height: 10, background: 'var(--tg-button-gradient)' }} />
-                  </div>
+            </div>
                   <div style={{ width: 80, textAlign: 'right', fontSize: 12 }}>{r.responses} | {r.avg_value ?? '—'}</div>
-                </div>
+          </div>
               ));
             })()}
           </div>

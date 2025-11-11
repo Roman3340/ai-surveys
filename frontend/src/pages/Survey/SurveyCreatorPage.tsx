@@ -3300,9 +3300,7 @@ const ConditionalLogicEditor: React.FC<{
 };
 
 // Функция для рендеринга разных типов вопросов
-const renderQuestionInput = (question: Question, validationErrors?: Record<string, { scaleMin?: string; scaleMax?: string }>, onAnswerChange?: (answers: Record<string, any>) => void, answers?: Record<string, any>) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { t } = useTranslation();
+const renderQuestionInput = (question: Question, t: (key: string, options?: any) => string, validationErrors?: Record<string, { scaleMin?: string; scaleMax?: string }>, onAnswerChange?: (answers: Record<string, any>) => void, answers?: Record<string, any>) => {
   const baseStyle = {
     width: '100%',
     padding: '12px 16px',
@@ -4121,21 +4119,20 @@ const PreviewTab: React.FC<{
             {/* Вопросы */}
             <AnimatePresence>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {questions.map((question, index) => {
-                const isConditional = question.conditionalLogic?.enabled;
-                const isVisible = shouldShowQuestion(question, currentAnswers, questions);
-                
-                // Скрываем условные вопросы, которые не должны показываться
-                if (isConditional && !isVisible) {
-                  return null;
-                }
-                
-                // Правильная нумерация видимых вопросов
-                const visibleIndex = questions.slice(0, index + 1).filter((q, i) => {
-                  if (i === index) return true; // Текущий вопрос
-                  const qIsConditional = q.conditionalLogic?.enabled;
-                  return !qIsConditional || shouldShowQuestion(q, currentAnswers, questions);
-                }).length - 1;
+              {questions
+                .map((question, index) => {
+                  const isConditional = question.conditionalLogic?.enabled;
+                  const isVisible = shouldShowQuestion(question, currentAnswers, questions);
+                  return { question, index, isConditional, isVisible };
+                })
+                .filter(({ isConditional, isVisible }) => !isConditional || isVisible)
+                .map(({ question, index }) => {
+                  // Правильная нумерация видимых вопросов
+                  const visibleIndex = questions.slice(0, index + 1).filter((q, i) => {
+                    if (i === index) return true; // Текущий вопрос
+                    const qIsConditional = q.conditionalLogic?.enabled;
+                    return !qIsConditional || shouldShowQuestion(q, currentAnswers, questions);
+                  }).length - 1;
                   
                   return (
                   <motion.div
@@ -4225,7 +4222,7 @@ const PreviewTab: React.FC<{
                     </div>
                   )}
                   
-                  {renderQuestionInput(question, validationErrors, onAnswerChange, answers)}
+                  {renderQuestionInput(question, t, validationErrors, onAnswerChange, answers)}
                   </motion.div>
                   );
                 })}
