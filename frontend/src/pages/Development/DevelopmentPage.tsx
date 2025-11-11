@@ -1,8 +1,6 @@
-import { useTranslation } from 'react-i18next';
 import { useTelegram } from '../../hooks/useTelegram';
 
 export default function DevelopmentPage() {
-  const { t } = useTranslation();
   const { hapticFeedback } = useTelegram();
 
   const handleContactDeveloper = () => {
