@@ -17,6 +17,7 @@ export default function DevelopmentPage() {
       backgroundColor: 'var(--tg-bg-color)',
       color: 'var(--tg-text-color)',
       padding: '20px',
+      paddingTop: '100px',
       textAlign: 'center'
     }}>
       <div style={{
