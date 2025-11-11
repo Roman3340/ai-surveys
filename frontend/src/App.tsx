@@ -21,16 +21,31 @@ import { SurveyTemplatesPage } from './pages/Templates/SurveyTemplatesPage';
 import TemplateDetailPage from './pages/Templates/TemplateDetailPage';
 import { KnowledgeBasePage } from './pages/Knowledge/KnowledgeBasePage';
 import { ArticlePage } from './pages/Knowledge/ArticlePage';
+import DevelopmentPage from './pages/Development/DevelopmentPage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
 import { changeLanguage } from './i18n/config';
 import './i18n/config'; // Инициализация i18n
 import './styles/globals.css';
+import { useLocation } from 'react-router-dom';
 
 function AppRoutes() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { surveyInviteId, setSurveyInviteId } = useAppStore();
+  const { user, isReady } = useTelegram();
+  
+  // ID разработчиков
+  const DEVELOPER_TELEGRAM_IDS = ["649712397", "8257858398"];
+  
+  // Проверяем, является ли текущий путь публичным (для опросов)
+  const isPublicRoute = location.pathname.includes('/invite') || 
+                        location.pathname.includes('/take') || 
+                        location.pathname.includes('/completed');
+  
+  // Проверяем доступ (только после загрузки данных пользователя)
+  const isDeveloper = user?.id && DEVELOPER_TELEGRAM_IDS.includes(user.id.toString());
   
   // Редирект на страницу приглашения если есть surveyInviteId
   useEffect(() => {
@@ -39,6 +54,56 @@ function AppRoutes() {
       setSurveyInviteId(null); // Очищаем после редиректа
     }
   }, [surveyInviteId, navigate, setSurveyInviteId]);
+  
+  // Если это публичный маршрут, всегда разрешаем доступ
+  if (isPublicRoute) {
+    return (
+      <Routes>
+        <Route path="/survey/:surveyId/invite" element={<SurveyInvitePage />} />
+        <Route path="/survey/:surveyId/take" element={<SurveyTakePage />} />
+        <Route path="/survey/:surveyId/completed" element={<SurveyCompletedPage />} />
+      </Routes>
+    );
+  }
+  
+  // Если данные пользователя загружены и это не разработчик, показываем страницу разработки
+  if (isReady && !isDeveloper) {
+    return <DevelopmentPage />;
+  }
+  
+  // Если данные еще не загружены, показываем загрузку (для непубличных маршрутов)
+  if (!isReady && !isPublicRoute) {
+    return (
+      <>
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'var(--tg-bg-color)'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              border: '3px solid var(--tg-button-color)',
+              borderTop: '3px solid transparent',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 12px'
+            }} />
+            <p style={{ color: 'var(--tg-hint-color)' }}>Загрузка...</p>
+          </div>
+        </div>
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </>
+    );
+  }
   
   return (
     <Routes>
