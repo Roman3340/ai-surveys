@@ -745,7 +745,8 @@ export default function SurveyInvitePage() {
             </button>
             
             {/* Текст согласия */}
-            <p style={{
+            {/* TODO: Раскомментировать когда будут готовы документы */}
+            {/* <p style={{
               fontSize: '11px',
               color: 'var(--tg-hint-color)',
               textAlign: 'center',
@@ -782,7 +783,7 @@ export default function SurveyInvitePage() {
               >
                 {t('surveyInvite.privacyPolicy')}
               </a>
-            </p>
+            </p> */}
           </div>
         ) : (
           <div style={{
