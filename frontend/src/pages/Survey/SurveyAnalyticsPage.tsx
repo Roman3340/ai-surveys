@@ -3153,7 +3153,10 @@ export default function SurveyAnalyticsPage() {
         order_index: index + 1
       }));
       
-      // Создаем и обновляем вопросы последовательно
+      // Разделяем вопросы на новые (temp_) и существующие
+      const newQuestions: Array<{ data: any; tempId: string }> = [];
+      const existingQuestions: any[] = [];
+      
       for (const q of questionsWithCorrectOrder) {
         // Объединяем validation и conditionalLogic
         let validationWithConditional: any = {};
@@ -3166,40 +3169,59 @@ export default function SurveyAnalyticsPage() {
           }
         }
         
+        const questionData = {
+          type: q.type,
+          text: q.text,
+          description: q.description,
+          is_required: q.is_required,
+          order_index: q.order_index,
+          options: q.options,
+          has_other_option: q.has_other_option,
+          scale_min: q.scale_min,
+          scale_max: q.scale_max,
+          scale_min_label: q.scale_min_label,
+          scale_max_label: q.scale_max_label,
+          validation: Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined
+        };
+        
         if (q.id.startsWith('temp_')) {
-          const createdQuestion = await questionApi.createQuestion({
-            survey_id: surveyId,
-            type: q.type,
-            text: q.text,
-            description: q.description,
-            is_required: q.is_required,
-            order_index: q.order_index,
-            options: q.options,
-            has_other_option: q.has_other_option,
-            scale_min: q.scale_min,
-            scale_max: q.scale_max,
-            scale_min_label: q.scale_min_label,
-            scale_max_label: q.scale_max_label,
-            validation: Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined
+          newQuestions.push({
+            data: {
+              ...questionData,
+              survey_id: surveyId
+            },
+            tempId: q.id
           });
-          questionIdMap[q.id] = createdQuestion.id;
         } else {
-          // Обновляем существующие вопросы
-          await questionApi.updateQuestion(q.id, {
-            type: q.type,
-            text: q.text,
-            description: q.description,
-            is_required: q.is_required,
-            order_index: q.order_index,
-            options: q.options,
-            has_other_option: q.has_other_option,
-            scale_min: q.scale_min,
-            scale_max: q.scale_max,
-            scale_min_label: q.scale_min_label,
-            scale_max_label: q.scale_max_label,
-            validation: Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined
+          existingQuestions.push({
+            id: q.id,
+            ...questionData
           });
         }
+      }
+      
+      // Сначала создаем новые вопросы последовательно
+      // Важно: создаем их последовательно, чтобы обновлять маппинг temp_ ID -> реальный ID
+      for (const { data, tempId } of newQuestions) {
+        // Обновляем dependsOn в validation, если он ссылается на temp_ ID
+        if (data.validation?.conditionalLogic?.dependsOn && questionIdMap[data.validation.conditionalLogic.dependsOn]) {
+          data.validation.conditionalLogic.dependsOn = questionIdMap[data.validation.conditionalLogic.dependsOn];
+        }
+        
+        const createdQuestion = await questionApi.createQuestion(data);
+        questionIdMap[tempId] = createdQuestion.id;
+      }
+      
+      // Обновляем dependsOn в существующих вопросах перед bulk update
+      for (const existingQ of existingQuestions) {
+        if (existingQ.validation?.conditionalLogic?.dependsOn && questionIdMap[existingQ.validation.conditionalLogic.dependsOn]) {
+          existingQ.validation.conditionalLogic.dependsOn = questionIdMap[existingQ.validation.conditionalLogic.dependsOn];
+        }
+      }
+      
+      // Затем обновляем существующие вопросы одним bulk запросом (атомарно)
+      if (existingQuestions.length > 0) {
+        await questionApi.bulkUpdateQuestions(surveyId, existingQuestions);
       }
       
       // Второй проход: загружаем изображения в Яндекс Диск и обновляем вопросы

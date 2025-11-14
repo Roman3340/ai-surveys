@@ -4121,18 +4121,18 @@ const PreviewTab: React.FC<{
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {questions
                 .map((question, index) => {
-                  const isConditional = question.conditionalLogic?.enabled;
-                  const isVisible = shouldShowQuestion(question, currentAnswers, questions);
+                const isConditional = question.conditionalLogic?.enabled;
+                const isVisible = shouldShowQuestion(question, currentAnswers, questions);
                   return { question, index, isConditional, isVisible };
                 })
                 .filter(({ isConditional, isVisible }) => !isConditional || isVisible)
                 .map(({ question, index }) => {
-                  // Правильная нумерация видимых вопросов
-                  const visibleIndex = questions.slice(0, index + 1).filter((q, i) => {
-                    if (i === index) return true; // Текущий вопрос
-                    const qIsConditional = q.conditionalLogic?.enabled;
-                    return !qIsConditional || shouldShowQuestion(q, currentAnswers, questions);
-                  }).length - 1;
+                // Правильная нумерация видимых вопросов
+                const visibleIndex = questions.slice(0, index + 1).filter((q, i) => {
+                  if (i === index) return true; // Текущий вопрос
+                  const qIsConditional = q.conditionalLogic?.enabled;
+                  return !qIsConditional || shouldShowQuestion(q, currentAnswers, questions);
+                }).length - 1;
                   
                   return (
                   <motion.div

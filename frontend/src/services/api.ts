@@ -196,7 +196,10 @@ export const questionApi = {
     const res = await api.delete(`/questions/${questionId}`);
     return res.data;
   },
-
+  async bulkUpdateQuestions(surveyId: string, questions: any[]) {
+    const res = await api.put(`/questions/survey/${surveyId}/bulk`, { questions });
+    return res.data;
+  },
 };
 
 // Загрузка файлов
