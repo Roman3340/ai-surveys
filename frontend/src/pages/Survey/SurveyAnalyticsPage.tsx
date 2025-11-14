@@ -3200,16 +3200,43 @@ export default function SurveyAnalyticsPage() {
         }
       }
       
-      // Сначала создаем новые вопросы последовательно
+      // Сначала создаем новые вопросы последовательно с временными индексами
+      // (используем очень большие индексы, чтобы избежать конфликтов)
       // Важно: создаем их последовательно, чтобы обновлять маппинг temp_ ID -> реальный ID
+      let tempIndexOffset = 10000; // Начинаем с большого числа для временных индексов
       for (const { data, tempId } of newQuestions) {
         // Обновляем dependsOn в validation, если он ссылается на temp_ ID
         if (data.validation?.conditionalLogic?.dependsOn && questionIdMap[data.validation.conditionalLogic.dependsOn]) {
           data.validation.conditionalLogic.dependsOn = questionIdMap[data.validation.conditionalLogic.dependsOn];
         }
         
-        const createdQuestion = await questionApi.createQuestion(data);
+        // Сохраняем правильный индекс для последующего bulk update
+        const correctOrderIndex = data.order_index;
+        
+        // Создаем вопрос с временным индексом (бэкенд не будет пересчитывать, т.к. индекс указан явно)
+        const createdQuestion = await questionApi.createQuestion({
+          ...data,
+          order_index: tempIndexOffset
+        });
         questionIdMap[tempId] = createdQuestion.id;
+        tempIndexOffset++;
+        
+        // Добавляем созданный вопрос в список для bulk update с правильным индексом
+        existingQuestions.push({
+          id: createdQuestion.id,
+          type: data.type,
+          text: data.text,
+          description: data.description,
+          is_required: data.is_required,
+          order_index: correctOrderIndex, // Правильный индекс будет установлен при bulk update
+          options: data.options,
+          has_other_option: data.has_other_option,
+          scale_min: data.scale_min,
+          scale_max: data.scale_max,
+          scale_min_label: data.scale_min_label,
+          scale_max_label: data.scale_max_label,
+          validation: data.validation
+        });
       }
       
       // Обновляем dependsOn в существующих вопросах перед bulk update
@@ -3219,7 +3246,8 @@ export default function SurveyAnalyticsPage() {
         }
       }
       
-      // Затем обновляем существующие вопросы одним bulk запросом (атомарно)
+      // Обновляем ВСЕ вопросы (включая только что созданные) одним bulk запросом (атомарно)
+      // Это гарантирует, что все индексы будут установлены правильно без конфликтов
       if (existingQuestions.length > 0) {
         await questionApi.bulkUpdateQuestions(surveyId, existingQuestions);
       }
