@@ -5,6 +5,7 @@ import { ChevronRight, Sun, Moon, Globe, Trash2, Paintbrush } from 'lucide-react
 import { useAppStore } from '../../store/useAppStore';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 interface SettingsPageProps {}
 
@@ -64,6 +65,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
       paddingBottom: '100px'
     }}>
       {/* Заголовок */}
+      <CenteredPageContainer>
       <div style={{
         padding: '20px 16px',
         textAlign: 'center',
@@ -245,6 +247,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
           </button>
         </div>
       </div>
+      </CenteredPageContainer>
     </div>
   );
 };

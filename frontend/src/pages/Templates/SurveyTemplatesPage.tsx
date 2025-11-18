@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Star, Clock, TrendingUp, MessageCircle } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 interface SurveyTemplate {
   id: string;
@@ -201,260 +202,261 @@ export const SurveyTemplatesPage = () => {
       minHeight: '100vh',
       padding: '0'
     }}>
-      {/* Заголовок */}
-      <div style={{
-        padding: '20px 16px 16px 16px',
-        borderBottom: '1px solid var(--tg-section-separator-color)',
-        position: 'sticky',
-        top: 0,
-        backgroundColor: 'var(--tg-bg-color)',
-        zIndex: 10
-      }}>
+      <CenteredPageContainer>
+        {/* Заголовок+поиск+категории */}
         <div style={{
-          marginBottom: '16px'
+          padding: '20px 16px 16px 16px',
+          borderBottom: '1px solid var(--tg-section-separator-color)',
+          position: 'sticky',
+          top: 0,
+          backgroundColor: 'var(--tg-bg-color)',
+          zIndex: 10
         }}>
-          <h1 style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            margin: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            📋 {t('templates.title')}
-          </h1>
-        </div>
-
-        {/* Поиск */}
-        <div style={{
-          position: 'relative',
-          marginBottom: '16px'
-        }}>
-          <input
-            type="text"
-            placeholder={t('templates.searchPlaceholder')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              backgroundColor: 'var(--tg-section-bg-color)',
-              border: '1px solid var(--tg-section-separator-color)',
-              borderRadius: '12px',
-              color: 'var(--tg-text-color)',
-              fontSize: '16px',
-              outline: 'none'
-            }}
-          />
-        </div>
-
-        {/* Категории */}
-        <div 
-          ref={categoriesRef}
-          style={{
-            display: 'flex',
-            gap: '8px',
-            overflowX: 'auto',
-            paddingBottom: '4px'
-          }}
-        >
-          {categories.map(category => (
-            <button
-              key={category.id}
-              data-category={category.id}
-              onClick={() => handleCategorySelect(category.id)}
-              style={{
-                background: selectedCategory === category.id 
-                  ? 'var(--tg-button-color)' 
-                  : 'var(--tg-section-bg-color)',
-                color: selectedCategory === category.id 
-                  ? 'var(--tg-button-text-color)' 
-                  : 'var(--tg-text-color)',
-                border: 'none',
-                borderRadius: '20px',
-                padding: '8px 16px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease',
-                flexShrink: 0
-              }}
-            >
-              <span>{category.icon}</span>
-              {category.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Список шаблонов */}
-      <div style={{
-        padding: '16px'
-      }}>
-        {filteredTemplates.length === 0 ? (
           <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: 'var(--tg-hint-color)'
+            marginBottom: '16px'
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-              🔍
-            </div>
-            <p style={{
-              fontSize: '16px',
-              margin: '0',
-              lineHeight: '1.4'
+            <h1 style={{
+              fontSize: '24px',
+              fontWeight: '600',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}>
-              {t('templates.notFound')}
-            </p>
+              📋 {t('templates.title')}
+            </h1>
           </div>
-        ) : (
+
+          {/* Поиск */}
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px'
+            position: 'relative',
+            marginBottom: '16px'
           }}>
-            {filteredTemplates.map(template => (
-              <div
-                key={template.id}
-                onClick={() => handleTemplateSelect(template)}
+            <input
+              type="text"
+              placeholder={t('templates.searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                backgroundColor: 'var(--tg-section-bg-color)',
+                border: '1px solid var(--tg-section-separator-color)',
+                borderRadius: '12px',
+                color: 'var(--tg-text-color)',
+                fontSize: '16px',
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          {/* Категории */}
+          <div 
+            ref={categoriesRef}
+            style={{
+              display: 'flex',
+              gap: '8px',
+              overflowX: 'auto',
+              paddingBottom: '4px'
+            }}
+          >
+            {categories.map(category => (
+              <button
+                key={category.id}
+                data-category={category.id}
+                onClick={() => handleCategorySelect(category.id)}
                 style={{
-                  backgroundColor: 'var(--tg-section-bg-color)',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  cursor: 'pointer',
-                  transition: 'transform 0.1s ease',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-                onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-                onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                {/* Цветная полоса */}
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '4px',
-                  backgroundColor: template.color
-                }} />
-
-                {/* Заголовок и иконка */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  marginBottom: '12px'
-                }}>
-                  <div style={{
-                    fontSize: '32px',
-                    lineHeight: '1'
-                  }}>
-                    {template.icon}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{
-                      fontSize: '18px',
-                      fontWeight: '600',
-                      margin: '0 0 4px 0',
-                      color: 'var(--tg-text-color)'
-                    }}>
-                      {template.title}
-                    </h3>
-                    <div style={{
-                      fontSize: '14px',
-                      color: 'var(--tg-hint-color)',
-                      marginBottom: '8px'
-                    }}>
-                      {template.category}
-                    </div>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px',
-                    color: 'var(--tg-hint-color)'
-                  }}>
-                    <Star size={14} fill="currentColor" />
-                    {template.popularity}%
-                  </div>
-                </div>
-
-                {/* Описание */}
-                <p style={{
+                  background: selectedCategory === category.id 
+                    ? 'var(--tg-button-color)' 
+                    : 'var(--tg-section-bg-color)',
+                  color: selectedCategory === category.id 
+                    ? 'var(--tg-button-text-color)' 
+                    : 'var(--tg-text-color)',
+                  border: 'none',
+                  borderRadius: '20px',
+                  padding: '8px 16px',
                   fontSize: '14px',
-                  color: 'var(--tg-text-color)',
-                  lineHeight: '1.5',
-                  margin: '0 0 16px 0'
-                }}>
-                  {template.description}
-                </p>
-
-                {/* Метаинформация */}
-                <div style={{
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '16px',
-                  flexWrap: 'wrap'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px',
-                    color: 'var(--tg-hint-color)'
-                  }}>
-                    <MessageCircle size={14} />
-                    {template.questions} {t('templates.questions')}
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px',
-                    color: 'var(--tg-hint-color)'
-                  }}>
-                    <Clock size={14} />
-                    {template.estimatedTime}
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px',
-                    color: getDifficultyColor(template.difficulty)
-                  }}>
-                    <TrendingUp size={14} />
-                    {getDifficultyText(template.difficulty)}
-                  </div>
-                </div>
-
-                {/* Кнопка использования */}
-                <div style={{
-                  marginTop: '16px',
-                  padding: '12px',
-                  backgroundColor: template.color,
-                  color: 'white',
-                  borderRadius: '8px',
-                  textAlign: 'center',
-                  fontSize: '14px',
-                  fontWeight: '600'
-                }}>
-                  {t('templates.useTemplate')}
-                </div>
-              </div>
+                  gap: '6px',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+              >
+                <span>{category.icon}</span>
+                {category.name}
+              </button>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      </CenteredPageContainer>
+      <CenteredPageContainer>
+        {/* Список шаблонов */}
+        <div style={{ padding: '16px' }}>
+          {filteredTemplates.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              color: 'var(--tg-hint-color)'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                🔍
+              </div>
+              <p style={{
+                fontSize: '16px',
+                margin: '0',
+                lineHeight: '1.4'
+              }}>
+                {t('templates.notFound')}
+              </p>
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
+            }}>
+              {filteredTemplates.map(template => (
+                <div
+                  key={template.id}
+                  onClick={() => handleTemplateSelect(template)}
+                  style={{
+                    backgroundColor: 'var(--tg-section-bg-color)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    cursor: 'pointer',
+                    transition: 'transform 0.1s ease',
+                    border: '1px solid var(--tg-section-separator-color)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  {/* Цветная полоса */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    backgroundColor: template.color
+                  }} />
+
+                  {/* Заголовок и иконка */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px',
+                    marginBottom: '12px'
+                  }}>
+                    <div style={{
+                      fontSize: '32px',
+                      lineHeight: '1'
+                    }}>
+                      {template.icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        margin: '0 0 4px 0',
+                        color: 'var(--tg-text-color)'
+                      }}>
+                        {template.title}
+                      </h3>
+                      <div style={{
+                        fontSize: '14px',
+                        color: 'var(--tg-hint-color)',
+                        marginBottom: '8px'
+                      }}>
+                        {template.category}
+                      </div>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      color: 'var(--tg-hint-color)'
+                    }}>
+                      <Star size={14} fill="currentColor" />
+                      {template.popularity}%
+                    </div>
+                  </div>
+
+                  {/* Описание */}
+                  <p style={{
+                    fontSize: '14px',
+                    color: 'var(--tg-text-color)',
+                    lineHeight: '1.5',
+                    margin: '0 0 16px 0'
+                  }}>
+                    {template.description}
+                  </p>
+
+                  {/* Метаинформация */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      color: 'var(--tg-hint-color)'
+                    }}>
+                      <MessageCircle size={14} />
+                      {template.questions} {t('templates.questions')}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      color: 'var(--tg-hint-color)'
+                    }}>
+                      <Clock size={14} />
+                      {template.estimatedTime}
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      color: getDifficultyColor(template.difficulty)
+                    }}>
+                      <TrendingUp size={14} />
+                      {getDifficultyText(template.difficulty)}
+                    </div>
+                  </div>
+
+                  {/* Кнопка использования */}
+                  <div style={{
+                    marginTop: '16px',
+                    padding: '12px',
+                    backgroundColor: template.color,
+                    color: 'white',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}>
+                    {t('templates.useTemplate')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CenteredPageContainer>
     </div>
   );
 };

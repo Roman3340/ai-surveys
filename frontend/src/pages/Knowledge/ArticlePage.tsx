@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Clock, Target, Star, CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 interface ArticleContent {
   id: string;
@@ -775,43 +776,169 @@ export const ArticlePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Содержимое статьи */}
-      <div style={{ padding: '20px 16px' }}>
-        {/* Введение */}
-        <div style={{
-          backgroundColor: 'var(--tg-section-bg-color)',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '24px',
-          borderLeft: `4px solid ${article.color}`
-        }}>
-          <h2 style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            margin: '0 0 12px 0',
-            color: 'var(--tg-text-color)'
+      <CenteredPageContainer>
+        {/* Основной блок с padding: '20px 16px' */}
+        <div style={{ padding: '20px 16px' }}>
+          {/* Введение */}
+          <div style={{
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '24px',
+            borderLeft: `4px solid ${article.color}`
           }}>
-            {t('article.introduction')}
-          </h2>
-          <p style={{
-            fontSize: '16px',
-            lineHeight: '1.6',
-            margin: 0,
-            color: 'var(--tg-text-color)'
-          }}>
-            {article.content.introduction}
-          </p>
-        </div>
+            <h2 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              margin: '0 0 12px 0',
+              color: 'var(--tg-text-color)'
+            }}>
+              {t('article.introduction')}
+            </h2>
+            <p style={{
+              fontSize: '16px',
+              lineHeight: '1.6',
+              margin: 0,
+              color: 'var(--tg-text-color)'
+            }}>
+              {article.content.introduction}
+            </p>
+          </div>
 
-        {/* Основные разделы */}
-        {article.content.sections.map((section, index) => (
-          <div key={index} style={{
+          {/* Основные разделы */}
+          {article.content.sections.map((section, index) => (
+            <div key={index} style={{
+              backgroundColor: 'var(--tg-section-bg-color)',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '20px',
+              border: '1px solid var(--tg-section-separator-color)'
+            }}>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: '0 0 12px 0',
+                color: 'var(--tg-text-color)'
+              }}>
+                {section.title}
+              </h3>
+              <p style={{
+                fontSize: '16px',
+                lineHeight: '1.6',
+                margin: '0 0 16px 0',
+                color: 'var(--tg-text-color)'
+              }}>
+                {section.content}
+              </p>
+
+              {/* Советы */}
+              {section.tips && section.tips.length > 0 && (
+                <div style={{
+                  backgroundColor: 'var(--tg-bg-color)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  marginBottom: '12px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '12px',
+                    color: '#4CAF50'
+                  }}>
+                    <Lightbulb size={16} />
+                    <span style={{ fontSize: '14px', fontWeight: '600' }}>{t('article.tips')}</span>
+                  </div>
+                  <ul style={{
+                    margin: 0,
+                    paddingLeft: '20px',
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }}>
+                    {section.tips.map((tip, tipIndex) => (
+                      <li key={tipIndex} style={{ marginBottom: '8px' }}>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Предупреждения */}
+              {section.warnings && section.warnings.length > 0 && (
+                <div style={{
+                  backgroundColor: 'var(--tg-bg-color)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  border: '1px solid #F44336'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '12px',
+                    color: '#F44336'
+                  }}>
+                    <AlertCircle size={16} />
+                    <span style={{ fontSize: '14px', fontWeight: '600' }}>{t('article.warnings')}</span>
+                  </div>
+                  <ul style={{
+                    margin: 0,
+                    paddingLeft: '20px',
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }}>
+                    {section.warnings.map((warning, warningIndex) => (
+                      <li key={warningIndex} style={{ marginBottom: '8px' }}>
+                        {warning}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Ключевые моменты */}
+          <div style={{
             backgroundColor: 'var(--tg-section-bg-color)',
             borderRadius: '12px',
             padding: '20px',
             marginBottom: '20px',
-            border: '1px solid var(--tg-section-separator-color)'
+            border: `2px solid ${article.color}`
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              margin: '0 0 16px 0',
+              color: 'var(--tg-text-color)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <CheckCircle size={20} color={article.color} />
+              {t('article.keyPoints')}
+            </h3>
+            <ul style={{
+              margin: 0,
+              paddingLeft: '20px',
+              fontSize: '16px',
+              lineHeight: '1.6'
+            }}>
+              {article.content.keyPoints.map((point, index) => (
+                <li key={index} style={{ marginBottom: '12px' }}>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Заключение */}
+          <div style={{
+            backgroundColor: 'var(--tg-section-bg-color)',
+            borderRadius: '12px',
+            padding: '20px',
+            borderLeft: `4px solid ${article.color}`
           }}>
             <h3 style={{
               fontSize: '18px',
@@ -819,144 +946,19 @@ export const ArticlePage = () => {
               margin: '0 0 12px 0',
               color: 'var(--tg-text-color)'
             }}>
-              {section.title}
+              {t('article.conclusion')}
             </h3>
             <p style={{
               fontSize: '16px',
               lineHeight: '1.6',
-              margin: '0 0 16px 0',
+              margin: 0,
               color: 'var(--tg-text-color)'
             }}>
-              {section.content}
+              {article.content.conclusion}
             </p>
-
-            {/* Советы */}
-            {section.tips && section.tips.length > 0 && (
-              <div style={{
-                backgroundColor: 'var(--tg-bg-color)',
-                borderRadius: '8px',
-                padding: '16px',
-                marginBottom: '12px'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '12px',
-                  color: '#4CAF50'
-                }}>
-                  <Lightbulb size={16} />
-                  <span style={{ fontSize: '14px', fontWeight: '600' }}>{t('article.tips')}</span>
-                </div>
-                <ul style={{
-                  margin: 0,
-                  paddingLeft: '20px',
-                  fontSize: '14px',
-                  lineHeight: '1.5'
-                }}>
-                  {section.tips.map((tip, tipIndex) => (
-                    <li key={tipIndex} style={{ marginBottom: '8px' }}>
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Предупреждения */}
-            {section.warnings && section.warnings.length > 0 && (
-              <div style={{
-                backgroundColor: 'var(--tg-bg-color)',
-                borderRadius: '8px',
-                padding: '16px',
-                border: '1px solid #F44336'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '12px',
-                  color: '#F44336'
-                }}>
-                  <AlertCircle size={16} />
-                  <span style={{ fontSize: '14px', fontWeight: '600' }}>{t('article.warnings')}</span>
-                </div>
-                <ul style={{
-                  margin: 0,
-                  paddingLeft: '20px',
-                  fontSize: '14px',
-                  lineHeight: '1.5'
-                }}>
-                  {section.warnings.map((warning, warningIndex) => (
-                    <li key={warningIndex} style={{ marginBottom: '8px' }}>
-                      {warning}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
-        ))}
-
-        {/* Ключевые моменты */}
-        <div style={{
-          backgroundColor: 'var(--tg-section-bg-color)',
-          borderRadius: '12px',
-          padding: '20px',
-          marginBottom: '20px',
-          border: `2px solid ${article.color}`
-        }}>
-          <h3 style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            margin: '0 0 16px 0',
-            color: 'var(--tg-text-color)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <CheckCircle size={20} color={article.color} />
-            {t('article.keyPoints')}
-          </h3>
-          <ul style={{
-            margin: 0,
-            paddingLeft: '20px',
-            fontSize: '16px',
-            lineHeight: '1.6'
-          }}>
-            {article.content.keyPoints.map((point, index) => (
-              <li key={index} style={{ marginBottom: '12px' }}>
-                {point}
-              </li>
-            ))}
-          </ul>
         </div>
-
-        {/* Заключение */}
-        <div style={{
-          backgroundColor: 'var(--tg-section-bg-color)',
-          borderRadius: '12px',
-          padding: '20px',
-          borderLeft: `4px solid ${article.color}`
-        }}>
-          <h3 style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            margin: '0 0 12px 0',
-            color: 'var(--tg-text-color)'
-          }}>
-            {t('article.conclusion')}
-          </h3>
-          <p style={{
-            fontSize: '16px',
-            lineHeight: '1.6',
-            margin: 0,
-            color: 'var(--tg-text-color)'
-          }}>
-            {article.content.conclusion}
-          </p>
-        </div>
-      </div>
+      </CenteredPageContainer>
     </div>
   );
 };

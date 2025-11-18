@@ -5,6 +5,7 @@ import { Star, CheckCircle, Play } from 'lucide-react';
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { saveDraft } from '../../utils/surveyDraft';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 interface TemplateQuestion {
   id: string;
@@ -1004,302 +1005,303 @@ const TemplateDetailPage: React.FC = () => {
       paddingBottom: '100px'
     }}>
       {/* Шапка */}
-      <div style={{
-        padding: '20px 16px',
-        borderBottom: '1px solid var(--tg-section-separator-color)',
-        backgroundColor: 'var(--tg-bg-color)'
-      }}>
+      <CenteredPageContainer>
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          marginBottom: '16px'
+          padding: '20px 16px',
+          borderBottom: '1px solid var(--tg-section-separator-color)',
+          backgroundColor: 'var(--tg-bg-color)'
         }}>
           <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            backgroundColor: template.color,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px'
-          }}>
-            {template.icon}
-          </div>
-          <div style={{ flex: 1 }}>
-            <h1 style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              margin: '0 0 4px 0',
-              color: 'var(--tg-text-color)'
-            }}>
-              {template.title}
-            </h1>
-            <p style={{
-              fontSize: '14px',
-              color: 'var(--tg-hint-color)',
-              margin: 0
-            }}>
-              {template.category}
-            </p>
-          </div>
-        </div>
-
-        <p style={{
-          fontSize: '16px',
-          lineHeight: '1.5',
-          margin: 0,
-          color: 'var(--tg-text-color)'
-        }}>
-          {template.description}
-        </p>
-      </div>
-
-      {/* Основная информация */}
-      <div style={{ padding: '20px 16px' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '16px',
-          marginBottom: '24px'
-        }}>
-          <div style={{
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '12px',
-            padding: '16px',
-            textAlign: 'center'
+            gap: '12px',
+            marginBottom: '16px'
           }}>
             <div style={{
-              fontSize: '24px',
-              fontWeight: '600',
-              color: 'var(--tg-text-color)',
-              marginBottom: '4px'
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              backgroundColor: template.color,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '24px'
             }}>
-              {template.questions}
+              {template.icon}
             </div>
-            <div style={{
-              fontSize: '12px',
-              color: 'var(--tg-hint-color)'
-            }}>
-              {t('templateDetail.questions')}
+            <div style={{ flex: 1 }}>
+              <h1 style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                margin: '0 0 4px 0',
+                color: 'var(--tg-text-color)'
+              }}>
+                {template.title}
+              </h1>
+              <p style={{
+                fontSize: '14px',
+                color: 'var(--tg-hint-color)',
+                margin: 0
+              }}>
+                {template.category}
+              </p>
             </div>
           </div>
 
-          <div style={{
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '12px',
-            padding: '16px',
-            textAlign: 'center'
-          }}>
-            <div style={{
-              fontSize: '24px',
-              fontWeight: '600',
-              color: 'var(--tg-text-color)',
-              marginBottom: '4px'
-            }}>
-              {template.estimatedTime}
-            </div>
-            <div style={{
-              fontSize: '12px',
-              color: 'var(--tg-hint-color)'
-            }}>
-              {t('templateDetail.time')}
-            </div>
-          </div>
-        </div>
-
-        {/* Блок анонимности для медицинских и социальных опросов */}
-        {(template.id === 'health-survey' || template.id === 'social-research') && (
-          <div style={{
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <div style={{ fontSize: '20px' }}>🔒</div>
-            <div>
-              <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
-                {t('templateDetail.anonymous')}
-              </div>
-              <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.4' }}>
-                {t('templateDetail.anonymousDescription')}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Дополнительная информация */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '24px'
-        }}>
-          <div style={{
-            flex: 1,
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '8px',
-            padding: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <div style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: getDifficultyColor(template.difficulty)
-            }} />
-            <span style={{
-              fontSize: '14px',
-              color: 'var(--tg-text-color)'
-            }}>
-              {getDifficultyText(template.difficulty)}
-            </span>
-          </div>
-
-          <div style={{
-            flex: 1,
-            backgroundColor: 'var(--tg-section-bg-color)',
-            borderRadius: '8px',
-            padding: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <Star size={16} color="var(--tg-hint-color)" />
-            <span style={{
-              fontSize: '14px',
-              color: 'var(--tg-text-color)'
-            }}>
-              {template.popularity}% {t('templateDetail.popularity')}
-            </span>
-          </div>
-        </div>
-
-        {/* Подробное описание */}
-        <div style={{ marginBottom: '24px' }}>
-          <h3 style={{
+          <p style={{
             fontSize: '16px',
-            fontWeight: '600',
-            margin: '0 0 12px 0',
+            lineHeight: '1.5',
+            margin: 0,
             color: 'var(--tg-text-color)'
           }}>
-            {t('templateDetail.about')}
-          </h3>
-          <p style={{
-            fontSize: '14px',
-            lineHeight: '1.5',
-            color: 'var(--tg-text-color)',
-            margin: 0
-          }}>
-            {template.fullDescription}
+            {template.description}
           </p>
         </div>
 
-        {/* Случаи использования */}
-        <div style={{ marginBottom: '24px' }}>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: '0 0 12px 0',
-            color: 'var(--tg-text-color)'
+        {/* Основная информация */}
+        <div style={{ padding: '20px 16px' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '16px',
+            marginBottom: '24px'
           }}>
-            {t('templateDetail.whenToUse')}
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {template.useCases.map((useCase, index) => (
-              <div key={index} style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
-                padding: '8px 0'
+            <div style={{
+              backgroundColor: 'var(--tg-section-bg-color)',
+              borderRadius: '12px',
+              padding: '16px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: 'var(--tg-text-color)',
+                marginBottom: '4px'
               }}>
-                <CheckCircle size={16} color={template.color} style={{ marginTop: '2px', flexShrink: 0 }} />
-                <span style={{
-                  fontSize: '14px',
-                  color: 'var(--tg-text-color)',
-                  lineHeight: '1.4'
-                }}>
-                  {useCase}
-                </span>
+                {template.questions}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Предварительный просмотр вопросов */}
-        <div style={{ marginBottom: '24px' }}>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            margin: '0 0 12px 0',
-            color: 'var(--tg-text-color)'
-          }}>
-            {t('templateDetail.templateQuestions')}
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {template.questionsData.slice(0, 3).map((question, index) => (
-              <div key={question.id} style={{
-                backgroundColor: 'var(--tg-section-bg-color)',
-                borderRadius: '8px',
-                padding: '12px',
-                border: '1px solid var(--tg-section-separator-color)'
+              <div style={{
+                fontSize: '12px',
+                color: 'var(--tg-hint-color)'
               }}>
-                <div style={{
+                {t('templateDetail.questions')}
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: 'var(--tg-section-bg-color)',
+              borderRadius: '12px',
+              padding: '16px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '24px',
+                fontWeight: '600',
+                color: 'var(--tg-text-color)',
+                marginBottom: '4px'
+              }}>
+                {template.estimatedTime}
+              </div>
+              <div style={{
+                fontSize: '12px',
+                color: 'var(--tg-hint-color)'
+              }}>
+                {t('templateDetail.time')}
+              </div>
+            </div>
+          </div>
+
+          {/* Блок анонимности для медицинских и социальных опросов */}
+          {(template.id === 'health-survey' || template.id === 'social-research') && (
+            <div style={{
+              backgroundColor: 'var(--tg-section-bg-color)',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{ fontSize: '20px' }}>🔒</div>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
+                  {t('templateDetail.anonymous')}
+                </div>
+                <div style={{ fontSize: '14px', color: 'var(--tg-hint-color)', lineHeight: '1.4' }}>
+                  {t('templateDetail.anonymousDescription')}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Дополнительная информация */}
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            marginBottom: '24px'
+          }}>
+            <div style={{
+              flex: 1,
+              backgroundColor: 'var(--tg-section-bg-color)',
+              borderRadius: '8px',
+              padding: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <div style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: getDifficultyColor(template.difficulty)
+              }} />
+              <span style={{
+                fontSize: '14px',
+                color: 'var(--tg-text-color)'
+              }}>
+                {getDifficultyText(template.difficulty)}
+              </span>
+            </div>
+
+            <div style={{
+              flex: 1,
+              backgroundColor: 'var(--tg-section-bg-color)',
+              borderRadius: '8px',
+              padding: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <Star size={16} color="var(--tg-hint-color)" />
+              <span style={{
+                fontSize: '14px',
+                color: 'var(--tg-text-color)'
+              }}>
+                {template.popularity}% {t('templateDetail.popularity')}
+              </span>
+            </div>
+          </div>
+
+          {/* Подробное описание */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              margin: '0 0 12px 0',
+              color: 'var(--tg-text-color)'
+            }}>
+              {t('templateDetail.about')}
+            </h3>
+            <p style={{
+              fontSize: '14px',
+              lineHeight: '1.5',
+              color: 'var(--tg-text-color)',
+              margin: 0
+            }}>
+              {template.fullDescription}
+            </p>
+          </div>
+
+          {/* Случаи использования */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              margin: '0 0 12px 0',
+              color: 'var(--tg-text-color)'
+            }}>
+              {t('templateDetail.whenToUse')}
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {template.useCases.map((useCase, index) => (
+                <div key={index} style={{
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   gap: '8px',
-                  marginBottom: '4px'
+                  padding: '8px 0'
                 }}>
+                  <CheckCircle size={16} color={template.color} style={{ marginTop: '2px', flexShrink: 0 }} />
                   <span style={{
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    color: 'var(--tg-hint-color)'
+                    fontSize: '14px',
+                    color: 'var(--tg-text-color)',
+                    lineHeight: '1.4'
                   }}>
-                    {index + 1}
-                  </span>
-                  <span style={{
-                    fontSize: '12px',
-                    color: 'var(--tg-hint-color)',
-                    textTransform: 'uppercase'
-                  }}>
-                    {question.type === 'rating' ? t('templateDetail.questionTypes.rating') :
-                     question.type === 'single_choice' ? t('templateDetail.questionTypes.single_choice') :
-                     question.type === 'multiple_choice' ? t('templateDetail.questionTypes.multiple_choice') :
-                     question.type === 'scale' ? t('templateDetail.questionTypes.scale') :
-                     question.type === 'textarea' ? t('templateDetail.questionTypes.textarea') :
-                     question.type === 'boolean' ? t('templateDetail.questionTypes.boolean') : question.type}
+                    {useCase}
                   </span>
                 </div>
-                <p style={{
-                  fontSize: '14px',
-                  color: 'var(--tg-text-color)',
-                  margin: 0,
-                  lineHeight: '1.4'
+              ))}
+            </div>
+          </div>
+
+          {/* Предварительный просмотр вопросов */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              margin: '0 0 12px 0',
+              color: 'var(--tg-text-color)'
+            }}>
+              {t('templateDetail.templateQuestions')}
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {template.questionsData.slice(0, 3).map((question, index) => (
+                <div key={question.id} style={{
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  border: '1px solid var(--tg-section-separator-color)'
                 }}>
-                  {question.title}
-                </p>
-              </div>
-            ))}
-            {template.questionsData.length > 3 && (
-              <div style={{
-                textAlign: 'center',
-                padding: '8px',
-                color: 'var(--tg-hint-color)',
-                fontSize: '14px'
-              }}>
-                {t('templateDetail.andMore', { count: template.questionsData.length - 3 })}
-              </div>
-            )}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '4px'
+                  }}>
+                    <span style={{
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      color: 'var(--tg-hint-color)'
+                    }}>
+                      {index + 1}
+                    </span>
+                    <span style={{
+                      fontSize: '12px',
+                      color: 'var(--tg-hint-color)',
+                      textTransform: 'uppercase'
+                    }}>
+                      {question.type === 'rating' ? t('templateDetail.questionTypes.rating') :
+                       question.type === 'single_choice' ? t('templateDetail.questionTypes.single_choice') :
+                       question.type === 'multiple_choice' ? t('templateDetail.questionTypes.multiple_choice') :
+                       question.type === 'scale' ? t('templateDetail.questionTypes.scale') :
+                       question.type === 'textarea' ? t('templateDetail.questionTypes.textarea') :
+                       question.type === 'boolean' ? t('templateDetail.questionTypes.boolean') : question.type}
+                    </span>
+                  </div>
+                  <p style={{
+                    fontSize: '14px',
+                    color: 'var(--tg-text-color)',
+                    margin: 0,
+                    lineHeight: '1.4'
+                  }}>
+                    {question.title}
+                  </p>
+                </div>
+              ))}
+              {template.questionsData.length > 3 && (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '8px',
+                  color: 'var(--tg-hint-color)',
+                  fontSize: '14px'
+                }}>
+                  {t('templateDetail.andMore', { count: template.questionsData.length - 3 })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Кнопка использования шаблона */}
+      </CenteredPageContainer>
+      {/* Кнопка использования шаблона остаётся фиксированной и тянется по всей ширине */}
       <div style={{
         position: 'fixed',
         bottom: 0,
