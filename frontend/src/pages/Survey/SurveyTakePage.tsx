@@ -1364,11 +1364,22 @@ export default function SurveyTakePage() {
       color: 'var(--tg-text-color)',
     }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
+        <div style={{
+          width: '100%',
+          maxWidth: '720px',
+          margin: '0 auto'
+        }}>
         <h1 style={{ fontSize: '20px', fontWeight: '700', margin: '0 0 8px 0' }}>{survey.title}</h1>
         {survey.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, whiteSpace: 'pre-wrap', textAlign: 'justify' }}>{survey.description}</p>}
+        </div>
       </div>
 
-      <div style={{ padding: '0 20px 120px 20px' }}>
+      <div style={{
+        padding: '0 20px 120px 20px',
+        display: 'flex',
+        justifyContent: 'center'
+      }}>
+        <div style={{ width: '100%', maxWidth: '720px' }}>
         <AnimatePresence>
           {shuffledQuestions.map((question, index) => {
             const isVisible = shouldShowQuestion(question, answers);
@@ -1513,6 +1524,7 @@ export default function SurveyTakePage() {
             );
           })}
         </AnimatePresence>
+        </div>
       </div>
 
       {!isKeyboardOpen && (
@@ -1521,6 +1533,7 @@ export default function SurveyTakePage() {
           backgroundColor: 'var(--tg-bg-color)', borderTop: '1px solid var(--tg-section-separator-color)',
           transition: 'transform 0.3s ease, opacity 0.3s ease'
         }}>
+          <div style={{ width: '100%', maxWidth: '720px', margin: '0 auto' }}>
           <button
             onClick={handleSubmit}
             disabled={submitting}
@@ -1533,6 +1546,7 @@ export default function SurveyTakePage() {
           >
             {submitting ? t('surveyTake.submitting') : t('surveyCreator.preview.submit')}
           </button>
+          </div>
         </div>
       )}
 
