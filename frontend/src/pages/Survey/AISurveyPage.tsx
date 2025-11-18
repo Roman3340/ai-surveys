@@ -270,25 +270,25 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
         borderTop: '1px solid var(--tg-section-separator-color)'
       }}>
         <CenteredPageContainer>
-          <button
-            onClick={handleNext}
-            disabled={!selectedType}
-            style={{
-              width: '100%',
-              background: selectedType ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-hint-color)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '16px 24px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: selectedType ? 'pointer' : 'not-allowed',
-              transition: 'all 0.2s ease',
-              opacity: selectedType ? 1 : 0.6
-            }}
-          >
-            Далее
-          </button>
+        <button
+          onClick={handleNext}
+          disabled={!selectedType}
+          style={{
+            width: '100%',
+            background: selectedType ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-hint-color)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '16px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: selectedType ? 'pointer' : 'not-allowed',
+            transition: 'all 0.2s ease',
+            opacity: selectedType ? 1 : 0.6
+          }}
+        >
+          Далее
+        </button>
         </CenteredPageContainer>
       </div>
     </div>

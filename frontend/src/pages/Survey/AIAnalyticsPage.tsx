@@ -16,6 +16,7 @@ import {
 import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { surveyApi, aiAnalytics } from '../../services/api';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 interface AnalyticsDataV2 {
   version: number;
@@ -1673,13 +1674,13 @@ const AIAnalyticsPage: React.FC = () => {
     return (
       <div className="ai-analytics-page">
         <CenteredPageContainer>
-          <div className="page-header">
-            <button className="back-button" onClick={() => navigate(-1)}>
-              <ArrowLeft className="icon" />
-            </button>
-            <h1>{t('aiAnalytics.title')}</h1>
-          </div>
-          {renderLoadingState()}
+        <div className="page-header">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            <ArrowLeft className="icon" />
+          </button>
+          <h1>{t('aiAnalytics.title')}</h1>
+        </div>
+        {renderLoadingState()}
         </CenteredPageContainer>
       </div>
     );

@@ -1135,23 +1135,23 @@ const AIAdvancedSettingsPage: React.FC<AIAdvancedSettingsPageProps> = () => {
           borderTop: '1px solid var(--tg-section-separator-color)'
         }}>
           <CenteredPageContainer>
-            <button
-              onClick={handleNext}
-              style={{
-                width: '100%',
-                background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '16px 24px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              Сгенерировать
-            </button>
+          <button
+            onClick={handleNext}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '16px 24px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Сгенерировать
+          </button>
           </CenteredPageContainer>
         </div>
       )}

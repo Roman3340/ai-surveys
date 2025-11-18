@@ -374,7 +374,6 @@ const CreateSurveyPage: React.FC = () => {
         </CenteredPageContainer>
       </div>
 
-
       {/* Кнопка "Вперед" - показываем только если нет черновика */}
       {!showRestorePrompt && (
         <div style={{
@@ -408,8 +407,6 @@ const CreateSurveyPage: React.FC = () => {
           </CenteredPageContainer>
         </div>
       )}
-
-      </div>
     </div>
   );
 };
