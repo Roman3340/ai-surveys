@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 import { getAIDraft, saveAIPersonalData } from '../../utils/surveyDraft';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 interface AIPersonalPageProps {}
 
@@ -116,6 +117,7 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
     >
       {/* Основной контент */}
       <div style={{ padding: '24px 16px' }}>
+        <CenteredPageContainer>
         {/* Заголовок с эмодзи */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -174,10 +176,12 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
             Расскажите о том, что хотите узнать у друзей, знакомых или подписчиков
           </p>
         </motion.div>
+      </CenteredPageContainer>
       </div>
 
       {/* Контент */}
       <div style={{ padding: '0 16px' }} className="form-container">
+        <CenteredPageContainer>
         <div style={{
           backgroundColor: 'var(--tg-section-bg-color)',
           borderRadius: '12px',
@@ -436,6 +440,7 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
             )}
           </div>
         </div>
+        </CenteredPageContainer>
       </div>
 
       {/* Фиксированная кнопка снизу */}
@@ -454,23 +459,25 @@ const AIPersonalPage: React.FC<AIPersonalPageProps> = () => {
           transition: 'all 0.3s ease'
         }}
       >
-        <button
-          onClick={handleNext}
-          style={{
-            width: '100%',
-            background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '16px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          Далее
-        </button>
+        <CenteredPageContainer>
+          <button
+            onClick={handleNext}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '16px 24px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Далее
+          </button>
+        </CenteredPageContainer>
       </div>
     </div>
   );

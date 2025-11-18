@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { surveyApi } from '../../services/api';
 import { useTelegram } from '../../hooks/useTelegram';
 import ImagePopup from '../../components/ui/ImagePopup';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 // Типы для условной логики
 type ConditionalOperator = 
@@ -1364,14 +1365,10 @@ export default function SurveyTakePage() {
       color: 'var(--tg-text-color)',
     }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--tg-section-separator-color)' }}>
-        <div style={{
-          width: '100%',
-          maxWidth: '720px',
-          margin: '0 auto'
-        }}>
+        <CenteredPageContainer>
         <h1 style={{ fontSize: '20px', fontWeight: '700', margin: '0 0 8px 0' }}>{survey.title}</h1>
         {survey.description && <p style={{ fontSize: '14px', color: 'var(--tg-hint-color)', margin: 0, whiteSpace: 'pre-wrap', textAlign: 'justify' }}>{survey.description}</p>}
-        </div>
+        </CenteredPageContainer>
       </div>
 
       <div style={{
@@ -1379,7 +1376,7 @@ export default function SurveyTakePage() {
         display: 'flex',
         justifyContent: 'center'
       }}>
-        <div style={{ width: '100%', maxWidth: '720px' }}>
+        <CenteredPageContainer>
         <AnimatePresence>
           {shuffledQuestions.map((question, index) => {
             const isVisible = shouldShowQuestion(question, answers);
@@ -1524,7 +1521,7 @@ export default function SurveyTakePage() {
             );
           })}
         </AnimatePresence>
-        </div>
+        </CenteredPageContainer>
       </div>
 
       {!isKeyboardOpen && (
@@ -1533,7 +1530,7 @@ export default function SurveyTakePage() {
           backgroundColor: 'var(--tg-bg-color)', borderTop: '1px solid var(--tg-section-separator-color)',
           transition: 'transform 0.3s ease, opacity 0.3s ease'
         }}>
-          <div style={{ width: '100%', maxWidth: '720px', margin: '0 auto' }}>
+          <CenteredPageContainer>
           <button
             onClick={handleSubmit}
             disabled={submitting}
@@ -1546,7 +1543,7 @@ export default function SurveyTakePage() {
           >
             {submitting ? t('surveyTake.submitting') : t('surveyCreator.preview.submit')}
           </button>
-          </div>
+          </CenteredPageContainer>
         </div>
       )}
 

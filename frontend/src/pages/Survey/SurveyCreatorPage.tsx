@@ -9,6 +9,7 @@ import { getDraft, saveSettings, saveQuestions, clearDraft } from '../../utils/s
 import { useAppStore } from '../../store/useAppStore';
 import { questionApi, uploadApi } from '../../services/api';
 import ImagePopup from '../../components/ui/ImagePopup';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 // Типы для условной логики
 type ConditionalOperator = 
@@ -647,6 +648,7 @@ const SurveyCreatorPage: React.FC = () => {
         top: 0,
         zIndex: 10
       }}>
+        <CenteredPageContainer>
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -747,10 +749,12 @@ const SurveyCreatorPage: React.FC = () => {
             {t('surveyCreator.tabs.preview')}
           </button>
         </div>
+        </CenteredPageContainer>
       </div>
 
       {/* Контент табов */}
       <div style={{ padding: '20px 16px' }}>
+        <CenteredPageContainer>
         {activeTab === 'settings' && (
           <SettingsTab 
             surveyData={surveyData}
@@ -790,6 +794,7 @@ const SurveyCreatorPage: React.FC = () => {
             previewAnswers={previewAnswers}
           />
         )}
+        </CenteredPageContainer>
       </div>
 
       {/* Кнопка публикации */}
@@ -803,6 +808,7 @@ const SurveyCreatorPage: React.FC = () => {
           backgroundColor: 'var(--tg-bg-color)',
           borderTop: '1px solid var(--tg-section-separator-color)'
         }}>
+        <CenteredPageContainer>
         <button
           onClick={handlePublish}
           disabled={!isReadyToPublish || isPublishing}
@@ -856,6 +862,7 @@ const SurveyCreatorPage: React.FC = () => {
             {t('surveyCreator.questions.empty')}
           </p>
         )}
+        </CenteredPageContainer>
         </div>
       )}
     </div>

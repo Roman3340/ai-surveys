@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 import { getDraft, hasDraft, clearDraft, saveMode, getAIDraft, hasAIDraft, clearAIDraft } from '../../utils/surveyDraft';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 const CreateSurveyPage: React.FC = () => {
   const { t } = useTranslation();
@@ -99,6 +100,7 @@ const CreateSurveyPage: React.FC = () => {
         top: 0,
         zIndex: 10
       }}>
+        <CenteredPageContainer>
         <h1 style={{
           fontSize: '20px',
           fontWeight: '600',
@@ -107,10 +109,12 @@ const CreateSurveyPage: React.FC = () => {
         }}>
           {t('createSurvey.title')}
         </h1>
+        </CenteredPageContainer>
       </div>
 
       {/* Основной контент */}
       <div style={{ padding: '24px 16px' }}>
+        <CenteredPageContainer>
         {/* Заголовок с эмодзи */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -367,18 +371,22 @@ const CreateSurveyPage: React.FC = () => {
         </div>
         )}
 
+        </CenteredPageContainer>
+      </div>
 
-        {/* Кнопка "Вперед" - показываем только если нет черновика */}
-        {!showRestorePrompt && (
-          <div style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: '16px',
-            backgroundColor: 'var(--tg-bg-color)',
-            borderTop: '1px solid var(--tg-section-separator-color)'
-          }}>
+
+      {/* Кнопка "Вперед" - показываем только если нет черновика */}
+      {!showRestorePrompt && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '16px',
+          backgroundColor: 'var(--tg-bg-color)',
+          borderTop: '1px solid var(--tg-section-separator-color)'
+        }}>
+          <CenteredPageContainer>
             <button
               onClick={handleNext}
               disabled={!selectedOption}
@@ -397,8 +405,10 @@ const CreateSurveyPage: React.FC = () => {
             >
               {t('createSurvey.createButton')}
             </button>
-          </div>
-        )}
+          </CenteredPageContainer>
+        </div>
+      )}
+
       </div>
     </div>
   );

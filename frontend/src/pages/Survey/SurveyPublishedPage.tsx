@@ -197,6 +197,7 @@ export const SurveyPublishedPage = () => {
       minHeight: '100vh',
       padding: '20px'
     }}>
+      <CenteredPageContainer>
       {/* Заголовок с анимацией */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -541,6 +542,7 @@ export const SurveyPublishedPage = () => {
         <X size={20} />
         {t('surveyPublished.close')}
       </motion.button>
+      </CenteredPageContainer>
     </div>
   );
 };

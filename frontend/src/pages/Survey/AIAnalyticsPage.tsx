@@ -1672,13 +1672,15 @@ const AIAnalyticsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="ai-analytics-page">
-        <div className="page-header">
-          <button className="back-button" onClick={() => navigate(-1)}>
-            <ArrowLeft className="icon" />
-          </button>
-          <h1>{t('aiAnalytics.title')}</h1>
-        </div>
-        {renderLoadingState()}
+        <CenteredPageContainer>
+          <div className="page-header">
+            <button className="back-button" onClick={() => navigate(-1)}>
+              <ArrowLeft className="icon" />
+            </button>
+            <h1>{t('aiAnalytics.title')}</h1>
+          </div>
+          {renderLoadingState()}
+        </CenteredPageContainer>
       </div>
     );
   }
@@ -1687,6 +1689,7 @@ const AIAnalyticsPage: React.FC = () => {
     <>
       <style>{styles}</style>
       <div className="ai-analytics-page">
+      <CenteredPageContainer>
       <div className="page-header">
         <button className="back-button" onClick={() => navigate(-1)}>
           <ArrowLeft className="icon" />
@@ -1791,6 +1794,7 @@ const AIAnalyticsPage: React.FC = () => {
           </AnimatePresence>
         </>
       )}
+      </CenteredPageContainer>
       </div>
     </>
   );

@@ -5,6 +5,7 @@ import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import RealTelegramEmoji from '../../components/ui/RealTelegramEmoji';
 import { getAIDraft, saveAIUserType, clearAITypeData } from '../../utils/surveyDraft';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 interface AISurveyPageProps {}
 
@@ -61,6 +62,7 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
     }}>
       {/* Основной контент */}
       <div style={{ padding: '24px 16px' }}>
+        <CenteredPageContainer>
         {/* Заголовок с эмодзи */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -119,6 +121,7 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
             Выберите подходящий вариант, чтобы мы могли задать правильные вопросы для создания опроса
           </p>
         </motion.div>
+      </CenteredPageContainer>
       </div>
 
       {/* Варианты выбора */}
@@ -266,25 +269,27 @@ const AISurveyPage: React.FC<AISurveyPageProps> = () => {
         backgroundColor: 'var(--tg-bg-color)',
         borderTop: '1px solid var(--tg-section-separator-color)'
       }}>
-        <button
-          onClick={handleNext}
-          disabled={!selectedType}
-          style={{
-            width: '100%',
-            background: selectedType ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-hint-color)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '16px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: selectedType ? 'pointer' : 'not-allowed',
-            transition: 'all 0.2s ease',
-            opacity: selectedType ? 1 : 0.6
-          }}
-        >
-          Далее
-        </button>
+        <CenteredPageContainer>
+          <button
+            onClick={handleNext}
+            disabled={!selectedType}
+            style={{
+              width: '100%',
+              background: selectedType ? 'linear-gradient(0deg, rgb(244, 109, 0) 0%, rgb(244, 109, 0) 100%)' : 'var(--tg-hint-color)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '16px 24px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: selectedType ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s ease',
+              opacity: selectedType ? 1 : 0.6
+            }}
+          >
+            Далее
+          </button>
+        </CenteredPageContainer>
       </div>
     </div>
   );

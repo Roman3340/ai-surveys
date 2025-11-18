@@ -10,6 +10,7 @@ import { useTelegram } from '../../hooks/useTelegram';
 import { useStableBackButton } from '../../hooks/useStableBackButton';
 import { AnimatedTabs } from '../../components/ui/AnimatedTabs';
 import ImagePopup from '../../components/ui/ImagePopup';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 // Типы для условной логики
 type ConditionalOperator = 
@@ -3170,18 +3171,18 @@ export default function SurveyAnalyticsPage() {
         }
         
         const questionData = {
-          type: q.type,
-          text: q.text,
-          description: q.description,
-          is_required: q.is_required,
-          order_index: q.order_index,
-          options: q.options,
-          has_other_option: q.has_other_option,
-          scale_min: q.scale_min,
-          scale_max: q.scale_max,
-          scale_min_label: q.scale_min_label,
-          scale_max_label: q.scale_max_label,
-          validation: Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined
+            type: q.type,
+            text: q.text,
+            description: q.description,
+            is_required: q.is_required,
+            order_index: q.order_index,
+            options: q.options,
+            has_other_option: q.has_other_option,
+            scale_min: q.scale_min,
+            scale_max: q.scale_max,
+            scale_min_label: q.scale_min_label,
+            scale_max_label: q.scale_max_label,
+            validation: Object.keys(validationWithConditional).length > 0 ? validationWithConditional : undefined
         };
         
         if (q.id.startsWith('temp_')) {
@@ -4994,6 +4995,7 @@ export default function SurveyAnalyticsPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--tg-bg-color)', color: 'var(--tg-text-color)', padding: 12, paddingBottom: 80 }}>
+      <CenteredPageContainer>
       {/* Заголовок */}
       <div style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -6476,6 +6478,7 @@ export default function SurveyAnalyticsPage() {
           )}
         </div>
       )}
+      </CenteredPageContainer>
 
       {/* Полноэкранный просмотр изображения */}
       <ImagePopup 
