@@ -6,6 +6,7 @@ import { CheckCircle, Copy, Share, X, Download, Clock, HelpCircle, Users, QrCode
 import { useTelegram } from '../../hooks/useTelegram';
 import { useAppStore } from '../../store/useAppStore';
 import { surveyApi } from '../../services/api';
+import CenteredPageContainer from '../../components/layout/CenteredPageContainer';
 
 interface SurveyData {
   id: string;
