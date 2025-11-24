@@ -2717,22 +2717,12 @@ export default function SurveyAnalyticsPage() {
   const surveyHasResponses = totalResponses > 0;
 
   const InlineAddQuestionIcon: React.FC<{ size?: number }> = ({ size = 12 }) => (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: size + 8,
-        height: size + 8,
-        borderRadius: '50%',
-        backgroundColor: '#007AFF',
-        color: '#fff',
-        marginLeft: 6,
-        verticalAlign: 'middle'
-      }}
-    >
-      <Plus size={size} color="#fff" strokeWidth={3} />
-    </span>
+    <Plus
+      size={size}
+      color="#007AFF"
+      strokeWidth={2.5}
+      style={{ marginLeft: 4, verticalAlign: 'middle' }}
+    />
   );
 
   useStableBackButton({ targetRoute: '/' });
@@ -4276,7 +4266,7 @@ export default function SurveyAnalyticsPage() {
               {question.conditionalLogic?.enabled && question.conditionalLogic.conditions && question.conditionalLogic.conditions.length > 0 && (
                 <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {question.conditionalLogic.conditions.map((condition, conditionIndex) => {
-                    const operatorLabel = t(`surveyAnalytics.questions.conditional.operators.${condition.operator}`);
+                    const operatorLabel = t(`surveyAnalytics.questions.conditionalOperators.${condition.operator}`);
                     let valueLabel = '';
                     if (Array.isArray(condition.value)) {
                       valueLabel = condition.value.join(', ');
@@ -4373,7 +4363,7 @@ export default function SurveyAnalyticsPage() {
             
             {/* Кнопки удаления и добавления */}
             {editingQuestions && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                 <button
                   onClick={() => deleteQuestion(question.id)}
                   style={{
@@ -4384,40 +4374,28 @@ export default function SurveyAnalyticsPage() {
                     padding: '4px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 59, 48, 0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
+                    justifyContent: 'center'
                   }}
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={16} strokeWidth={2.5} />
                 </button>
                 <button
                   onClick={() => addQuestionAfter(index)}
                   disabled={savingQuestions}
                   title={t('surveyAnalytics.questions.addAfter')}
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
+                    backgroundColor: 'transparent',
                     border: 'none',
-                    backgroundColor: '#007AFF',
-                    color: 'white',
                     cursor: savingQuestions ? 'not-allowed' : 'pointer',
+                    padding: '4px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(0, 122, 255, 0.35)',
-                    opacity: savingQuestions ? 0.6 : 1,
-                    transition: 'transform 0.2s ease'
+                    color: '#007AFF',
+                    opacity: savingQuestions ? 0.5 : 1
                   }}
                 >
-                  <Plus size={16} />
+                  <Plus size={16} strokeWidth={2.4} color="#007AFF" />
                 </button>
               </div>
             )}
@@ -6305,47 +6283,55 @@ export default function SurveyAnalyticsPage() {
             </div>
           )}
 
-          {/* Предупреждение о ограничениях редактирования при наличии ответов */}
-          {surveyHasResponses ? (
-            <div style={{
-              marginTop: '5px',
-              padding: '12px',
-              backgroundColor: '#FFF3CD',
-              borderRadius: '8px',
-              border: '1px solid #856404'
-            }}>
+          {/* Подсказки отображаются только в режиме редактирования */}
+          {editingQuestions && (
+            surveyHasResponses ? (
               <div style={{
-                fontSize: '13px',
-                color: '#856404',
-                lineHeight: '1.4',
-                display: 'flex',
-                alignItems: 'center'
+                marginTop: '5px',
+                padding: '12px',
+                backgroundColor: '#FFF3CD',
+                borderRadius: '8px',
+                border: '1px solid #856404'
               }}>
-                <span style={{ marginRight: 4 }}>⚠️</span>
-                <span>{t('surveyAnalytics.questions.editRestriction')}</span>
-                <InlineAddQuestionIcon />
+                <div style={{
+                  fontSize: '13px',
+                  color: '#856404',
+                  lineHeight: '1.4',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ marginRight: 4 }}>⚠️</span>
+                  <span>
+                    {t('surveyAnalytics.questions.editRestriction')}
+                    <InlineAddQuestionIcon />
+                  </span>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div style={{
-              marginTop: '5px',
-              padding: '12px',
-              backgroundColor: '#E6F2FF',
-              borderRadius: '8px',
-              border: '1px solid #8CB4FF'
-            }}>
+            ) : (
               <div style={{
-                fontSize: '13px',
-                color: '#0B5394',
-                lineHeight: '1.4',
-                display: 'flex',
-                alignItems: 'center'
+                marginTop: '5px',
+                padding: '12px',
+                backgroundColor: '#E6F2FF',
+                borderRadius: '8px',
+                border: '1px solid #8CB4FF'
               }}>
-                <span style={{ marginRight: 4 }}>ℹ️</span>
-                <span>{t('surveyAnalytics.questions.addHint')}</span>
-                <InlineAddQuestionIcon />
+                <div style={{
+                  fontSize: '13px',
+                  color: '#0B5394',
+                  lineHeight: '1.4',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  flexWrap: 'wrap'
+                }}>
+                  <span style={{ marginRight: 4 }}>ℹ️</span>
+                  <span>
+                    {t('surveyAnalytics.questions.addHint')}
+                    <InlineAddQuestionIcon />
+                  </span>
+                </div>
               </div>
-            </div>
+            )
           )}
           
           {editedQuestions.length === 0 ? (
