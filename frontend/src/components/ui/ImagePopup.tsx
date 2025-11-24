@@ -18,7 +18,7 @@ const ImagePopup: React.FC<ImagePopupProps> = ({ imageUrl, onClose }) => {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.95)',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
         zIndex: 10000,
         display: 'flex',
         alignItems: 'center',
@@ -33,8 +33,13 @@ const ImagePopup: React.FC<ImagePopupProps> = ({ imageUrl, onClose }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          maxWidth: '100%',
-          maxHeight: '100%'
+          maxWidth: '90vw',
+          maxHeight: '90vh',
+          backgroundColor: 'var(--tg-section-bg-color)',
+          borderRadius: '16px',
+          padding: '16px',
+          border: '1px solid var(--tg-section-separator-color)',
+          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.35)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -45,29 +50,28 @@ const ImagePopup: React.FC<ImagePopupProps> = ({ imageUrl, onClose }) => {
           }}
           style={{
             position: 'absolute',
-            top: '-20px',
-            right: '-20px',
-            width: '40px',
-            height: '40px',
+            top: '12px',
+            right: '12px',
+            width: '36px',
+            height: '36px',
             borderRadius: '50%',
             border: 'none',
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            color: '#ff4444',
-            fontSize: '28px',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            color: '#fff',
+            fontSize: '20px',
             fontWeight: 'bold',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 10001,
             transition: 'background-color 0.2s ease',
             lineHeight: '1'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.75)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
           }}
         >
           ×
@@ -76,9 +80,10 @@ const ImagePopup: React.FC<ImagePopupProps> = ({ imageUrl, onClose }) => {
           src={imageUrl}
           alt={t('imagePopup.fullscreenView')}
           style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
-            objectFit: 'contain'
+            maxWidth: 'calc(90vw - 64px)',
+            maxHeight: 'calc(90vh - 64px)',
+            objectFit: 'contain',
+            borderRadius: '8px'
           }}
         />
       </div>
@@ -87,4 +92,3 @@ const ImagePopup: React.FC<ImagePopupProps> = ({ imageUrl, onClose }) => {
 };
 
 export default ImagePopup;
-

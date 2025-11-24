@@ -374,17 +374,17 @@ const CreateSurveyPage: React.FC = () => {
         </CenteredPageContainer>
       </div>
 
-      {/* Кнопка "Вперед" - показываем только если нет черновика */}
-      {!showRestorePrompt && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '16px',
-          backgroundColor: 'var(--tg-bg-color)',
-          borderTop: '1px solid var(--tg-section-separator-color)'
-        }}>
+        {/* Кнопка "Вперед" - показываем только если нет черновика */}
+        {!showRestorePrompt && (
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '16px',
+            backgroundColor: 'var(--tg-bg-color)',
+            borderTop: '1px solid var(--tg-section-separator-color)'
+          }}>
           <CenteredPageContainer>
             <button
               onClick={handleNext}
@@ -405,8 +405,8 @@ const CreateSurveyPage: React.FC = () => {
               {t('createSurvey.createButton')}
             </button>
           </CenteredPageContainer>
-        </div>
-      )}
+          </div>
+        )}
     </div>
   );
 };

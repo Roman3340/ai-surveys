@@ -225,277 +225,277 @@ export const KnowledgeBasePage = () => {
     }}>
       <CenteredPageContainer>
         {/* Заголовок+поиск+категории */}
+      <div style={{
+        padding: '20px 16px 16px 16px',
+        borderBottom: '1px solid var(--tg-section-separator-color)',
+        position: 'sticky',
+        top: 0,
+        backgroundColor: 'var(--tg-bg-color)',
+        zIndex: 10
+      }}>
         <div style={{
-          padding: '20px 16px 16px 16px',
-          borderBottom: '1px solid var(--tg-section-separator-color)',
-          position: 'sticky',
-          top: 0,
-          backgroundColor: 'var(--tg-bg-color)',
-          zIndex: 10
+          marginBottom: '16px'
         }}>
-          <div style={{
-            marginBottom: '16px'
+          <h1 style={{
+            fontSize: '24px',
+            fontWeight: '600',
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-            <h1 style={{
-              fontSize: '24px',
-              fontWeight: '600',
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              📚 {t('knowledgeBase.title')}
-            </h1>
-          </div>
-
-          {/* Поиск */}
-          <div style={{
-            position: 'relative',
-            marginBottom: '16px'
-          }}>
-            <input
-              type="text"
-              placeholder={t('knowledgeBase.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                backgroundColor: 'var(--tg-section-bg-color)',
-                border: '1px solid var(--tg-section-separator-color)',
-                borderRadius: '12px',
-                color: 'var(--tg-text-color)',
-                fontSize: '16px',
-                outline: 'none'
-              }}
-            />
-          </div>
-
-          {/* Категории */}
-          <div 
-            ref={categoriesRef}
-            style={{
-              display: 'flex',
-              gap: '8px',
-              overflowX: 'auto',
-              paddingBottom: '4px'
-            }}
-          >
-            {categories.map(category => (
-              <button
-                key={category.id}
-                data-category={category.id}
-                onClick={() => handleCategorySelect(category.id)}
-                style={{
-                  background: selectedCategory === category.id 
-                    ? 'var(--tg-button-color)' 
-                    : 'var(--tg-section-bg-color)',
-                  color: selectedCategory === category.id 
-                    ? 'var(--tg-button-text-color)' 
-                    : 'var(--tg-text-color)',
-                  border: 'none',
-                  borderRadius: '20px',
-                  padding: '8px 16px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.2s ease',
-                  flexShrink: 0
-                }}
-              >
-                <span>{category.icon}</span>
-                {category.name}
-              </button>
-            ))}
-          </div>
+            📚 {t('knowledgeBase.title')}
+          </h1>
         </div>
+
+        {/* Поиск */}
+        <div style={{
+          position: 'relative',
+          marginBottom: '16px'
+        }}>
+          <input
+            type="text"
+            placeholder={t('knowledgeBase.searchPlaceholder')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              backgroundColor: 'var(--tg-section-bg-color)',
+              border: '1px solid var(--tg-section-separator-color)',
+              borderRadius: '12px',
+              color: 'var(--tg-text-color)',
+              fontSize: '16px',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        {/* Категории */}
+        <div 
+          ref={categoriesRef}
+          style={{
+            display: 'flex',
+            gap: '8px',
+            overflowX: 'auto',
+            paddingBottom: '4px'
+          }}
+        >
+          {categories.map(category => (
+            <button
+              key={category.id}
+              data-category={category.id}
+              onClick={() => handleCategorySelect(category.id)}
+              style={{
+                background: selectedCategory === category.id 
+                  ? 'var(--tg-button-color)' 
+                  : 'var(--tg-section-bg-color)',
+                color: selectedCategory === category.id 
+                  ? 'var(--tg-button-text-color)' 
+                  : 'var(--tg-text-color)',
+                border: 'none',
+                borderRadius: '20px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease',
+                flexShrink: 0
+              }}
+            >
+              <span>{category.icon}</span>
+              {category.name}
+            </button>
+          ))}
+        </div>
+      </div>
       </CenteredPageContainer>
       <CenteredPageContainer>
-        {/* Список статей */}
+      {/* Список статей */}
         <div style={{ padding: '16px' }}>
-          {filteredArticles.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '40px 20px',
-              color: 'var(--tg-hint-color)'
-            }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-                🔍
-              </div>
-              <p style={{
-                fontSize: '16px',
-                margin: '0',
-                lineHeight: '1.4'
-              }}>
-                {t('knowledgeBase.notFound')}
-              </p>
+        {filteredArticles.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '40px 20px',
+            color: 'var(--tg-hint-color)'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+              🔍
             </div>
-          ) : (
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px'
+            <p style={{
+              fontSize: '16px',
+              margin: '0',
+              lineHeight: '1.4'
             }}>
-              {filteredArticles.map(article => (
-                <div
-                  key={article.id}
-                  onClick={() => handleArticleClick(article)}
-                  style={{
-                    backgroundColor: 'var(--tg-section-bg-color)',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    cursor: 'pointer',
-                    transition: 'transform 0.1s ease',
-                    border: '1px solid var(--tg-section-separator-color)',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                  onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-                  onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  {/* Цветная полоса */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '4px',
-                    backgroundColor: article.color
-                  }} />
+              {t('knowledgeBase.notFound')}
+            </p>
+          </div>
+        ) : (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            {filteredArticles.map(article => (
+              <div
+                key={article.id}
+                onClick={() => handleArticleClick(article)}
+                style={{
+                  backgroundColor: 'var(--tg-section-bg-color)',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  cursor: 'pointer',
+                  transition: 'transform 0.1s ease',
+                  border: '1px solid var(--tg-section-separator-color)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+                onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                {/* Цветная полоса */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '4px',
+                  backgroundColor: article.color
+                }} />
 
-                  {/* Заголовок и иконка */}
+                {/* Заголовок и иконка */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  marginBottom: '12px'
+                }}>
                   <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '12px',
-                    marginBottom: '12px'
+                    fontSize: '32px',
+                    lineHeight: '1'
                   }}>
-                    <div style={{
-                      fontSize: '32px',
-                      lineHeight: '1'
+                    {article.icon}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      margin: '0 0 4px 0',
+                      color: 'var(--tg-text-color)'
                     }}>
-                      {article.icon}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{
-                        fontSize: '18px',
-                        fontWeight: '600',
-                        margin: '0 0 4px 0',
-                        color: 'var(--tg-text-color)'
-                      }}>
-                        {article.title}
-                      </h3>
-                      <div style={{
-                        fontSize: '14px',
-                        color: 'var(--tg-hint-color)',
-                        marginBottom: '8px'
-                      }}>
-                        {article.category}
-                      </div>
-                    </div>
+                      {article.title}
+                    </h3>
                     <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '12px',
-                      color: 'var(--tg-hint-color)'
+                      fontSize: '14px',
+                      color: 'var(--tg-hint-color)',
+                      marginBottom: '8px'
                     }}>
-                      <Star size={14} fill="currentColor" />
-                      {article.popularity}%
+                      {article.category}
                     </div>
                   </div>
-
-                  {/* Описание */}
-                  <p style={{
-                    fontSize: '14px',
-                    color: 'var(--tg-text-color)',
-                    lineHeight: '1.5',
-                    margin: '0 0 16px 0'
-                  }}>
-                    {article.description}
-                  </p>
-
-                  {/* Теги */}
-                  <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '6px',
-                    marginBottom: '16px'
-                  }}>
-                    {article.tags.map(tag => (
-                      <span
-                        key={tag}
-                        style={{
-                          backgroundColor: 'var(--tg-bg-color)',
-                          color: 'var(--tg-hint-color)',
-                          fontSize: '11px',
-                          padding: '4px 8px',
-                          borderRadius: '12px',
-                          fontWeight: '500'
-                        }}
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Метаинформация */}
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '16px',
-                    flexWrap: 'wrap',
-                    marginBottom: '16px'
+                    gap: '4px',
+                    fontSize: '12px',
+                    color: 'var(--tg-hint-color)'
                   }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '12px',
-                      color: 'var(--tg-hint-color)'
-                    }}>
-                      <Clock size={14} />
-                      {article.readTime}
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '12px',
-                      color: getDifficultyColor(article.difficulty)
-                    }}>
-                      <Target size={14} />
-                      {getDifficultyText(article.difficulty)}
-                    </div>
-                  </div>
-
-                  {/* Кнопка чтения */}
-                  <div style={{
-                    padding: '12px',
-                    backgroundColor: article.color,
-                    color: 'white',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}>
-                    <BookOpen size={16} />
-                    {t('knowledgeBase.readArticle')}
+                    <Star size={14} fill="currentColor" />
+                    {article.popularity}%
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+
+                {/* Описание */}
+                <p style={{
+                  fontSize: '14px',
+                  color: 'var(--tg-text-color)',
+                  lineHeight: '1.5',
+                  margin: '0 0 16px 0'
+                }}>
+                  {article.description}
+                </p>
+
+                {/* Теги */}
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '6px',
+                  marginBottom: '16px'
+                }}>
+                  {article.tags.map(tag => (
+                    <span
+                      key={tag}
+                      style={{
+                        backgroundColor: 'var(--tg-bg-color)',
+                        color: 'var(--tg-hint-color)',
+                        fontSize: '11px',
+                        padding: '4px 8px',
+                        borderRadius: '12px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Метаинформация */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  flexWrap: 'wrap',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '12px',
+                    color: 'var(--tg-hint-color)'
+                  }}>
+                    <Clock size={14} />
+                    {article.readTime}
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '12px',
+                    color: getDifficultyColor(article.difficulty)
+                  }}>
+                    <Target size={14} />
+                    {getDifficultyText(article.difficulty)}
+                  </div>
+                </div>
+
+                {/* Кнопка чтения */}
+                <div style={{
+                  padding: '12px',
+                  backgroundColor: article.color,
+                  color: 'white',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}>
+                  <BookOpen size={16} />
+                  {t('knowledgeBase.readArticle')}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       </CenteredPageContainer>
     </div>
   );
