@@ -287,55 +287,55 @@ const SummaryTab: React.FC<{
                 <div style={{ marginBottom: '20px' }}>
                   <div
                     style={{
-                      position: 'relative',
+                    position: 'relative',
                       marginBottom: '8px',
-                      backgroundColor: 'var(--tg-section-bg-color)',
+                    backgroundColor: 'var(--tg-section-bg-color)',
                       borderRadius: '8px',
-                      border: '1px solid var(--tg-section-separator-color)',
-                      padding: '8px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      maxWidth: '100%',
-                      cursor: 'pointer',
-                      transition: 'opacity 0.2s ease'
-                    }}
-                    onClick={() => setFullscreenImage(question.image_url || null)}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.opacity = '0.9';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = '1';
-                    }}
+                    border: '1px solid var(--tg-section-separator-color)',
+                    padding: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    maxWidth: '100%',
+                    cursor: 'pointer',
+                    transition: 'opacity 0.2s ease'
+                  }}
+                  onClick={() => setFullscreenImage(question.image_url || null)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '0.9';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                  }}
                   >
                     {imageLoading[question.id] && (
                       <div
                         style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '12px',
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 1
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '12px',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 1
                         }}
                       >
                         <div
                           style={{
-                            width: '32px',
-                            height: '32px',
-                            border: '3px solid var(--tg-section-separator-color)',
-                            borderTop: '3px solid var(--tg-button-color)',
-                            borderRadius: '50%',
-                            animation: 'spin 1s linear infinite'
+                          width: '32px',
+                          height: '32px',
+                          border: '3px solid var(--tg-section-separator-color)',
+                          borderTop: '3px solid var(--tg-button-color)',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite'
                           }}
                         />
                         <span
                           style={{
-                            color: 'var(--tg-hint-color)',
-                            fontSize: '14px'
+                          color: 'var(--tg-hint-color)', 
+                          fontSize: '14px' 
                           }}
                         >
                           {t('surveyAnalytics.imageLoading')}
@@ -348,8 +348,8 @@ const SummaryTab: React.FC<{
                         `}</style>
                       </div>
                     )}
-                    <img
-                      src={question.image_url}
+                    <img 
+                      src={question.image_url} 
                       alt={question.image_name || 'Question illustration'}
                       onLoadStart={() => {
                         setImageLoading(prev => ({ ...prev, [question.id]: true }));
@@ -379,11 +379,11 @@ const SummaryTab: React.FC<{
                   </div>
                   <p
                     style={{
-                      fontSize: '11px',
-                      color: 'var(--tg-hint-color)',
-                      margin: '6px 0 0 0',
-                      textAlign: 'center',
-                      fontStyle: 'italic'
+                    fontSize: '11px',
+                    color: 'var(--tg-hint-color)',
+                    margin: '6px 0 0 0',
+                    textAlign: 'center',
+                    fontStyle: 'italic'
                     }}
                   >
                     {t('surveyAnalytics.imageClick')}
@@ -2108,7 +2108,7 @@ const SingleChoiceChart: React.FC<{
     }
     return defaultColors[index % defaultColors.length];
   };
-
+  
   // Для вопросов "Да/Нет" сортируем ответы так, чтобы "Да" был зеленым, а "Нет" красным
   const getSortedStats = () => {
     if (questionType === 'yes_no') {
@@ -2511,166 +2511,166 @@ const AnswersPopup: React.FC<{
           boxShadow: '0 12px 32px rgba(0,0,0,0.35)'
         }}
         onClick={(e) => e.stopPropagation()}
-      >
-        {/* Заголовок с крестиком - всегда видимый */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '16px',
-          flexShrink: 0
+    >
+      {/* Заголовок с крестиком - всегда видимый */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '16px',
+        flexShrink: 0
+      }}>
+        <h3 style={{ 
+          margin: 0, 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: 'var(--tg-text-color)',
+          flex: 1
         }}>
-          <h3 style={{ 
-            margin: 0, 
-            fontSize: '18px', 
-            fontWeight: '600', 
-            color: 'var(--tg-text-color)',
-            flex: 1
-          }}>
-            Все ответы
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'var(--tg-button-color)',
-              border: 'none',
-              color: 'white',
-              fontSize: '18px',
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              minWidth: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            ×
-          </button>
-        </div>
-        
-        {/* Контент с прокруткой */}
-        <div 
+          Все ответы
+        </h3>
+        <button
+          onClick={onClose}
           style={{
-            backgroundColor: 'var(--tg-bg-color)',
-            borderRadius: '12px',
-            padding: '16px',
-            flex: 1,
-            overflowY: 'auto',
-            color: 'var(--tg-text-color)',
-            border: '1px solid var(--tg-section-separator-color)'
+            background: 'var(--tg-button-color)',
+            border: 'none',
+            color: 'white',
+            fontSize: '18px',
+            cursor: 'pointer',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            fontWeight: 'bold',
+            minWidth: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {answers.map((answer, index) => {
-              let displayValue = answer.value || answer;
-              
-              // Форматируем дату если это дата
-              if (typeof displayValue === 'string' && displayValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                const date = new Date(displayValue);
-                displayValue = date.toLocaleDateString('ru-RU', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric'
-                });
-              }
-              
-              // Форматируем yes/no для отображения
-              if (displayValue === 'yes') {
+          ×
+        </button>
+      </div>
+      
+      {/* Контент с прокруткой */}
+      <div 
+        style={{
+            backgroundColor: 'var(--tg-bg-color)',
+          borderRadius: '12px',
+            padding: '16px',
+          flex: 1,
+            overflowY: 'auto',
+          color: 'var(--tg-text-color)',
+          border: '1px solid var(--tg-section-separator-color)'
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {answers.map((answer, index) => {
+            let displayValue = answer.value || answer;
+            
+            // Форматируем дату если это дата
+            if (typeof displayValue === 'string' && displayValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+              const date = new Date(displayValue);
+              displayValue = date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              });
+            }
+            
+            // Форматируем yes/no для отображения
+            if (displayValue === 'yes') {
                 displayValue = t('surveyAnalytics.answers.yes');
-              } else if (displayValue === 'no') {
+            } else if (displayValue === 'no') {
                 displayValue = t('surveyAnalytics.answers.no');
-              }
-              
-              // Функция для отображения звезд
-              const renderStars = (rating: number) => {
-                return Array.from({ length: 5 }, (_, i) => {
-                  const isFull = i < Math.floor(rating);
-                  const isPartial = i === Math.floor(rating) && rating % 1 > 0;
-                  const partialAmount = rating % 1;
-                  
-                  return (
-                    <span key={i} style={{ 
-                      color: isFull ? '#ffd700' : isPartial ? '#ffd700' : 'var(--tg-hint-color)',
-                      fontSize: '18px',
-                      position: 'relative',
-                      display: 'inline-block'
-                    }}>
-                      {isPartial ? (
-                        <span style={{
-                          background: `linear-gradient(90deg, #ffd700 ${partialAmount * 100}%, var(--tg-hint-color) ${partialAmount * 100}%)`,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text'
-                        }}>
-                          ★
-                        </span>
-                      ) : (
-                        '★'
-                      )}
-                    </span>
-                  );
-                });
-              };
-              
-              return (
-                <div key={index} style={{ 
-                  padding: '12px', 
-                  backgroundColor: 'var(--tg-bg-color)', 
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  color: 'var(--tg-text-color)',
-                  border: '1px solid var(--tg-section-separator-color)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px'
-                }}>
-                  <div style={{ 
-                    lineHeight: '1.4',
-                    wordBreak: 'break-word'
+            }
+            
+            // Функция для отображения звезд
+            const renderStars = (rating: number) => {
+              return Array.from({ length: 5 }, (_, i) => {
+                const isFull = i < Math.floor(rating);
+                const isPartial = i === Math.floor(rating) && rating % 1 > 0;
+                const partialAmount = rating % 1;
+                
+                return (
+                  <span key={i} style={{ 
+                    color: isFull ? '#ffd700' : isPartial ? '#ffd700' : 'var(--tg-hint-color)',
+                    fontSize: '18px',
+                    position: 'relative',
+                    display: 'inline-block'
                   }}>
-                    {typeof displayValue === 'number' && displayValue >= 1 && displayValue <= 5 ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {renderStars(displayValue)}
-                        <span style={{ fontSize: '12px', color: 'var(--tg-hint-color)', marginLeft: '4px' }}>
-                          ({displayValue})
-                        </span>
-                      </div>
+                    {isPartial ? (
+                      <span style={{
+                        background: `linear-gradient(90deg, #ffd700 ${partialAmount * 100}%, var(--tg-hint-color) ${partialAmount * 100}%)`,
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text'
+                      }}>
+                        ★
+                      </span>
                     ) : (
-                      <span>{displayValue}</span>
+                      '★'
                     )}
-                  </div>
-                  {!isAnonymous && answer.user && (
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'center',
-                      alignItems: 'center'
-                    }}>
-                      <a
-                        href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ 
-                          fontSize: '11px', 
-                          color: 'var(--tg-button-color)',
-                          textDecoration: 'none',
-                          cursor: answer.user.username ? 'pointer' : 'default'
-                        }}
-                        onClick={(e) => {
-                          if (!answer.user.username) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        @{answer.user.username || 'Респондент'}
-                      </a>
+                  </span>
+                );
+              });
+            };
+            
+            return (
+              <div key={index} style={{ 
+                padding: '12px', 
+                backgroundColor: 'var(--tg-bg-color)', 
+                borderRadius: '8px',
+                fontSize: '13px',
+                color: 'var(--tg-text-color)',
+                border: '1px solid var(--tg-section-separator-color)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                <div style={{ 
+                  lineHeight: '1.4',
+                  wordBreak: 'break-word'
+                }}>
+                  {typeof displayValue === 'number' && displayValue >= 1 && displayValue <= 5 ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {renderStars(displayValue)}
+                      <span style={{ fontSize: '12px', color: 'var(--tg-hint-color)', marginLeft: '4px' }}>
+                        ({displayValue})
+                      </span>
                     </div>
+                  ) : (
+                    <span>{displayValue}</span>
                   )}
                 </div>
-              );
-            })}
+                {!isAnonymous && answer.user && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <a
+                      href={answer.user.username ? `https://t.me/${answer.user.username}` : '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ 
+                        fontSize: '11px', 
+                        color: 'var(--tg-button-color)',
+                        textDecoration: 'none',
+                        cursor: answer.user.username ? 'pointer' : 'default'
+                      }}
+                      onClick={(e) => {
+                        if (!answer.user.username) {
+                          e.preventDefault();
+                        }
+                      }}
+                    >
+                      @{answer.user.username || 'Респондент'}
+                    </a>
+                  </div>
+                )}
+              </div>
+            );
+          })}
           </div>
         </div>
       </div>
@@ -4288,9 +4288,9 @@ export default function SurveyAnalyticsPage() {
                           borderRadius: '6px',
                           padding: '6px 8px',
                           border: '1px solid var(--tg-section-separator-color)',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          lineHeight: '1.4',
+                          wordBreak: 'break-word',
+                          whiteSpace: 'normal'
                         }}
                       >
                         {`${operatorLabel}: ${valueLabel}`}
@@ -4364,13 +4364,13 @@ export default function SurveyAnalyticsPage() {
             {/* Кнопки удаления и добавления */}
             {editingQuestions && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                <button
-                  onClick={() => deleteQuestion(question.id)}
-                  style={{
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#FF3B30',
+              <button
+                onClick={() => deleteQuestion(question.id)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#FF3B30',
                     padding: '4px',
                     display: 'flex',
                     alignItems: 'center',
@@ -4387,16 +4387,16 @@ export default function SurveyAnalyticsPage() {
                     backgroundColor: 'transparent',
                     border: 'none',
                     cursor: savingQuestions ? 'not-allowed' : 'pointer',
-                    padding: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                     color: '#007AFF',
                     opacity: savingQuestions ? 0.5 : 1
-                  }}
-                >
+                }}
+              >
                   <Plus size={16} strokeWidth={2.4} color="#007AFF" />
-                </button>
+              </button>
               </div>
             )}
           </div>
@@ -4657,14 +4657,14 @@ export default function SurveyAnalyticsPage() {
                     errorDiv.style.cssText = 'padding: 20px; text-align: center; color: var(--tg-hint-color); background: var(--tg-section-bg-color); border-radius: 8px; border: 1px solid var(--tg-section-separator-color);';
                     imgElement.parentElement?.appendChild(errorDiv);
                   }}
-                        style={{
+                  style={{
                           maxWidth: '100%',
                           maxHeight: '200px',
                           width: 'auto',
                           height: 'auto',
-                          objectFit: 'contain',
-                          display: imageLoading[question.id] ? 'none' : 'block'
-                        }}
+                    objectFit: 'contain',
+                    display: imageLoading[question.id] ? 'none' : 'block'
+                  }}
                 />
               </div>
               <p style={{
@@ -6286,16 +6286,16 @@ export default function SurveyAnalyticsPage() {
           {/* Подсказки отображаются только в режиме редактирования */}
           {editingQuestions && (
             surveyHasResponses ? (
+            <div style={{
+              marginTop: '5px',
+              padding: '12px',
+              backgroundColor: '#FFF3CD',
+              borderRadius: '8px',
+              border: '1px solid #856404'
+            }}>
               <div style={{
-                marginTop: '5px',
-                padding: '12px',
-                backgroundColor: '#FFF3CD',
-                borderRadius: '8px',
-                border: '1px solid #856404'
-              }}>
-                <div style={{
-                  fontSize: '13px',
-                  color: '#856404',
+                fontSize: '13px',
+                color: '#856404',
                   lineHeight: '1.4',
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -6306,8 +6306,8 @@ export default function SurveyAnalyticsPage() {
                     {t('surveyAnalytics.questions.editRestriction')}
                     <InlineAddQuestionIcon />
                   </span>
-                </div>
               </div>
+            </div>
             ) : (
               <div style={{
                 marginTop: '5px',
