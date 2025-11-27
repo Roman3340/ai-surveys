@@ -4242,7 +4242,9 @@ export default function SurveyAnalyticsPage() {
                   backgroundColor: 'transparent',
                   color: 'var(--tg-text-color)',
                   outline: 'none',
-                  opacity: disabled ? 0.6 : 1
+                  opacity: disabled ? 0.6 : 1,
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word'
                 }}
               />
               {question.conditionalLogic?.enabled && (() => {
@@ -4255,7 +4257,7 @@ export default function SurveyAnalyticsPage() {
                     fontSize: '11px',
                     color: 'var(--tg-link-color)',
                     fontStyle: 'italic',
-                    marginTop: '4px',
+                    marginTop: '2px',
                     lineHeight: '1.3'
                   }}>
                     {t('surveyAnalytics.questions.dependsOnQuestion', { number: parentIndex + 1, text: parentQuestion.text || t('surveyAnalytics.questions.noTitle') })}
