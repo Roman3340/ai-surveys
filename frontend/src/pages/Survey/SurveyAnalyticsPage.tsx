@@ -4245,24 +4245,6 @@ export default function SurveyAnalyticsPage() {
                   opacity: disabled ? 0.6 : 1
                 }}
               />
-              {question.conditionalLogic?.enabled && (() => {
-                const parentQuestion = editedQuestions.find(q => q.id === question.conditionalLogic?.dependsOn);
-                if (!parentQuestion) return null;
-                
-                const parentIndex = editedQuestions.findIndex(q => q.id === parentQuestion.id);
-                return (
-                  <div style={{
-                    fontSize: '11px',
-                    color: 'var(--tg-link-color)',
-                    fontStyle: 'italic',
-                    marginTop: '4px',
-                    lineHeight: '1.3'
-                  }}>
-                    {t('surveyAnalytics.questions.dependsOnQuestion', { number: parentIndex + 1, text: parentQuestion.text || t('surveyAnalytics.questions.noTitle') })}
-                  </div>
-                );
-              })()}
-
               {question.conditionalLogic?.enabled && question.conditionalLogic.conditions && question.conditionalLogic.conditions.length > 0 && (
                 <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {question.conditionalLogic.conditions.map((condition, conditionIndex) => {
@@ -5082,8 +5064,8 @@ export default function SurveyAnalyticsPage() {
               gap: '8px',
               fontSize: '14px',
               color: 'var(--tg-text-color)',
-              cursor: disabled ? 'not-allowed' : 'pointer',
-              opacity: disabled ? 0.6 : 1,
+              cursor: (!editingQuestions || savingQuestions) ? 'not-allowed' : 'pointer',
+              opacity: (!editingQuestions || savingQuestions) ? 0.6 : 1,
               position: 'relative'
             }}>
               <div style={{
@@ -5102,13 +5084,13 @@ export default function SurveyAnalyticsPage() {
                   type="checkbox"
                   checked={question.is_required}
                   onChange={(e) => updateEditedQuestion(index, { is_required: e.target.checked })}
-                  disabled={disabled}
+                  disabled={!editingQuestions || savingQuestions}
                   style={{
                     position: 'absolute',
                     opacity: 0,
                     width: '100%',
                     height: '100%',
-                    cursor: disabled ? 'not-allowed' : 'pointer'
+                    cursor: (!editingQuestions || savingQuestions) ? 'not-allowed' : 'pointer'
                   }}
                 />
                 {question.is_required && (
@@ -5126,7 +5108,7 @@ export default function SurveyAnalyticsPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--tg-bg-color)', color: 'var(--tg-text-color)', padding: 12, paddingBottom: 80 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--tg-bg-color)', color: 'var(--tg-text-color)', padding: 12, paddingBottom: 80, overflowX: 'hidden' }}>
       <CenteredPageContainer>
       {/* Заголовок */}
       <div style={{ marginBottom: 12 }}>
