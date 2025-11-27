@@ -4245,42 +4245,23 @@ export default function SurveyAnalyticsPage() {
                   opacity: disabled ? 0.6 : 1
                 }}
               />
-              {question.conditionalLogic?.enabled && question.conditionalLogic.conditions && question.conditionalLogic.conditions.length > 0 && (
-                <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {question.conditionalLogic.conditions.map((condition, conditionIndex) => {
-                    const operatorLabel = t(`surveyAnalytics.questions.conditionalOperators.${condition.operator}`);
-                    let valueLabel = '';
-                    if (Array.isArray(condition.value)) {
-                      valueLabel = condition.value.join(', ');
-                    } else if (condition.value !== undefined && condition.value !== null) {
-                      valueLabel = condition.value.toString();
-                    }
-                    if (valueLabel === 'yes') {
-                      valueLabel = t('surveyAnalytics.answers.yes');
-                    } else if (valueLabel === 'no') {
-                      valueLabel = t('surveyAnalytics.answers.no');
-                    }
-                    return (
-                      <div
-                        key={`condition-preview-${conditionIndex}`}
-                        style={{
-                          fontSize: '11px',
-                          color: 'var(--tg-hint-color)',
-                          backgroundColor: 'var(--tg-bg-color)',
-                          borderRadius: '6px',
-                          padding: '6px 8px',
-                          border: '1px solid var(--tg-section-separator-color)',
-                          lineHeight: '1.4',
-                          wordBreak: 'break-word',
-                          whiteSpace: 'normal'
-                        }}
-                      >
-                        {`${operatorLabel}: ${valueLabel}`}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              {question.conditionalLogic?.enabled && (() => {
+                const parentQuestion = editedQuestions.find(q => q.id === question.conditionalLogic?.dependsOn);
+                if (!parentQuestion) return null;
+                
+                const parentIndex = editedQuestions.findIndex(q => q.id === parentQuestion.id);
+                return (
+                  <div style={{
+                    fontSize: '11px',
+                    color: 'var(--tg-link-color)',
+                    fontStyle: 'italic',
+                    marginTop: '4px',
+                    lineHeight: '1.3'
+                  }}>
+                    {t('surveyAnalytics.questions.dependsOnQuestion', { number: parentIndex + 1, text: parentQuestion.text || t('surveyAnalytics.questions.noTitle') })}
+                  </div>
+                );
+              })()}
               
               <textarea
                 value={question.description || ''}
