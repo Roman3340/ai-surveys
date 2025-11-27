@@ -2725,6 +2725,12 @@ export default function SurveyAnalyticsPage() {
     />
   );
 
+  const autoResizeTextArea = (element: HTMLTextAreaElement | null) => {
+    if (!element) return;
+    element.style.height = 'auto';
+    element.style.height = `${element.scrollHeight}px`;
+  };
+
   useStableBackButton({ targetRoute: '/' });
 
   // Функции для экспорта CSV
@@ -4226,12 +4232,16 @@ export default function SurveyAnalyticsPage() {
                   </span>
                 )}
               </div>
-              <input
-                type="text"
+              <textarea
                 value={question.text}
-                onChange={(e) => updateEditedQuestion(index, { text: e.target.value })}
+                onChange={(e) => {
+                  autoResizeTextArea(e.currentTarget);
+                  updateEditedQuestion(index, { text: e.target.value });
+                }}
                 disabled={disabled}
                 placeholder={question.text === '' ? t('surveyAnalytics.questions.enterQuestion') : undefined}
+                rows={1}
+                ref={(el) => autoResizeTextArea(el)}
                 style={{
                   width: '100%',
                   fontSize: '15px',
@@ -4243,8 +4253,11 @@ export default function SurveyAnalyticsPage() {
                   color: 'var(--tg-text-color)',
                   outline: 'none',
                   opacity: disabled ? 0.6 : 1,
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word'
+                  resize: 'none',
+                  overflow: 'hidden',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  minHeight: '38px'
                 }}
               />
               {question.conditionalLogic?.enabled && (() => {
