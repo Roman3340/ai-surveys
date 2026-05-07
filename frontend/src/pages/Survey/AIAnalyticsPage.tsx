@@ -256,6 +256,13 @@ const AIAnalyticsPage: React.FC = () => {
   const formatPriorityRu = (p: Priority) => (p === 'high' ? 'Высокий' : p === 'medium' ? 'Средний' : 'Низкий');
   const formatStrengthRu = (s: Strength) => (s === 'strong' ? 'Сильная' : s === 'medium' ? 'Средняя' : 'Слабая');
 
+  const quotesLimit = (totalResponses: number | undefined) => {
+    const n = totalResponses ?? 0;
+    if (n > 100) return 15;
+    if (n >= 15) return 10;
+    return 6;
+  };
+
   const disclaimer = (
     <div style={{ padding: '10px 16px 20px 16px', color: 'var(--tg-hint-color)', fontSize: 12, lineHeight: 1.4 }}>
       {t('aiAnalytics.v3.disclaimer')}
@@ -389,6 +396,7 @@ const AIAnalyticsPage: React.FC = () => {
   const renderInsights = () => {
     const items = (analytics?.insights || []).filter((x) => x.kind === 'problem');
     if (!items.length) return <div style={{ padding: 16, color: 'var(--tg-hint-color)' }}>{t('aiAnalytics.v3.empty')}</div>;
+    const limit = quotesLimit(analytics?.overview?.total_responses);
     return (
       <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {items.map((ins) => (
@@ -405,7 +413,7 @@ const AIAnalyticsPage: React.FC = () => {
             </div>
             {ins.evidence?.length ? (
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {ins.evidence.slice(0, 3).map((e, i) => (
+                {ins.evidence.slice(0, limit).map((e, i) => (
                   <div key={i} style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
                     “{e.quote}”
                   </div>
@@ -422,6 +430,7 @@ const AIAnalyticsPage: React.FC = () => {
   const renderRecommendations = () => {
     const items = analytics?.recommendations || [];
     if (!items.length) return <div style={{ padding: 16, color: 'var(--tg-hint-color)' }}>{t('aiAnalytics.v3.empty')}</div>;
+    const limit = quotesLimit(analytics?.overview?.total_responses);
     return (
       <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {items.map((r) => (
@@ -435,7 +444,7 @@ const AIAnalyticsPage: React.FC = () => {
             <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5 }}>{r.rationale}</div>
             {r.evidence?.length ? (
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {r.evidence.slice(0, 2).map((e, i) => (
+                {r.evidence.slice(0, limit).map((e, i) => (
                   <div key={i} style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
                     “{e.quote}”
                   </div>
@@ -452,6 +461,7 @@ const AIAnalyticsPage: React.FC = () => {
   const renderRelationships = () => {
     const items = analytics?.relationships || [];
     if (!items.length) return <div style={{ padding: 16, color: 'var(--tg-hint-color)' }}>{t('aiAnalytics.v3.empty')}</div>;
+    const limit = quotesLimit(analytics?.overview?.total_responses);
     return (
       <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {items.map((rel) => (
@@ -465,7 +475,7 @@ const AIAnalyticsPage: React.FC = () => {
             <div style={{ marginTop: 10, fontSize: 14, lineHeight: 1.5 }}>{rel.business_implication}</div>
             {rel.evidence?.length ? (
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {rel.evidence.slice(0, 3).map((e, i) => (
+                {rel.evidence.slice(0, limit).map((e, i) => (
                   <div key={i} style={{ fontSize: 12, color: 'var(--tg-hint-color)' }}>
                     “{e.quote}”
                   </div>
