@@ -403,9 +403,14 @@
       "sentimentCoverage": "Text responses: {{count}}",
       "smallSample": "Small sample: findings are preliminary.",
       "topInsights": "Top issues",
+      "topPositives": "What users like",
+      "topTrends": "Trends & observations",
+      "positive": "Positive",
+      "trend": "Trend",
       "supportCount": "Evidence: {{count}}",
       "confidence": "Confidence: {{value}}%",
-      "relationshipMeta": "Strength: {{strength}} · Examples: {{count}}"
+      "relationshipMeta": "Link: {{strength}} · Examples: {{count}}",
+      "disclaimer": "AI findings are advisory and may contain errors. Before making decisions, verify key conclusions against the original responses and operational metrics."
     },
     "tabs": {
       "metrics": "Key Metrics",

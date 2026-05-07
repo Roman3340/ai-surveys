@@ -19,7 +19,7 @@ interface EvidenceItem {
 
 interface InsightV3 {
   id: string;
-  kind: 'problem' | 'opportunity' | 'positive';
+  kind: 'problem' | 'opportunity' | 'positive' | 'trend';
   title: string;
   description: string;
   priority: Priority;
@@ -52,7 +52,6 @@ interface AnalyticsDataV3 {
   version: 3;
   overview: {
     total_responses: number;
-    average_rating: number | null;
     sentiment: {
       positive: number;
       neutral: number;
@@ -254,6 +253,15 @@ const AIAnalyticsPage: React.FC = () => {
     return { bg, color };
   };
 
+  const formatPriorityRu = (p: Priority) => (p === 'high' ? 'Высокий' : p === 'medium' ? 'Средний' : 'Низкий');
+  const formatStrengthRu = (s: Strength) => (s === 'strong' ? 'Сильная' : s === 'medium' ? 'Средняя' : 'Слабая');
+
+  const disclaimer = (
+    <div style={{ padding: '10px 16px 20px 16px', color: 'var(--tg-hint-color)', fontSize: 12, lineHeight: 1.4 }}>
+      {t('aiAnalytics.v3.disclaimer')}
+    </div>
+  );
+
   const renderOverview = () => {
     const o = analytics?.overview;
     const dq = analytics?.data_quality;
@@ -275,10 +283,6 @@ const AIAnalyticsPage: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14 }}>
             <span style={{ color: 'var(--tg-hint-color)' }}>{t('aiAnalytics.metrics.totalResponses')}</span>
             <span style={{ fontWeight: 700 }}>{o.total_responses}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14, marginTop: 8 }}>
-            <span style={{ color: 'var(--tg-hint-color)' }}>{t('aiAnalytics.metrics.averageRating')}</span>
-            <span style={{ fontWeight: 700 }}>{o.average_rating ?? '—'}</span>
           </div>
         </div>
 
@@ -323,7 +327,7 @@ const AIAnalyticsPage: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                       <div style={{ fontWeight: 700 }}>{ins.title}</div>
                       <div style={{ padding: '2px 8px', borderRadius: 999, background: pill(ins.priority).bg, color: pill(ins.priority).color, fontSize: 12, fontWeight: 700 }}>
-                        {ins.priority}
+                        {formatPriorityRu(ins.priority)}
                       </div>
                     </div>
                     <div style={{ color: 'var(--tg-hint-color)', marginTop: 4 }}>{ins.description}</div>
@@ -332,12 +336,58 @@ const AIAnalyticsPage: React.FC = () => {
             </div>
           </div>
         ) : null}
+
+        {analytics?.insights?.some((x) => x.kind === 'positive') ? (
+          <div style={{ padding: 14, borderRadius: 12, border: '1px solid var(--tg-section-separator-color)', background: 'var(--tg-section-bg-color)' }}>
+            <div style={{ fontWeight: 700, marginBottom: 10 }}>{t('aiAnalytics.v3.topPositives')}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {analytics.insights
+                .filter((x) => x.kind === 'positive')
+                .slice(0, 3)
+                .map((ins) => (
+                  <div key={ins.id} style={{ fontSize: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                      <div style={{ fontWeight: 700 }}>{ins.title}</div>
+                      <div style={{ padding: '2px 8px', borderRadius: 999, background: 'rgba(52,199,89,0.12)', color: '#34c759', fontSize: 12, fontWeight: 700 }}>
+                        {t('aiAnalytics.v3.positive')}
+                      </div>
+                    </div>
+                    <div style={{ color: 'var(--tg-hint-color)', marginTop: 4 }}>{ins.description}</div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        ) : null}
+
+        {analytics?.insights?.some((x) => x.kind === 'trend') ? (
+          <div style={{ padding: 14, borderRadius: 12, border: '1px solid var(--tg-section-separator-color)', background: 'var(--tg-section-bg-color)' }}>
+            <div style={{ fontWeight: 700, marginBottom: 10 }}>{t('aiAnalytics.v3.topTrends')}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {analytics.insights
+                .filter((x) => x.kind === 'trend')
+                .slice(0, 3)
+                .map((ins) => (
+                  <div key={ins.id} style={{ fontSize: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                      <div style={{ fontWeight: 700 }}>{ins.title}</div>
+                      <div style={{ padding: '2px 8px', borderRadius: 999, background: 'rgba(0,122,255,0.12)', color: '#007aff', fontSize: 12, fontWeight: 700 }}>
+                        {t('aiAnalytics.v3.trend')}
+                      </div>
+                    </div>
+                    <div style={{ color: 'var(--tg-hint-color)', marginTop: 4 }}>{ins.description}</div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        ) : null}
+
+        {disclaimer}
       </div>
     );
   };
 
   const renderInsights = () => {
-    const items = analytics?.insights || [];
+    const items = (analytics?.insights || []).filter((x) => x.kind === 'problem');
     if (!items.length) return <div style={{ padding: 16, color: 'var(--tg-hint-color)' }}>{t('aiAnalytics.v3.empty')}</div>;
     return (
       <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -346,7 +396,7 @@ const AIAnalyticsPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
               <div style={{ fontWeight: 800 }}>{ins.title}</div>
               <div style={{ padding: '2px 8px', borderRadius: 999, background: pill(ins.priority).bg, color: pill(ins.priority).color, fontSize: 12, fontWeight: 800 }}>
-                {ins.priority}
+                {formatPriorityRu(ins.priority)}
               </div>
             </div>
             <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5 }}>{ins.description}</div>
@@ -364,6 +414,7 @@ const AIAnalyticsPage: React.FC = () => {
             ) : null}
           </div>
         ))}
+        {disclaimer}
       </div>
     );
   };
@@ -378,7 +429,7 @@ const AIAnalyticsPage: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
               <div style={{ fontWeight: 800 }}>{r.title}</div>
               <div style={{ padding: '2px 8px', borderRadius: 999, background: pill(r.expected_impact).bg, color: pill(r.expected_impact).color, fontSize: 12, fontWeight: 800 }}>
-                {r.expected_impact}
+                {formatPriorityRu(r.expected_impact)}
               </div>
             </div>
             <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5 }}>{r.rationale}</div>
@@ -393,6 +444,7 @@ const AIAnalyticsPage: React.FC = () => {
             ) : null}
           </div>
         ))}
+        {disclaimer}
       </div>
     );
   };
@@ -408,7 +460,7 @@ const AIAnalyticsPage: React.FC = () => {
               {rel.from_signal.label} → {rel.to_signal.label}
             </div>
             <div style={{ marginTop: 6, fontSize: 12, color: 'var(--tg-hint-color)' }}>
-              {t('aiAnalytics.v3.relationshipMeta', { strength: rel.strength, count: rel.support_count })}
+              {t('aiAnalytics.v3.relationshipMeta', { strength: formatStrengthRu(rel.strength), count: rel.support_count })}
             </div>
             <div style={{ marginTop: 10, fontSize: 14, lineHeight: 1.5 }}>{rel.business_implication}</div>
             {rel.evidence?.length ? (
@@ -422,6 +474,7 @@ const AIAnalyticsPage: React.FC = () => {
             ) : null}
           </div>
         ))}
+        {disclaimer}
       </div>
     );
   };
