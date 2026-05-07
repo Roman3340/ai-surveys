@@ -389,6 +389,24 @@
     "notFoundDescription": "Запустите генерацию аналитики для получения инсайтов",
     "generateButton": "Получить ИИ аналитику",
     "generatingButton": "Генерируется...",
+    "v3": {
+      "tabs": {
+        "overview": "Обзор",
+        "insights": "Проблемы",
+        "recommendations": "Рекомендации",
+        "relationships": "Взаимосвязи"
+      },
+      "empty": "Пока нет данных для отображения.",
+      "mainMetrics": "Основные показатели",
+      "sentimentTitle": "Тональность (по текстовым ответам)",
+      "sentimentConfidence": "Надёжность",
+      "sentimentCoverage": "Текстовых ответов: {{count}}",
+      "smallSample": "Малая выборка: выводы предварительные.",
+      "topInsights": "Главные проблемы",
+      "supportCount": "Подтверждений: {{count}}",
+      "confidence": "Уверенность: {{value}}%",
+      "relationshipMeta": "Сила: {{strength}} · Примеров: {{count}}"
+    },
     "tabs": {
       "metrics": "Основные показатели",
       "insights": "Ценные инсайты",

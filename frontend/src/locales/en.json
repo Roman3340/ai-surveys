@@ -389,6 +389,24 @@
     "notFoundDescription": "Start generating analytics to get insights",
     "generateButton": "Get AI Analytics",
     "generatingButton": "Generating...",
+    "v3": {
+      "tabs": {
+        "overview": "Overview",
+        "insights": "Issues",
+        "recommendations": "Recommendations",
+        "relationships": "Relationships"
+      },
+      "empty": "No data to display yet.",
+      "mainMetrics": "Key metrics",
+      "sentimentTitle": "Sentiment (text responses)",
+      "sentimentConfidence": "Reliability",
+      "sentimentCoverage": "Text responses: {{count}}",
+      "smallSample": "Small sample: findings are preliminary.",
+      "topInsights": "Top issues",
+      "supportCount": "Evidence: {{count}}",
+      "confidence": "Confidence: {{value}}%",
+      "relationshipMeta": "Strength: {{strength}} · Examples: {{count}}"
+    },
     "tabs": {
       "metrics": "Key Metrics",
       "insights": "Valuable Insights",
