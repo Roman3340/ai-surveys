@@ -454,7 +454,9 @@
       "serverError": "Ошибка сервера",
       "connectionLost": "Соединение потеряно (код: {{code}})",
       "generateError": "Не удалось запустить генерацию аналитики",
-      "websocketClosed": "WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на ai-surveys.ru, 2) Правильный ли URL, 3) Нет ли проблем с сетью"
+      "websocketClosed": "WebSocket соединение неожиданно закрыто. Проверьте: 1) Запущен ли бэкенд на ai-surveys.ru, 2) Правильный ли URL, 3) Нет ли проблем с сетью",
+      "contactSupportPrefix": "Для решения проблемы обратитесь в",
+      "supportLinkText": "техподдержку"
     }
   },
   "surveyAnalytics": {

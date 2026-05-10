@@ -77,6 +77,8 @@ interface ProgressData {
   progress: number;
   message: string;
   error?: string;
+  support_url?: string;
+  error_code?: string;
 }
 
 const AIAnalyticsPage: React.FC = () => {
@@ -91,6 +93,7 @@ const AIAnalyticsPage: React.FC = () => {
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [supportUrl, setSupportUrl] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsDataV3 | null>(null);
   const [surveyTitle, setSurveyTitle] = useState<string>('');
 
@@ -113,6 +116,7 @@ const AIAnalyticsPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      setSupportUrl(null);
       const res = await aiAnalytics.getAnalytics(surveyId);
 
       if (res.data.status === 'cached' || res.data.status === 'completed') {
@@ -179,6 +183,7 @@ const AIAnalyticsPage: React.FC = () => {
             setGenerating(false);
             generatingRef.current = false;
             setError(p.error || t('aiAnalytics.errors.generationError'));
+            setSupportUrl(p.support_url || null);
             wsRef.current?.close();
           }
         } catch {
@@ -224,6 +229,7 @@ const AIAnalyticsPage: React.FC = () => {
       setGenerating(true);
       generatingRef.current = true;
       setError(null);
+      setSupportUrl(null);
       hapticFeedback?.medium?.();
       connectWebSocket();
       await aiAnalytics.generateAnalytics(surveyId);
@@ -233,6 +239,7 @@ const AIAnalyticsPage: React.FC = () => {
       setGenerating(false);
       generatingRef.current = false;
       setError(t('aiAnalytics.errors.generateError'));
+      setSupportUrl('https://t.me/OnlineTarologBotSupport');
     }
   };
 
@@ -560,9 +567,17 @@ const AIAnalyticsPage: React.FC = () => {
       {header}
       <CenteredPageContainer>
         {error && (
-          <div style={{ margin: 14, padding: 12, borderRadius: 12, border: '1px solid #fcc', background: '#fee', color: '#c33', display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ margin: 14, padding: 12, borderRadius: 12, border: '1px solid #fcc', background: '#fee', color: '#c33', display: 'flex', gap: 8 }}>
             <AlertCircle size={18} />
-            {error}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div>{error}</div>
+              <div style={{ fontSize: 13 }}>
+                {t('aiAnalytics.errors.contactSupportPrefix')}{' '}
+                <a href={supportUrl || 'https://t.me/OnlineTarologBotSupport'} target="_blank" rel="noreferrer" style={{ color: '#b50000', textDecoration: 'underline', fontWeight: 700 }}>
+                  {t('aiAnalytics.errors.supportLinkText')}
+                </a>
+              </div>
+            </div>
           </div>
         )}
 

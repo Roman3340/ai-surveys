@@ -454,7 +454,9 @@
       "serverError": "Server error",
       "connectionLost": "Connection lost (code: {{code}})",
       "generateError": "Failed to start analytics generation",
-      "websocketClosed": "WebSocket connection unexpectedly closed. Check: 1) Is the backend running on ai-surveys.ru, 2) Is the URL correct, 3) Are there any network issues"
+      "websocketClosed": "WebSocket connection unexpectedly closed. Check: 1) Is the backend running on ai-surveys.ru, 2) Is the URL correct, 3) Are there any network issues",
+      "contactSupportPrefix": "Please contact",
+      "supportLinkText": "support"
     }
   },
   "surveyAnalytics": {
