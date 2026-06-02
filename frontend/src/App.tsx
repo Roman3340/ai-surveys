@@ -67,9 +67,9 @@ function AppRoutes() {
   }
   
   // Если данные пользователя загружены и это не разработчик, показываем страницу разработки
-  if (isReady && !isDeveloper) {
-    return <DevelopmentPage />;
-  }
+  // if (isReady && !isDeveloper) {
+  //   return <DevelopmentPage />;
+  // }
   
   // Если данные еще не загружены, показываем загрузку (для непубличных маршрутов)
   if (!isReady && !isPublicRoute) {
