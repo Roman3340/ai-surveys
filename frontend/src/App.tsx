@@ -34,10 +34,11 @@ function AppRoutes() {
   const navigate = useNavigate();
   const location = useLocation();
   const { surveyInviteId, setSurveyInviteId } = useAppStore();
-  const { user, isReady } = useTelegram();
+  // const { user, isReady } = useTelegram();
+  const { isReady } = useTelegram();
   
   // ID разработчиков
-  const DEVELOPER_TELEGRAM_IDS = ["649712397"]; // "8257858398"
+  // const DEVELOPER_TELEGRAM_IDS = ["649712397"]; // "8257858398"
   
   // Проверяем, является ли текущий путь публичным (для опросов)
   const isPublicRoute = location.pathname.includes('/invite') || 
