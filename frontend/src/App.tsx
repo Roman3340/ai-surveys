@@ -21,7 +21,7 @@ import { SurveyTemplatesPage } from './pages/Templates/SurveyTemplatesPage';
 import TemplateDetailPage from './pages/Templates/TemplateDetailPage';
 import { KnowledgeBasePage } from './pages/Knowledge/KnowledgeBasePage';
 import { ArticlePage } from './pages/Knowledge/ArticlePage';
-import DevelopmentPage from './pages/Development/DevelopmentPage';
+// import DevelopmentPage from './pages/Development/DevelopmentPage';
 import { useTelegram } from './hooks/useTelegram';
 import { useAppStore } from './store/useAppStore';
 import { DevTools } from './components/DevTools';
@@ -45,7 +45,7 @@ function AppRoutes() {
                         location.pathname.includes('/completed');
   
   // Проверяем доступ (только после загрузки данных пользователя)
-  const isDeveloper = user?.id && DEVELOPER_TELEGRAM_IDS.includes(user.id.toString());
+  // const isDeveloper = user?.id && DEVELOPER_TELEGRAM_IDS.includes(user.id.toString());
   
   // Редирект на страницу приглашения если есть surveyInviteId
   useEffect(() => {
